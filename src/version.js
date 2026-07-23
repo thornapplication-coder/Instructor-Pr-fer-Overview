@@ -4,12 +4,37 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.3.0'
+export const APP_VERSION = '1.4.0'
 export const APP_BUILD_DATE = '2026-07-23'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.4.0',
+    date: '2026-07-23',
+    type: 'minor',
+    changes: {
+      de: [
+        'Logo-Hintergrund jetzt reines Burgundy (Icon + Header).',
+        'Übersicht und Statistik zusammengeführt: erster Reiter heißt „Dashboard" – keine Doppelungen.',
+        'Neues Feld „Aircraft" pro Trainer (A320 / B737) – als Spalte, Filter, Suche und im Dashboard; zieht sich durch alle Reiter.',
+        'Alle Trainer auf 1 FTE gesetzt; FTE-Standard ist 1 (100%).',
+        'Trainer-Tabelle: SIM-Sessions und LIFUS-Legs entfernt.',
+        'Alle Dropdowns alphabetisch sortiert und mit leerer Auswahlzeile oben.',
+        'Reload-Symbol als klares Kreispfeil-Icon.'
+      ],
+      en: [
+        'Logo background is now pure burgundy (icon + header).',
+        'Overview and Statistics merged: the first tab is now “Dashboard” – no duplicates.',
+        'New “Aircraft” field per trainer (A320 / B737) – as column, filter, search and on the dashboard; carried across all tabs.',
+        'All trainers set to 1 FTE; the FTE default is 1 (100%).',
+        'Trainer table: removed SIM sessions and LIFUS legs.',
+        'All dropdowns sorted alphabetically with an empty option at the top.',
+        'Reload control is now a clean circular-arrow icon.'
+      ]
+    }
+  },
   {
     version: '1.3.0',
     date: '2026-07-23',

@@ -6,8 +6,10 @@ import { useSort, Th } from '../components/sortable.jsx'
 import { formatPartTime, formatDate, classNames } from '../lib/format.js'
 import { CONV_STATUS, STAFF_TYPE, stageLabel, stageIndex } from '../data/pipeline.js'
 import { qualIndex } from '../data/qualifications.js'
+import { AIRCRAFT } from '../data/aircraft.js'
 
 const ORE_RANK = { A: 0, B: 1, C: 2, Rente: 3 }
+const alpha = (arr) => [...arr].sort((a, b) => String(a).localeCompare(String(b)))
 
 const ORES = ['A', 'B', 'C', 'Rente', '']
 
@@ -46,6 +48,7 @@ export default function Trainers() {
   const [fQual, setFQual] = useState('')
   const [fOre, setFOre] = useState('')
   const [fStaff, setFStaff] = useState('')
+  const [fAircraft, setFAircraft] = useState('')
   const [editing, setEditing] = useState(null) // trainer object or null
   const [manageQuals, setManageQuals] = useState(false)
 
@@ -62,15 +65,16 @@ export default function Trainers() {
       .filter((x) => (fQual ? x.qual === fQual : true))
       .filter((x) => (fOre ? x.ore === fOre : true))
       .filter((x) => (fStaff ? (x.staffType || 'internal') === fStaff : true))
+      .filter((x) => (fAircraft ? x.aircraft === fAircraft : true))
       .filter((x) =>
         needle
-          ? [x.name, x.tlc, x.remark, x.base, x.authority]
+          ? [x.name, x.tlc, x.remark, x.base, x.authority, x.aircraft, x.qual]
               .join(' ')
               .toLowerCase()
               .includes(needle)
           : true
       )
-  }, [trainers, q, fBase, fQual, fOre, fStaff])
+  }, [trainers, q, fBase, fQual, fOre, fStaff, fAircraft])
 
   const accessors = useMemo(
     () => ({
@@ -80,8 +84,7 @@ export default function Trainers() {
       name: (x) => x.name,
       remark: (x) => x.remark || '',
       fte: (x) => (typeof x.fte === 'number' ? x.fte : 1),
-      sim: (x) => x.simSessions || 0,
-      lifus: (x) => x.lifusLegs || 0,
+      aircraft: (x) => x.aircraft || '',
       ore: (x) => (x.ore in ORE_RANK ? ORE_RANK[x.ore] : 9),
       staff: (x) => x.staffType || 'internal',
       authority: (x) => x.authority || '',
@@ -100,8 +103,8 @@ export default function Trainers() {
       name: '',
       remark: '',
       partTime: 'VZ',
-      simSessions: 0,
-      lifusLegs: 0,
+      fte: 1,
+      aircraft: 'A320',
       ore: 'C',
       staffType: 'internal',
       ltcDate: '',
@@ -130,8 +133,14 @@ export default function Trainers() {
         </select>
         <select className="input" value={fQual} onChange={(e) => setFQual(e.target.value)}>
           <option value="">{t('filterQual')}: {t('all')}</option>
-          {quals.map((qv) => (
+          {[...quals].sort((a, b) => a.label.localeCompare(b.label)).map((qv) => (
             <option key={qv.id} value={qv.id}>{qv.label}</option>
+          ))}
+        </select>
+        <select className="input" value={fAircraft} onChange={(e) => setFAircraft(e.target.value)}>
+          <option value="">{t('filterAircraft')}: {t('all')}</option>
+          {alpha(AIRCRAFT).map((a) => (
+            <option key={a} value={a}>{a}</option>
           ))}
         </select>
         <select className="input" value={fOre} onChange={(e) => setFOre(e.target.value)}>
@@ -168,8 +177,7 @@ export default function Trainers() {
               <Th label={t('f_remark')} k="remark" {...p} />
               <Th label={t('f_partTime')} k="fte" className="num" {...p} />
               <Th label={t('f_fte')} k="fte" className="num" {...p} />
-              <Th label="SIM" k="sim" className="num" {...p} />
-              <Th label="LIFUS" k="lifus" className="num" {...p} />
+              <Th label={t('f_aircraft')} k="aircraft" {...p} />
               <Th label={t('f_ore')} k="ore" {...p} />
               <Th label={t('f_staffType')} k="staff" {...p} />
               <Th label={t('f_authority')} k="authority" {...p} />
@@ -187,8 +195,7 @@ export default function Trainers() {
                 <td className="muted">{x.remark || '–'}</td>
                 <td className="num">{formatPartTime(x.partTime, lang)}</td>
                 <td className="num">{(typeof x.fte === 'number' ? x.fte : 1).toFixed(2).replace(/\.00$/, '')}</td>
-                <td className="num">{x.simSessions}</td>
-                <td className="num">{x.lifusLegs}</td>
+                <td><span className="ac-tag">{x.aircraft || '–'}</span></td>
                 <td>
                   <span className={classNames('ore-tag', 'ore-' + (x.ore || 'none'))}>
                     {x.ore || '–'}
@@ -205,7 +212,7 @@ export default function Trainers() {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={13} className="empty-row">{t('noTrainers')}</td>
+                <td colSpan={12} className="empty-row">{t('noTrainers')}</td>
               </tr>
             )}
           </tbody>
@@ -291,8 +298,9 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
         </Field>
         <Field label={t('f_qual')}>
           <select className="input" value={f.qual} onChange={(e) => set('qual', e.target.value)}>
+            <option value=""></option>
             {!quals.some((qq) => qq.id === f.qual) && f.qual && <option value={f.qual}>{f.qual}</option>}
-            {quals.map((qq) => <option key={qq.id} value={qq.id}>{qq.label}</option>)}
+            {[...quals].sort((a, b) => a.label.localeCompare(b.label)).map((qq) => <option key={qq.id} value={qq.id}>{qq.label}</option>)}
           </select>
         </Field>
         <Field label={t('f_base')}>
@@ -319,22 +327,24 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
         <Field label={t('f_remark')} span2>
           <input className="input" value={f.remark} onChange={(e) => set('remark', e.target.value)} />
         </Field>
+        <Field label={t('f_aircraft')}>
+          <select className="input" value={f.aircraft || ''} onChange={(e) => set('aircraft', e.target.value)}>
+            <option value=""></option>
+            {alpha(AIRCRAFT).map((a) => <option key={a} value={a}>{a}</option>)}
+          </select>
+        </Field>
         <Field label={t('f_ore')}>
           <select className="input" value={f.ore} onChange={(e) => set('ore', e.target.value)}>
-            {ORES.map((o) => <option key={o} value={o}>{o || '–'}</option>)}
+            <option value=""></option>
+            {['A', 'B', 'C', 'Rente'].map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
         </Field>
         <Field label={t('f_staffType')}>
           <select className="input" value={f.staffType || 'internal'} onChange={(e) => set('staffType', e.target.value)}>
-            <option value="internal">{t('staff_internal')}</option>
+            <option value=""></option>
             <option value="external">{t('staff_external')}</option>
+            <option value="internal">{t('staff_internal')}</option>
           </select>
-        </Field>
-        <Field label={t('f_sim')}>
-          <input className="input" type="number" value={f.simSessions} onChange={(e) => set('simSessions', e.target.value)} />
-        </Field>
-        <Field label={t('f_lifus')}>
-          <input className="input" type="number" value={f.lifusLegs} onChange={(e) => set('lifusLegs', e.target.value)} />
         </Field>
         <Field label={t('f_authority')} span2>
           <input className="input" list="authList" value={f.authority} onChange={(e) => set('authority', e.target.value)} />
@@ -360,6 +370,7 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
             value={f.conv.stage}
             onChange={(e) => set('conv', { ...f.conv, stage: e.target.value })}
           >
+            <option value=""></option>
             {stages.map((s) => (
               <option key={s.id} value={s.id}>{stageLabel(s)}</option>
             ))}
@@ -371,9 +382,12 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
             value={f.conv.status}
             onChange={(e) => set('conv', { ...f.conv, status: e.target.value })}
           >
-            {Object.entries(CONV_STATUS).map(([k, v]) => (
-              <option key={k} value={k}>{lang === 'de' ? v.de : v.en}</option>
-            ))}
+            <option value=""></option>
+            {Object.entries(CONV_STATUS)
+              .sort((a, b) => (lang === 'de' ? a[1].de : a[1].en).localeCompare(lang === 'de' ? b[1].de : b[1].en))
+              .map(([k, v]) => (
+                <option key={k} value={k}>{lang === 'de' ? v.de : v.en}</option>
+              ))}
           </select>
         </Field>
         <Field label={t('targetDate')}>

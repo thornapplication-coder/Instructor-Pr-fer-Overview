@@ -2,28 +2,26 @@ import React, { useState, useEffect } from 'react'
 import { requestPersistence } from './lib/persistence.js'
 import TopBar from './components/TopBar.jsx'
 import UpdatePrompt from './components/UpdatePrompt.jsx'
-import Overview from './tabs/Overview.jsx'
+import Dashboard from './tabs/Dashboard.jsx'
 import Trainers from './tabs/Trainers.jsx'
 import Conversion from './tabs/Conversion.jsx'
 import Planning from './tabs/Planning.jsx'
-import Statistics from './tabs/Statistics.jsx'
 import Providers from './tabs/Providers.jsx'
 import Settings from './tabs/Settings.jsx'
 import { APP_VERSION, COPYRIGHT } from './version.js'
 
 const TABS = [
-  { id: 'overview', labelKey: 'tab_overview', Comp: Overview },
+  { id: 'dashboard', labelKey: 'tab_dashboard', Comp: Dashboard },
   { id: 'trainers', labelKey: 'tab_trainers', Comp: Trainers },
   { id: 'conversion', labelKey: 'tab_conversion', Comp: Conversion },
   { id: 'planning', labelKey: 'tab_planning', Comp: Planning },
-  { id: 'statistics', labelKey: 'tab_statistics', Comp: Statistics },
   { id: 'providers', labelKey: 'tab_providers', Comp: Providers },
   { id: 'settings', labelKey: 'tab_settings', Comp: Settings }
 ]
 
 export default function App() {
-  const [active, setActive] = useState('overview')
-  const Current = TABS.find((t) => t.id === active)?.Comp || Overview
+  const [active, setActive] = useState('dashboard')
+  const Current = TABS.find((t) => t.id === active)?.Comp || Dashboard
 
   // Ask the browser to keep our local data (prevents automatic eviction).
   useEffect(() => {

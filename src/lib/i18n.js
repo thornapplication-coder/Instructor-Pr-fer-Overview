@@ -29,6 +29,7 @@ const DICT = {
 
   // ---- tabs
   tab_overview: { de: 'Übersicht', en: 'Overview' },
+  tab_dashboard: { de: 'Dashboard', en: 'Dashboard' },
   tab_trainers: { de: 'Trainer', en: 'Trainers' },
   tab_conversion: { de: 'Umschulung', en: 'Conversion' },
   tab_statistics: { de: 'Statistik', en: 'Statistics' },
@@ -69,6 +70,9 @@ const DICT = {
   f_bFrom: { de: 'B ab', en: 'B from' },
   f_conversion: { de: 'Umschulung', en: 'Conversion' },
   f_fte: { de: 'FTE', en: 'FTE' },
+  f_aircraft: { de: 'Aircraft', en: 'Aircraft' },
+  filterAircraft: { de: 'Aircraft', en: 'Aircraft' },
+  stat_aircraft: { de: 'Aktuelles Aircraft', en: 'Current aircraft' },
 
   trainers_title: { de: 'Trainer & Prüfer', en: 'Trainers & Examiners' },
   addTrainer: { de: 'Trainer hinzufügen', en: 'Add trainer' },

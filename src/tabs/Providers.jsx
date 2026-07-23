@@ -222,7 +222,8 @@ function ProviderForm({ provider, providerTypes, providerStatus, onClose, onSave
         </Field>
         <Field label={t('p_status')}>
           <select className="input" value={p.status} onChange={(e) => set('status', e.target.value)}>
-            {providerStatus.map((v) => (
+            <option value=""></option>
+            {[...providerStatus].sort((a, b) => (a.label || '').localeCompare(b.label || '')).map((v) => (
               <option key={v.id} value={v.id}>{v.label}</option>
             ))}
           </select>

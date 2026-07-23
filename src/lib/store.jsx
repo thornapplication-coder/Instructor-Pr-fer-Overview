@@ -3,11 +3,10 @@ import { SEED_TRAINERS } from '../data/seed.js'
 import { SEED_PROVIDERS, DEFAULT_PROVIDER_TYPES, DEFAULT_PROVIDER_STATUS } from '../data/providers.js'
 import { DEFAULT_STAGES, ASSIGNMENT_STEPS, mergeAssignments } from '../data/pipeline.js'
 import { DEFAULT_QUALS, normalizeQual } from '../data/qualifications.js'
-import { partTimeFactor } from './format.js'
 import { translate } from './i18n.js'
 
 const STORAGE_KEY = 'ewl737:data:v1'
-const SCHEMA = 1
+const SCHEMA = 2
 
 const StoreContext = createContext(null)
 
@@ -22,17 +21,11 @@ function newId(prefix) {
 // Ensure every trainer has conversion, staff type and assignment objects
 // (forward-compatible migration for older / imported payloads).
 function withConvDefaults(trainer) {
-  // Default FTE: 1.0 (100%). Seed from part-time factor where known.
-  const fte =
-    typeof trainer.fte === 'number'
-      ? trainer.fte
-      : partTimeFactor(trainer.partTime) == null
-        ? 1
-        : partTimeFactor(trainer.partTime)
   return {
     staffType: 'internal',
+    aircraft: 'A320',
     ...trainer,
-    fte,
+    fte: typeof trainer.fte === 'number' ? trainer.fte : 1,
     qual: normalizeQual(trainer.qual),
     conv: {
       stage: 'nominated',
@@ -70,7 +63,13 @@ function loadData() {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return freshData()
     const parsed = JSON.parse(raw)
-    return normalize(parsed)
+    // One-time migration when upgrading from an older schema: set all FTE to 1.
+    const resetFte = parsed.schema !== SCHEMA
+    let data = normalize(parsed)
+    if (resetFte) {
+      data = { ...data, trainers: data.trainers.map((t) => ({ ...t, fte: 1 })) }
+    }
+    return data
   } catch (e) {
     console.warn('Failed to load stored data, using seed.', e)
     return freshData()

@@ -11,6 +11,16 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Button**.
 
+## [1.4.0] – 2026-07-23
+
+- Logo-Hintergrund jetzt **reines Burgundy** (Icon + Header).
+- **Übersicht & Statistik zusammengeführt** → erster Reiter „Dashboard", keine Doppelungen.
+- Neues Feld **„Aircraft"** pro Trainer (A320 / B737): Spalte, Filter, Suche, Dashboard – überall.
+- **Alle Trainer auf 1 FTE** gesetzt; FTE-Standard = 1 (100%).
+- Trainer-Tabelle: **SIM & LIFUS entfernt**.
+- **Alle Dropdowns** alphabetisch + leere Auswahlzeile oben.
+- **Reload-Symbol** als klares Kreispfeil-Icon.
+
 ## [1.3.0] – 2026-07-23
 
 - Neues Logo (weißes „737", darunter „TRAINER" in Blau) – überall inkl.

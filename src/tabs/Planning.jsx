@@ -5,6 +5,7 @@ import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
 import { formatDate } from '../lib/format.js'
 import { ASSIGNMENT_STATUS, STAFF_TYPE } from '../data/pipeline.js'
+import { AIRCRAFT } from '../data/aircraft.js'
 
 function providersForStep(providers, step) {
   if (!step.providerType) return providers
@@ -34,6 +35,7 @@ export default function Planning() {
   const [fBase, setFBase] = useState('')
   const [fStaff, setFStaff] = useState('')
   const [fOre, setFOre] = useState('')
+  const [fAircraft, setFAircraft] = useState('')
   const [editing, setEditing] = useState(null)
   const [manageSteps, setManageSteps] = useState(false)
 
@@ -45,8 +47,9 @@ export default function Planning() {
       .filter((x) => (fBase ? x.base === fBase : true))
       .filter((x) => (fStaff ? (x.staffType || 'internal') === fStaff : true))
       .filter((x) => (fOre ? x.ore === fOre : true))
-      .filter((x) => (n ? [x.name, x.tlc, x.base, x.qual].join(' ').toLowerCase().includes(n) : true))
-  }, [trainers, q, fBase, fStaff, fOre])
+      .filter((x) => (fAircraft ? x.aircraft === fAircraft : true))
+      .filter((x) => (n ? [x.name, x.tlc, x.base, x.qual, x.aircraft].join(' ').toLowerCase().includes(n) : true))
+  }, [trainers, q, fBase, fStaff, fOre, fAircraft])
 
   const accessors = useMemo(() => {
     const a = {
@@ -72,8 +75,12 @@ export default function Planning() {
         </select>
         <select className="input" value={fStaff} onChange={(e) => setFStaff(e.target.value)}>
           <option value="">{t('filterStaff')}: {t('all')}</option>
-          <option value="internal">{t('staff_internal')}</option>
           <option value="external">{t('staff_external')}</option>
+          <option value="internal">{t('staff_internal')}</option>
+        </select>
+        <select className="input" value={fAircraft} onChange={(e) => setFAircraft(e.target.value)}>
+          <option value="">{t('filterAircraft')}: {t('all')}</option>
+          {[...AIRCRAFT].sort().map((a) => <option key={a} value={a}>{a}</option>)}
         </select>
         <select className="input" value={fOre} onChange={(e) => setFOre(e.target.value)}>
           <option value="">{t('filterOre')}: {t('all')}</option>
@@ -115,7 +122,7 @@ export default function Planning() {
                 <tr key={x.id}>
                   <td className="strong nowrap">
                     <button className="link-btn" onClick={() => setEditing({ ...x })}>{x.name}</button>
-                    <div className="muted small">{x.base} · {x.qual}</div>
+                    <div className="muted small">{x.base} · {x.qual}{x.aircraft ? ' · ' + x.aircraft : ''}</div>
                   </td>
                   <td>
                     <span className="staff-tag" style={{ background: staff.color }}>
@@ -211,7 +218,7 @@ function PlanningModal({ trainer, providers, steps, onClose }) {
                   <span className="field-label">{t('provider')}</span>
                   <select className="input" value={a.providerId || ''} onChange={(e) => setStep(s.id, { providerId: e.target.value })}>
                     <option value="">{t('noProvider')}</option>
-                    {opts.map((p) => (<option key={p.id} value={p.id}>{p.name || '(?)'}</option>))}
+                    {[...opts].sort((x, y) => (x.name || '').localeCompare(y.name || '')).map((p) => (<option key={p.id} value={p.id}>{p.name || '(?)'}</option>))}
                   </select>
                 </label>
                 <label className="field">
@@ -221,9 +228,12 @@ function PlanningModal({ trainer, providers, steps, onClose }) {
                 <label className="field">
                   <span className="field-label">{t('status')}</span>
                   <select className="input" value={a.status || 'open'} onChange={(e) => setStep(s.id, { status: e.target.value })}>
-                    {Object.entries(ASSIGNMENT_STATUS).map(([k, v]) => (
-                      <option key={k} value={k}>{lang === 'de' ? v.de : v.en}</option>
-                    ))}
+                    <option value=""></option>
+                    {Object.entries(ASSIGNMENT_STATUS)
+                      .sort((x, y) => (lang === 'de' ? x[1].de : x[1].en).localeCompare(lang === 'de' ? y[1].de : y[1].en))
+                      .map(([k, v]) => (
+                        <option key={k} value={k}>{lang === 'de' ? v.de : v.en}</option>
+                      ))}
                   </select>
                 </label>
                 <label className="field">

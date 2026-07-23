@@ -3,6 +3,7 @@ import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { CONV_STATUS, stageIndex, stageLabel, STAFF_TYPE } from '../data/pipeline.js'
+import { AIRCRAFT } from '../data/aircraft.js'
 import { formatDate } from '../lib/format.js'
 
 function assignTarget(providers, a) {
@@ -20,6 +21,7 @@ export default function Conversion() {
   const [fOre, setFOre] = useState('')
   const [fQual, setFQual] = useState('')
   const [fStaff, setFStaff] = useState('')
+  const [fAircraft, setFAircraft] = useState('')
   const [detail, setDetail] = useState(null)
   const [manageStages, setManageStages] = useState(false)
   const [dragId, setDragId] = useState(null)
@@ -36,8 +38,9 @@ export default function Conversion() {
       (fOre ? x.ore === fOre : true) &&
       (fQual ? x.qual === fQual : true) &&
       (fStaff ? (x.staffType || 'internal') === fStaff : true) &&
+      (fAircraft ? x.aircraft === fAircraft : true) &&
       (needle
-        ? [x.name, x.qual, x.base, x.tlc, t('staff_' + (x.staffType || 'internal'))]
+        ? [x.name, x.qual, x.base, x.tlc, x.aircraft, t('staff_' + (x.staffType || 'internal'))]
             .join(' ')
             .toLowerCase()
             .includes(needle)
@@ -66,14 +69,18 @@ export default function Conversion() {
       <div className="toolbar">
         <h2 className="pane-title">{t('conversion_title')}</h2>
         <input className="input search" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
+        <select className="input" value={fAircraft} onChange={(e) => setFAircraft(e.target.value)}>
+          <option value="">{t('filterAircraft')}: {t('all')}</option>
+          {[...AIRCRAFT].sort().map((a) => <option key={a} value={a}>{a}</option>)}
+        </select>
         <select className="input" value={fQual} onChange={(e) => setFQual(e.target.value)}>
           <option value="">{t('filterQual')}: {t('all')}</option>
-          {quals.map((qv) => <option key={qv.id} value={qv.id}>{qv.label}</option>)}
+          {[...quals].sort((a, b) => a.label.localeCompare(b.label)).map((qv) => <option key={qv.id} value={qv.id}>{qv.label}</option>)}
         </select>
         <select className="input" value={fStaff} onChange={(e) => setFStaff(e.target.value)}>
           <option value="">{t('filterStaff')}: {t('all')}</option>
-          <option value="internal">{t('staff_internal')}</option>
           <option value="external">{t('staff_external')}</option>
+          <option value="internal">{t('staff_internal')}</option>
         </select>
         <select className="input" value={fBase} onChange={(e) => setFBase(e.target.value)}>
           <option value="">{t('filterBase')}: {t('all')}</option>
@@ -127,6 +134,7 @@ export default function Conversion() {
                       <div className="conv-meta">
                         <span className="qual-tag sm">{x.qual}</span>
                         <span className="chip-sm">{x.base}</span>
+                        {x.aircraft && <span className="ac-tag sm">{x.aircraft}</span>}
                         <span className={'ore-tag ore-' + (x.ore || 'none')}>{x.ore || '–'}</span>
                         <span className="staff-tag sm" style={{ background: STAFF_TYPE[x.staffType || 'internal'].color }}>
                           {t('staff_' + (x.staffType || 'internal'))}
