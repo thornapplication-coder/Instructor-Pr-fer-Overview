@@ -11,6 +11,12 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Button**.
 
+## [1.0.3] – 2026-07-23
+
+- Deploy-Workflow bereinigt: automatisches Pages-Aktivieren entfernt (der
+  GitHub-Actions-Token darf die Pages-Site nicht anlegen). GitHub Pages muss
+  einmalig manuell aktiviert werden (Settings → Pages → Source: GitHub Actions).
+
 ## [1.0.2] – 2026-07-23
 
 - GitHub Pages wird im Deploy-Workflow automatisch aktiviert (`actions/configure-pages` mit `enablement`), damit kein manueller Schalter nötig ist.

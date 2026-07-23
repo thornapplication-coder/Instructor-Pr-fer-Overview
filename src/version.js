@@ -4,11 +4,20 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.0.2'
+export const APP_VERSION = '1.0.3'
 export const APP_BUILD_DATE = '2026-07-23'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.0.3',
+    date: '2026-07-23',
+    type: 'patch',
+    changes: {
+      de: ['Deploy-Workflow bereinigt: automatisches Pages-Aktivieren entfernt (der GitHub-Actions-Token darf die Pages-Site nicht anlegen). Pages muss einmalig manuell aktiviert werden.'],
+      en: ['Cleaned up the deploy workflow: removed Pages auto-enable (the GitHub Actions token cannot create the Pages site). Pages must be enabled manually once.']
+    }
+  },
   {
     version: '1.0.2',
     date: '2026-07-23',
