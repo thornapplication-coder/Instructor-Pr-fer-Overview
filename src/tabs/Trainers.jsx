@@ -1,10 +1,11 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
+import CategoryManager from '../components/CategoryManager.jsx'
 import { formatPartTime, formatDate, classNames } from '../lib/format.js'
-import { CONV_STATUS, STAFF_TYPE } from '../data/pipeline.js'
+import { CONV_STATUS, STAFF_TYPE, stageLabel } from '../data/pipeline.js'
+import { qualIndex } from '../data/qualifications.js'
 
-const QUALS = ['TRE', 'TRE/SEN', 'LTC', 'TRI', 'new TRI']
 const ORES = ['A', 'B', 'C', 'Rente', '']
 
 function ptToInput(pt) {
@@ -22,26 +23,28 @@ function ptFromInput(v) {
   return s
 }
 
-function StageBadge({ trainer, stages, lang }) {
+function StageBadge({ trainer, stages }) {
   const stage = stages.find((s) => s.id === trainer.conv?.stage) || stages[0]
   const st = CONV_STATUS[trainer.conv?.status] || CONV_STATUS.on_track
   return (
-    <span className="stage-badge" style={{ borderColor: stage.color }}>
+    <span className="stage-badge" style={{ borderColor: stage?.color }}>
       <span className="stage-dot" style={{ background: st.color }} />
-      {lang === 'de' ? stage.de : stage.en}
+      {stageLabel(stage)}
     </span>
   )
 }
 
 export default function Trainers() {
-  const { data, t, lang, upsertTrainer, deleteTrainer, newId } = useStore()
-  const { trainers, stages } = data
+  const { data, t, lang, upsertTrainer, deleteTrainer, newId, setQuals } = useStore()
+  const { trainers, stages, quals } = data
+  const qualColor = (id) => (quals.find((qq) => qq.id === id) || {}).color || '#787878'
   const [q, setQ] = useState('')
   const [fBase, setFBase] = useState('')
   const [fQual, setFQual] = useState('')
   const [fOre, setFOre] = useState('')
   const [fStaff, setFStaff] = useState('')
   const [editing, setEditing] = useState(null) // trainer object or null
+  const [manageQuals, setManageQuals] = useState(false)
 
   const bases = useMemo(() => [...new Set(trainers.map((x) => x.base))].sort(), [trainers])
   const authorities = useMemo(
@@ -106,8 +109,8 @@ export default function Trainers() {
         </select>
         <select className="input" value={fQual} onChange={(e) => setFQual(e.target.value)}>
           <option value="">{t('filterQual')}: {t('all')}</option>
-          {QUALS.map((qv) => (
-            <option key={qv} value={qv}>{qv}</option>
+          {quals.map((qv) => (
+            <option key={qv.id} value={qv.id}>{qv.label}</option>
           ))}
         </select>
         <select className="input" value={fOre} onChange={(e) => setFOre(e.target.value)}>
@@ -124,7 +127,10 @@ export default function Trainers() {
         <span className="count-pill">
           {rows.length} / {trainers.length} {t('showing')}
         </span>
-        <button className="btn btn-primary push-right" onClick={startAdd}>
+        <button className="btn btn-ghost push-right" onClick={() => setManageQuals(true)}>
+          ⚙ {t('manageQuals')}
+        </button>
+        <button className="btn btn-primary" onClick={startAdd}>
           + {t('addTrainer')}
         </button>
       </div>
@@ -150,7 +156,7 @@ export default function Trainers() {
           <tbody>
             {rows.map((x) => (
               <tr key={x.id} onClick={() => setEditing({ ...x })} className="clickable">
-                <td><span className="qual-tag">{x.qual}</span></td>
+                <td><span className="qual-tag" style={{ background: qualColor(x.qual) }}>{x.qual}</span></td>
                 <td>{x.base}</td>
                 <td className="mono">{x.tlc}</td>
                 <td className="strong">{x.name}</td>
@@ -169,7 +175,7 @@ export default function Trainers() {
                   </span>
                 </td>
                 <td className="muted small">{x.authority || '–'}</td>
-                <td><StageBadge trainer={x} stages={stages} lang={lang} /></td>
+                <td><StageBadge trainer={x} stages={stages} /></td>
               </tr>
             ))}
             {rows.length === 0 && (
@@ -185,6 +191,7 @@ export default function Trainers() {
         <TrainerForm
           trainer={editing}
           stages={stages}
+          quals={quals}
           authorities={authorities}
           bases={bases}
           onClose={() => setEditing(null)}
@@ -200,11 +207,19 @@ export default function Trainers() {
           }}
         />
       )}
+
+      {manageQuals && (
+        <Modal title={t('manageQuals')} onClose={() => setManageQuals(false)}
+          footer={<div className="foot-row"><p className="muted small">{t('dragHint')}</p>
+            <div className="push-right"><button className="btn btn-primary" onClick={() => setManageQuals(false)}>{t('close')}</button></div></div>}>
+          <CategoryManager items={quals} onChange={setQuals} />
+        </Modal>
+      )}
     </div>
   )
 }
 
-function TrainerForm({ trainer, stages, authorities, bases, onClose, onSave, onDelete }) {
+function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSave, onDelete }) {
   const { t, lang } = useStore()
   const [f, setF] = useState({ ...trainer, partTimeInput: ptToInput(trainer.partTime) })
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }))
@@ -250,7 +265,8 @@ function TrainerForm({ trainer, stages, authorities, bases, onClose, onSave, onD
         </Field>
         <Field label={t('f_qual')}>
           <select className="input" value={f.qual} onChange={(e) => set('qual', e.target.value)}>
-            {QUALS.map((q) => <option key={q}>{q}</option>)}
+            {!quals.some((qq) => qq.id === f.qual) && f.qual && <option value={f.qual}>{f.qual}</option>}
+            {quals.map((qq) => <option key={qq.id} value={qq.id}>{qq.label}</option>)}
           </select>
         </Field>
         <Field label={t('f_base')}>
@@ -308,7 +324,7 @@ function TrainerForm({ trainer, stages, authorities, bases, onClose, onSave, onD
             onChange={(e) => set('conv', { ...f.conv, stage: e.target.value })}
           >
             {stages.map((s) => (
-              <option key={s.id} value={s.id}>{lang === 'de' ? s.de : s.en}</option>
+              <option key={s.id} value={s.id}>{stageLabel(s)}</option>
             ))}
           </select>
         </Field>

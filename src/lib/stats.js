@@ -2,7 +2,7 @@
 // "Statistik_Daten" tab so the numbers line up 1:1 with the source file.
 import { partTimeFactor } from './format.js'
 
-const QUAL_ORDER = ['TRE', 'TRE/SEN', 'LTC', 'TRI', 'new TRI']
+const QUAL_ORDER = ['SEN', 'TRE', 'TRI', 'new TRI', 'LTC', 'SFI', 'TKI']
 const BASE_ORDER = ['PMI', 'VIE', 'SZG', 'PRG', 'ARN']
 const ORE_ORDER = ['A', 'B', 'C', 'Rente']
 
@@ -31,8 +31,8 @@ function bySize(map) {
   return [...map.entries()].sort((a, b) => b[1] - a[1]).map(([key, count]) => ({ key, count }))
 }
 
-export function byQual(trainers) {
-  return ordered(tally(trainers, (t) => t.qual), QUAL_ORDER)
+export function byQual(trainers, order) {
+  return ordered(tally(trainers, (t) => t.qual), order && order.length ? order : QUAL_ORDER)
 }
 export function byBase(trainers) {
   return ordered(tally(trainers, (t) => t.base), BASE_ORDER)
@@ -89,9 +89,11 @@ export function pipelineDistribution(trainers, stages) {
 
 // Head-count style KPIs.
 export function headcount(trainers) {
+  const EXAMINER = new Set(['SEN', 'TRE'])
+  const INSTRUCTOR = new Set(['TRI', 'new TRI', 'LTC', 'SFI', 'TKI'])
   const active = trainers.filter((t) => t.ore !== 'Rente')
-  const examiners = trainers.filter((t) => t.qual.startsWith('TRE'))
-  const instructors = trainers.filter((t) => t.qual === 'TRI' || t.qual === 'new TRI' || t.qual === 'LTC')
+  const examiners = trainers.filter((t) => EXAMINER.has(t.qual) || String(t.qual).startsWith('TRE'))
+  const instructors = trainers.filter((t) => INSTRUCTOR.has(t.qual))
   const retiring = trainers.filter((t) => t.ore === 'Rente')
   // Weighted FTE (VZ = 1.0), ignoring non-numeric part-time strings.
   let fte = 0

@@ -1,13 +1,16 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
-import { PROVIDER_TYPES, PROVIDER_STATUS, emptyProvider } from '../data/providers.js'
+import CategoryManager from '../components/CategoryManager.jsx'
+import { emptyProvider } from '../data/providers.js'
 
 export default function Providers() {
-  const { data, t, lang, upsertProvider, deleteProvider, newId } = useStore()
-  const { providers } = data
+  const { data, t, upsertProvider, deleteProvider, newId, setProviderTypes, setProviderStatus } = useStore()
+  const { providers, providerTypes, providerStatus } = data
   const [q, setQ] = useState('')
   const [editing, setEditing] = useState(null)
+  const [manageTypes, setManageTypes] = useState(false)
+  const [manageStatus, setManageStatus] = useState(false)
 
   const rows = useMemo(() => {
     const n = q.trim().toLowerCase()
@@ -33,10 +36,13 @@ export default function Providers() {
           value={q}
           onChange={(e) => setQ(e.target.value)}
         />
-        <button
-          className="btn btn-primary push-right"
-          onClick={() => setEditing(emptyProvider(newId('prov')))}
-        >
+        <button className="btn btn-ghost push-right" onClick={() => setManageTypes(true)}>
+          ⚙ {t('manageProviderTypes')}
+        </button>
+        <button className="btn btn-ghost" onClick={() => setManageStatus(true)}>
+          ⚙ {t('manageProviderStatus')}
+        </button>
+        <button className="btn btn-primary" onClick={() => setEditing(emptyProvider(newId('prov')))}>
           + {t('addProvider')}
         </button>
       </div>
@@ -65,7 +71,7 @@ export default function Providers() {
             </thead>
             <tbody>
               {rows.map((p) => {
-                const st = PROVIDER_STATUS[p.status] || PROVIDER_STATUS.candidate
+                const st = providerStatus.find((s) => s.id === p.status) || { label: p.status || '–', color: '#787878' }
                 return (
                   <tr key={p.id} className="clickable" onClick={() => setEditing({ ...p })}>
                     <td className="strong">{p.name || '–'}</td>
@@ -85,7 +91,7 @@ export default function Providers() {
                     <td className="muted small">{p.capacity || '–'}</td>
                     <td>
                       <span className="status-tag" style={{ background: st.color }}>
-                        {lang === 'de' ? st.de : st.en}
+                        {st.label}
                       </span>
                     </td>
                   </tr>
@@ -99,6 +105,8 @@ export default function Providers() {
       {editing && (
         <ProviderForm
           provider={editing}
+          providerTypes={providerTypes}
+          providerStatus={providerStatus}
           onClose={() => setEditing(null)}
           onSave={(p) => {
             upsertProvider(p)
@@ -113,11 +121,26 @@ export default function Providers() {
           isNew={!providers.some((x) => x.id === editing.id)}
         />
       )}
+
+      {manageTypes && (
+        <Modal title={t('manageProviderTypes')} onClose={() => setManageTypes(false)}
+          footer={<div className="foot-row"><p className="muted small">{t('dragHint')}</p>
+            <div className="push-right"><button className="btn btn-primary" onClick={() => setManageTypes(false)}>{t('close')}</button></div></div>}>
+          <CategoryManager items={providerTypes} onChange={setProviderTypes} hasColor={false} />
+        </Modal>
+      )}
+      {manageStatus && (
+        <Modal title={t('manageProviderStatus')} onClose={() => setManageStatus(false)}
+          footer={<div className="foot-row"><p className="muted small">{t('dragHint')}</p>
+            <div className="push-right"><button className="btn btn-primary" onClick={() => setManageStatus(false)}>{t('close')}</button></div></div>}>
+          <CategoryManager items={providerStatus} onChange={setProviderStatus} />
+        </Modal>
+      )}
     </div>
   )
 }
 
-function ProviderForm({ provider, onClose, onSave, onDelete, isNew }) {
+function ProviderForm({ provider, providerTypes, providerStatus, onClose, onSave, onDelete, isNew }) {
   const { t, lang } = useStore()
   const [p, setP] = useState({ ...provider })
   const set = (k, v) => setP((s) => ({ ...s, [k]: v }))
@@ -161,14 +184,14 @@ function ProviderForm({ provider, onClose, onSave, onDelete, isNew }) {
         </Field>
         <Field label={t('p_types')} span2>
           <div className="checks">
-            {PROVIDER_TYPES.map((tp) => (
-              <label key={tp} className={'check-pill' + ((p.types || []).includes(tp) ? ' on' : '')}>
+            {providerTypes.map((tp) => (
+              <label key={tp.id} className={'check-pill' + ((p.types || []).includes(tp.id) ? ' on' : '')}>
                 <input
                   type="checkbox"
-                  checked={(p.types || []).includes(tp)}
-                  onChange={() => toggleType(tp)}
+                  checked={(p.types || []).includes(tp.id)}
+                  onChange={() => toggleType(tp.id)}
                 />
-                {tp}
+                {tp.label}
               </label>
             ))}
           </div>
@@ -199,8 +222,8 @@ function ProviderForm({ provider, onClose, onSave, onDelete, isNew }) {
         </Field>
         <Field label={t('p_status')}>
           <select className="input" value={p.status} onChange={(e) => set('status', e.target.value)}>
-            {Object.entries(PROVIDER_STATUS).map(([k, v]) => (
-              <option key={k} value={k}>{lang === 'de' ? v.de : v.en}</option>
+            {providerStatus.map((v) => (
+              <option key={v.id} value={v.id}>{v.label}</option>
             ))}
           </select>
         </Field>

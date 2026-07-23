@@ -4,11 +4,34 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.1.0'
+export const APP_VERSION = '1.2.0'
 export const APP_BUILD_DATE = '2026-07-23'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.2.0',
+    date: '2026-07-23',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neues, klareres App-Logo (eigene Wave-Bildmarke) statt der dunklen Kachel.',
+        'Berechtigungen jetzt in fester Reihenfolge SEN · TRE · TRI · new TRI · LTC · SFI · TKI – frei editierbar (umbenennen, Farbe, hinzufügen/löschen, sortieren). „TRE/SEN" wurde zu „SEN".',
+        'Editierbare Kategorien mit Farbe überall: Umschulungs-Phasen, Berechtigungen, Provider-Angebotstypen und Provider-Status – jeweils per „Verwalten"-Button.',
+        'Drag & Drop: Trainer im Umschulungs-Board per Ziehen zwischen Phasen verschieben; Kategorien per Ziehen/Pfeilen sortieren.',
+        'Alphabetische Sortierung (Namen nach Nachname) durchgängig.',
+        'Statistik entschlackt: die doppelte Tabelle unter jedem Diagramm entfällt, Werte stehen im Diagramm.'
+      ],
+      en: [
+        'New, cleaner app logo (custom wave mark) instead of the dark tile.',
+        'Qualifications now in fixed order SEN · TRE · TRI · new TRI · LTC · SFI · TKI – fully editable (rename, colour, add/delete, reorder). “TRE/SEN” became “SEN”.',
+        'Editable colour-coded categories everywhere: conversion stages, qualifications, provider offering types and provider status – each via a “Manage” button.',
+        'Drag & drop: move trainers between stages on the conversion board; reorder categories by dragging/arrows.',
+        'Alphabetical sorting (names by last name) throughout.',
+        'Statistics decluttered: the duplicate table under each chart is gone, values live in the chart.'
+      ]
+    }
+  },
   {
     version: '1.1.0',
     date: '2026-07-23',

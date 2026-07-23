@@ -1,7 +1,8 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { SEED_TRAINERS } from '../data/seed.js'
-import { SEED_PROVIDERS } from '../data/providers.js'
+import { SEED_PROVIDERS, DEFAULT_PROVIDER_TYPES, DEFAULT_PROVIDER_STATUS } from '../data/providers.js'
 import { DEFAULT_STAGES, mergeAssignments } from '../data/pipeline.js'
+import { DEFAULT_QUALS, normalizeQual } from '../data/qualifications.js'
 import { translate } from './i18n.js'
 
 const STORAGE_KEY = 'ewl737:data:v1'
@@ -23,6 +24,7 @@ function withConvDefaults(trainer) {
   return {
     staffType: 'internal',
     ...trainer,
+    qual: normalizeQual(trainer.qual),
     conv: {
       stage: 'nominated',
       status: 'on_track',
@@ -34,6 +36,11 @@ function withConvDefaults(trainer) {
   }
 }
 
+// Older stage shape was { id, de, en, color }; new shape is { id, label, color }.
+function migrateStage(s) {
+  return { id: s.id, label: s.label ?? s.de ?? s.en ?? s.id, color: s.color || '#AF1E65' }
+}
+
 function freshData(lang = 'de') {
   return {
     schema: SCHEMA,
@@ -41,6 +48,9 @@ function freshData(lang = 'de') {
     trainers: SEED_TRAINERS.map((t) => withConvDefaults({ ...t })),
     providers: SEED_PROVIDERS.map((p) => ({ ...p })),
     stages: DEFAULT_STAGES.map((s) => ({ ...s })),
+    quals: DEFAULT_QUALS.map((q) => ({ ...q })),
+    providerTypes: DEFAULT_PROVIDER_TYPES.map((x) => ({ ...x })),
+    providerStatus: DEFAULT_PROVIDER_STATUS.map((x) => ({ ...x })),
     updatedAt: nowIso()
   }
 }
@@ -69,7 +79,18 @@ function normalize(obj) {
       : base.trainers,
     providers: Array.isArray(obj.providers) ? obj.providers.map((p) => ({ ...p })) : [],
     stages:
-      Array.isArray(obj.stages) && obj.stages.length ? obj.stages.map((s) => ({ ...s })) : base.stages,
+      Array.isArray(obj.stages) && obj.stages.length
+        ? obj.stages.map(migrateStage)
+        : base.stages,
+    quals: Array.isArray(obj.quals) && obj.quals.length ? obj.quals.map((q) => ({ ...q })) : base.quals,
+    providerTypes:
+      Array.isArray(obj.providerTypes) && obj.providerTypes.length
+        ? obj.providerTypes.map((x) => ({ ...x }))
+        : base.providerTypes,
+    providerStatus:
+      Array.isArray(obj.providerStatus) && obj.providerStatus.length
+        ? obj.providerStatus.map((x) => ({ ...x }))
+        : base.providerStatus,
     updatedAt: obj.updatedAt || nowIso()
   }
 }
@@ -160,6 +181,9 @@ export function StoreProvider({ children }) {
         patch((d) => ({ ...d, providers: d.providers.filter((x) => x.id !== id) })),
 
       setStages: (stages) => patch((d) => ({ ...d, stages })),
+      setQuals: (quals) => patch((d) => ({ ...d, quals })),
+      setProviderTypes: (providerTypes) => patch((d) => ({ ...d, providerTypes })),
+      setProviderStatus: (providerStatus) => patch((d) => ({ ...d, providerStatus })),
 
       importData: (obj) => {
         const next = normalize(obj)

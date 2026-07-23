@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
-import { CONV_STATUS, stageIndex, ASSIGNMENT_STEPS, STAFF_TYPE } from '../data/pipeline.js'
+import CategoryManager from '../components/CategoryManager.jsx'
+import { CONV_STATUS, stageIndex, stageLabel, ASSIGNMENT_STEPS, STAFF_TYPE } from '../data/pipeline.js'
 import { formatDate } from '../lib/format.js'
 
 function assignTarget(providers, a) {
@@ -12,27 +13,38 @@ function assignTarget(providers, a) {
 }
 
 export default function Conversion() {
-  const { data, t, lang, setConversion } = useStore()
+  const { data, t, lang, setConversion, setStages } = useStore()
   const { trainers, stages, providers } = data
   const [fBase, setFBase] = useState('')
   const [fOre, setFOre] = useState('')
   const [detail, setDetail] = useState(null)
+  const [manageStages, setManageStages] = useState(false)
+  const [dragId, setDragId] = useState(null)
+  const [overStage, setOverStage] = useState(null)
 
   const bases = useMemo(() => [...new Set(trainers.map((x) => x.base))].sort(), [trainers])
+  const stageIds = useMemo(() => new Set(stages.map((s) => s.id)), [stages])
 
   const visible = trainers.filter(
     (x) =>
-      (fBase ? x.base === fBase : true) &&
-      (fOre ? x.ore === fOre : true) &&
-      x.ore !== 'Rente'
+      (fBase ? x.base === fBase : true) && (fOre ? x.ore === fOre : true) && x.ore !== 'Rente'
   )
 
+  const setStage = (tr, stageId) => {
+    const patch = { stage: stageId }
+    if (stageId === 'released') patch.status = 'done'
+    setConversion(tr.id, patch)
+  }
   const move = (tr, dir) => {
     const idx = stageIndex(stages, tr.conv.stage)
     const nidx = Math.max(0, Math.min(stages.length - 1, idx + dir))
-    const patch = { stage: stages[nidx].id }
-    if (stages[nidx].id === 'released') patch.status = 'done'
-    setConversion(tr.id, patch)
+    setStage(tr, stages[nidx].id)
+  }
+  const drop = (stageId) => {
+    const tr = trainers.find((x) => x.id === dragId)
+    if (tr) setStage(tr, stageId)
+    setDragId(null)
+    setOverStage(null)
   }
 
   return (
@@ -47,67 +59,74 @@ export default function Conversion() {
           <option value="">{t('filterOre')}: {t('all')}</option>
           {['A', 'B', 'C'].map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
-        <span className="board-hint push-right">{t('boardHint')}</span>
+        <button className="btn btn-ghost push-right" onClick={() => setManageStages(true)}>
+          ⚙ {t('manageStages')}
+        </button>
       </div>
+      <p className="board-hint">{t('boardHint')}</p>
 
       <div className="board">
         {stages.map((s, si) => {
-          const cards = visible.filter((x) => (x.conv?.stage || 'nominated') === s.id)
+          const cards = visible.filter((x) => {
+            const stg = x.conv?.stage || 'nominated'
+            return stg === s.id || (si === 0 && !stageIds.has(stg))
+          })
           return (
-            <div className="board-col" key={s.id}>
+            <div
+              className={'board-col' + (overStage === s.id ? ' drop-over' : '')}
+              key={s.id}
+              onDragOver={(e) => {
+                e.preventDefault()
+                if (overStage !== s.id) setOverStage(s.id)
+              }}
+              onDrop={() => drop(s.id)}
+            >
               <div className="board-col-head" style={{ borderTopColor: s.color }}>
-                <span className="board-col-title">{lang === 'de' ? s.de : s.en}</span>
+                <span className="board-col-title">{stageLabel(s)}</span>
                 <span className="board-col-count">{cards.length}</span>
               </div>
               <div className="board-col-body">
                 {cards.map((x) => {
                   const st = CONV_STATUS[x.conv?.status] || CONV_STATUS.on_track
                   return (
-                    <div className="conv-card" key={x.id}>
+                    <div
+                      className={'conv-card' + (dragId === x.id ? ' dragging' : '')}
+                      key={x.id}
+                      draggable
+                      onDragStart={() => setDragId(x.id)}
+                      onDragEnd={() => { setDragId(null); setOverStage(null) }}
+                    >
                       <div className="conv-card-top">
                         <span className="conv-status-dot" style={{ background: st.color }} title={lang === 'de' ? st.de : st.en} />
-                        <button className="conv-name" onClick={() => setDetail({ ...x })}>
-                          {x.name}
-                        </button>
+                        <button className="conv-name" onClick={() => setDetail({ ...x })}>{x.name}</button>
                       </div>
                       <div className="conv-meta">
                         <span className="qual-tag sm">{x.qual}</span>
                         <span className="chip-sm">{x.base}</span>
                         <span className={'ore-tag ore-' + (x.ore || 'none')}>{x.ore || '–'}</span>
-                        <span
-                          className="staff-tag sm"
-                          style={{ background: STAFF_TYPE[x.staffType || 'internal'].color }}
-                        >
+                        <span className="staff-tag sm" style={{ background: STAFF_TYPE[x.staffType || 'internal'].color }}>
                           {t('staff_' + (x.staffType || 'internal'))}
                         </span>
                       </div>
                       {(() => {
-                        const chips = ASSIGNMENT_STEPS.map((s) => ({ s, label: assignTarget(providers, x.assignments?.[s.id]) })).filter((c) => c.label)
+                        const chips = ASSIGNMENT_STEPS
+                          .map((stp) => ({ stp, label: assignTarget(providers, x.assignments?.[stp.id]) }))
+                          .filter((c) => c.label)
                         return chips.length ? (
                           <div className="conv-assign">
-                            {chips.map(({ s, label }) => (
-                              <span key={s.id} className="assign-chip" title={(lang === 'de' ? s.de : s.en) + ': ' + label}>
-                                <b>{s.id === 'lifus' ? 'LIFUS' : s.id.toUpperCase()}</b> {label}
+                            {chips.map(({ stp, label }) => (
+                              <span key={stp.id} className="assign-chip" title={(lang === 'de' ? stp.de : stp.en) + ': ' + label}>
+                                <b>{stp.id === 'lifus' ? 'LIFUS' : stp.id.toUpperCase()}</b> {label}
                               </span>
                             ))}
                           </div>
                         ) : null
                       })()}
-                      {x.conv?.target && (
-                        <div className="conv-target">🎯 {formatDate(x.conv.target, lang)}</div>
-                      )}
+                      {x.conv?.target && <div className="conv-target">🎯 {formatDate(x.conv.target, lang)}</div>}
                       {x.conv?.note && <div className="conv-note">{x.conv.note}</div>}
                       <div className="conv-actions">
-                        <button className="mini-btn" disabled={si === 0} onClick={() => move(x, -1)}>
-                          ‹
-                        </button>
-                        <button
-                          className="mini-btn"
-                          disabled={si === stages.length - 1}
-                          onClick={() => move(x, +1)}
-                        >
-                          ›
-                        </button>
+                        <button className="mini-btn" disabled={si === 0} onClick={() => move(x, -1)}>‹</button>
+                        <button className="mini-btn" disabled={si === stages.length - 1} onClick={() => move(x, +1)}>›</button>
                       </div>
                     </div>
                   )
@@ -124,11 +143,16 @@ export default function Conversion() {
           trainer={detail}
           stages={stages}
           onClose={() => setDetail(null)}
-          onSave={(patch) => {
-            setConversion(detail.id, patch)
-            setDetail(null)
-          }}
+          onSave={(patch) => { setConversion(detail.id, patch); setDetail(null) }}
         />
+      )}
+
+      {manageStages && (
+        <Modal title={t('manageStages')} onClose={() => setManageStages(false)}
+          footer={<div className="foot-row"><p className="muted small">{t('dragHint')}</p>
+            <div className="push-right"><button className="btn btn-primary" onClick={() => setManageStages(false)}>{t('close')}</button></div></div>}>
+          <CategoryManager items={stages} onChange={setStages} />
+        </Modal>
       )}
     </div>
   )
@@ -154,7 +178,7 @@ function ConvDetail({ trainer, stages, onClose, onSave }) {
       <div className="form-grid">
         <Field label={t('stage')}>
           <select className="input" value={c.stage} onChange={(e) => set('stage', e.target.value)}>
-            {stages.map((s) => <option key={s.id} value={s.id}>{lang === 'de' ? s.de : s.en}</option>)}
+            {stages.map((s) => <option key={s.id} value={s.id}>{stageLabel(s)}</option>)}
           </select>
         </Field>
         <Field label={t('status')}>

@@ -1,13 +1,23 @@
 // External provider directory (Type Rating / TRI / TRE / SIM providers).
 // Ships EMPTY on purpose — the user fills it inside the app via "Add provider".
-export const PROVIDER_TYPES = ['TR', 'TRI', 'TRE', 'SIM', 'CCQ', 'Other']
+//
+// Provider offering-types and statuses are USER-EDITABLE (managed in the
+// Providers tab). These are just the shipped defaults.
+export const DEFAULT_PROVIDER_TYPES = [
+  { id: 'TR', label: 'TR' },
+  { id: 'TRI', label: 'TRI' },
+  { id: 'TRE', label: 'TRE' },
+  { id: 'SIM', label: 'SIM' },
+  { id: 'CCQ', label: 'CCQ' },
+  { id: 'Other', label: 'Other' }
+]
 
-export const PROVIDER_STATUS = {
-  approved:  { de: 'freigegeben', en: 'approved',  color: '#2FA36B' },
-  candidate: { de: 'Kandidat',    en: 'candidate', color: '#E8A33D' },
-  onhold:    { de: 'zurückgestellt', en: 'on hold', color: '#787878' },
-  rejected:  { de: 'abgelehnt',   en: 'rejected',  color: '#C8102E' }
-}
+export const DEFAULT_PROVIDER_STATUS = [
+  { id: 'approved', label: 'freigegeben', color: '#2FA36B' },
+  { id: 'candidate', label: 'Kandidat', color: '#E8A33D' },
+  { id: 'onhold', label: 'zurückgestellt', color: '#787878' },
+  { id: 'rejected', label: 'abgelehnt', color: '#C8102E' }
+]
 
 export const SEED_PROVIDERS = []
 

@@ -1,14 +1,19 @@
 // Milestone pipeline for the A320 -> 737 MAX instructor/examiner conversion.
-// These are DEFAULTS shipped with v1.0.0. They are stored in the working data set
-// and can be renamed/extended by the user in Settings (kept simple & editable).
+// Fully user-editable: rename / recolor / add / delete / reorder (Umschulung tab).
+// Each stage: { id, label, color }. `label` is language-neutral (user-defined).
 export const DEFAULT_STAGES = [
-  { id: 'nominated',   de: 'Nominierung',        en: 'Nominated',        color: '#871C54' },
-  { id: 'groundschool',de: 'TR-Theorie',         en: 'Groundschool',     color: '#AF1E65' },
-  { id: 'simulator',   de: 'SIM / Type Rating',  en: 'SIM / Type Rating',color: '#D41370' },
-  { id: 'baselifus',   de: 'Base / LIFUS',       en: 'Base / LIFUS',     color: '#00A6CF' },
-  { id: 'linecheck',   de: 'Linecheck',          en: 'Line Check',       color: '#6BCCE0' },
-  { id: 'released',    de: '737 freigegeben',    en: '737 Released',     color: '#2FA36B' }
+  { id: 'nominated',    label: 'Nominierung',       color: '#871C54' },
+  { id: 'groundschool', label: 'TR-Theorie',        color: '#AF1E65' },
+  { id: 'simulator',    label: 'SIM / Type Rating', color: '#D41370' },
+  { id: 'baselifus',    label: 'Base / LIFUS',      color: '#00A6CF' },
+  { id: 'linecheck',    label: 'Linecheck',         color: '#6BCCE0' },
+  { id: 'released',     label: '737 freigegeben',   color: '#2FA36B' }
 ]
+
+export function stageLabel(stage) {
+  if (!stage) return ''
+  return stage.label ?? stage.de ?? stage.id
+}
 
 export const CONV_STATUS = {
   on_track: { de: 'im Plan',    en: 'on track', color: '#2FA36B' },

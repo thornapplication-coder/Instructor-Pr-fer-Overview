@@ -11,6 +11,18 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Button**.
 
+## [1.2.0] – 2026-07-23
+
+- Neues, klareres App-Logo (eigene Wave-Bildmarke) statt der dunklen Kachel.
+- Berechtigungen in fester Reihenfolge **SEN · TRE · TRI · new TRI · LTC · SFI · TKI**,
+  frei editierbar (umbenennen, Farbe, hinzufügen/löschen, sortieren). „TRE/SEN" → „SEN".
+- Editierbare, farbcodierte Kategorien **überall**: Umschulungs-Phasen, Berechtigungen,
+  Provider-Angebotstypen und Provider-Status – je „Verwalten"-Button.
+- **Drag & Drop**: Trainer im Umschulungs-Board zwischen Phasen ziehen; Kategorien per
+  Ziehen/Pfeilen sortieren.
+- Alphabetische Sortierung (Namen nach Nachname) durchgängig.
+- **Statistik entschlackt**: doppelte Tabelle unter jedem Diagramm entfällt.
+
 ## [1.1.0] – 2026-07-23
 
 - Neuer Reiter **„Planung"**: Matrix zum Zuweisen von Provider/Ort pro Person für

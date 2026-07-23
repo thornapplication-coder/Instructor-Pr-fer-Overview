@@ -68,11 +68,8 @@ button { font-family: inherit; }
   padding-top: max(14px, env(safe-area-inset-top));
 }
 .brand { display: flex; align-items: center; gap: 14px; }
-.logo-pill {
-  background: #fff; border-radius: 10px; padding: 8px 12px;
-  display: flex; align-items: center; box-shadow: var(--shadow);
-}
-.logo-pill img { height: 26px; display: block; }
+.brandmark { display: flex; align-items: center; }
+.brandmark svg { display: block; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,.18); }
 .brand-text h1 { color: #fff; font-size: 19px; line-height: 1.15; letter-spacing: .2px; }
 .brand-text p { margin: 2px 0 0; color: rgba(255,255,255,.82); font-size: 12.5px; font-weight: 600; }
 
@@ -296,6 +293,31 @@ textarea.input { resize: vertical; }
 .ver-minor { background: var(--sky); }
 .ver-patch { background: var(--muted); }
 .changelog ul { margin: 0; padding-left: 18px; color: var(--text); font-size: 13.5px; display: flex; flex-direction: column; gap: 4px; }
+
+/* ---------- Card head with total ---------- */
+.card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
+.card-head .card-title { margin-bottom: 0; }
+.card-total { font-size: 12px; font-weight: 800; color: var(--muted); white-space: nowrap; }
+
+/* ---------- Category manager ---------- */
+.catman { display: flex; flex-direction: column; gap: 12px; }
+.catman-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.catman-row {
+  display: flex; align-items: center; gap: 8px; background: var(--panel);
+  border: 1px solid var(--hair); border-radius: var(--radius-sm); padding: 7px 9px;
+}
+.catman-row.dragging { opacity: .5; border-color: var(--burg); }
+.drag-handle { cursor: grab; color: var(--muted); font-size: 16px; user-select: none; line-height: 1; }
+.color-input { width: 34px; height: 30px; padding: 0; border: 1px solid var(--hair); border-radius: 6px; background: #fff; cursor: pointer; flex: none; }
+.catman-label { flex: 1; }
+.catman-actions { display: flex; gap: 4px; }
+.mini-btn.danger { color: var(--red); }
+.catman-empty { color: var(--muted); text-align: center; padding: 10px; }
+
+/* drop target highlight on board */
+.board-col.drop-over { outline: 2px dashed var(--burg); outline-offset: -2px; background: var(--sky-lightest); }
+.conv-card { cursor: grab; }
+.conv-card.dragging { opacity: .5; }
 
 /* ---------- Staff type + Planning ---------- */
 .staff-tag { display: inline-block; color: #fff; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 800; white-space: nowrap; }

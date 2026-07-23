@@ -15,18 +15,16 @@ import { conversionProgress } from '../data/pipeline.js'
 const ORE_COLORS = { A: '#AF1E65', B: '#00A6CF', C: '#6BCCE0', Rente: '#BDBABA' }
 
 export default function Overview() {
-  const { data, t, lang } = useStore()
-  const { trainers, stages } = data
+  const { data, t } = useStore()
+  const { trainers, stages, quals: qualDefs } = data
 
+  const qualColor = (key) => (qualDefs.find((q) => q.id === key) || {}).color
   const hc = headcount(trainers)
   const cs = conversionSummary(trainers)
   const bases = byBase(trainers)
-  const quals = byQual(trainers)
+  const quals = byQual(trainers, qualDefs.map((q) => q.id)).map((r) => ({ ...r, color: qualColor(r.key) }))
   const ore = byOre(trainers).map((r) => ({ ...r, color: ORE_COLORS[r.key] }))
-  const pipe = pipelineDistribution(trainers, stages).map((s) => ({
-    ...s,
-    label: lang === 'de' ? s.de : s.en
-  }))
+  const pipe = pipelineDistribution(trainers, stages).map((s) => ({ ...s, label: s.label }))
 
   // Overall progress = mean per-trainer pipeline progress (retiring excluded).
   const relevant = trainers.filter((tr) => tr.ore !== 'Rente')
@@ -72,7 +70,7 @@ export default function Overview() {
         </section>
         <section className="card">
           <h2 className="card-title">{t('chart_byQual')}</h2>
-          <HBars data={quals} colorFn={(_, i) => ['#AF1E65', '#871C54', '#00A6CF', '#6BCCE0', '#D41370'][i % 5]} />
+          <HBars data={quals} colorFn={(d) => d.color || '#787878'} />
         </section>
       </div>
     </div>

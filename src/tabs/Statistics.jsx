@@ -6,53 +6,33 @@ import { STAFF_TYPE } from '../data/pipeline.js'
 
 const ORE_COLORS = { A: '#AF1E65', B: '#00A6CF', C: '#6BCCE0', Rente: '#BDBABA' }
 
-function StatTable({ rows, total }) {
+function Card({ title, total, children }) {
   const { t } = useStore()
   return (
-    <table className="mini-table">
-      <thead>
-        <tr>
-          <th>{t('category')}</th>
-          <th className="num">{t('count')}</th>
-        </tr>
-      </thead>
-      <tbody>
-        {rows.map((r) => (
-          <tr key={r.key}>
-            <td>{r.label || r.key}</td>
-            <td className="num">{r.count}</td>
-          </tr>
-        ))}
-        <tr className="total-row">
-          <td>{t('total')}</td>
-          <td className="num">{total}</td>
-        </tr>
-      </tbody>
-    </table>
+    <section className="card">
+      <div className="card-head">
+        <h3 className="card-title">{title}</h3>
+        <span className="card-total">{t('total')}: {total}</span>
+      </div>
+      {children}
+    </section>
   )
 }
 
 export default function Statistics() {
-  const { data, t, lang } = useStore()
-  const { trainers } = data
+  const { data, t } = useStore()
+  const { trainers, quals: qualDefs } = data
   const total = trainers.length
+  const qualColor = (key) => (qualDefs.find((q) => q.id === key) || {}).color || '#787878'
 
-  const quals = byQual(trainers)
+  const quals = byQual(trainers, qualDefs.map((q) => q.id))
   const bases = byBase(trainers)
   const ore = byOre(trainers).map((r) => ({ ...r, color: ORE_COLORS[r.key] }))
   const auth = byAuthority(trainers)
   const pt = byPartTime(trainers)
   const fn = byFunction(trainers)
-  const fnRows = [
-    { key: t('withFunction'), count: fn.withFunction },
-    { key: t('withoutFunction'), count: fn.withoutFunction }
-  ]
   const staffInternal = trainers.filter((x) => (x.staffType || 'internal') === 'internal').length
   const staffExternal = trainers.length - staffInternal
-  const staffRows = [
-    { key: t('staff_internal'), count: staffInternal },
-    { key: t('staff_external'), count: staffExternal }
-  ]
 
   return (
     <div className="tab-pane">
@@ -60,59 +40,46 @@ export default function Statistics() {
         <h2 className="pane-title">{t('statistics_title')}</h2>
         <span className="stat-hint push-right">{t('stat_hint')}</span>
       </div>
+      <p className="planning-note">{t('categoriesEditableHint')}</p>
 
       <div className="grid-3">
-        <section className="card">
-          <h3 className="card-title">{t('stat_qual')}</h3>
-          <HBars data={quals} colorFn={(_, i) => ['#AF1E65', '#871C54', '#00A6CF', '#6BCCE0', '#D41370'][i % 5]} />
-          <StatTable rows={quals} total={total} />
-        </section>
+        <Card title={t('stat_qual')} total={total}>
+          <HBars data={quals} colorFn={(d) => qualColor(d.key)} />
+        </Card>
 
-        <section className="card">
-          <h3 className="card-title">{t('stat_base')}</h3>
+        <Card title={t('stat_base')} total={total}>
           <HBars data={bases} />
-          <StatTable rows={bases} total={total} />
-        </section>
+        </Card>
 
-        <section className="card">
-          <h3 className="card-title">{t('stat_ore')}</h3>
+        <Card title={t('stat_ore')} total={total}>
           <Donut data={ore} centerBottom="ORE" />
-          <StatTable rows={ore} total={total} />
-        </section>
+        </Card>
 
-        <section className="card">
-          <h3 className="card-title">{t('stat_authority')}</h3>
+        <Card title={t('stat_authority')} total={total}>
           <HBars data={auth} />
-          <StatTable rows={auth} total={total} />
-        </section>
+        </Card>
 
-        <section className="card">
-          <h3 className="card-title">{t('stat_partTime')}</h3>
+        <Card title={t('stat_partTime')} total={total}>
           <HBars data={pt} />
-          <StatTable rows={pt} total={total} />
-        </section>
+        </Card>
 
-        <section className="card">
-          <h3 className="card-title">{t('stat_function')}</h3>
+        <Card title={t('stat_function')} total={total}>
           <Donut
             data={[
               { key: t('withFunction'), count: fn.withFunction, color: '#AF1E65' },
               { key: t('withoutFunction'), count: fn.withoutFunction, color: '#6BCCE0' }
             ]}
           />
-          <StatTable rows={fnRows} total={total} />
-        </section>
+        </Card>
 
-        <section className="card">
-          <h3 className="card-title">{t('filterStaff')}</h3>
+        <Card title={t('filterStaff')} total={total}>
           <Donut
             data={[
               { key: t('staff_internal'), count: staffInternal, color: STAFF_TYPE.internal.color },
               { key: t('staff_external'), count: staffExternal, color: STAFF_TYPE.external.color }
             ]}
           />
-          <StatTable rows={staffRows} total={total} />
-        </section>
+        </Card>
       </div>
     </div>
   )

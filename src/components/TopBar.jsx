@@ -1,7 +1,24 @@
 import React from 'react'
-import logo from '../assets/ew-logo.png'
 import { useStore } from '../lib/store.jsx'
 import { APP_VERSION } from '../version.js'
+
+// Custom app brand mark (inline SVG) — an ascending "wave" motif in the
+// Eurowings palette on a clean white tile. Cohesive with the PWA icon.
+function BrandMark() {
+  return (
+    <div className="brandmark" aria-label="EWL 737">
+      <svg viewBox="0 0 100 100" width="44" height="44" role="img">
+        <rect x="3" y="3" width="94" height="94" rx="24" fill="#ffffff" />
+        <path d="M25 65 L41 41" stroke="#6BCCE0" strokeWidth="9" strokeLinecap="round" />
+        <path d="M38 69 L59 37" stroke="#00A6CF" strokeWidth="9" strokeLinecap="round" />
+        <path d="M52 73 L81 33" stroke="#AF1E65" strokeWidth="9" strokeLinecap="round" />
+        <text x="50" y="90" textAnchor="middle" fontSize="15" fontWeight="800" fill="#871C54">
+          737
+        </text>
+      </svg>
+    </div>
+  )
+}
 
 export default function TopBar({ tabs, active, onSelect }) {
   const { t, lang, setLang, data } = useStore()
@@ -12,9 +29,7 @@ export default function TopBar({ tabs, active, onSelect }) {
     <header className="topbar">
       <div className="topbar-main">
         <div className="brand">
-          <div className="logo-pill">
-            <img src={logo} alt="Eurowings" />
-          </div>
+          <BrandMark />
           <div className="brand-text">
             <h1>{t('appTitle')}</h1>
             <p>{t('appSubtitle')}</p>

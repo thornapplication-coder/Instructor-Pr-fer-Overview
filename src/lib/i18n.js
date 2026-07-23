@@ -184,7 +184,20 @@ const DICT = {
     de: 'Desktop (Chrome/Edge): Symbol in der Adressleiste. iPhone/iPad (Safari): Teilen → „Zum Home-Bildschirm".',
     en: 'Desktop (Chrome/Edge): icon in the address bar. iPhone/iPad (Safari): Share → “Add to Home Screen”.'
   },
-  lastSaved: { de: 'Zuletzt gespeichert', en: 'Last saved' }
+  lastSaved: { de: 'Zuletzt gespeichert', en: 'Last saved' },
+
+  // ---- category management (editable taxonomies)
+  addCategory: { de: 'Eintrag hinzufügen', en: 'Add entry' },
+  manage: { de: 'Verwalten', en: 'Manage' },
+  manageStages: { de: 'Phasen bearbeiten', en: 'Edit stages' },
+  manageQuals: { de: 'Berechtigungen bearbeiten', en: 'Edit qualifications' },
+  manageProviderTypes: { de: 'Angebots-Typen bearbeiten', en: 'Edit offering types' },
+  manageProviderStatus: { de: 'Status bearbeiten', en: 'Edit statuses' },
+  dragHint: { de: 'Ziehen (⠿) oder Pfeile zum Sortieren · Farbe links', en: 'Drag (⠿) or arrows to reorder · colour on the left' },
+  categoriesEditableHint: {
+    de: 'Balken oben, Werte im Diagramm – die Tabelle darunter entfällt. Berechtigungen/Phasen sind editierbar (umbenennen, Farbe).',
+    en: 'Bars above with values in the chart – the duplicate table is gone. Qualifications/stages are editable (rename, colour).'
+  }
 }
 
 export function translate(lang, key) {
