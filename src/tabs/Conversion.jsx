@@ -1,12 +1,19 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
-import { CONV_STATUS, stageIndex } from '../data/pipeline.js'
+import { CONV_STATUS, stageIndex, ASSIGNMENT_STEPS, STAFF_TYPE } from '../data/pipeline.js'
 import { formatDate } from '../lib/format.js'
+
+function assignTarget(providers, a) {
+  if (!a) return null
+  const p = providers.find((x) => x.id === a.providerId)
+  if (p && p.name) return p.name
+  return a.location || null
+}
 
 export default function Conversion() {
   const { data, t, lang, setConversion } = useStore()
-  const { trainers, stages } = data
+  const { trainers, stages, providers } = data
   const [fBase, setFBase] = useState('')
   const [fOre, setFOre] = useState('')
   const [detail, setDetail] = useState(null)
@@ -67,7 +74,25 @@ export default function Conversion() {
                         <span className="qual-tag sm">{x.qual}</span>
                         <span className="chip-sm">{x.base}</span>
                         <span className={'ore-tag ore-' + (x.ore || 'none')}>{x.ore || '–'}</span>
+                        <span
+                          className="staff-tag sm"
+                          style={{ background: STAFF_TYPE[x.staffType || 'internal'].color }}
+                        >
+                          {t('staff_' + (x.staffType || 'internal'))}
+                        </span>
                       </div>
+                      {(() => {
+                        const chips = ASSIGNMENT_STEPS.map((s) => ({ s, label: assignTarget(providers, x.assignments?.[s.id]) })).filter((c) => c.label)
+                        return chips.length ? (
+                          <div className="conv-assign">
+                            {chips.map(({ s, label }) => (
+                              <span key={s.id} className="assign-chip" title={(lang === 'de' ? s.de : s.en) + ': ' + label}>
+                                <b>{s.id === 'lifus' ? 'LIFUS' : s.id.toUpperCase()}</b> {label}
+                              </span>
+                            ))}
+                          </div>
+                        ) : null
+                      })()}
                       {x.conv?.target && (
                         <div className="conv-target">🎯 {formatDate(x.conv.target, lang)}</div>
                       )}

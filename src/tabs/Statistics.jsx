@@ -2,6 +2,7 @@ import React from 'react'
 import { useStore } from '../lib/store.jsx'
 import { Donut, HBars } from '../components/charts.jsx'
 import { byQual, byBase, byOre, byAuthority, byPartTime, byFunction } from '../lib/stats.js'
+import { STAFF_TYPE } from '../data/pipeline.js'
 
 const ORE_COLORS = { A: '#AF1E65', B: '#00A6CF', C: '#6BCCE0', Rente: '#BDBABA' }
 
@@ -45,6 +46,12 @@ export default function Statistics() {
   const fnRows = [
     { key: t('withFunction'), count: fn.withFunction },
     { key: t('withoutFunction'), count: fn.withoutFunction }
+  ]
+  const staffInternal = trainers.filter((x) => (x.staffType || 'internal') === 'internal').length
+  const staffExternal = trainers.length - staffInternal
+  const staffRows = [
+    { key: t('staff_internal'), count: staffInternal },
+    { key: t('staff_external'), count: staffExternal }
   ]
 
   return (
@@ -94,6 +101,17 @@ export default function Statistics() {
             ]}
           />
           <StatTable rows={fnRows} total={total} />
+        </section>
+
+        <section className="card">
+          <h3 className="card-title">{t('filterStaff')}</h3>
+          <Donut
+            data={[
+              { key: t('staff_internal'), count: staffInternal, color: STAFF_TYPE.internal.color },
+              { key: t('staff_external'), count: staffExternal, color: STAFF_TYPE.external.color }
+            ]}
+          />
+          <StatTable rows={staffRows} total={total} />
         </section>
       </div>
     </div>

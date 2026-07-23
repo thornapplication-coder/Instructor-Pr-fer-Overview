@@ -1,7 +1,7 @@
 {
   "name": "ewl-737-trainer-monitoring",
   "private": true,
-  "version": "1.0.3",
+  "version": "1.1.0",
   "type": "module",
   "description": "EWL 737 Trainer & Examiner Monitoring – PWA for steering the A320 → 737 MAX instructor/examiner phase-in (Eurowings style).",
   "scripts": {

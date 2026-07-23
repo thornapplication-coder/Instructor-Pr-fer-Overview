@@ -297,6 +297,38 @@ textarea.input { resize: vertical; }
 .ver-patch { background: var(--muted); }
 .changelog ul { margin: 0; padding-left: 18px; color: var(--text); font-size: 13.5px; display: flex; flex-direction: column; gap: 4px; }
 
+/* ---------- Staff type + Planning ---------- */
+.staff-tag { display: inline-block; color: #fff; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 800; white-space: nowrap; }
+.staff-tag.sm { font-size: 10px; padding: 1px 6px; }
+.nowrap { white-space: nowrap; }
+.link-btn { border: 0; background: transparent; padding: 0; font: inherit; font-weight: 800; color: var(--ink); cursor: pointer; text-align: left; }
+.link-btn:hover { color: var(--burg); text-decoration: underline; }
+.planning-note { margin: -4px 0 4px; font-size: 12.5px; color: var(--muted); font-style: italic; }
+
+.planning-table th { vertical-align: bottom; }
+.cell-assign {
+  border: 1px dashed var(--hair); background: #fff; border-radius: 7px; padding: 5px 8px;
+  display: flex; align-items: center; gap: 6px; cursor: pointer; width: 100%;
+  font-size: 12.5px; color: var(--text); min-height: 32px; text-align: left;
+}
+.cell-assign:hover { border-color: var(--burg); background: var(--sky-lightest); }
+.assign-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
+.assign-label { font-weight: 700; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; max-width: 140px; }
+.assign-date { margin-left: auto; color: var(--muted); font-size: 11px; font-variant-numeric: tabular-nums; }
+.assign-empty { color: var(--muted); font-weight: 700; border: 0; }
+
+/* assignment chips on board cards */
+.conv-assign { display: flex; flex-direction: column; gap: 3px; margin-top: 7px; }
+.assign-chip { font-size: 11px; color: var(--text); background: var(--panel2); border-radius: 5px; padding: 2px 6px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.assign-chip b { color: var(--burg-dark); margin-right: 4px; }
+
+/* per-person assignment editor (modal) */
+.assign-editor { display: flex; flex-direction: column; gap: 14px; }
+.assign-block { background: var(--panel); border-radius: var(--radius-sm); padding: 12px 14px; }
+.assign-block-title { font-weight: 800; color: var(--burg-dark); font-size: 13.5px; margin-bottom: 10px; }
+.assign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.assign-grid .field.span2 { grid-column: 1 / -1; }
+
 /* ---------- Responsive ---------- */
 @media (max-width: 1024px) {
   .kpi-grid { grid-template-columns: repeat(3, 1fr); }
@@ -310,6 +342,7 @@ textarea.input { resize: vertical; }
   .brand-text h1 { font-size: 16px; }
   .brand-text p { display: none; }
   .form-grid { grid-template-columns: 1fr; }
+  .assign-grid { grid-template-columns: 1fr; }
   .topbar-right { gap: 10px; }
   .asof { display: none; }
   .search { max-width: 100%; flex: 1; }

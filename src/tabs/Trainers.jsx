@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import { formatPartTime, formatDate, classNames } from '../lib/format.js'
-import { CONV_STATUS } from '../data/pipeline.js'
+import { CONV_STATUS, STAFF_TYPE } from '../data/pipeline.js'
 
 const QUALS = ['TRE', 'TRE/SEN', 'LTC', 'TRI', 'new TRI']
 const ORES = ['A', 'B', 'C', 'Rente', '']
@@ -40,6 +40,7 @@ export default function Trainers() {
   const [fBase, setFBase] = useState('')
   const [fQual, setFQual] = useState('')
   const [fOre, setFOre] = useState('')
+  const [fStaff, setFStaff] = useState('')
   const [editing, setEditing] = useState(null) // trainer object or null
 
   const bases = useMemo(() => [...new Set(trainers.map((x) => x.base))].sort(), [trainers])
@@ -54,6 +55,7 @@ export default function Trainers() {
       .filter((x) => (fBase ? x.base === fBase : true))
       .filter((x) => (fQual ? x.qual === fQual : true))
       .filter((x) => (fOre ? x.ore === fOre : true))
+      .filter((x) => (fStaff ? (x.staffType || 'internal') === fStaff : true))
       .filter((x) =>
         needle
           ? [x.name, x.tlc, x.remark, x.base, x.authority]
@@ -63,7 +65,7 @@ export default function Trainers() {
           : true
       )
       .sort((a, b) => a.name.localeCompare(b.name))
-  }, [trainers, q, fBase, fQual, fOre])
+  }, [trainers, q, fBase, fQual, fOre, fStaff])
 
   const startAdd = () =>
     setEditing({
@@ -77,6 +79,7 @@ export default function Trainers() {
       simSessions: 0,
       lifusLegs: 0,
       ore: 'C',
+      staffType: 'internal',
       ltcDate: '',
       triDate: '',
       treDate: '',
@@ -113,6 +116,11 @@ export default function Trainers() {
             <option key={o} value={o}>{o}</option>
           ))}
         </select>
+        <select className="input" value={fStaff} onChange={(e) => setFStaff(e.target.value)}>
+          <option value="">{t('filterStaff')}: {t('all')}</option>
+          <option value="internal">{t('staff_internal')}</option>
+          <option value="external">{t('staff_external')}</option>
+        </select>
         <span className="count-pill">
           {rows.length} / {trainers.length} {t('showing')}
         </span>
@@ -134,6 +142,7 @@ export default function Trainers() {
               <th className="num">SIM</th>
               <th className="num">LIFUS</th>
               <th>{t('f_ore')}</th>
+              <th>{t('f_staffType')}</th>
               <th>{t('f_authority')}</th>
               <th>{t('f_conversion')}</th>
             </tr>
@@ -154,13 +163,18 @@ export default function Trainers() {
                     {x.ore || '–'}
                   </span>
                 </td>
+                <td>
+                  <span className="staff-tag" style={{ background: (STAFF_TYPE[x.staffType || 'internal']).color }}>
+                    {t('staff_' + (x.staffType || 'internal'))}
+                  </span>
+                </td>
                 <td className="muted small">{x.authority || '–'}</td>
                 <td><StageBadge trainer={x} stages={stages} lang={lang} /></td>
               </tr>
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={11} className="empty-row">{t('noTrainers')}</td>
+                <td colSpan={12} className="empty-row">{t('noTrainers')}</td>
               </tr>
             )}
           </tbody>
@@ -255,6 +269,12 @@ function TrainerForm({ trainer, stages, authorities, bases, onClose, onSave, onD
         <Field label={t('f_ore')}>
           <select className="input" value={f.ore} onChange={(e) => set('ore', e.target.value)}>
             {ORES.map((o) => <option key={o} value={o}>{o || '–'}</option>)}
+          </select>
+        </Field>
+        <Field label={t('f_staffType')}>
+          <select className="input" value={f.staffType || 'internal'} onChange={(e) => set('staffType', e.target.value)}>
+            <option value="internal">{t('staff_internal')}</option>
+            <option value="external">{t('staff_external')}</option>
           </select>
         </Field>
         <Field label={t('f_sim')}>

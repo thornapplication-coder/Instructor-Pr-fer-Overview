@@ -32,6 +32,7 @@ const DICT = {
   tab_conversion: { de: 'Umschulung', en: 'Conversion' },
   tab_statistics: { de: 'Statistik', en: 'Statistics' },
   tab_providers: { de: 'Provider', en: 'Providers' },
+  tab_planning: { de: 'Planung', en: 'Planning' },
   tab_settings: { de: 'Einstellungen', en: 'Settings' },
 
   // ---- overview / KPIs
@@ -129,6 +130,30 @@ const DICT = {
   p_capacity: { de: 'Kapazität / Slots', en: 'Capacity / slots' },
   p_status: { de: 'Status', en: 'Status' },
   p_notes: { de: 'Notizen', en: 'Notes' },
+
+  // ---- staff type & planning / assignments
+  f_staffType: { de: 'Zugehörigkeit', en: 'Affiliation' },
+  staff_internal: { de: 'intern', en: 'internal' },
+  staff_external: { de: 'extern', en: 'external' },
+  filterStaff: { de: 'Intern/Extern', en: 'Internal/External' },
+  planning_title: { de: 'Planung – wer macht was, wo?', en: 'Planning – who does what, where?' },
+  planning_hint: {
+    de: 'Weise pro Person Provider/Ort für Type Rating, TRI-Kurs, LIFUS und Examiner-Prüfung zu. Zelle antippen zum Bearbeiten.',
+    en: 'Assign a provider/location per person for Type Rating, TRI course, LIFUS and examiner check. Tap a cell to edit.'
+  },
+  planning_noProviders: {
+    de: 'Tipp: Lege im Reiter „Provider" Anbieter an – dann kannst du sie hier auswählen. Ein freier Ort geht auch ohne.',
+    en: 'Tip: add providers in the “Providers” tab to pick them here. A free-text location also works without.'
+  },
+  assign: { de: 'zuweisen', en: 'assign' },
+  provider: { de: 'Provider', en: 'Provider' },
+  location: { de: 'Ort (frei)', en: 'Location (free text)' },
+  noProvider: { de: '– kein Provider –', en: '– no provider –' },
+  step_tr: { de: 'Type Rating', en: 'Type Rating' },
+  step_tri: { de: 'TRI-Kurs', en: 'TRI Course' },
+  step_lifus: { de: 'LIFUS', en: 'LIFUS' },
+  step_tre: { de: 'Examiner-Prüfung', en: 'Examiner Check' },
+  assignmentsFor: { de: 'Zuweisungen für', en: 'Assignments for' },
 
   // ---- settings
   settings_title: { de: 'Einstellungen', en: 'Settings' },

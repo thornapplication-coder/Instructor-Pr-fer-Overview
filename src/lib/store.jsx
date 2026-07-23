@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { SEED_TRAINERS } from '../data/seed.js'
 import { SEED_PROVIDERS } from '../data/providers.js'
-import { DEFAULT_STAGES } from '../data/pipeline.js'
+import { DEFAULT_STAGES, mergeAssignments } from '../data/pipeline.js'
 import { translate } from './i18n.js'
 
 const STORAGE_KEY = 'ewl737:data:v1'
@@ -17,9 +17,11 @@ function newId(prefix) {
   return prefix + '-' + Math.random().toString(36).slice(2, 9)
 }
 
-// Ensure every trainer has a conversion object (forward-compatible migration).
+// Ensure every trainer has conversion, staff type and assignment objects
+// (forward-compatible migration for older / imported payloads).
 function withConvDefaults(trainer) {
   return {
+    staffType: 'internal',
     ...trainer,
     conv: {
       stage: 'nominated',
@@ -27,7 +29,8 @@ function withConvDefaults(trainer) {
       target: '',
       note: '',
       ...(trainer.conv || {})
-    }
+    },
+    assignments: mergeAssignments(trainer.assignments)
   }
 }
 
@@ -123,6 +126,22 @@ export function StoreProvider({ children }) {
           ...d,
           trainers: d.trainers.map((x) =>
             x.id === id ? { ...x, conv: { ...x.conv, ...convPatch } } : x
+          )
+        })),
+
+      setAssignment: (id, stepId, changes) =>
+        patch((d) => ({
+          ...d,
+          trainers: d.trainers.map((x) =>
+            x.id === id
+              ? {
+                  ...x,
+                  assignments: {
+                    ...x.assignments,
+                    [stepId]: { ...(x.assignments?.[stepId] || {}), ...changes }
+                  }
+                }
+              : x
           )
         })),
 

@@ -11,6 +11,14 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Button**.
 
+## [1.1.0] – 2026-07-23
+
+- Neuer Reiter **„Planung"**: Matrix zum Zuweisen von Provider/Ort pro Person für
+  Type Rating, TRI-Kurs, LIFUS und Examiner-Prüfung (TRE) – inkl. Status & Termin.
+- Zuweisungen greifen auf den Provider-Reiter zu (gefiltert nach Angebot TR/TRI/TRE).
+- Neue Kennzeichnung **intern/extern** pro Person (Spalte, Filter, Formular, Statistik).
+- Umschulungs-Board zeigt zugewiesene Provider und intern/extern auf den Karten.
+
 ## [1.0.3] – 2026-07-23
 
 - Deploy-Workflow bereinigt: automatisches Pages-Aktivieren entfernt (der

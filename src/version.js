@@ -4,11 +4,30 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.0.3'
+export const APP_VERSION = '1.1.0'
 export const APP_BUILD_DATE = '2026-07-23'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.1.0',
+    date: '2026-07-23',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neuer Reiter „Planung": Matrix, in der du pro Person Provider/Ort für Type Rating, TRI-Kurs, LIFUS und Examiner-Prüfung (TRE) zuweist – inkl. Status und Termin.',
+        'Zuweisungen greifen auf den Provider-Reiter zu (gefiltert nach Angebot TR/TRI/TRE).',
+        'Neue Kennzeichnung intern/extern pro Person (Spalte, Filter, Formular, Statistik).',
+        'Umschulungs-Board zeigt jetzt zusätzlich die zugewiesenen Provider und intern/extern auf den Karten.'
+      ],
+      en: [
+        'New “Planning” tab: a matrix to assign provider/location per person for Type Rating, TRI course, LIFUS and examiner check (TRE) – incl. status and date.',
+        'Assignments pull from the Providers tab (filtered by offering TR/TRI/TRE).',
+        'New internal/external classification per person (column, filter, form, statistics).',
+        'Conversion board cards now also show the assigned providers and internal/external.'
+      ]
+    }
+  },
   {
     version: '1.0.3',
     date: '2026-07-23',

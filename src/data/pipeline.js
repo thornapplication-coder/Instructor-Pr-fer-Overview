@@ -17,6 +17,44 @@ export const CONV_STATUS = {
   done:     { de: 'erledigt',   en: 'done',     color: '#787878' }
 }
 
+// Steps that are performed at an external provider / a location. Each trainer
+// can be assigned a provider + location + date + status per step. This drives
+// the "Planung" monitoring (deciding where each person does each step).
+export const ASSIGNMENT_STEPS = [
+  { id: 'tr',    de: 'Type Rating',      en: 'Type Rating',    providerType: 'TR',  color: '#D41370' },
+  { id: 'tri',   de: 'TRI-Kurs',         en: 'TRI Course',     providerType: 'TRI', color: '#AF1E65' },
+  { id: 'lifus', de: 'LIFUS',            en: 'LIFUS',          providerType: null,  color: '#00A6CF' },
+  { id: 'tre',   de: 'Examiner-Prüfung', en: 'Examiner Check', providerType: 'TRE', color: '#871C54' }
+]
+
+export const ASSIGNMENT_STATUS = {
+  open:    { de: 'offen',      en: 'open',       color: '#B0B4B8' },
+  planned: { de: 'geplant',    en: 'planned',    color: '#E8A33D' },
+  booked:  { de: 'gebucht',    en: 'booked',     color: '#00A6CF' },
+  done:    { de: 'absolviert', en: 'completed',  color: '#2FA36B' }
+}
+
+export const STAFF_TYPE = {
+  internal: { de: 'intern', en: 'internal', color: '#00A6CF' },
+  external: { de: 'extern', en: 'external', color: '#E8A33D' }
+}
+
+export function emptyAssignments() {
+  const a = {}
+  for (const s of ASSIGNMENT_STEPS) {
+    a[s.id] = { providerId: '', location: '', date: '', status: 'open', note: '' }
+  }
+  return a
+}
+
+export function mergeAssignments(a) {
+  const base = emptyAssignments()
+  if (a && typeof a === 'object') {
+    for (const k of Object.keys(base)) base[k] = { ...base[k], ...(a[k] || {}) }
+  }
+  return base
+}
+
 export function stageIndex(stages, id) {
   const i = stages.findIndex((s) => s.id === id)
   return i < 0 ? 0 : i
