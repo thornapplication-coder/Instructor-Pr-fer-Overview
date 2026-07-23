@@ -43,21 +43,21 @@ button { font-family: inherit; }
 
 /* ---------- Update banner ---------- */
 .update-banner {
-  display: flex; align-items: center; gap: 12px;
+  display: flex; align-items: center; justify-content: center; flex-wrap: wrap; gap: 10px 12px;
   background: var(--burg-dark); color: #fff;
   padding: 12px 18px; font-size: 14px;
   position: fixed; left: 50%; transform: translateX(-50%);
-  bottom: max(18px, env(safe-area-inset-bottom)); z-index: 200;
-  width: auto; max-width: calc(100% - 32px);
+  bottom: max(18px, env(safe-area-inset-bottom));
+  z-index: 90; /* below .modal-backdrop (100): open dialogs must cover the toast */
+  max-width: calc(100% - 32px);
   border-radius: 12px; box-shadow: var(--shadow-lg);
   animation: toastUp .3s ease;
 }
 @keyframes toastUp { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
 .update-banner-soft { background: var(--sky); }
-.update-banner .update-text { flex: 0 1 auto; }
 .update-dot { width: 9px; height: 9px; border-radius: 50%; background: #fff; animation: pulse 1.4s infinite; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
-.update-text { flex: 1; font-weight: 600; }
+.update-text { flex: 0 1 auto; font-weight: 600; }
 
 /* ---------- Top bar ---------- */
 .topbar {

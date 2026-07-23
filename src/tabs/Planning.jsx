@@ -7,12 +7,23 @@ import { formatDate } from '../lib/format.js'
 import { ASSIGNMENT_STATUS, STAFF_TYPE } from '../data/pipeline.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 
-// Match providers to a planning step by their offered courses (keyword).
-const STEP_COURSE_KW = { tr: 'type rating', tri: 'tri', tre: 'tre', lifus: 'lifus' }
-function providersForStep(providers, step) {
-  const kw = STEP_COURSE_KW[step.id]
-  if (!kw) return providers
-  const matched = providers.filter((p) => (p.courses || []).some((c) => String(c).toLowerCase().includes(kw)))
+// Match providers to a planning step by the LABELS of their offered courses
+// (course entries store ids; custom courses have random ids, so ids must be
+// resolved against the course list first). "SIM only" counts as type rating.
+const STEP_COURSE_KW = { tr: ['type rating', 'sim'], tri: ['tri'], tre: ['tre'], lifus: ['lifus'] }
+function providersForStep(providers, step, courseDefs) {
+  const kws = STEP_COURSE_KW[step.id]
+  if (!kws) return providers
+  const labelOf = (id) => {
+    const c = (courseDefs || []).find((x) => x.id === id)
+    return String(c ? c.label : id).toLowerCase()
+  }
+  const matched = providers.filter((p) =>
+    (p.courses || []).some((cid) => {
+      const label = labelOf(cid)
+      return kws.some((kw) => label.includes(kw))
+    })
+  )
   return matched.length ? matched : providers
 }
 
@@ -124,7 +135,7 @@ export default function Planning() {
               return (
                 <tr key={x.id}>
                   <td className="strong nowrap">
-                    <button className="link-btn" onClick={() => setEditing({ ...x })}>{x.name}</button>
+                    <button className="link-btn" onClick={() => setEditing(x.id)}>{x.name}</button>
                     <div className="muted small">{x.base} · {x.qual}{x.aircraft ? ' · ' + x.aircraft : ''}</div>
                   </td>
                   <td>
@@ -138,7 +149,7 @@ export default function Planning() {
                     const st = ASSIGNMENT_STATUS[a?.status] || ASSIGNMENT_STATUS.open
                     return (
                       <td key={s.id}>
-                        <button className="cell-assign" onClick={() => setEditing({ ...x })}>
+                        <button className="cell-assign" onClick={() => setEditing(x.id)}>
                           {label ? (
                             <>
                               <span className="assign-dot" style={{ background: st.color }} />
@@ -162,14 +173,20 @@ export default function Planning() {
         </table>
       </div>
 
-      {editing && (
-        <PlanningModal
-          trainer={trainers.find((tr) => tr.id === editing.id) || editing}
-          providers={providers}
-          steps={assignmentSteps}
-          onClose={() => setEditing(null)}
-        />
-      )}
+      {editing &&
+        (() => {
+          // `editing` holds only the trainer id; always render from live store
+          // data and close the modal if the trainer no longer exists.
+          const live = trainers.find((tr) => tr.id === editing)
+          return live ? (
+            <PlanningModal
+              trainer={live}
+              providers={providers}
+              steps={assignmentSteps}
+              onClose={() => setEditing(null)}
+            />
+          ) : null
+        })()}
       {manageSteps && (
         <Modal title={t('manageSteps')} onClose={() => setManageSteps(false)}
           footer={<div className="foot-row"><p className="muted small">{t('dragHint')}</p>
@@ -182,9 +199,10 @@ export default function Planning() {
 }
 
 function PlanningModal({ trainer, providers, steps, onClose }) {
-  const { t, lang, setAssignment, upsertTrainer } = useStore()
+  const { data, t, lang, setAssignment, upsertTrainer } = useStore()
   const setStep = (stepId, changes) => setAssignment(trainer.id, stepId, changes)
   const setStaff = (v) => upsertTrainer({ ...trainer, staffType: v })
+  const courseDefs = data.providerCourses
 
   return (
     <Modal
@@ -217,7 +235,7 @@ function PlanningModal({ trainer, providers, steps, onClose }) {
       <div className="assign-editor">
         {steps.map((s) => {
           const a = trainer.assignments?.[s.id] || {}
-          const opts = providersForStep(providers, s)
+          const opts = providersForStep(providers, s, courseDefs)
           return (
             <div className="assign-block" key={s.id} style={{ borderLeft: `4px solid ${s.color}` }}>
               <div className="assign-block-title">{s.label}</div>
@@ -235,7 +253,8 @@ function PlanningModal({ trainer, providers, steps, onClose }) {
                 </label>
                 <label className="field">
                   <span className="field-label">{t('status')}</span>
-                  <select className="input" value={a.status || 'open'} onChange={(e) => setStep(s.id, { status: e.target.value })}>
+                  {/* empty choice = back to default "open" so stored value and UI never diverge */}
+                  <select className="input" value={a.status || 'open'} onChange={(e) => setStep(s.id, { status: e.target.value || 'open' })}>
                     <option value=""></option>
                     {Object.entries(ASSIGNMENT_STATUS)
                       .sort((x, y) => (lang === 'de' ? x[1].de : x[1].en).localeCompare(lang === 'de' ? y[1].de : y[1].en))

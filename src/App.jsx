@@ -29,7 +29,6 @@ export default function App() {
   }, [])
   return (
     <div className="app">
-      <UpdatePrompt />
       <TopBar tabs={TABS} active={active} onSelect={setActive} />
       <main className="content">
         <Current />
@@ -37,6 +36,8 @@ export default function App() {
       <footer className="app-footer">
         <span>{COPYRIGHT} · v{APP_VERSION}</span>
       </footer>
+      {/* Last in DOM so keyboard tab order matches its bottom-of-screen position */}
+      <UpdatePrompt />
     </div>
   )
 }

@@ -93,6 +93,7 @@ function freshData(lang = 'de') {
     conversionFrom: 'A320',
     conversionTo: 'B737',
     _provSeeded: true,
+    _courseSeed2: true,
     updatedAt: nowIso()
   }
 }
@@ -155,7 +156,17 @@ function normalize(obj) {
     conversionFrom: obj.conversionFrom || 'A320',
     conversionTo: obj.conversionTo || 'B737',
     _provSeeded: obj._provSeeded === true,
+    _courseSeed2: obj._courseSeed2 === true,
     updatedAt: obj.updatedAt || nowIso()
+  }
+  // One-time: merge newly shipped default courses (e.g. "SIM only") into stored
+  // data by id. Gated by a flag so courses a user deliberately deleted in the
+  // course manager stay deleted afterwards.
+  if (!result._courseSeed2) {
+    const have = new Set(result.providerCourses.map((c) => c.id))
+    const missing = DEFAULT_PROVIDER_COURSES.filter((c) => !have.has(c.id))
+    result.providerCourses = [...result.providerCourses, ...missing.map((c) => ({ ...c }))]
+    result._courseSeed2 = true
   }
   // Aircraft is derived from the conversion stage (automatic).
   return applyAircraft(result)
@@ -164,6 +175,8 @@ function normalize(obj) {
 export function StoreProvider({ children }) {
   const [data, setData] = useState(loadData)
   const saveTimer = useRef(null)
+  const dataRef = useRef(data)
+  dataRef.current = data
 
   // Debounced persistence to localStorage. (Cloud sync will hook in here later.)
   useEffect(() => {
@@ -177,6 +190,24 @@ export function StoreProvider({ children }) {
     }, 250)
     return () => saveTimer.current && clearTimeout(saveTimer.current)
   }, [data])
+
+  // Synchronous flush on page exit so an edit made within the 250ms debounce
+  // window survives the reload/update buttons and tab closes.
+  useEffect(() => {
+    const flush = () => {
+      try {
+        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataRef.current))
+      } catch (e) {
+        /* ignore */
+      }
+    }
+    window.addEventListener('pagehide', flush)
+    window.addEventListener('beforeunload', flush)
+    return () => {
+      window.removeEventListener('pagehide', flush)
+      window.removeEventListener('beforeunload', flush)
+    }
+  }, [])
 
   const lang = data.lang
   useEffect(() => {

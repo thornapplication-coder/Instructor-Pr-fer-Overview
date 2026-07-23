@@ -368,7 +368,7 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
           <select
             className="input"
             value={f.conv.stage}
-            onChange={(e) => set('conv', { ...f.conv, stage: e.target.value })}
+            onChange={(e) => set('conv', { ...f.conv, stage: e.target.value || (stages[0]?.id ?? 'nominated') })}
           >
             <option value=""></option>
             {stages.map((s) => (
@@ -380,7 +380,7 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
           <select
             className="input"
             value={f.conv.status}
-            onChange={(e) => set('conv', { ...f.conv, status: e.target.value })}
+            onChange={(e) => set('conv', { ...f.conv, status: e.target.value || 'on_track' })}
           >
             <option value=""></option>
             {Object.entries(CONV_STATUS)
