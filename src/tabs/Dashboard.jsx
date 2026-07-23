@@ -1,7 +1,6 @@
 import React from 'react'
 import { useStore } from '../lib/store.jsx'
 import KpiTile from '../components/KpiTile.jsx'
-import ExportBar from '../components/ExportBar.jsx'
 import { Donut, HBars, ProgressRing, PipelineBar } from '../components/charts.jsx'
 import {
   headcount,
@@ -62,8 +61,6 @@ export default function Dashboard() {
     <div className="tab-pane">
       <div className="toolbar no-print">
         <h2 className="pane-title">Dashboard</h2>
-        <span className="push-right" />
-        <ExportBar />
       </div>
       <div className="kpi-grid">
         <KpiTile value={hc.total} label={t('kpi_totalTrainers')} sub={`FTE ≈ ${hc.fte}`} />

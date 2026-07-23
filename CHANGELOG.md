@@ -11,6 +11,16 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.2.0] – 2026-07-23
+
+- **Alle Downloads zentral in den Einstellungen** – im Eurowings-Style: jede
+  Seite als **PDF** (Dashboard, Umschulung, Trainer, Planung, Provider) und die
+  Tabellen zusätzlich als **Excel** (Trainer, Planung, Provider).
+- Die Export-Buttons in den einzelnen Reitern wurden entfernt (aufgeräumte
+  Toolbars).
+- **„Trainer seit"** (LTC/TRI/TRE) jetzt klar gruppiert in den Trainer-Details –
+  nur dort sichtbar, nicht in der Tabelle.
+
 ## [1.1.0] – 2026-07-23
 
 - Neuer **Save-Button** oben (mit Bestätigung) neben Reload.

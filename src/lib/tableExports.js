@@ -1,0 +1,89 @@
+// Excel exports for the tabular pages, generated directly from the store data.
+// Centralized here so the (single) Downloads section in Settings owns all
+// downloads; the individual tabs no longer carry their own export controls.
+import { downloadExcel } from './exports.js'
+import { formatPartTime } from './format.js'
+import { stageLabel, ASSIGNMENT_STATUS } from '../data/pipeline.js'
+
+const byName = (a, b) => (a.name || '').localeCompare(b.name || '')
+
+// Trainer table + the "Trainer seit" dates (LTC/TRI/TRE) so a full report is
+// self-contained. On screen those dates live only in the detail modal.
+export function exportTrainersExcel(data, t, lang) {
+  const { trainers, stages } = data
+  const rows = [...trainers].sort(byName)
+  downloadExcel(
+    'trainer',
+    [
+      { label: t('f_qual'), value: (x) => x.qual },
+      { label: t('f_base'), value: (x) => x.base },
+      { label: t('f_tlc'), value: (x) => x.tlc },
+      { label: t('f_name'), value: (x) => x.name },
+      { label: t('f_remark'), value: (x) => x.remark },
+      { label: t('f_partTime'), value: (x) => formatPartTime(x.partTime, lang) },
+      { label: t('f_fte'), value: (x) => (typeof x.fte === 'number' ? x.fte : 1) },
+      { label: t('f_aircraft'), value: (x) => x.aircraft },
+      { label: t('f_ore'), value: (x) => x.ore },
+      { label: t('f_staffType'), value: (x) => t('staff_' + (x.staffType || 'internal')) },
+      { label: t('f_authority'), value: (x) => x.authority },
+      { label: t('f_ltc'), value: (x) => x.ltcDate },
+      { label: t('f_tri'), value: (x) => x.triDate },
+      { label: t('f_tre'), value: (x) => x.treDate },
+      { label: t('f_conversion'), value: (x) => stageLabel(stages.find((s) => s.id === x.conv?.stage)) }
+    ],
+    rows
+  )
+}
+
+export function exportPlanningExcel(data, t, lang) {
+  const { trainers, providers, assignmentSteps } = data
+  const rows = [...trainers].sort(byName)
+  const cellLabel = (a) => {
+    if (!a) return ''
+    if (a.status === 'na') return 'n/a'
+    const p = providers.find((x) => x.id === a.providerId)
+    if (p && p.name) return p.name
+    return a.location || ''
+  }
+  const stepCell = (x, s) => {
+    const a = x.assignments?.[s.id]
+    if (!a) return ''
+    const label = cellLabel(a)
+    const stDef = ASSIGNMENT_STATUS[a.status]
+    const stLbl = stDef && a.status && a.status !== 'na' ? ` [${lang === 'de' ? stDef.de : stDef.en}]` : ''
+    return (label || '') + stLbl
+  }
+  downloadExcel(
+    'planung',
+    [
+      { label: t('f_name'), value: (x) => x.name },
+      { label: t('f_base'), value: (x) => x.base },
+      { label: t('f_qual'), value: (x) => x.qual },
+      { label: t('f_aircraft'), value: (x) => x.aircraft },
+      { label: t('f_staffType'), value: (x) => t('staff_' + (x.staffType || 'internal')) },
+      ...assignmentSteps.map((s) => ({ label: s.label, value: (x) => stepCell(x, s) }))
+    ],
+    rows
+  )
+}
+
+export function exportProvidersExcel(data, t) {
+  const { providers, providerStatus } = data
+  const rows = [...providers].sort(byName)
+  const statusLabel = (id) => (providerStatus.find((s) => s.id === id) || {}).label || ''
+  downloadExcel(
+    'provider',
+    [
+      { label: t('p_name'), value: (p) => p.name },
+      { label: t('p_courses'), value: (p) => [...(p.courses || [])].sort().join(', ') },
+      { label: t('p_locations'), value: (p) => [...(p.locations || [])].sort().join(', ') },
+      { label: t('p_authority'), value: (p) => p.authority },
+      { label: t('p_contact'), value: (p) => p.contactPerson },
+      { label: t('p_email'), value: (p) => p.email },
+      { label: t('p_phone'), value: (p) => p.phone },
+      { label: t('p_capacity'), value: (p) => p.capacity },
+      { label: t('p_status'), value: (p) => statusLabel(p.status) }
+    ],
+    rows
+  )
+}

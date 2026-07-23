@@ -2,9 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
-import ExportBar from '../components/ExportBar.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
-import { downloadExcel } from '../lib/exports.js'
 import { formatPartTime, formatDate, classNames } from '../lib/format.js'
 import { CONV_STATUS, STAFF_TYPE, stageLabel, stageIndex } from '../data/pipeline.js'
 import { qualIndex } from '../data/qualifications.js'
@@ -96,26 +94,6 @@ export default function Trainers() {
   )
   const { sorted, sortKey, dir, toggle } = useSort(rows, accessors, 'name')
 
-  const exportExcel = () =>
-    downloadExcel(
-      'trainer',
-      [
-        { label: t('f_qual'), value: (x) => x.qual },
-        { label: t('f_base'), value: (x) => x.base },
-        { label: t('f_tlc'), value: (x) => x.tlc },
-        { label: t('f_name'), value: (x) => x.name },
-        { label: t('f_remark'), value: (x) => x.remark },
-        { label: t('f_partTime'), value: (x) => formatPartTime(x.partTime, lang) },
-        { label: t('f_fte'), value: (x) => (typeof x.fte === 'number' ? x.fte : 1) },
-        { label: t('f_aircraft'), value: (x) => x.aircraft },
-        { label: t('f_ore'), value: (x) => x.ore },
-        { label: t('f_staffType'), value: (x) => t('staff_' + (x.staffType || 'internal')) },
-        { label: t('f_authority'), value: (x) => x.authority },
-        { label: t('f_conversion'), value: (x) => stageLabel(stages.find((s) => s.id === x.conv?.stage)) }
-      ],
-      sorted
-    )
-
   const startAdd = () =>
     setEditing({
       id: newId('trn'),
@@ -180,7 +158,6 @@ export default function Trainers() {
           {rows.length} / {trainers.length} {t('showing')}
         </span>
         <span className="push-right" />
-        <ExportBar onExcel={exportExcel} />
         <button className="btn btn-ghost" onClick={() => setManageQuals(true)}>
           ⚙ {t('manageQuals')}
         </button>
@@ -374,6 +351,8 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
           <input className="input" list="authList" value={f.authority} onChange={(e) => set('authority', e.target.value)} />
           <datalist id="authList">{authorities.map((a) => <option key={a} value={a} />)}</datalist>
         </Field>
+
+        <div className="form-sep span2">{t('f_trainerSince')}</div>
         <Field label={t('f_ltc')}>
           <input className="input" type="date" value={f.ltcDate} onChange={(e) => set('ltcDate', e.target.value)} />
         </Field>

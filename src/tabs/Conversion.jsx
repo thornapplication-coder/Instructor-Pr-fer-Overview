@@ -2,7 +2,6 @@ import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
-import ExportBar from '../components/ExportBar.jsx'
 import { CONV_STATUS, stageIndex, stageLabel, STAFF_TYPE } from '../data/pipeline.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { conversionFteSummary } from '../lib/stats.js'
@@ -103,7 +102,6 @@ export default function Conversion() {
           {['A', 'B', 'C'].map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
         <span className="push-right" />
-        <ExportBar />
         <button className="btn btn-ghost" onClick={() => setManageStages(true)}>
           ⚙ {t('manageStages')}
         </button>

@@ -1,9 +1,20 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { downloadJson } from '../lib/format.js'
+import { exportTrainersExcel, exportPlanningExcel, exportProvidersExcel } from '../lib/tableExports.js'
 import { APP_VERSION, APP_BUILD_DATE, CHANGELOG, COPYRIGHT } from '../version.js'
 import { cloudConfigured } from '../lib/supabaseSync.js'
 import { persistenceStatus } from '../lib/persistence.js'
+
+// Pages exportable as PDF (order matches the tab bar). Umschulung/Planung use
+// their own label keys; the PDF is scoped to that page by the print stylesheet.
+const PDF_PAGES = [
+  { id: 'dashboard', key: 'tab_dashboard' },
+  { id: 'conversion', key: 'tab_conversion' },
+  { id: 'trainers', key: 'tab_trainers' },
+  { id: 'planning', key: 'tab_planning' },
+  { id: 'providers', key: 'tab_providers' }
+]
 
 function fmtBytes(n) {
   if (!n && n !== 0) return '–'
@@ -12,7 +23,7 @@ function fmtBytes(n) {
   return (n / 1024 / 1024).toFixed(1) + ' MB'
 }
 
-export default function Settings() {
+export default function Settings({ onPrintTab }) {
   const { data, t, lang, setLang, exportData, importData, resetData } = useStore()
   const fileRef = useRef(null)
   const [msg, setMsg] = useState(null)
@@ -67,6 +78,41 @@ export default function Settings() {
               {l === 'de' ? 'Deutsch' : 'English'}
             </button>
           ))}
+        </div>
+      </section>
+
+      <section className="card downloads-card">
+        <h3 className="card-title">{t('downloads')}</h3>
+        <p className="muted small">{t('downloadsHint')}</p>
+
+        <div className="dl-group">
+          <div className="dl-group-title">{t('dl_pdf')}</div>
+          <div className="dl-grid">
+            {PDF_PAGES.map((p) => (
+              <button key={p.id} className="dl-btn" onClick={() => onPrintTab && onPrintTab(p.id)}>
+                <span className="dl-badge pdf">PDF</span>
+                <span className="dl-btn-lbl">{t(p.key)}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+
+        <div className="dl-group">
+          <div className="dl-group-title">{t('dl_excel')}</div>
+          <div className="dl-grid">
+            <button className="dl-btn" onClick={() => exportTrainersExcel(data, t, lang)}>
+              <span className="dl-badge xls">XLS</span>
+              <span className="dl-btn-lbl">{t('tab_trainers')}</span>
+            </button>
+            <button className="dl-btn" onClick={() => exportPlanningExcel(data, t, lang)}>
+              <span className="dl-badge xls">XLS</span>
+              <span className="dl-btn-lbl">{t('tab_planning')}</span>
+            </button>
+            <button className="dl-btn" onClick={() => exportProvidersExcel(data, t)}>
+              <span className="dl-badge xls">XLS</span>
+              <span className="dl-btn-lbl">{t('tab_providers')}</span>
+            </button>
+          </div>
         </div>
       </section>
 

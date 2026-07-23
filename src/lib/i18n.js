@@ -76,6 +76,7 @@ const DICT = {
   f_tri: { de: 'TRI seit', en: 'TRI since' },
   f_tre: { de: 'TRE seit', en: 'TRE since' },
   f_authority: { de: 'Ausstellende Behörde', en: 'Issuing authority' },
+  f_trainerSince: { de: 'Trainer seit', en: 'Trainer since' },
   f_bFrom: { de: 'B ab', en: 'B from' },
   f_conversion: { de: 'Umschulung', en: 'Conversion' },
   f_fte: { de: 'FTE', en: 'FTE' },
@@ -181,6 +182,13 @@ const DICT = {
   // ---- settings
   settings_title: { de: 'Einstellungen', en: 'Settings' },
   language: { de: 'Sprache', en: 'Language' },
+  downloads: { de: 'Downloads & Export', en: 'Downloads & export' },
+  downloadsHint: {
+    de: 'Alle Downloads zentral: jede Seite als PDF, die Tabellen zusätzlich als Excel.',
+    en: 'All downloads in one place: every page as PDF, plus the tables as Excel.'
+  },
+  dl_pdf: { de: 'Seiten als PDF', en: 'Pages as PDF' },
+  dl_excel: { de: 'Tabellen als Excel', en: 'Tables as Excel' },
   dataMgmt: { de: 'Datenverwaltung', en: 'Data management' },
   exportData: { de: 'Alle Daten exportieren (JSON)', en: 'Export all data (JSON)' },
   importData: { de: 'Daten importieren (JSON)', en: 'Import data (JSON)' },

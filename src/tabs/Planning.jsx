@@ -2,9 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
-import ExportBar from '../components/ExportBar.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
-import { downloadExcel } from '../lib/exports.js'
 import { formatDate } from '../lib/format.js'
 import { ASSIGNMENT_STATUS, STAFF_TYPE } from '../data/pipeline.js'
 import { AIRCRAFT } from '../data/aircraft.js'
@@ -80,28 +78,6 @@ export default function Planning() {
   const { sorted, sortKey, dir, toggle } = useSort(rows, accessors, 'name')
   const sp = { sortKey, dir, onSort: toggle }
 
-  const stepCell = (x, s) => {
-    const a = x.assignments?.[s.id]
-    const target = cellLabel(providers, a)
-    if (!a) return ''
-    const stDef = ASSIGNMENT_STATUS[a.status]
-    const stLbl = stDef && a.status && a.status !== 'na' ? ` [${lang === 'de' ? stDef.de : stDef.en}]` : ''
-    return (target || '') + stLbl
-  }
-  const exportExcel = () =>
-    downloadExcel(
-      'planung',
-      [
-        { label: t('f_name'), value: (x) => x.name },
-        { label: t('f_base'), value: (x) => x.base },
-        { label: t('f_qual'), value: (x) => x.qual },
-        { label: t('f_aircraft'), value: (x) => x.aircraft },
-        { label: t('f_staffType'), value: (x) => t('staff_' + (x.staffType || 'internal')) },
-        ...assignmentSteps.map((s) => ({ label: s.label, value: (x) => stepCell(x, s) }))
-      ],
-      sorted
-    )
-
   return (
     <div className="tab-pane">
       <div className="toolbar">
@@ -125,7 +101,6 @@ export default function Planning() {
           {['A', 'B', 'C'].map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
         <span className="push-right" />
-        <ExportBar onExcel={exportExcel} />
         <button className="btn btn-ghost" onClick={() => setManageSteps(true)}>
           ⚙ {t('manageSteps')}
         </button>

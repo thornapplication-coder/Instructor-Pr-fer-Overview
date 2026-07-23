@@ -328,6 +328,31 @@ textarea.input { resize: vertical; }
 
 /* ---------- Settings ---------- */
 .settings .card { max-width: 780px; }
+
+/* ---------- Downloads (EW style) ---------- */
+.downloads-card { border-left: 4px solid var(--burg); }
+.dl-group { margin-top: 16px; }
+.dl-group:first-of-type { margin-top: 14px; }
+.dl-group-title {
+  font-size: 11px; text-transform: uppercase; letter-spacing: .6px;
+  font-weight: 900; color: var(--burg-dark); margin-bottom: 10px;
+}
+.dl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
+.dl-btn {
+  display: flex; align-items: center; gap: 10px; text-align: left;
+  background: #fff; border: 1px solid var(--hair); border-radius: var(--radius-sm);
+  padding: 11px 13px; cursor: pointer; transition: border-color .15s, box-shadow .15s, background .15s;
+}
+.dl-btn:hover { border-color: var(--burg); box-shadow: 0 0 0 3px rgba(175,30,101,.10); }
+.dl-btn:active { background: var(--panel2); }
+.dl-badge {
+  flex: none; width: 42px; height: 30px; border-radius: 6px; color: #fff;
+  font-size: 11px; font-weight: 900; letter-spacing: .5px;
+  display: inline-flex; align-items: center; justify-content: center;
+}
+.dl-badge.pdf { background: var(--burg); }
+.dl-badge.xls { background: var(--green); }
+.dl-btn-lbl { font-weight: 800; font-size: 13.5px; color: var(--ink); }
 .inline-msg { margin-top: 10px; font-weight: 700; font-size: 13px; }
 .inline-msg.ok { color: var(--green); }
 .inline-msg.err { color: var(--red); }
@@ -437,6 +462,7 @@ textarea.input { resize: vertical; }
 :root[data-theme='dark'] .btn-light,
 :root[data-theme='dark'] .empty-state,
 :root[data-theme='dark'] .cell-assign,
+:root[data-theme='dark'] .dl-btn,
 :root[data-theme='dark'] .color-input { background: var(--white); }
 :root[data-theme='dark'] .btn-ghost { color: var(--ink); }
 :root[data-theme='dark'] .input { color: var(--text); }
