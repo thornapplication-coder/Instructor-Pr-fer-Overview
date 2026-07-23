@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.7.0'
+export const APP_VERSION = '1.8.0'
 export const APP_BUILD_DATE = '2026-07-23'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.8.0',
+    date: '2026-07-23',
+    type: 'minor',
+    changes: {
+      de: [
+        'Planung-Fix: Änderungen (z. B. Status „n/a") werden jetzt sofort in der Matrix und im Editor angezeigt.',
+        'Neuer Kurs „SIM only" in der Provider-Kursauswahl.',
+        'Der „Jetzt aktualisieren"-Hinweis erscheint jetzt als Popup unten mittig am Bildschirm.'
+      ],
+      en: [
+        'Planning fix: changes (e.g. status “n/a”) now appear immediately in the matrix and the editor.',
+        'New course “SIM only” in the provider course selection.',
+        'The “Update now” prompt now pops up at the bottom-centre of the screen.'
+      ]
+    }
+  },
   {
     version: '1.7.0',
     date: '2026-07-23',

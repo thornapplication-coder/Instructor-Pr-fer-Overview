@@ -11,6 +11,12 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Button**.
 
+## [1.8.0] – 2026-07-23
+
+- **Planung-Fix**: Änderungen (z. B. Status „n/a") erscheinen sofort in Matrix + Editor.
+- Neuer Kurs **„SIM only"** in der Provider-Kursauswahl.
+- Der **„Jetzt aktualisieren"-Hinweis** erscheint als Popup **unten mittig**.
+
 ## [1.7.0] – 2026-07-23
 
 - **Provider – mehrere Standorte** je Anbieter als **ICAO-Codes** (Chips add/remove).

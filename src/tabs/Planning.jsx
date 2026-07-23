@@ -163,7 +163,12 @@ export default function Planning() {
       </div>
 
       {editing && (
-        <PlanningModal trainer={editing} providers={providers} steps={assignmentSteps} onClose={() => setEditing(null)} />
+        <PlanningModal
+          trainer={trainers.find((tr) => tr.id === editing.id) || editing}
+          providers={providers}
+          steps={assignmentSteps}
+          onClose={() => setEditing(null)}
+        />
       )}
       {manageSteps && (
         <Modal title={t('manageSteps')} onClose={() => setManageSteps(false)}

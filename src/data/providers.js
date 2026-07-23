@@ -5,6 +5,7 @@
 export const DEFAULT_PROVIDER_COURSES = [
   { id: 'LIFUS flying', label: 'LIFUS flying' },
   { id: 'SFI Kurs', label: 'SFI Kurs' },
+  { id: 'SIM only', label: 'SIM only' },
   { id: 'TRE Kurs', label: 'TRE Kurs' },
   { id: 'TRI Kurs', label: 'TRI Kurs' },
   { id: 'Type Rating + Base Training', label: 'Type Rating + Base Training' },
