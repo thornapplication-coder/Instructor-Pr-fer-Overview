@@ -11,6 +11,15 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Button**.
 
+## [1.7.0] – 2026-07-23
+
+- **Provider – mehrere Standorte** je Anbieter als **ICAO-Codes** (Chips add/remove).
+- **Provider – Kurse als Mehrfachauswahl** (LIFUS flying, SFI/TRE/TRI Kurs,
+  Type Rating + ZFTT, Type Rating + Base Training) – editierbar über „Kurse bearbeiten".
+- **6 Provider vorbefüllt**: BAA, CAE, CATC, LAT, SunEx, TUI.
+- Planungs-Zuweisung filtert nach den angebotenen Kursen.
+- Alles alphabetisch; **„Rente"-Kachel** aus dem Dashboard entfernt.
+
 ## [1.6.0] – 2026-07-23
 
 - **Umschulungs-Ziel auswählbar** (A320 → B737) oben im Umschulungs-Reiter.

@@ -67,7 +67,6 @@ export default function Dashboard() {
         <KpiTile value={cs.released} label={t('kpi_released')} accent="#2FA36B" />
         <KpiTile value={cs.inProgress} label={t('kpi_inProgress')} accent="#E8A33D" />
         <KpiTile value={cs.notStarted} label={t('kpi_notStarted')} accent="#871C54" />
-        <KpiTile value={hc.retiring} label={t('kpi_retiring')} accent="#787878" />
         <KpiTile value={fteS.inConversion} label={t('kpi_fteInConversion')} accent="#E8A33D" sub={`/ ${fteS.total} FTE`} />
         <KpiTile value={fteS.available} label={t('kpi_fteAvailable')} accent="#2FA36B" sub={`/ ${fteS.total} FTE`} />
       </div>

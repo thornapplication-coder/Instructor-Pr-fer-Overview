@@ -1,6 +1,12 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { SEED_TRAINERS } from '../data/seed.js'
-import { SEED_PROVIDERS, DEFAULT_PROVIDER_TYPES, DEFAULT_PROVIDER_STATUS } from '../data/providers.js'
+import {
+  SEED_PROVIDERS,
+  DEFAULT_PROVIDER_COURSES,
+  DEFAULT_PROVIDER_STATUS,
+  PREFILL_NAMES,
+  emptyProvider
+} from '../data/providers.js'
 import { DEFAULT_STAGES, ASSIGNMENT_STEPS, mergeAssignments } from '../data/pipeline.js'
 import { DEFAULT_QUALS, normalizeQual } from '../data/qualifications.js'
 import { translate } from './i18n.js'
@@ -53,6 +59,17 @@ function deriveAircraft(conv, stages, from, to) {
   const stage = (conv && conv.stage) || firstStageId(stages)
   return stage === firstStageId(stages) ? from : to
 }
+// Provider forward-compat: single `location` -> `locations[]`; ensure `courses[]`.
+function normalizeProvider(p) {
+  const base = emptyProvider(p.id || newId('prov'))
+  return {
+    ...base,
+    ...p,
+    locations: Array.isArray(p.locations) ? p.locations : p.location ? [p.location] : [],
+    courses: Array.isArray(p.courses) ? p.courses : []
+  }
+}
+
 function applyAircraft(d) {
   const from = d.conversionFrom || 'A320'
   const to = d.conversionTo || 'B737'
@@ -71,10 +88,11 @@ function freshData(lang = 'de') {
     stages: DEFAULT_STAGES.map((s) => ({ ...s })),
     quals: DEFAULT_QUALS.map((q) => ({ ...q })),
     assignmentSteps: ASSIGNMENT_STEPS.map((s) => ({ ...s })),
-    providerTypes: DEFAULT_PROVIDER_TYPES.map((x) => ({ ...x })),
+    providerCourses: DEFAULT_PROVIDER_COURSES.map((x) => ({ ...x })),
     providerStatus: DEFAULT_PROVIDER_STATUS.map((x) => ({ ...x })),
     conversionFrom: 'A320',
     conversionTo: 'B737',
+    _provSeeded: true,
     updatedAt: nowIso()
   }
 }
@@ -89,6 +107,15 @@ function loadData() {
     let data = normalize(parsed)
     if (resetFte) {
       data = { ...data, trainers: data.trainers.map((t) => ({ ...t, fte: 1 })) }
+    }
+    // One-time: ensure the standard providers exist (add missing ones by name).
+    if (!data._provSeeded) {
+      const have = new Set(data.providers.map((p) => (p.name || '').trim().toLowerCase()))
+      const add = PREFILL_NAMES.filter((n) => !have.has(n.toLowerCase())).map((n) => ({
+        ...emptyProvider('prov-' + n.toLowerCase()),
+        name: n
+      }))
+      data = { ...data, providers: [...data.providers, ...add], _provSeeded: true }
     }
     return data
   } catch (e) {
@@ -107,7 +134,7 @@ function normalize(obj) {
     trainers: Array.isArray(obj.trainers)
       ? obj.trainers.map((t) => withConvDefaults({ ...t }))
       : base.trainers,
-    providers: Array.isArray(obj.providers) ? obj.providers.map((p) => ({ ...p })) : [],
+    providers: Array.isArray(obj.providers) ? obj.providers.map(normalizeProvider) : [],
     stages:
       Array.isArray(obj.stages) && obj.stages.length
         ? obj.stages.map(migrateStage)
@@ -117,16 +144,17 @@ function normalize(obj) {
       Array.isArray(obj.assignmentSteps) && obj.assignmentSteps.length
         ? obj.assignmentSteps.map((s) => ({ ...s }))
         : base.assignmentSteps,
-    providerTypes:
-      Array.isArray(obj.providerTypes) && obj.providerTypes.length
-        ? obj.providerTypes.map((x) => ({ ...x }))
-        : base.providerTypes,
+    providerCourses:
+      Array.isArray(obj.providerCourses) && obj.providerCourses.length
+        ? obj.providerCourses.map((x) => ({ ...x }))
+        : base.providerCourses,
     providerStatus:
       Array.isArray(obj.providerStatus) && obj.providerStatus.length
         ? obj.providerStatus.map((x) => ({ ...x }))
         : base.providerStatus,
     conversionFrom: obj.conversionFrom || 'A320',
     conversionTo: obj.conversionTo || 'B737',
+    _provSeeded: obj._provSeeded === true,
     updatedAt: obj.updatedAt || nowIso()
   }
   // Aircraft is derived from the conversion stage (automatic).
@@ -232,7 +260,7 @@ export function StoreProvider({ children }) {
       setAssignmentSteps: (assignmentSteps) => patch((d) => ({ ...d, assignmentSteps })),
       setConversionAircraft: (from, to) =>
         patch((d) => applyAircraft({ ...d, conversionFrom: from, conversionTo: to })),
-      setProviderTypes: (providerTypes) => patch((d) => ({ ...d, providerTypes })),
+      setProviderCourses: (providerCourses) => patch((d) => ({ ...d, providerCourses })),
       setProviderStatus: (providerStatus) => patch((d) => ({ ...d, providerStatus })),
 
       importData: (obj) => {

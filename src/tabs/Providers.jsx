@@ -5,11 +5,11 @@ import CategoryManager from '../components/CategoryManager.jsx'
 import { emptyProvider } from '../data/providers.js'
 
 export default function Providers() {
-  const { data, t, upsertProvider, deleteProvider, newId, setProviderTypes, setProviderStatus } = useStore()
-  const { providers, providerTypes, providerStatus } = data
+  const { data, t, upsertProvider, deleteProvider, newId, setProviderCourses, setProviderStatus } = useStore()
+  const { providers, providerCourses, providerStatus } = data
   const [q, setQ] = useState('')
   const [editing, setEditing] = useState(null)
-  const [manageTypes, setManageTypes] = useState(false)
+  const [manageCourses, setManageCourses] = useState(false)
   const [manageStatus, setManageStatus] = useState(false)
 
   const rows = useMemo(() => {
@@ -17,7 +17,7 @@ export default function Providers() {
     return providers
       .filter((p) =>
         n
-          ? [p.name, p.location, p.authority, p.contactPerson, (p.types || []).join(' ')]
+          ? [p.name, (p.locations || []).join(' '), p.authority, p.contactPerson, (p.courses || []).join(' ')]
               .join(' ')
               .toLowerCase()
               .includes(n)
@@ -30,30 +30,17 @@ export default function Providers() {
     <div className="tab-pane">
       <div className="toolbar">
         <h2 className="pane-title">{t('providers_title')}</h2>
-        <input
-          className="input search"
-          placeholder={t('search')}
-          value={q}
-          onChange={(e) => setQ(e.target.value)}
-        />
-        <button className="btn btn-ghost push-right" onClick={() => setManageTypes(true)}>
-          ⚙ {t('manageProviderTypes')}
-        </button>
-        <button className="btn btn-ghost" onClick={() => setManageStatus(true)}>
-          ⚙ {t('manageProviderStatus')}
-        </button>
-        <button className="btn btn-primary" onClick={() => setEditing(emptyProvider(newId('prov')))}>
-          + {t('addProvider')}
-        </button>
+        <input className="input search" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
+        <button className="btn btn-ghost push-right" onClick={() => setManageCourses(true)}>⚙ {t('manageCourses')}</button>
+        <button className="btn btn-ghost" onClick={() => setManageStatus(true)}>⚙ {t('manageProviderStatus')}</button>
+        <button className="btn btn-primary" onClick={() => setEditing(emptyProvider(newId('prov')))}>+ {t('addProvider')}</button>
       </div>
 
       {rows.length === 0 ? (
         <div className="empty-state">
           <div className="empty-icon">🏢</div>
           <p>{t('noProviders')}</p>
-          <button className="btn btn-primary" onClick={() => setEditing(emptyProvider(newId('prov')))}>
-            + {t('addProvider')}
-          </button>
+          <button className="btn btn-primary" onClick={() => setEditing(emptyProvider(newId('prov')))}>+ {t('addProvider')}</button>
         </div>
       ) : (
         <div className="table-wrap">
@@ -61,8 +48,8 @@ export default function Providers() {
             <thead>
               <tr>
                 <th>{t('p_name')}</th>
-                <th>{t('p_types')}</th>
-                <th>{t('p_location')}</th>
+                <th>{t('p_courses')}</th>
+                <th>{t('p_locations')}</th>
                 <th>{t('p_authority')}</th>
                 <th>{t('p_contact')}</th>
                 <th>{t('p_capacity')}</th>
@@ -77,23 +64,25 @@ export default function Providers() {
                     <td className="strong">{p.name || '–'}</td>
                     <td>
                       <div className="type-tags">
-                        {(p.types || []).map((tp) => (
-                          <span key={tp} className="type-tag">{tp}</span>
+                        {[...(p.courses || [])].sort().map((c) => (
+                          <span key={c} className="type-tag">{c}</span>
                         ))}
                       </div>
                     </td>
-                    <td>{p.location || '–'}</td>
+                    <td>
+                      <div className="type-tags">
+                        {[...(p.locations || [])].sort().map((l) => (
+                          <span key={l} className="icao-tag">{l}</span>
+                        ))}
+                      </div>
+                    </td>
                     <td className="muted small">{p.authority || '–'}</td>
                     <td>
                       {p.contactPerson || '–'}
                       {p.email && <div className="muted small">{p.email}</div>}
                     </td>
                     <td className="muted small">{p.capacity || '–'}</td>
-                    <td>
-                      <span className="status-tag" style={{ background: st.color }}>
-                        {st.label}
-                      </span>
-                    </td>
+                    <td><span className="status-tag" style={{ background: st.color }}>{st.label}</span></td>
                   </tr>
                 )
               })}
@@ -105,28 +94,22 @@ export default function Providers() {
       {editing && (
         <ProviderForm
           provider={editing}
-          providerTypes={providerTypes}
+          providerCourses={providerCourses}
           providerStatus={providerStatus}
           onClose={() => setEditing(null)}
-          onSave={(p) => {
-            upsertProvider(p)
-            setEditing(null)
-          }}
+          onSave={(p) => { upsertProvider(p); setEditing(null) }}
           onDelete={(id) => {
-            if (window.confirm(t('deleteProviderConfirm'))) {
-              deleteProvider(id)
-              setEditing(null)
-            }
+            if (window.confirm(t('deleteProviderConfirm'))) { deleteProvider(id); setEditing(null) }
           }}
           isNew={!providers.some((x) => x.id === editing.id)}
         />
       )}
 
-      {manageTypes && (
-        <Modal title={t('manageProviderTypes')} onClose={() => setManageTypes(false)}
+      {manageCourses && (
+        <Modal title={t('manageCourses')} onClose={() => setManageCourses(false)}
           footer={<div className="foot-row"><p className="muted small">{t('dragHint')}</p>
-            <div className="push-right"><button className="btn btn-primary" onClick={() => setManageTypes(false)}>{t('close')}</button></div></div>}>
-          <CategoryManager items={providerTypes} onChange={setProviderTypes} hasColor={false} />
+            <div className="push-right"><button className="btn btn-primary" onClick={() => setManageCourses(false)}>{t('close')}</button></div></div>}>
+          <CategoryManager items={providerCourses} onChange={setProviderCourses} hasColor={false} />
         </Modal>
       )}
       {manageStatus && (
@@ -140,14 +123,46 @@ export default function Providers() {
   )
 }
 
-function ProviderForm({ provider, providerTypes, providerStatus, onClose, onSave, onDelete, isNew }) {
-  const { t, lang } = useStore()
-  const [p, setP] = useState({ ...provider })
+function IcaoInput({ value, onChange }) {
+  const { t } = useStore()
+  const [text, setText] = useState('')
+  const add = () => {
+    const code = text.trim().toUpperCase()
+    if (code && !value.includes(code)) onChange([...value, code])
+    setText('')
+  }
+  return (
+    <div>
+      <div className="icao-chips">
+        {[...value].sort().map((l) => (
+          <span key={l} className="icao-tag removable">
+            {l}
+            <button type="button" className="chip-x" onClick={() => onChange(value.filter((x) => x !== l))}>✕</button>
+          </span>
+        ))}
+      </div>
+      <input
+        className="input"
+        value={text}
+        placeholder={t('addIcao')}
+        onChange={(e) => setText(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ',') { e.preventDefault(); add() }
+        }}
+        onBlur={add}
+      />
+    </div>
+  )
+}
+
+function ProviderForm({ provider, providerCourses, providerStatus, onClose, onSave, onDelete, isNew }) {
+  const { t } = useStore()
+  const [p, setP] = useState({ ...provider, courses: provider.courses || [], locations: provider.locations || [] })
   const set = (k, v) => setP((s) => ({ ...s, [k]: v }))
-  const toggleType = (tp) =>
+  const toggleCourse = (id) =>
     setP((s) => {
-      const has = (s.types || []).includes(tp)
-      return { ...s, types: has ? s.types.filter((x) => x !== tp) : [...(s.types || []), tp] }
+      const has = (s.courses || []).includes(id)
+      return { ...s, courses: has ? s.courses.filter((x) => x !== id) : [...(s.courses || []), id] }
     })
 
   return (
@@ -157,16 +172,14 @@ function ProviderForm({ provider, providerTypes, providerStatus, onClose, onSave
       wide
       footer={
         <div className="foot-row">
-          {!isNew && (
-            <button className="btn btn-danger" onClick={() => onDelete(p.id)}>{t('delete')}</button>
-          )}
+          {!isNew && <button className="btn btn-danger" onClick={() => onDelete(p.id)}>{t('delete')}</button>}
           <div className="push-right">
             <button className="btn btn-ghost" onClick={onClose}>{t('cancel')}</button>
             <button
               className="btn btn-primary"
               onClick={() => {
                 if (!(p.name || '').trim()) {
-                  window.alert(lang === 'de' ? 'Bitte einen Anbieternamen eingeben.' : 'Please enter a provider name.')
+                  window.alert('Bitte einen Anbieternamen eingeben.')
                   return
                 }
                 onSave(p)
@@ -182,25 +195,29 @@ function ProviderForm({ provider, providerTypes, providerStatus, onClose, onSave
         <Field label={t('p_name')} span2>
           <input className="input" value={p.name} onChange={(e) => set('name', e.target.value)} />
         </Field>
-        <Field label={t('p_types')} span2>
+        <Field label={t('p_courses')} span2>
           <div className="checks">
-            {providerTypes.map((tp) => (
-              <label key={tp.id} className={'check-pill' + ((p.types || []).includes(tp.id) ? ' on' : '')}>
-                <input
-                  type="checkbox"
-                  checked={(p.types || []).includes(tp.id)}
-                  onChange={() => toggleType(tp.id)}
-                />
-                {tp.label}
+            {[...providerCourses].sort((a, b) => a.label.localeCompare(b.label)).map((c) => (
+              <label key={c.id} className={'check-pill' + ((p.courses || []).includes(c.id) ? ' on' : '')}>
+                <input type="checkbox" checked={(p.courses || []).includes(c.id)} onChange={() => toggleCourse(c.id)} />
+                {c.label}
               </label>
             ))}
           </div>
         </Field>
-        <Field label={t('p_location')}>
-          <input className="input" value={p.location} onChange={(e) => set('location', e.target.value)} />
+        <Field label={t('p_locations')} span2>
+          <IcaoInput value={p.locations || []} onChange={(v) => set('locations', v)} />
         </Field>
         <Field label={t('p_authority')}>
           <input className="input" value={p.authority} onChange={(e) => set('authority', e.target.value)} />
+        </Field>
+        <Field label={t('p_status')}>
+          <select className="input" value={p.status} onChange={(e) => set('status', e.target.value)}>
+            <option value=""></option>
+            {[...providerStatus].sort((a, b) => (a.label || '').localeCompare(b.label || '')).map((v) => (
+              <option key={v.id} value={v.id}>{v.label}</option>
+            ))}
+          </select>
         </Field>
         <Field label={t('p_contact')}>
           <input className="input" value={p.contactPerson} onChange={(e) => set('contactPerson', e.target.value)} />
@@ -219,14 +236,6 @@ function ProviderForm({ provider, providerTypes, providerStatus, onClose, onSave
         </Field>
         <Field label={t('p_capacity')}>
           <input className="input" value={p.capacity} onChange={(e) => set('capacity', e.target.value)} />
-        </Field>
-        <Field label={t('p_status')}>
-          <select className="input" value={p.status} onChange={(e) => set('status', e.target.value)}>
-            <option value=""></option>
-            {[...providerStatus].sort((a, b) => (a.label || '').localeCompare(b.label || '')).map((v) => (
-              <option key={v.id} value={v.id}>{v.label}</option>
-            ))}
-          </select>
         </Field>
         <Field label={t('p_notes')} span2>
           <textarea className="input" rows={3} value={p.notes} onChange={(e) => set('notes', e.target.value)} />

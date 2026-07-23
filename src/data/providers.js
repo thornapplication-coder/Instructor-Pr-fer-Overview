@@ -1,15 +1,14 @@
-// External provider directory (Type Rating / TRI / TRE / SIM providers).
-// Ships EMPTY on purpose — the user fills it inside the app via "Add provider".
-//
-// Provider offering-types and statuses are USER-EDITABLE (managed in the
-// Providers tab). These are just the shipped defaults.
-export const DEFAULT_PROVIDER_TYPES = [
-  { id: 'TR', label: 'TR' },
-  { id: 'TRI', label: 'TRI' },
-  { id: 'TRE', label: 'TRE' },
-  { id: 'SIM', label: 'SIM' },
-  { id: 'CCQ', label: 'CCQ' },
-  { id: 'Other', label: 'Other' }
+// External provider directory (courses providers offer, at one or more airport
+// locations given as ICAO codes). Courses and statuses are user-editable.
+
+// Courses a provider can offer (multi-select). User-editable defaults:
+export const DEFAULT_PROVIDER_COURSES = [
+  { id: 'LIFUS flying', label: 'LIFUS flying' },
+  { id: 'SFI Kurs', label: 'SFI Kurs' },
+  { id: 'TRE Kurs', label: 'TRE Kurs' },
+  { id: 'TRI Kurs', label: 'TRI Kurs' },
+  { id: 'Type Rating + Base Training', label: 'Type Rating + Base Training' },
+  { id: 'Type Rating + ZFTT', label: 'Type Rating + ZFTT' }
 ]
 
 export const DEFAULT_PROVIDER_STATUS = [
@@ -19,14 +18,19 @@ export const DEFAULT_PROVIDER_STATUS = [
   { id: 'rejected', label: 'abgelehnt', color: '#C8102E' }
 ]
 
-export const SEED_PROVIDERS = []
+// Prefilled providers (names only – fill courses / ICAO locations in the app).
+const PREFILL = ['BAA', 'CAE', 'CATC', 'LAT', 'SunEx', 'TUI']
+export const SEED_PROVIDERS = PREFILL.map((name) => ({
+  ...emptyProvider('prov-' + name.toLowerCase()),
+  name
+}))
 
 export function emptyProvider(id) {
   return {
     id,
     name: '',
-    types: [],
-    location: '',
+    courses: [],
+    locations: [], // ICAO codes
     authority: '',
     contactPerson: '',
     email: '',
@@ -38,3 +42,6 @@ export function emptyProvider(id) {
     notes: ''
   }
 }
+
+// The names that should exist after the one-time prefill migration.
+export const PREFILL_NAMES = PREFILL

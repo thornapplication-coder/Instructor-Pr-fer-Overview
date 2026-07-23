@@ -4,12 +4,33 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.6.0'
+export const APP_VERSION = '1.7.0'
 export const APP_BUILD_DATE = '2026-07-23'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.7.0',
+    date: '2026-07-23',
+    type: 'minor',
+    changes: {
+      de: [
+        'Provider: mehrere Standorte je Anbieter als ICAO-Codes (Chips zum Hinzufügen/Entfernen).',
+        'Provider: Kurse als Mehrfachauswahl (LIFUS flying, SFI/TRE/TRI Kurs, Type Rating + ZFTT, Type Rating + Base Training) – editierbar über „Kurse bearbeiten".',
+        '6 Provider vorbefüllt: BAA, CAE, CATC, LAT, SunEx, TUI.',
+        'Provider-Zuweisung in der Planung filtert jetzt nach den angebotenen Kursen.',
+        'Alles alphabetisch geordnet; „Rente"-Kachel aus dem Dashboard entfernt.'
+      ],
+      en: [
+        'Providers: multiple locations per provider as ICAO codes (add/remove chips).',
+        'Providers: courses as multi-select (LIFUS flying, SFI/TRE/TRI course, Type Rating + ZFTT, Type Rating + Base Training) – editable via “Edit courses”.',
+        '6 providers prefilled: BAA, CAE, CATC, LAT, SunEx, TUI.',
+        'Planning provider assignment now filters by the courses a provider offers.',
+        'Everything sorted alphabetically; removed the “Retiring” tile from the dashboard.'
+      ]
+    }
+  },
   {
     version: '1.6.0',
     date: '2026-07-23',

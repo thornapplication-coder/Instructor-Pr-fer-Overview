@@ -7,9 +7,12 @@ import { formatDate } from '../lib/format.js'
 import { ASSIGNMENT_STATUS, STAFF_TYPE } from '../data/pipeline.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 
+// Match providers to a planning step by their offered courses (keyword).
+const STEP_COURSE_KW = { tr: 'type rating', tri: 'tri', tre: 'tre', lifus: 'lifus' }
 function providersForStep(providers, step) {
-  if (!step.providerType) return providers
-  const matched = providers.filter((p) => (p.types || []).includes(step.providerType))
+  const kw = STEP_COURSE_KW[step.id]
+  if (!kw) return providers
+  const matched = providers.filter((p) => (p.courses || []).some((c) => String(c).toLowerCase().includes(kw)))
   return matched.length ? matched : providers
 }
 
