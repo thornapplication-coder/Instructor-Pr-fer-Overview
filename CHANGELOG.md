@@ -11,6 +11,10 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Button**.
 
+## [1.0.2] – 2026-07-23
+
+- GitHub Pages wird im Deploy-Workflow automatisch aktiviert (`actions/configure-pages` mit `enablement`), damit kein manueller Schalter nötig ist.
+
 ## [1.0.1] – 2026-07-23
 
 - GitHub-Pages-Basispfad an die Repo-Schreibweise (`/TESTREPO/`) angepasst, damit

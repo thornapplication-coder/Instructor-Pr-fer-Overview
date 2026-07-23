@@ -4,11 +4,20 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.0.1'
+export const APP_VERSION = '1.0.2'
 export const APP_BUILD_DATE = '2026-07-23'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.0.2',
+    date: '2026-07-23',
+    type: 'patch',
+    changes: {
+      de: ['GitHub Pages wird im Deploy-Workflow automatisch aktiviert (kein manueller Schalter nötig).'],
+      en: ['GitHub Pages is auto-enabled in the deploy workflow (no manual toggle needed).']
+    }
+  },
   {
     version: '1.0.1',
     date: '2026-07-23',
