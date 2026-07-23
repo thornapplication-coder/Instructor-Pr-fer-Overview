@@ -2,6 +2,8 @@ import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
+import ExportBar from '../components/ExportBar.jsx'
+import { downloadExcel } from '../lib/exports.js'
 import { emptyProvider } from '../data/providers.js'
 
 export default function Providers() {
@@ -26,12 +28,32 @@ export default function Providers() {
       .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
   }, [providers, q])
 
+  const statusLabel = (id) => (providerStatus.find((s) => s.id === id) || {}).label || ''
+  const exportExcel = () =>
+    downloadExcel(
+      'provider',
+      [
+        { label: t('p_name'), value: (p) => p.name },
+        { label: t('p_courses'), value: (p) => [...(p.courses || [])].sort().join(', ') },
+        { label: t('p_locations'), value: (p) => [...(p.locations || [])].sort().join(', ') },
+        { label: t('p_authority'), value: (p) => p.authority },
+        { label: t('p_contact'), value: (p) => p.contactPerson },
+        { label: t('p_email'), value: (p) => p.email },
+        { label: t('p_phone'), value: (p) => p.phone },
+        { label: t('p_capacity'), value: (p) => p.capacity },
+        { label: t('p_status'), value: (p) => statusLabel(p.status) }
+      ],
+      rows
+    )
+
   return (
     <div className="tab-pane">
       <div className="toolbar">
         <h2 className="pane-title">{t('providers_title')}</h2>
         <input className="input search" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
-        <button className="btn btn-ghost push-right" onClick={() => setManageCourses(true)}>⚙ {t('manageCourses')}</button>
+        <span className="push-right" />
+        <ExportBar onExcel={exportExcel} />
+        <button className="btn btn-ghost" onClick={() => setManageCourses(true)}>⚙ {t('manageCourses')}</button>
         <button className="btn btn-ghost" onClick={() => setManageStatus(true)}>⚙ {t('manageProviderStatus')}</button>
         <button className="btn btn-primary" onClick={() => setEditing(emptyProvider(newId('prov')))}>+ {t('addProvider')}</button>
       </div>

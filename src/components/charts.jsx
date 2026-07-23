@@ -21,7 +21,7 @@ export function Donut({ data, size = 168, thickness = 26, centerTop, centerBotto
   return (
     <div className="donut">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`} role="img">
-        <circle cx={cx} cy={cy} r={r} fill="none" stroke="#EEF0F2" strokeWidth={thickness} />
+        <circle cx={cx} cy={cy} r={r} fill="none" stroke="var(--chart-track)" strokeWidth={thickness} />
         {total > 0 &&
           data.map((d, i) => {
             const frac = d.count / total
@@ -101,7 +101,7 @@ export function ProgressRing({ value, size = 128, thickness = 14, label }) {
   return (
     <div className="progress-ring">
       <svg width={size} height={size} viewBox={`0 0 ${size} ${size}`}>
-        <circle cx={cx} cy={cx} r={r} fill="none" stroke="#EEF0F2" strokeWidth={thickness} />
+        <circle cx={cx} cy={cx} r={r} fill="none" stroke="var(--chart-track)" strokeWidth={thickness} />
         <circle
           cx={cx}
           cy={cx}

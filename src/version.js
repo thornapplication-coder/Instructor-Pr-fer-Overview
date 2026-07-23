@@ -4,12 +4,33 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.0.0'
+export const APP_VERSION = '1.1.0'
 export const APP_BUILD_DATE = '2026-07-23'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.1.0',
+    date: '2026-07-23',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neuer Save-Button oben (mit Bestätigung) neben Reload.',
+        'Dunkelmodus zum Umschalten oben in der Kopfzeile (bleibt gespeichert).',
+        'Jede Seite einzeln exportierbar: PDF (Dashboard, Umschulung, Trainer, Planung, Provider) und Excel für die Tabellen (Trainer, Planung, Provider).',
+        'Provider-Status korrigiert – Auswahl: leer / in use / no agreement.',
+        'Alphabetische Sortierung überall in Dropdowns nochmals geprüft.'
+      ],
+      en: [
+        'New Save button in the header (with confirmation) next to Reload.',
+        'Dark mode toggle in the header (persisted).',
+        'Each page exportable individually: PDF (dashboard, conversion, trainers, planning, providers) and Excel for the tables (trainers, planning, providers).',
+        'Provider status fixed – choices: empty / in use / no agreement.',
+        'Re-checked alphabetical ordering across all dropdowns.'
+      ]
+    }
+  },
   {
     version: '1.0.0',
     date: '2026-07-23',

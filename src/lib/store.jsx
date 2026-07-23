@@ -83,6 +83,7 @@ function freshData(lang = 'de') {
   return {
     schema: SCHEMA,
     lang,
+    theme: 'light',
     trainers: SEED_TRAINERS.map((t) => withConvDefaults({ ...t })),
     providers: SEED_PROVIDERS.map((p) => ({ ...p })),
     stages: DEFAULT_STAGES.map((s) => ({ ...s })),
@@ -94,6 +95,7 @@ function freshData(lang = 'de') {
     conversionTo: 'B737',
     _provSeeded: true,
     _courseSeed2: true,
+    _provStatus2: true,
     updatedAt: nowIso()
   }
 }
@@ -155,8 +157,10 @@ function normalize(obj) {
         : base.providerStatus,
     conversionFrom: obj.conversionFrom || 'A320',
     conversionTo: obj.conversionTo || 'B737',
+    theme: obj.theme === 'dark' ? 'dark' : 'light',
     _provSeeded: obj._provSeeded === true,
     _courseSeed2: obj._courseSeed2 === true,
+    _provStatus2: obj._provStatus2 === true,
     updatedAt: obj.updatedAt || nowIso()
   }
   // One-time: merge newly shipped default courses (e.g. "SIM only") into stored
@@ -167,6 +171,14 @@ function normalize(obj) {
     const missing = DEFAULT_PROVIDER_COURSES.filter((c) => !have.has(c.id))
     result.providerCourses = [...result.providerCourses, ...missing.map((c) => ({ ...c }))]
     result._courseSeed2 = true
+  }
+  // One-time: replace the old provider-status list with the new one
+  // (in use / no agreement) and clear provider statuses that no longer exist.
+  if (!result._provStatus2) {
+    result.providerStatus = DEFAULT_PROVIDER_STATUS.map((x) => ({ ...x }))
+    const valid = new Set(result.providerStatus.map((s) => s.id))
+    result.providers = result.providers.map((p) => (valid.has(p.status) ? p : { ...p, status: '' }))
+    result._provStatus2 = true
   }
   // Aircraft is derived from the conversion stage (automatic).
   return applyAircraft(result)
@@ -214,6 +226,11 @@ export function StoreProvider({ children }) {
     document.documentElement.lang = lang
   }, [lang])
 
+  const theme = data.theme || 'light'
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme)
+  }, [theme])
+
   const api = useMemo(() => {
     const patch = (mut) =>
       setData((d) => {
@@ -223,6 +240,16 @@ export function StoreProvider({ children }) {
 
     return {
       setLang: (l) => patch((d) => ({ ...d, lang: l })),
+      setTheme: (th) => patch((d) => ({ ...d, theme: th })),
+      // Force an immediate persist (the explicit Save button); returns success.
+      saveNow: () => {
+        try {
+          localStorage.setItem(STORAGE_KEY, JSON.stringify(dataRef.current))
+          return true
+        } catch (e) {
+          return false
+        }
+      },
 
       upsertTrainer: (trainer) =>
         patch((d) => {

@@ -11,6 +11,15 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.1.0] – 2026-07-23
+
+- Neuer **Save-Button** oben (mit Bestätigung) neben Reload.
+- **Dunkelmodus** zum Umschalten in der Kopfzeile (bleibt gespeichert).
+- **Export je Seite**: PDF (Dashboard, Umschulung, Trainer, Planung, Provider)
+  und **Excel** für die Tabellen (Trainer, Planung, Provider).
+- **Provider-Status** korrigiert – Auswahl: *leer / in use / no agreement*.
+- Alphabetische Sortierung überall in Dropdowns nochmals geprüft.
+
 ## [1.0.0] – 2026-07-23
 
 Erstes Release nach vollständigem Multi-Agenten-Code-Audit — die Versionierung

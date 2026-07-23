@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 
 // App brand mark (inline SVG) — matches the home-screen icon: pure burgundy
@@ -16,7 +16,14 @@ function BrandMark() {
 }
 
 export default function TopBar({ tabs, active, onSelect }) {
-  const { t, lang, setLang, data } = useStore()
+  const { t, lang, setLang, data, setTheme, saveNow } = useStore()
+  const [saved, setSaved] = useState(false)
+  const theme = data.theme || 'light'
+  const doSave = () => {
+    saveNow()
+    setSaved(true)
+    setTimeout(() => setSaved(false), 1300)
+  }
   const asOf = new Date(data.updatedAt)
   const asOfStr = isNaN(asOf) ? '' : asOf.toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB')
 
@@ -47,7 +54,46 @@ export default function TopBar({ tabs, active, onSelect }) {
             ))}
           </div>
           <button
-            className="reload-btn"
+            className={'icon-round save-btn' + (saved ? ' saved' : '')}
+            onClick={doSave}
+            title={saved ? t('saved') : t('save')}
+            aria-label={t('save')}
+          >
+            {saved ? (
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
+                strokeWidth="2.6" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <polyline points="20 6 9 17 4 12" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M19 21H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11l5 5v11a2 2 0 0 1-2 2z" />
+                <polyline points="17 21 17 13 7 13 7 21" />
+                <polyline points="7 3 7 8 15 8" />
+              </svg>
+            )}
+          </button>
+          <button
+            className="icon-round"
+            onClick={() => setTheme(theme === 'dark' ? 'light' : 'dark')}
+            title={theme === 'dark' ? t('lightMode') : t('darkMode')}
+            aria-label={theme === 'dark' ? t('lightMode') : t('darkMode')}
+          >
+            {theme === 'dark' ? (
+              <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <circle cx="12" cy="12" r="4.5" />
+                <path d="M12 2v2M12 20v2M2 12h2M20 12h2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M19.1 4.9l-1.4 1.4M6.3 17.7l-1.4 1.4" />
+              </svg>
+            ) : (
+              <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor"
+                strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z" />
+              </svg>
+            )}
+          </button>
+          <button
+            className="icon-round"
             onClick={() => window.location.reload()}
             title={t('reload')}
             aria-label={t('reload')}

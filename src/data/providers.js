@@ -13,10 +13,8 @@ export const DEFAULT_PROVIDER_COURSES = [
 ]
 
 export const DEFAULT_PROVIDER_STATUS = [
-  { id: 'approved', label: 'freigegeben', color: '#2FA36B' },
-  { id: 'candidate', label: 'Kandidat', color: '#E8A33D' },
-  { id: 'onhold', label: 'zurückgestellt', color: '#787878' },
-  { id: 'rejected', label: 'abgelehnt', color: '#C8102E' }
+  { id: 'in use', label: 'in use', color: '#2FA36B' },
+  { id: 'no agreement', label: 'no agreement', color: '#C8102E' }
 ]
 
 // Prefilled providers (names only – fill courses / ICAO locations in the app).
@@ -39,7 +37,7 @@ export function emptyProvider(id) {
     website: '',
     price: '',
     capacity: '',
-    status: 'candidate',
+    status: '',
     notes: ''
   }
 }
