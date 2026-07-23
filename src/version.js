@@ -4,12 +4,27 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.4.0'
+export const APP_VERSION = '1.5.0'
 export const APP_BUILD_DATE = '2026-07-23'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.5.0',
+    date: '2026-07-23',
+    type: 'minor',
+    changes: {
+      de: [
+        'FTE-Kapazität: „FTE in Umschulung" und „FTE verfügbar" – passen sich automatisch an, sobald Personen in eine Umschulungs-Phase geschoben werden.',
+        'Neue KPI-Kacheln im Dashboard + FTE-Zusammenfassung direkt im Umschulungs-Board.'
+      ],
+      en: [
+        'FTE capacity: “FTE in conversion” and “FTE available” – auto-adjust as soon as people are moved into a conversion stage.',
+        'New dashboard KPI tiles + an FTE summary directly on the conversion board.'
+      ]
+    }
+  },
   {
     version: '1.4.0',
     date: '2026-07-23',

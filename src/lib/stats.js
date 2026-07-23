@@ -81,6 +81,34 @@ export function conversionSummary(trainers) {
   return { released, inProgress, notStarted, total: trainers.length }
 }
 
+// FTE tied up in an active conversion vs. still available.
+// "in conversion" = stage is neither the first (nominated / not started) nor
+// the final (released). Those trainers are occupied by their own training.
+function round1(x) {
+  return Math.round(x * 10) / 10
+}
+export function conversionFteSummary(trainers) {
+  let total = 0
+  let inConversion = 0
+  let released = 0
+  let notStarted = 0
+  for (const t of trainers) {
+    const f = typeof t.fte === 'number' ? t.fte : 1
+    total += f
+    const stage = t.conv?.stage || 'nominated'
+    if (stage === 'released') released += f
+    else if (stage === 'nominated') notStarted += f
+    else inConversion += f
+  }
+  return {
+    total: round1(total),
+    inConversion: round1(inConversion),
+    available: round1(total - inConversion),
+    released: round1(released),
+    notStarted: round1(notStarted)
+  }
+}
+
 export function pipelineDistribution(trainers, stages) {
   const map = tally(trainers, (t) => t.conv?.stage || 'nominated')
   return stages.map((s) => ({ ...s, count: map.get(s.id) || 0 }))

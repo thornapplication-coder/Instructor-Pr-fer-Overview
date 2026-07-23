@@ -168,6 +168,13 @@ button { font-family: inherit; }
 .push-right { margin-left: auto; }
 .count-pill { background: var(--panel2); color: var(--muted); font-weight: 700; font-size: 12.5px; padding: 6px 12px; border-radius: 999px; }
 .board-hint, .stat-hint { font-size: 12px; color: var(--muted); font-style: italic; }
+.fte-summary { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: -4px; }
+.fte-pill { font-size: 13px; font-weight: 700; padding: 5px 12px; border-radius: 999px; color: var(--ink); }
+.fte-pill b { font-weight: 900; }
+.fte-in { background: #fff3e0; color: #8a5200; }
+.fte-av { background: #e6f7ee; color: #1c6b45; }
+.fte-total { background: var(--panel2); color: var(--muted); }
+.fte-summary .board-hint { margin-left: auto; }
 
 /* ---------- Inputs & buttons ---------- */
 .input {

@@ -11,7 +11,8 @@ import {
   byAuthority,
   byPartTime,
   byFunction,
-  pipelineDistribution
+  pipelineDistribution,
+  conversionFteSummary
 } from '../lib/stats.js'
 import { conversionProgress, STAFF_TYPE } from '../data/pipeline.js'
 import { AIRCRAFT } from '../data/aircraft.js'
@@ -40,6 +41,7 @@ export default function Dashboard() {
   const qualColor = (key) => (qualDefs.find((q) => q.id === key) || {}).color || '#787878'
   const hc = headcount(trainers)
   const cs = conversionSummary(trainers)
+  const fteS = conversionFteSummary(trainers)
   const quals = byQual(trainers, qualDefs.map((q) => q.id))
   const bases = byBase(trainers)
   const ore = byOre(trainers).map((r) => ({ ...r, color: ORE_COLORS[r.key] }))
@@ -66,6 +68,8 @@ export default function Dashboard() {
         <KpiTile value={cs.inProgress} label={t('kpi_inProgress')} accent="#E8A33D" />
         <KpiTile value={cs.notStarted} label={t('kpi_notStarted')} accent="#871C54" />
         <KpiTile value={hc.retiring} label={t('kpi_retiring')} accent="#787878" />
+        <KpiTile value={fteS.inConversion} label={t('kpi_fteInConversion')} accent="#E8A33D" sub={`/ ${fteS.total} FTE`} />
+        <KpiTile value={fteS.available} label={t('kpi_fteAvailable')} accent="#2FA36B" sub={`/ ${fteS.total} FTE`} />
       </div>
 
       <div className="grid-2">

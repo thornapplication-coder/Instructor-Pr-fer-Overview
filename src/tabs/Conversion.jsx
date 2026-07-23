@@ -4,6 +4,7 @@ import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { CONV_STATUS, stageIndex, stageLabel, STAFF_TYPE } from '../data/pipeline.js'
 import { AIRCRAFT } from '../data/aircraft.js'
+import { conversionFteSummary } from '../lib/stats.js'
 import { formatDate } from '../lib/format.js'
 
 function assignTarget(providers, a) {
@@ -29,6 +30,7 @@ export default function Conversion() {
 
   const bases = useMemo(() => [...new Set(trainers.map((x) => x.base))].sort(), [trainers])
   const stageIds = useMemo(() => new Set(stages.map((s) => s.id)), [stages])
+  const fteS = conversionFteSummary(trainers)
 
   const needle = q.trim().toLowerCase()
   const visible = trainers.filter(
@@ -94,7 +96,12 @@ export default function Conversion() {
           ⚙ {t('manageStages')}
         </button>
       </div>
-      <p className="board-hint">{t('boardHint')}</p>
+      <div className="fte-summary">
+        <span className="fte-pill fte-in">{t('fteInConversionShort')}: <b>{fteS.inConversion}</b></span>
+        <span className="fte-pill fte-av">{t('fteAvailableShort')}: <b>{fteS.available}</b></span>
+        <span className="fte-pill fte-total">FTE gesamt: <b>{fteS.total}</b></span>
+        <span className="board-hint">{t('boardHint')}</span>
+      </div>
 
       <div className="board">
         {stages.map((s, si) => {

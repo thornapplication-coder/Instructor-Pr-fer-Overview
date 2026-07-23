@@ -11,6 +11,12 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Button**.
 
+## [1.5.0] – 2026-07-23
+
+- **FTE-Kapazität**: „FTE in Umschulung" und „FTE verfügbar" – passen sich
+  automatisch an, sobald Personen in eine Umschulungs-Phase geschoben werden.
+- Neue KPI-Kacheln im Dashboard + FTE-Zusammenfassung direkt im Umschulungs-Board.
+
 ## [1.4.0] – 2026-07-23
 
 - Logo-Hintergrund jetzt **reines Burgundy** (Icon + Header).
