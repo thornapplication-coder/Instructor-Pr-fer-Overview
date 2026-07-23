@@ -11,6 +11,11 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Button**.
 
+## [1.0.1] – 2026-07-23
+
+- GitHub-Pages-Basispfad an die Repo-Schreibweise (`/TESTREPO/`) angepasst, damit
+  PWA, Manifest und Service Worker unter der Pages-URL korrekt laden.
+
 ## [1.0.0] – 2026-07-23
 
 Erste Version.

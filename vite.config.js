@@ -2,9 +2,10 @@ import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
-// GitHub Pages serves this project under /testrepo/.
+// GitHub Pages serves this project under the repository path, case-sensitive.
+// The repo's canonical name is "TESTREPO", so the base must match exactly.
 // If the repository is renamed, update `base` (and the paths in index.html) to match.
-const BASE = '/testrepo/'
+const BASE = '/TESTREPO/'
 
 export default defineConfig({
   base: BASE,

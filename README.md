@@ -40,7 +40,8 @@ Bei jedem Push auf den Entwicklungs-Branch baut und deployt der Workflow
 **Einmalige Einrichtung durch den Repo-Owner:**
 *Settings → Pages → Source: „GitHub Actions"*.
 
-Die App wird dann unter `https://<owner>.github.io/testrepo/` ausgeliefert.
+Die App wird dann unter `https://thornapplication-coder.github.io/TESTREPO/`
+ausgeliefert. Der Pfad ist case-sensitiv und muss zur Repo-Schreibweise passen.
 Wird das Repository umbenannt, `base` in `vite.config.js` und die Pfade in
 `index.html` entsprechend anpassen.
 

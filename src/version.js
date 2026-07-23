@@ -4,11 +4,20 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.0.0'
+export const APP_VERSION = '1.0.1'
 export const APP_BUILD_DATE = '2026-07-23'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.0.1',
+    date: '2026-07-23',
+    type: 'patch',
+    changes: {
+      de: ['GitHub-Pages-Basispfad an die Repo-Schreibweise angepasst (Groß-/Kleinschreibung), damit PWA und Service Worker sauber laden.'],
+      en: ['Fixed the GitHub Pages base path to match the repository name casing so the PWA and service worker load correctly.']
+    }
+  },
   {
     version: '1.0.0',
     date: '2026-07-23',
