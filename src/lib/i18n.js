@@ -186,6 +186,23 @@ const DICT = {
   },
   lastSaved: { de: 'Zuletzt gespeichert', en: 'Last saved' },
 
+  // ---- data safety / persistence
+  dataSafety: { de: 'Datensicherheit', en: 'Data safety' },
+  persistGranted: {
+    de: 'Persistenter Speicher: aktiv – der Browser löscht die Daten nicht von selbst (auch nicht bei „Cache leeren").',
+    en: 'Persistent storage: on – the browser will not evict data on its own (also survives “clear cache”).'
+  },
+  persistDenied: {
+    de: 'Persistenter Speicher: nicht garantiert – der Browser könnte Daten bei Speicherdruck entfernen.',
+    en: 'Persistent storage: not guaranteed – the browser may evict data under storage pressure.'
+  },
+  persistWarning: {
+    de: 'Wichtig: Ein bewusstes „Cookies und Websitedaten löschen" entfernt ALLE lokalen Daten – das übersteht kein lokaler Speicher. Nur der Cloud-Sync sichert alle Daten dagegen ab. Bis dahin: regelmäßig ein Backup herunterladen.',
+    en: 'Important: a manual “clear cookies and site data” removes ALL local data – no local storage survives that. Only cloud sync protects everything. Until then: download a backup regularly.'
+  },
+  backupNow: { de: '⤓ Jetzt Backup herunterladen', en: '⤓ Download backup now' },
+  storageUsage: { de: 'Belegt', en: 'Used' },
+
   // ---- category management (editable taxonomies)
   addCategory: { de: 'Eintrag hinzufügen', en: 'Add entry' },
   manage: { de: 'Verwalten', en: 'Manage' },

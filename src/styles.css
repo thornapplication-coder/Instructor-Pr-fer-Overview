@@ -281,6 +281,14 @@ textarea.input { resize: vertical; }
 .type-tag { background: var(--sky-lightest); color: #045d76; border-radius: 5px; padding: 1px 7px; font-size: 11px; font-weight: 800; }
 .status-tag { color: #fff; border-radius: 6px; padding: 2px 9px; font-size: 11.5px; font-weight: 800; }
 
+/* ---------- Data safety ---------- */
+.safety-card { border-left: 4px solid var(--amber); }
+.persist-line { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13.5px; margin: 4px 0; }
+.persist-line.ok { color: var(--green); }
+.persist-line.warn { color: var(--amber); }
+.persist-dot { width: 10px; height: 10px; border-radius: 50%; background: currentColor; flex: none; }
+.safety-warning { background: #fff6e9; border: 1px solid #f3d9a8; color: #7a4d00; border-radius: var(--radius-sm); padding: 10px 12px; font-size: 13px; margin: 10px 0; line-height: 1.5; }
+
 /* ---------- Settings ---------- */
 .settings .card { max-width: 780px; }
 .inline-msg { margin-top: 10px; font-weight: 700; font-size: 13px; }

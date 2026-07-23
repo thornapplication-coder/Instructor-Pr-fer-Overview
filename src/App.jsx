@@ -1,4 +1,5 @@
-import React, { useState } from 'react'
+import React, { useState, useEffect } from 'react'
+import { requestPersistence } from './lib/persistence.js'
 import TopBar from './components/TopBar.jsx'
 import UpdatePrompt from './components/UpdatePrompt.jsx'
 import Overview from './tabs/Overview.jsx'
@@ -22,6 +23,11 @@ const TABS = [
 export default function App() {
   const [active, setActive] = useState('overview')
   const Current = TABS.find((t) => t.id === active)?.Comp || Overview
+
+  // Ask the browser to keep our local data (prevents automatic eviction).
+  useEffect(() => {
+    requestPersistence()
+  }, [])
   return (
     <div className="app">
       <UpdatePrompt />

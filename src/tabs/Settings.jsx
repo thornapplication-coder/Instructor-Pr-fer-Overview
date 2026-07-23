@@ -1,13 +1,26 @@
-import React, { useRef, useState } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { downloadJson } from '../lib/format.js'
 import { APP_VERSION, APP_BUILD_DATE, CHANGELOG } from '../version.js'
 import { cloudConfigured } from '../lib/supabaseSync.js'
+import { persistenceStatus } from '../lib/persistence.js'
+
+function fmtBytes(n) {
+  if (!n && n !== 0) return '–'
+  if (n < 1024) return n + ' B'
+  if (n < 1024 * 1024) return (n / 1024).toFixed(0) + ' KB'
+  return (n / 1024 / 1024).toFixed(1) + ' MB'
+}
 
 export default function Settings() {
   const { data, t, lang, setLang, exportData, importData, resetData } = useStore()
   const fileRef = useRef(null)
   const [msg, setMsg] = useState(null)
+  const [persist, setPersist] = useState(null)
+
+  useEffect(() => {
+    persistenceStatus().then(setPersist)
+  }, [])
 
   const doExport = () => {
     const stamp = new Date().toISOString().slice(0, 10)
@@ -51,6 +64,21 @@ export default function Settings() {
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="card safety-card">
+        <h3 className="card-title">{t('dataSafety')}</h3>
+        {persist && (
+          <p className={'persist-line ' + (persist.persisted ? 'ok' : 'warn')}>
+            <span className="persist-dot" />
+            {persist.persisted ? t('persistGranted') : t('persistDenied')}
+          </p>
+        )}
+        {persist && persist.usage != null && (
+          <p className="muted small">{t('storageUsage')}: {fmtBytes(persist.usage)}</p>
+        )}
+        <p className="safety-warning">⚠ {t('persistWarning')}</p>
+        <button className="btn btn-primary" onClick={doExport}>{t('backupNow')}</button>
       </section>
 
       <section className="card">

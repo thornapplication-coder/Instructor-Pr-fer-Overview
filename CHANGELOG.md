@@ -11,6 +11,15 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Button**.
 
+## [1.2.1] – 2026-07-23
+
+- Lokaler Speicher abgesichert: App fordert **persistenten Speicher** an
+  (verhindert automatisches Löschen durch den Browser, v. a. iPad/Safari).
+- Neue Sektion **„Datensicherheit"** in den Einstellungen (Status, Warnhinweis,
+  Ein-Klick-Backup).
+- Hinweis: Ein bewusstes „Websitedaten/Cookies löschen" lässt sich nur durch den
+  (kommenden) Cloud-Sync vollständig absichern.
+
 ## [1.2.0] – 2026-07-23
 
 - Neues, klareres App-Logo (eigene Wave-Bildmarke) statt der dunklen Kachel.

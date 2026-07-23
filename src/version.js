@@ -4,11 +4,28 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.2.0'
+export const APP_VERSION = '1.2.1'
 export const APP_BUILD_DATE = '2026-07-23'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.2.1',
+    date: '2026-07-23',
+    type: 'patch',
+    changes: {
+      de: [
+        'Lokaler Speicher abgesichert: App fordert „persistenten Speicher" an (verhindert automatisches Löschen durch den Browser, v. a. auf iPad/Safari).',
+        'Neue Sektion „Datensicherheit" in den Einstellungen mit Status, Warnhinweis und Ein-Klick-Backup.',
+        'Hinweis: Ein bewusstes „Websitedaten/Cookies löschen" kann nur der (kommende) Cloud-Sync vollständig absichern.'
+      ],
+      en: [
+        'Hardened local storage: the app requests “persistent storage” (prevents automatic browser eviction, esp. on iPad/Safari).',
+        'New “Data safety” section in Settings with status, a warning and a one-click backup.',
+        'Note: a manual “clear site data/cookies” can only be fully protected by the (upcoming) cloud sync.'
+      ]
+    }
+  },
   {
     version: '1.2.0',
     date: '2026-07-23',
