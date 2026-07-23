@@ -1,8 +1,10 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
+import CategoryManager from '../components/CategoryManager.jsx'
+import { useSort, Th } from '../components/sortable.jsx'
 import { formatDate } from '../lib/format.js'
-import { ASSIGNMENT_STEPS, ASSIGNMENT_STATUS, STAFF_TYPE } from '../data/pipeline.js'
+import { ASSIGNMENT_STATUS, STAFF_TYPE } from '../data/pipeline.js'
 
 function providersForStep(providers, step) {
   if (!step.providerType) return providers
@@ -18,14 +20,22 @@ function targetLabel(providers, assignment) {
   return null
 }
 
+// What a cell shows: "n/a" when marked so, else provider/location, else null.
+function cellLabel(providers, a) {
+  if (!a) return null
+  if (a.status === 'na') return 'n/a'
+  return targetLabel(providers, a)
+}
+
 export default function Planning() {
-  const { data, t, lang } = useStore()
-  const { trainers, providers } = data
+  const { data, t, lang, setAssignmentSteps } = useStore()
+  const { trainers, providers, assignmentSteps } = data
   const [q, setQ] = useState('')
   const [fBase, setFBase] = useState('')
   const [fStaff, setFStaff] = useState('')
   const [fOre, setFOre] = useState('')
   const [editing, setEditing] = useState(null)
+  const [manageSteps, setManageSteps] = useState(false)
 
   const bases = useMemo(() => [...new Set(trainers.map((x) => x.base))].sort(), [trainers])
 
@@ -35,9 +45,21 @@ export default function Planning() {
       .filter((x) => (fBase ? x.base === fBase : true))
       .filter((x) => (fStaff ? (x.staffType || 'internal') === fStaff : true))
       .filter((x) => (fOre ? x.ore === fOre : true))
-      .filter((x) => (n ? [x.name, x.tlc, x.base].join(' ').toLowerCase().includes(n) : true))
-      .sort((a, b) => a.name.localeCompare(b.name))
+      .filter((x) => (n ? [x.name, x.tlc, x.base, x.qual].join(' ').toLowerCase().includes(n) : true))
   }, [trainers, q, fBase, fStaff, fOre])
+
+  const accessors = useMemo(() => {
+    const a = {
+      name: (x) => x.name,
+      staff: (x) => t('staff_' + (x.staffType || 'internal'))
+    }
+    for (const s of assignmentSteps) {
+      a['step_' + s.id] = (x) => cellLabel(providers, x.assignments?.[s.id]) || ''
+    }
+    return a
+  }, [assignmentSteps, providers, t])
+  const { sorted, sortKey, dir, toggle } = useSort(rows, accessors, 'name')
+  const sp = { sortKey, dir, onSort: toggle }
 
   return (
     <div className="tab-pane">
@@ -57,7 +79,9 @@ export default function Planning() {
           <option value="">{t('filterOre')}: {t('all')}</option>
           {['A', 'B', 'C'].map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
-        <span className="count-pill">{rows.length} / {trainers.length}</span>
+        <button className="btn btn-ghost push-right" onClick={() => setManageSteps(true)}>
+          ⚙ {t('manageSteps')}
+        </button>
       </div>
 
       <p className="planning-note">
@@ -69,17 +93,23 @@ export default function Planning() {
         <table className="data-table planning-table">
           <thead>
             <tr>
-              <th>{t('f_name')}</th>
-              <th>{t('f_staffType')}</th>
-              {ASSIGNMENT_STEPS.map((s) => (
-                <th key={s.id} style={{ borderBottom: `3px solid ${s.color}` }}>
-                  {lang === 'de' ? s.de : s.en}
-                </th>
+              <Th label={t('f_name')} k="name" {...sp} />
+              <Th label={t('f_staffType')} k="staff" {...sp} />
+              {assignmentSteps.map((s) => (
+                <Th
+                  key={s.id}
+                  label={s.label}
+                  k={'step_' + s.id}
+                  sortKey={sortKey}
+                  dir={dir}
+                  onSort={toggle}
+                  className="step-col"
+                />
               ))}
             </tr>
           </thead>
           <tbody>
-            {rows.map((x) => {
+            {sorted.map((x) => {
               const staff = STAFF_TYPE[x.staffType || 'internal']
               return (
                 <tr key={x.id}>
@@ -89,12 +119,12 @@ export default function Planning() {
                   </td>
                   <td>
                     <span className="staff-tag" style={{ background: staff.color }}>
-                      {lang === 'de' ? staff.de : staff.en}
+                      {t('staff_' + (x.staffType || 'internal'))}
                     </span>
                   </td>
-                  {ASSIGNMENT_STEPS.map((s) => {
+                  {assignmentSteps.map((s) => {
                     const a = x.assignments?.[s.id]
-                    const label = targetLabel(providers, a)
+                    const label = cellLabel(providers, a)
                     const st = ASSIGNMENT_STATUS[a?.status] || ASSIGNMENT_STATUS.open
                     return (
                       <td key={s.id}>
@@ -115,23 +145,29 @@ export default function Planning() {
                 </tr>
               )
             })}
-            {rows.length === 0 && (
-              <tr><td colSpan={2 + ASSIGNMENT_STEPS.length} className="empty-row">{t('noTrainers')}</td></tr>
+            {sorted.length === 0 && (
+              <tr><td colSpan={2 + assignmentSteps.length} className="empty-row">{t('noTrainers')}</td></tr>
             )}
           </tbody>
         </table>
       </div>
 
       {editing && (
-        <PlanningModal trainer={editing} providers={providers} onClose={() => setEditing(null)} />
+        <PlanningModal trainer={editing} providers={providers} steps={assignmentSteps} onClose={() => setEditing(null)} />
+      )}
+      {manageSteps && (
+        <Modal title={t('manageSteps')} onClose={() => setManageSteps(false)}
+          footer={<div className="foot-row"><p className="muted small">{t('dragHint')}</p>
+            <div className="push-right"><button className="btn btn-primary" onClick={() => setManageSteps(false)}>{t('close')}</button></div></div>}>
+          <CategoryManager items={assignmentSteps} onChange={setAssignmentSteps} />
+        </Modal>
       )}
     </div>
   )
 }
 
-function PlanningModal({ trainer, providers, onClose }) {
+function PlanningModal({ trainer, providers, steps, onClose }) {
   const { t, lang, setAssignment, upsertTrainer } = useStore()
-
   const setStep = (stepId, changes) => setAssignment(trainer.id, stepId, changes)
   const setStaff = (v) => upsertTrainer({ ...trainer, staffType: v })
 
@@ -164,41 +200,27 @@ function PlanningModal({ trainer, providers, onClose }) {
       </div>
 
       <div className="assign-editor">
-        {ASSIGNMENT_STEPS.map((s) => {
+        {steps.map((s) => {
           const a = trainer.assignments?.[s.id] || {}
           const opts = providersForStep(providers, s)
           return (
             <div className="assign-block" key={s.id} style={{ borderLeft: `4px solid ${s.color}` }}>
-              <div className="assign-block-title">{lang === 'de' ? s.de : s.en}</div>
+              <div className="assign-block-title">{s.label}</div>
               <div className="assign-grid">
                 <label className="field">
                   <span className="field-label">{t('provider')}</span>
-                  <select
-                    className="input"
-                    value={a.providerId || ''}
-                    onChange={(e) => setStep(s.id, { providerId: e.target.value })}
-                  >
+                  <select className="input" value={a.providerId || ''} onChange={(e) => setStep(s.id, { providerId: e.target.value })}>
                     <option value="">{t('noProvider')}</option>
-                    {opts.map((p) => (
-                      <option key={p.id} value={p.id}>{p.name || '(?)'}</option>
-                    ))}
+                    {opts.map((p) => (<option key={p.id} value={p.id}>{p.name || '(?)'}</option>))}
                   </select>
                 </label>
                 <label className="field">
                   <span className="field-label">{t('location')}</span>
-                  <input
-                    className="input"
-                    value={a.location || ''}
-                    onChange={(e) => setStep(s.id, { location: e.target.value })}
-                  />
+                  <input className="input" value={a.location || ''} onChange={(e) => setStep(s.id, { location: e.target.value })} />
                 </label>
                 <label className="field">
                   <span className="field-label">{t('status')}</span>
-                  <select
-                    className="input"
-                    value={a.status || 'open'}
-                    onChange={(e) => setStep(s.id, { status: e.target.value })}
-                  >
+                  <select className="input" value={a.status || 'open'} onChange={(e) => setStep(s.id, { status: e.target.value })}>
                     {Object.entries(ASSIGNMENT_STATUS).map(([k, v]) => (
                       <option key={k} value={k}>{lang === 'de' ? v.de : v.en}</option>
                     ))}
@@ -206,20 +228,11 @@ function PlanningModal({ trainer, providers, onClose }) {
                 </label>
                 <label className="field">
                   <span className="field-label">{t('targetDate')}</span>
-                  <input
-                    className="input"
-                    type="date"
-                    value={a.date || ''}
-                    onChange={(e) => setStep(s.id, { date: e.target.value })}
-                  />
+                  <input className="input" type="date" value={a.date || ''} onChange={(e) => setStep(s.id, { date: e.target.value })} />
                 </label>
                 <label className="field span2">
                   <span className="field-label">{t('note')}</span>
-                  <input
-                    className="input"
-                    value={a.note || ''}
-                    onChange={(e) => setStep(s.id, { note: e.target.value })}
-                  />
+                  <input className="input" value={a.note || ''} onChange={(e) => setStep(s.id, { note: e.target.value })} />
                 </label>
               </div>
             </div>

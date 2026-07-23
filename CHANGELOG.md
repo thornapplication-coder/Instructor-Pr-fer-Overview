@@ -11,6 +11,18 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Button**.
 
+## [1.3.0] – 2026-07-23
+
+- Neues Logo (weißes „737", darunter „TRAINER" in Blau) – überall inkl.
+  Homescreen-Icon; „EWL" entfernt.
+- Trainer-Tabelle **überall sortierbar** (Spaltenkopf antippen).
+- **FTE** pro Person editierbar (Default 1 = 100%), eigene Spalte; KPI nutzt diese Werte.
+- Umschulungs-**Suche** filtert auch nach Qualifikation und intern/extern.
+- **Planung**: Spalten frei editierbar (umbenennen/Farbe/hinzufügen/löschen/sortieren),
+  Matrix sortierbar, Status **„n/a"** verfügbar.
+- **Reload-Button** oben neben DE/EN; **Version** jetzt unten mittig.
+- **Copyright** „© Copyright by Patrick Thorn" unten und in allen Exporten (mit Version).
+
 ## [1.2.1] – 2026-07-23
 
 - Lokaler Speicher abgesichert: App fordert **persistenten Speicher** an

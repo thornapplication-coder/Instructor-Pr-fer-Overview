@@ -15,8 +15,8 @@ export default defineConfig({
       registerType: 'prompt', // show an explicit "Update" button instead of silent reload
       includeAssets: ['favicon.ico', 'icons/apple-touch-icon.png'],
       manifest: {
-        name: 'EWL 737 Trainer & Examiner Monitoring',
-        short_name: 'EWL 737',
+        name: '737 Trainer & Examiner Monitoring',
+        short_name: '737 TRAINER',
         description:
           'Monitoring & Steuerung der Instruktoren und Prüfer für den 737 MAX Phase-In (Eurowings).',
         lang: 'de',

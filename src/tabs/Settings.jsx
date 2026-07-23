@@ -1,7 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { downloadJson } from '../lib/format.js'
-import { APP_VERSION, APP_BUILD_DATE, CHANGELOG } from '../version.js'
+import { APP_VERSION, APP_BUILD_DATE, CHANGELOG, COPYRIGHT } from '../version.js'
 import { cloudConfigured } from '../lib/supabaseSync.js'
 import { persistenceStatus } from '../lib/persistence.js'
 
@@ -24,7 +24,11 @@ export default function Settings() {
 
   const doExport = () => {
     const stamp = new Date().toISOString().slice(0, 10)
-    downloadJson(`ewl737-backup-${stamp}.json`, exportData())
+    const payload = {
+      _meta: { copyright: COPYRIGHT, version: APP_VERSION, exportedAt: new Date().toISOString() },
+      ...exportData()
+    }
+    downloadJson(`737trainer-backup-${stamp}.json`, payload)
   }
 
   const doImport = (file) => {

@@ -1,20 +1,25 @@
 import React from 'react'
 import { useStore } from '../lib/store.jsx'
-import { APP_VERSION } from '../version.js'
 
-// Custom app brand mark (inline SVG) — an ascending "wave" motif in the
-// Eurowings palette on a clean white tile. Cohesive with the PWA icon.
+// App brand mark (inline SVG) — matches the home-screen icon: burgundy tile,
+// white "737", blue "TRAINER". White ring so it reads on the burgundy header.
 function BrandMark() {
   return (
-    <div className="brandmark" aria-label="EWL 737">
-      <svg viewBox="0 0 100 100" width="44" height="44" role="img">
-        <rect x="3" y="3" width="94" height="94" rx="24" fill="#ffffff" />
-        <path d="M25 65 L41 41" stroke="#6BCCE0" strokeWidth="9" strokeLinecap="round" />
-        <path d="M38 69 L59 37" stroke="#00A6CF" strokeWidth="9" strokeLinecap="round" />
-        <path d="M52 73 L81 33" stroke="#AF1E65" strokeWidth="9" strokeLinecap="round" />
-        <text x="50" y="90" textAnchor="middle" fontSize="15" fontWeight="800" fill="#871C54">
-          737
-        </text>
+    <div className="brandmark" aria-label="737 TRAINER">
+      <svg viewBox="0 0 120 120" width="46" height="46" role="img">
+        <defs>
+          <linearGradient id="ewTile" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stopColor="#AF1E65" />
+            <stop offset="1" stopColor="#871C54" />
+          </linearGradient>
+          <clipPath id="ewClip"><rect x="4" y="4" width="112" height="112" rx="26" /></clipPath>
+        </defs>
+        <rect x="4" y="4" width="112" height="112" rx="26" fill="url(#ewTile)" stroke="#fff" strokeWidth="3" />
+        <g clipPath="url(#ewClip)">
+          <ellipse cx="28" cy="106" rx="42" ry="38" fill="#00A6CF" opacity="0.28" />
+        </g>
+        <text x="60" y="70" textAnchor="middle" fontSize="46" fontWeight="800" fill="#fff" fontFamily="Mulish, sans-serif">737</text>
+        <text x="61" y="93" textAnchor="middle" fontSize="20" fontWeight="800" fill="#2196F3" fontFamily="Mulish, sans-serif" letterSpacing="1">TRAINER</text>
       </svg>
     </div>
   )
@@ -51,7 +56,14 @@ export default function TopBar({ tabs, active, onSelect }) {
               </button>
             ))}
           </div>
-          <span className="version-chip">v{APP_VERSION}</span>
+          <button
+            className="reload-btn"
+            onClick={() => window.location.reload()}
+            title={t('reload')}
+            aria-label={t('reload')}
+          >
+            ⟳
+          </button>
         </div>
       </div>
       <nav className="tabs" aria-label="sections">

@@ -9,6 +9,7 @@ import Planning from './tabs/Planning.jsx'
 import Statistics from './tabs/Statistics.jsx'
 import Providers from './tabs/Providers.jsx'
 import Settings from './tabs/Settings.jsx'
+import { APP_VERSION, COPYRIGHT } from './version.js'
 
 const TABS = [
   { id: 'overview', labelKey: 'tab_overview', Comp: Overview },
@@ -36,7 +37,7 @@ export default function App() {
         <Current />
       </main>
       <footer className="app-footer">
-        <span>EWL 737 Trainer &amp; Examiner Monitoring · Eurowings</span>
+        <span>{COPYRIGHT} · v{APP_VERSION}</span>
       </footer>
     </div>
   )

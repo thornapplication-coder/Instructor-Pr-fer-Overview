@@ -1,6 +1,5 @@
 // Live aggregations over the trainer list. Category orders mirror the Excel
 // "Statistik_Daten" tab so the numbers line up 1:1 with the source file.
-import { partTimeFactor } from './format.js'
 
 const QUAL_ORDER = ['SEN', 'TRE', 'TRI', 'new TRI', 'LTC', 'SFI', 'TKI']
 const BASE_ORDER = ['PMI', 'VIE', 'SZG', 'PRG', 'ARN']
@@ -95,11 +94,10 @@ export function headcount(trainers) {
   const examiners = trainers.filter((t) => EXAMINER.has(t.qual) || String(t.qual).startsWith('TRE'))
   const instructors = trainers.filter((t) => INSTRUCTOR.has(t.qual))
   const retiring = trainers.filter((t) => t.ore === 'Rente')
-  // Weighted FTE (VZ = 1.0), ignoring non-numeric part-time strings.
+  // Weighted FTE from the per-person editable FTE field (default 1.0).
   let fte = 0
   for (const t of trainers) {
-    const f = partTimeFactor(t.partTime)
-    fte += f == null ? 1 : f
+    fte += typeof t.fte === 'number' ? t.fte : 1
   }
   return {
     total: trainers.length,

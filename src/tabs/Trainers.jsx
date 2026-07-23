@@ -2,9 +2,12 @@ import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
+import { useSort, Th } from '../components/sortable.jsx'
 import { formatPartTime, formatDate, classNames } from '../lib/format.js'
-import { CONV_STATUS, STAFF_TYPE, stageLabel } from '../data/pipeline.js'
+import { CONV_STATUS, STAFF_TYPE, stageLabel, stageIndex } from '../data/pipeline.js'
 import { qualIndex } from '../data/qualifications.js'
+
+const ORE_RANK = { A: 0, B: 1, C: 2, Rente: 3 }
 
 const ORES = ['A', 'B', 'C', 'Rente', '']
 
@@ -67,8 +70,26 @@ export default function Trainers() {
               .includes(needle)
           : true
       )
-      .sort((a, b) => a.name.localeCompare(b.name))
   }, [trainers, q, fBase, fQual, fOre, fStaff])
+
+  const accessors = useMemo(
+    () => ({
+      qual: (x) => qualIndex(quals, x.qual),
+      base: (x) => x.base,
+      tlc: (x) => x.tlc,
+      name: (x) => x.name,
+      remark: (x) => x.remark || '',
+      fte: (x) => (typeof x.fte === 'number' ? x.fte : 1),
+      sim: (x) => x.simSessions || 0,
+      lifus: (x) => x.lifusLegs || 0,
+      ore: (x) => (x.ore in ORE_RANK ? ORE_RANK[x.ore] : 9),
+      staff: (x) => x.staffType || 'internal',
+      authority: (x) => x.authority || '',
+      stage: (x) => stageIndex(stages, x.conv?.stage)
+    }),
+    [quals, stages]
+  )
+  const { sorted, sortKey, dir, toggle } = useSort(rows, accessors, 'name')
 
   const startAdd = () =>
     setEditing({
@@ -139,22 +160,25 @@ export default function Trainers() {
         <table className="data-table">
           <thead>
             <tr>
-              <th>{t('f_qual')}</th>
-              <th>{t('f_base')}</th>
-              <th>{t('f_tlc')}</th>
-              <th>{t('f_name')}</th>
-              <th>{t('f_remark')}</th>
-              <th className="num">{t('f_partTime')}</th>
-              <th className="num">SIM</th>
-              <th className="num">LIFUS</th>
-              <th>{t('f_ore')}</th>
-              <th>{t('f_staffType')}</th>
-              <th>{t('f_authority')}</th>
-              <th>{t('f_conversion')}</th>
+              {(() => { const p = { sortKey, dir, onSort: toggle }; return (<>
+              <Th label={t('f_qual')} k="qual" {...p} />
+              <Th label={t('f_base')} k="base" {...p} />
+              <Th label={t('f_tlc')} k="tlc" {...p} />
+              <Th label={t('f_name')} k="name" {...p} />
+              <Th label={t('f_remark')} k="remark" {...p} />
+              <Th label={t('f_partTime')} k="fte" className="num" {...p} />
+              <Th label={t('f_fte')} k="fte" className="num" {...p} />
+              <Th label="SIM" k="sim" className="num" {...p} />
+              <Th label="LIFUS" k="lifus" className="num" {...p} />
+              <Th label={t('f_ore')} k="ore" {...p} />
+              <Th label={t('f_staffType')} k="staff" {...p} />
+              <Th label={t('f_authority')} k="authority" {...p} />
+              <Th label={t('f_conversion')} k="stage" {...p} />
+              </>) })()}
             </tr>
           </thead>
           <tbody>
-            {rows.map((x) => (
+            {sorted.map((x) => (
               <tr key={x.id} onClick={() => setEditing({ ...x })} className="clickable">
                 <td><span className="qual-tag" style={{ background: qualColor(x.qual) }}>{x.qual}</span></td>
                 <td>{x.base}</td>
@@ -162,6 +186,7 @@ export default function Trainers() {
                 <td className="strong">{x.name}</td>
                 <td className="muted">{x.remark || '–'}</td>
                 <td className="num">{formatPartTime(x.partTime, lang)}</td>
+                <td className="num">{(typeof x.fte === 'number' ? x.fte : 1).toFixed(2).replace(/\.00$/, '')}</td>
                 <td className="num">{x.simSessions}</td>
                 <td className="num">{x.lifusLegs}</td>
                 <td>
@@ -180,7 +205,7 @@ export default function Trainers() {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={12} className="empty-row">{t('noTrainers')}</td>
+                <td colSpan={13} className="empty-row">{t('noTrainers')}</td>
               </tr>
             )}
           </tbody>
@@ -229,7 +254,8 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
       ...f,
       partTime: ptFromInput(f.partTimeInput),
       simSessions: Number(f.simSessions) || 0,
-      lifusLegs: Number(f.lifusLegs) || 0
+      lifusLegs: Number(f.lifusLegs) || 0,
+      fte: f.fte === '' || f.fte == null || isNaN(Number(f.fte)) ? 1 : Number(f.fte)
     }
     delete out.partTimeInput
     delete out._isNew
@@ -278,6 +304,17 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
         </Field>
         <Field label={t('f_partTime')}>
           <input className="input" value={f.partTimeInput} placeholder="VZ / 80%" onChange={(e) => set('partTimeInput', e.target.value)} />
+        </Field>
+        <Field label={t('f_fte') + ' (1 = 100%)'}>
+          <input
+            className="input"
+            type="number"
+            step="0.05"
+            min="0"
+            max="2"
+            value={f.fte ?? 1}
+            onChange={(e) => set('fte', e.target.value)}
+          />
         </Field>
         <Field label={t('f_remark')} span2>
           <input className="input" value={f.remark} onChange={(e) => set('remark', e.target.value)} />

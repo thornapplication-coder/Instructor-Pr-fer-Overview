@@ -4,11 +4,37 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.2.1'
+export const APP_VERSION = '1.3.0'
 export const APP_BUILD_DATE = '2026-07-23'
+export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.3.0',
+    date: '2026-07-23',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neues Logo (weißes „737", darunter „TRAINER" in Blau) – überall inkl. Homescreen-Icon; „EWL" entfernt.',
+        'Trainer-Tabelle überall sortierbar (Spaltenkopf antippen: Name, Qualifikation, Base, FTE …).',
+        'FTE pro Person editierbar (Default 1 = 100%), eigene Spalte + KPI nutzt diese Werte.',
+        'Umschulungs-Suche filtert jetzt auch nach Qualifikation und intern/extern.',
+        'Planung: Spalten frei editierbar (umbenennen/Farbe/hinzufügen/löschen/sortieren), Matrix sortierbar, Status „n/a" verfügbar.',
+        'Reload-Button oben neben DE/EN; Version steht jetzt unten mittig.',
+        'Copyright „© Copyright by Patrick Thorn" unten und in allen Exporten (mit Version).'
+      ],
+      en: [
+        'New logo (white “737” with blue “TRAINER”) everywhere incl. home-screen icon; “EWL” removed.',
+        'Trainer table sortable everywhere (click a header: name, qualification, base, FTE …).',
+        'Editable FTE per person (default 1 = 100%), own column + KPI uses these values.',
+        'Conversion search now also filters by qualification and internal/external.',
+        'Planning: fully editable columns (rename/colour/add/delete/reorder), sortable matrix, “n/a” status.',
+        'Reload button next to DE/EN; version now shown bottom-centre.',
+        'Copyright “© Copyright by Patrick Thorn” at the bottom and in all exports (with version).'
+      ]
+    }
+  },
   {
     version: '1.2.1',
     date: '2026-07-23',

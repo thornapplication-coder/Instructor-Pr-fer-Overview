@@ -2,7 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
-import { CONV_STATUS, stageIndex, stageLabel, ASSIGNMENT_STEPS, STAFF_TYPE } from '../data/pipeline.js'
+import { CONV_STATUS, stageIndex, stageLabel, STAFF_TYPE } from '../data/pipeline.js'
 import { formatDate } from '../lib/format.js'
 
 function assignTarget(providers, a) {
@@ -14,9 +14,12 @@ function assignTarget(providers, a) {
 
 export default function Conversion() {
   const { data, t, lang, setConversion, setStages } = useStore()
-  const { trainers, stages, providers } = data
+  const { trainers, stages, providers, quals, assignmentSteps } = data
+  const [q, setQ] = useState('')
   const [fBase, setFBase] = useState('')
   const [fOre, setFOre] = useState('')
+  const [fQual, setFQual] = useState('')
+  const [fStaff, setFStaff] = useState('')
   const [detail, setDetail] = useState(null)
   const [manageStages, setManageStages] = useState(false)
   const [dragId, setDragId] = useState(null)
@@ -25,9 +28,20 @@ export default function Conversion() {
   const bases = useMemo(() => [...new Set(trainers.map((x) => x.base))].sort(), [trainers])
   const stageIds = useMemo(() => new Set(stages.map((s) => s.id)), [stages])
 
+  const needle = q.trim().toLowerCase()
   const visible = trainers.filter(
     (x) =>
-      (fBase ? x.base === fBase : true) && (fOre ? x.ore === fOre : true) && x.ore !== 'Rente'
+      x.ore !== 'Rente' &&
+      (fBase ? x.base === fBase : true) &&
+      (fOre ? x.ore === fOre : true) &&
+      (fQual ? x.qual === fQual : true) &&
+      (fStaff ? (x.staffType || 'internal') === fStaff : true) &&
+      (needle
+        ? [x.name, x.qual, x.base, x.tlc, t('staff_' + (x.staffType || 'internal'))]
+            .join(' ')
+            .toLowerCase()
+            .includes(needle)
+        : true)
   )
 
   const setStage = (tr, stageId) => {
@@ -51,6 +65,16 @@ export default function Conversion() {
     <div className="tab-pane">
       <div className="toolbar">
         <h2 className="pane-title">{t('conversion_title')}</h2>
+        <input className="input search" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
+        <select className="input" value={fQual} onChange={(e) => setFQual(e.target.value)}>
+          <option value="">{t('filterQual')}: {t('all')}</option>
+          {quals.map((qv) => <option key={qv.id} value={qv.id}>{qv.label}</option>)}
+        </select>
+        <select className="input" value={fStaff} onChange={(e) => setFStaff(e.target.value)}>
+          <option value="">{t('filterStaff')}: {t('all')}</option>
+          <option value="internal">{t('staff_internal')}</option>
+          <option value="external">{t('staff_external')}</option>
+        </select>
         <select className="input" value={fBase} onChange={(e) => setFBase(e.target.value)}>
           <option value="">{t('filterBase')}: {t('all')}</option>
           {bases.map((b) => <option key={b} value={b}>{b}</option>)}
@@ -109,14 +133,14 @@ export default function Conversion() {
                         </span>
                       </div>
                       {(() => {
-                        const chips = ASSIGNMENT_STEPS
+                        const chips = assignmentSteps
                           .map((stp) => ({ stp, label: assignTarget(providers, x.assignments?.[stp.id]) }))
                           .filter((c) => c.label)
                         return chips.length ? (
                           <div className="conv-assign">
                             {chips.map(({ stp, label }) => (
-                              <span key={stp.id} className="assign-chip" title={(lang === 'de' ? stp.de : stp.en) + ': ' + label}>
-                                <b>{stp.id === 'lifus' ? 'LIFUS' : stp.id.toUpperCase()}</b> {label}
+                              <span key={stp.id} className="assign-chip" title={stp.label + ': ' + label}>
+                                <b>{stp.label}:</b> {label}
                               </span>
                             ))}
                           </div>

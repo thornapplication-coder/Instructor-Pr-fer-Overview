@@ -4,10 +4,11 @@ export const LANGS = ['de', 'en']
 
 const DICT = {
   // ---- generic / chrome
-  appTitle: { de: 'EWL 737 Trainer & Prüfer Monitoring', en: 'EWL 737 Trainer & Examiner Monitoring' },
+  appTitle: { de: '737 Trainer & Prüfer Monitoring', en: '737 Trainer & Examiner Monitoring' },
   appSubtitle: { de: 'Boeing 737 MAX Phase-In · Instruktoren & Prüfer', en: 'Boeing 737 MAX Phase-In · Instructors & Examiners' },
   asOf: { de: 'Stand', en: 'as of' },
   update: { de: 'Update', en: 'Update' },
+  reload: { de: 'Neu laden', en: 'Reload' },
   updateAvailable: { de: 'Neue Version verfügbar', en: 'New version available' },
   updateNow: { de: 'Jetzt aktualisieren', en: 'Update now' },
   later: { de: 'Später', en: 'Later' },
@@ -67,6 +68,7 @@ const DICT = {
   f_authority: { de: 'Ausstellende Behörde', en: 'Issuing authority' },
   f_bFrom: { de: 'B ab', en: 'B from' },
   f_conversion: { de: 'Umschulung', en: 'Conversion' },
+  f_fte: { de: 'FTE', en: 'FTE' },
 
   trainers_title: { de: 'Trainer & Prüfer', en: 'Trainers & Examiners' },
   addTrainer: { de: 'Trainer hinzufügen', en: 'Add trainer' },
@@ -210,6 +212,7 @@ const DICT = {
   manageQuals: { de: 'Berechtigungen bearbeiten', en: 'Edit qualifications' },
   manageProviderTypes: { de: 'Angebots-Typen bearbeiten', en: 'Edit offering types' },
   manageProviderStatus: { de: 'Status bearbeiten', en: 'Edit statuses' },
+  manageSteps: { de: 'Spalten bearbeiten', en: 'Edit columns' },
   dragHint: { de: 'Ziehen (⠿) oder Pfeile zum Sortieren · Farbe links', en: 'Drag (⠿) or arrows to reorder · colour on the left' },
   categoriesEditableHint: {
     de: 'Balken oben, Werte im Diagramm – die Tabelle darunter entfällt. Berechtigungen/Phasen sind editierbar (umbenennen, Farbe).',

@@ -1,8 +1,9 @@
 import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { SEED_TRAINERS } from '../data/seed.js'
 import { SEED_PROVIDERS, DEFAULT_PROVIDER_TYPES, DEFAULT_PROVIDER_STATUS } from '../data/providers.js'
-import { DEFAULT_STAGES, mergeAssignments } from '../data/pipeline.js'
+import { DEFAULT_STAGES, ASSIGNMENT_STEPS, mergeAssignments } from '../data/pipeline.js'
 import { DEFAULT_QUALS, normalizeQual } from '../data/qualifications.js'
+import { partTimeFactor } from './format.js'
 import { translate } from './i18n.js'
 
 const STORAGE_KEY = 'ewl737:data:v1'
@@ -21,9 +22,17 @@ function newId(prefix) {
 // Ensure every trainer has conversion, staff type and assignment objects
 // (forward-compatible migration for older / imported payloads).
 function withConvDefaults(trainer) {
+  // Default FTE: 1.0 (100%). Seed from part-time factor where known.
+  const fte =
+    typeof trainer.fte === 'number'
+      ? trainer.fte
+      : partTimeFactor(trainer.partTime) == null
+        ? 1
+        : partTimeFactor(trainer.partTime)
   return {
     staffType: 'internal',
     ...trainer,
+    fte,
     qual: normalizeQual(trainer.qual),
     conv: {
       stage: 'nominated',
@@ -49,6 +58,7 @@ function freshData(lang = 'de') {
     providers: SEED_PROVIDERS.map((p) => ({ ...p })),
     stages: DEFAULT_STAGES.map((s) => ({ ...s })),
     quals: DEFAULT_QUALS.map((q) => ({ ...q })),
+    assignmentSteps: ASSIGNMENT_STEPS.map((s) => ({ ...s })),
     providerTypes: DEFAULT_PROVIDER_TYPES.map((x) => ({ ...x })),
     providerStatus: DEFAULT_PROVIDER_STATUS.map((x) => ({ ...x })),
     updatedAt: nowIso()
@@ -83,6 +93,10 @@ function normalize(obj) {
         ? obj.stages.map(migrateStage)
         : base.stages,
     quals: Array.isArray(obj.quals) && obj.quals.length ? obj.quals.map((q) => ({ ...q })) : base.quals,
+    assignmentSteps:
+      Array.isArray(obj.assignmentSteps) && obj.assignmentSteps.length
+        ? obj.assignmentSteps.map((s) => ({ ...s }))
+        : base.assignmentSteps,
     providerTypes:
       Array.isArray(obj.providerTypes) && obj.providerTypes.length
         ? obj.providerTypes.map((x) => ({ ...x }))
@@ -182,6 +196,7 @@ export function StoreProvider({ children }) {
 
       setStages: (stages) => patch((d) => ({ ...d, stages })),
       setQuals: (quals) => patch((d) => ({ ...d, quals })),
+      setAssignmentSteps: (assignmentSteps) => patch((d) => ({ ...d, assignmentSteps })),
       setProviderTypes: (providerTypes) => patch((d) => ({ ...d, providerTypes })),
       setProviderStatus: (providerStatus) => patch((d) => ({ ...d, providerStatus })),
 
