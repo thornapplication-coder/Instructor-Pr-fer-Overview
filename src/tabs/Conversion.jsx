@@ -15,8 +15,8 @@ function assignTarget(providers, a) {
 }
 
 export default function Conversion() {
-  const { data, t, lang, setConversion, setStages } = useStore()
-  const { trainers, stages, providers, quals, assignmentSteps } = data
+  const { data, t, lang, setConversion, setStages, setConversionAircraft } = useStore()
+  const { trainers, stages, providers, quals, assignmentSteps, conversionFrom, conversionTo } = data
   const [q, setQ] = useState('')
   const [fBase, setFBase] = useState('')
   const [fOre, setFOre] = useState('')
@@ -70,6 +70,15 @@ export default function Conversion() {
     <div className="tab-pane">
       <div className="toolbar">
         <h2 className="pane-title">{t('conversion_title')}</h2>
+        <div className="conv-target" title={t('conv_targetHint')}>
+          <select className="input" value={conversionFrom} onChange={(e) => setConversionAircraft(e.target.value, conversionTo)}>
+            {[...AIRCRAFT].sort().map((a) => <option key={a} value={a}>{a}</option>)}
+          </select>
+          <span className="conv-arrow">→</span>
+          <select className="input" value={conversionTo} onChange={(e) => setConversionAircraft(conversionFrom, e.target.value)}>
+            {[...AIRCRAFT].sort().map((a) => <option key={a} value={a}>{a}</option>)}
+          </select>
+        </div>
         <input className="input search" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
         <select className="input" value={fAircraft} onChange={(e) => setFAircraft(e.target.value)}>
           <option value="">{t('filterAircraft')}: {t('all')}</option>

@@ -43,6 +43,25 @@ function migrateStage(s) {
   return { id: s.id, label: s.label ?? s.de ?? s.en ?? s.id, color: s.color || '#AF1E65' }
 }
 
+// The first stage ("Nominierung") = not yet started; everyone else is in/after
+// conversion. Aircraft follows automatically: first stage -> "from" (A320),
+// any other stage -> "to" (B737).
+function firstStageId(stages) {
+  return (stages && stages[0] && stages[0].id) || 'nominated'
+}
+function deriveAircraft(conv, stages, from, to) {
+  const stage = (conv && conv.stage) || firstStageId(stages)
+  return stage === firstStageId(stages) ? from : to
+}
+function applyAircraft(d) {
+  const from = d.conversionFrom || 'A320'
+  const to = d.conversionTo || 'B737'
+  return {
+    ...d,
+    trainers: d.trainers.map((t) => ({ ...t, aircraft: deriveAircraft(t.conv, d.stages, from, to) }))
+  }
+}
+
 function freshData(lang = 'de') {
   return {
     schema: SCHEMA,
@@ -54,6 +73,8 @@ function freshData(lang = 'de') {
     assignmentSteps: ASSIGNMENT_STEPS.map((s) => ({ ...s })),
     providerTypes: DEFAULT_PROVIDER_TYPES.map((x) => ({ ...x })),
     providerStatus: DEFAULT_PROVIDER_STATUS.map((x) => ({ ...x })),
+    conversionFrom: 'A320',
+    conversionTo: 'B737',
     updatedAt: nowIso()
   }
 }
@@ -80,7 +101,7 @@ function loadData() {
 function normalize(obj) {
   const base = freshData(obj?.lang === 'en' ? 'en' : 'de')
   if (!obj || typeof obj !== 'object') return base
-  return {
+  const result = {
     schema: SCHEMA,
     lang: obj.lang === 'en' ? 'en' : 'de',
     trainers: Array.isArray(obj.trainers)
@@ -104,8 +125,12 @@ function normalize(obj) {
       Array.isArray(obj.providerStatus) && obj.providerStatus.length
         ? obj.providerStatus.map((x) => ({ ...x }))
         : base.providerStatus,
+    conversionFrom: obj.conversionFrom || 'A320',
+    conversionTo: obj.conversionTo || 'B737',
     updatedAt: obj.updatedAt || nowIso()
   }
+  // Aircraft is derived from the conversion stage (automatic).
+  return applyAircraft(result)
 }
 
 export function StoreProvider({ children }) {
@@ -142,7 +167,10 @@ export function StoreProvider({ children }) {
 
       upsertTrainer: (trainer) =>
         patch((d) => {
+          const from = d.conversionFrom || 'A320'
+          const to = d.conversionTo || 'B737'
           const t = withConvDefaults(trainer)
+          t.aircraft = deriveAircraft(t.conv, d.stages, from, to)
           const exists = d.trainers.some((x) => x.id === t.id)
           return {
             ...d,
@@ -156,12 +184,18 @@ export function StoreProvider({ children }) {
         patch((d) => ({ ...d, trainers: d.trainers.filter((x) => x.id !== id) })),
 
       setConversion: (id, convPatch) =>
-        patch((d) => ({
-          ...d,
-          trainers: d.trainers.map((x) =>
-            x.id === id ? { ...x, conv: { ...x.conv, ...convPatch } } : x
-          )
-        })),
+        patch((d) => {
+          const from = d.conversionFrom || 'A320'
+          const to = d.conversionTo || 'B737'
+          return {
+            ...d,
+            trainers: d.trainers.map((x) => {
+              if (x.id !== id) return x
+              const conv = { ...x.conv, ...convPatch }
+              return { ...x, conv, aircraft: deriveAircraft(conv, d.stages, from, to) }
+            })
+          }
+        }),
 
       setAssignment: (id, stepId, changes) =>
         patch((d) => ({
@@ -193,9 +227,11 @@ export function StoreProvider({ children }) {
       deleteProvider: (id) =>
         patch((d) => ({ ...d, providers: d.providers.filter((x) => x.id !== id) })),
 
-      setStages: (stages) => patch((d) => ({ ...d, stages })),
+      setStages: (stages) => patch((d) => applyAircraft({ ...d, stages })),
       setQuals: (quals) => patch((d) => ({ ...d, quals })),
       setAssignmentSteps: (assignmentSteps) => patch((d) => ({ ...d, assignmentSteps })),
+      setConversionAircraft: (from, to) =>
+        patch((d) => applyAircraft({ ...d, conversionFrom: from, conversionTo: to })),
       setProviderTypes: (providerTypes) => patch((d) => ({ ...d, providerTypes })),
       setProviderStatus: (providerStatus) => patch((d) => ({ ...d, providerStatus })),
 

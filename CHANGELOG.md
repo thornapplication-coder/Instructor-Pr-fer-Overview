@@ -11,6 +11,13 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Button**.
 
+## [1.6.0] – 2026-07-23
+
+- **Umschulungs-Ziel auswählbar** (A320 → B737) oben im Umschulungs-Reiter.
+- **Aircraft automatisch aus der Phase**: „Nominierung" = A320, jede weitere Phase = B737 –
+  fließt sofort in die Aircraft-Statistik ein.
+- Aircraft im Trainer-Formular dadurch schreibgeschützt (automatisch).
+
 ## [1.5.0] – 2026-07-23
 
 - **FTE-Kapazität**: „FTE in Umschulung" und „FTE verfügbar" – passen sich

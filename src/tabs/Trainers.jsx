@@ -252,9 +252,11 @@ export default function Trainers() {
 }
 
 function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSave, onDelete }) {
-  const { t, lang } = useStore()
+  const { t, lang, data } = useStore()
   const [f, setF] = useState({ ...trainer, partTimeInput: ptToInput(trainer.partTime) })
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }))
+  const firstStage = stages[0]?.id
+  const aircraftDerived = (f.conv?.stage || firstStage) === firstStage ? (data.conversionFrom || 'A320') : (data.conversionTo || 'B737')
 
   const submit = () => {
     const out = {
@@ -262,7 +264,8 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
       partTime: ptFromInput(f.partTimeInput),
       simSessions: Number(f.simSessions) || 0,
       lifusLegs: Number(f.lifusLegs) || 0,
-      fte: f.fte === '' || f.fte == null || isNaN(Number(f.fte)) ? 1 : Number(f.fte)
+      fte: f.fte === '' || f.fte == null || isNaN(Number(f.fte)) ? 1 : Number(f.fte),
+      aircraft: aircraftDerived
     }
     delete out.partTimeInput
     delete out._isNew
@@ -328,10 +331,7 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
           <input className="input" value={f.remark} onChange={(e) => set('remark', e.target.value)} />
         </Field>
         <Field label={t('f_aircraft')}>
-          <select className="input" value={f.aircraft || ''} onChange={(e) => set('aircraft', e.target.value)}>
-            <option value=""></option>
-            {alpha(AIRCRAFT).map((a) => <option key={a} value={a}>{a}</option>)}
-          </select>
+          <input className="input input-readonly" value={aircraftDerived} readOnly title={t('conv_targetHint')} />
         </Field>
         <Field label={t('f_ore')}>
           <select className="input" value={f.ore} onChange={(e) => set('ore', e.target.value)}>

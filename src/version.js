@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.5.0'
+export const APP_VERSION = '1.6.0'
 export const APP_BUILD_DATE = '2026-07-23'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.6.0',
+    date: '2026-07-23',
+    type: 'minor',
+    changes: {
+      de: [
+        'Umschulungs-Ziel auswählbar (A320 → B737) oben im Umschulungs-Reiter.',
+        'Aircraft wird jetzt automatisch aus der Phase abgeleitet: „Nominierung" = A320, jede weitere Phase = B737 – und fließt sofort in die Aircraft-Statistik ein.',
+        'Aircraft im Trainer-Formular ist dadurch schreibgeschützt (automatisch).'
+      ],
+      en: [
+        'Selectable conversion target (A320 → B737) at the top of the Conversion tab.',
+        'Aircraft is now derived automatically from the stage: “Nominated” = A320, any later stage = B737 – and flows straight into the aircraft statistics.',
+        'The aircraft field in the trainer form is therefore read-only (automatic).'
+      ]
+    }
+  },
   {
     version: '1.5.0',
     date: '2026-07-23',
