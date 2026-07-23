@@ -1,0 +1,53 @@
+// Display helpers. Keep pure (no side effects) so they are easy to reuse.
+
+// Part-time can be a number (0.8) or a string ("VZ", "DEC", "80% + NOV").
+export function formatPartTime(pt, lang) {
+  if (pt === null || pt === undefined || pt === '') return '–'
+  if (typeof pt === 'number') {
+    if (pt >= 1) return lang === 'de' ? 'VZ' : 'FT'
+    return Math.round(pt * 100) + '%'
+  }
+  const s = String(pt).trim()
+  if (s === 'VZ') return lang === 'de' ? 'VZ' : 'FT'
+  return s
+}
+
+// Numeric part-time factor for aggregation (VZ = 1.0, unknown strings ignored).
+export function partTimeFactor(pt) {
+  if (typeof pt === 'number') return pt
+  const s = String(pt || '').trim()
+  if (s === 'VZ') return 1
+  const m = s.match(/(\d+)\s*%/)
+  if (m) return Number(m[1]) / 100
+  return null
+}
+
+export function formatDate(iso, lang) {
+  if (!iso) return '–'
+  // Non-date strings (e.g. "C weil 25%") pass through unchanged.
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(iso)
+  if (!m) return iso
+  const [, y, mo, d] = m
+  return lang === 'de' ? `${d}.${mo}.${y}` : `${y}-${mo}-${d}`
+}
+
+// Split "Nachname, Vorname" for compact display where useful.
+export function shortName(name) {
+  return (name || '').split('(')[0].trim()
+}
+
+export function classNames(...xs) {
+  return xs.filter(Boolean).join(' ')
+}
+
+export function downloadJson(filename, obj) {
+  const blob = new Blob([JSON.stringify(obj, null, 2)], { type: 'application/json' })
+  const url = URL.createObjectURL(blob)
+  const a = document.createElement('a')
+  a.href = url
+  a.download = filename
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  URL.revokeObjectURL(url)
+}
