@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
+import HScroll from '../components/HScroll.jsx'
 import { CONV_STATUS, stageIndex, stageLabel, STAFF_TYPE } from '../data/pipeline.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { conversionFteSummary } from '../lib/stats.js'
@@ -105,7 +106,7 @@ export default function Conversion() {
         <span className="board-hint">{t('boardHint')}</span>
       </div>
 
-      <div className="board">
+      <HScroll className="board">
         {stages.map((s, si) => {
           const cards = visible.filter((x) => {
             const stg = x.conv?.stage || 'nominated'
@@ -178,7 +179,7 @@ export default function Conversion() {
             </div>
           )
         })}
-      </div>
+      </HScroll>
 
       {detail && (
         <ConvDetail

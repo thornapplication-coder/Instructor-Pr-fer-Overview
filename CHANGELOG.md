@@ -11,6 +11,12 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.10.4] – 2026-07-24
+
+- **Umschulungs-Board**: zusätzlicher horizontaler Scrollbalken **oberhalb** der
+  Spalten (mit dem unteren synchronisiert) – seitwärts scrollen, ohne erst ganz
+  nach unten zu müssen.
+
 ## [1.10.3] – 2026-07-24
 
 - **Diagramm-Legenden**: lange Beschriftungen (z. B. „Office/MGMT/Funktion")

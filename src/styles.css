@@ -263,6 +263,16 @@ select.input { cursor: pointer; }
 .mini-table .num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
 .mini-table .total-row td { border-top: 2px solid var(--hair); font-weight: 900; color: var(--burg-dark); }
 
+/* ---------- Horizontal scroll with a synced top scrollbar ---------- */
+.hscroll-top { overflow-x: auto; overflow-y: hidden; }
+.hscroll-spacer { height: 1px; }
+/* Always show a visible, draggable bar (also on overlay-scrollbar systems). */
+.hscroll-top::-webkit-scrollbar { height: 12px; }
+.hscroll-top::-webkit-scrollbar-track { background: var(--panel2); border-radius: 6px; }
+.hscroll-top::-webkit-scrollbar-thumb { background: #b8bdc2; border-radius: 6px; }
+.hscroll-top::-webkit-scrollbar-thumb:hover { background: #9aa0a6; }
+.hscroll-top { scrollbar-width: thin; }
+
 /* ---------- Board ---------- */
 .board { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; }
 .board-col { flex: 1 0 200px; min-width: 200px; background: var(--panel2); border-radius: var(--radius); display: flex; flex-direction: column; }
