@@ -5,6 +5,7 @@ import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
 import { formatDate } from '../lib/format.js'
 import { ASSIGNMENT_STATUS, STAFF_TYPE } from '../data/pipeline.js'
+import { qualLabel } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 
 // Match providers to a planning step by the LABELS of their offered courses
@@ -44,7 +45,7 @@ function cellLabel(providers, a) {
 
 export default function Planning() {
   const { data, t, lang, setAssignmentSteps } = useStore()
-  const { trainers, providers, assignmentSteps } = data
+  const { trainers, providers, assignmentSteps, quals } = data
   const [q, setQ] = useState('')
   const [fBase, setFBase] = useState('')
   const [fStaff, setFStaff] = useState('')
@@ -62,8 +63,8 @@ export default function Planning() {
       .filter((x) => (fStaff ? (x.staffType || 'internal') === fStaff : true))
       .filter((x) => (fOre ? x.ore === fOre : true))
       .filter((x) => (fAircraft ? x.aircraft === fAircraft : true))
-      .filter((x) => (n ? [x.name, x.tlc, x.base, x.qual, x.aircraft].join(' ').toLowerCase().includes(n) : true))
-  }, [trainers, q, fBase, fStaff, fOre, fAircraft])
+      .filter((x) => (n ? [x.name, x.tlc, x.base, qualLabel(quals, x.qual), x.aircraft].join(' ').toLowerCase().includes(n) : true))
+  }, [trainers, q, fBase, fStaff, fOre, fAircraft, quals])
 
   const accessors = useMemo(() => {
     const a = {
@@ -137,7 +138,7 @@ export default function Planning() {
                 <tr key={x.id}>
                   <td className="strong nowrap">
                     <button className="link-btn" onClick={() => setEditing(x.id)}>{x.name}</button>
-                    <div className="muted small">{x.base} · {x.qual}{x.aircraft ? ' · ' + x.aircraft : ''}</div>
+                    <div className="muted small">{x.base} · {qualLabel(quals, x.qual)}{x.aircraft ? ' · ' + x.aircraft : ''}</div>
                   </td>
                   <td>
                     <span className="staff-tag" style={{ background: staff.color }}>
@@ -236,7 +237,13 @@ function PlanningModal({ trainer, providers, steps, onClose }) {
       <div className="assign-editor">
         {steps.map((s) => {
           const a = trainer.assignments?.[s.id] || {}
-          const opts = providersForStep(providers, s, courseDefs)
+          const stepOpts = providersForStep(providers, s, courseDefs)
+          // Inject the currently-assigned provider even if it no longer matches
+          // the step's course keywords, so the controlled select never shows blank
+          // while the grid cell still displays that provider's name.
+          const assigned = a.providerId && providers.find((p) => p.id === a.providerId)
+          const opts =
+            assigned && !stepOpts.some((p) => p.id === assigned.id) ? [...stepOpts, assigned] : stepOpts
           return (
             <div className="assign-block" key={s.id} style={{ borderLeft: `4px solid ${s.color}` }}>
               <div className="assign-block-title">{s.label}</div>

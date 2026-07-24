@@ -15,8 +15,12 @@ export const DEFAULT_QUALS = [
 export function normalizeQual(q) {
   const s = String(q || '').trim()
   if (!s) return ''
+  // Custom category ids (cat-xxxxxxx) pass through untouched – never re-classify.
+  if (/^cat-/i.test(s)) return s
   if (/new\s*tri/i.test(s)) return 'TRI' // legacy "new TRI" is now plain TRI
-  if (/sen/i.test(s)) return 'SEN' // "TRE/SEN", "TRE /SEN" -> senior examiner
+  // Only genuine senior-examiner spellings collapse to SEN – anchored so that
+  // strings merely CONTAINING "sen" (e.g. "Senior LTC") keep their own value.
+  if (/^sen$/i.test(s) || /^tre\s*[/\\-]\s*sen$/i.test(s)) return 'SEN'
   return s
 }
 
@@ -24,4 +28,13 @@ export function normalizeQual(q) {
 export function qualIndex(quals, id) {
   const i = quals.findIndex((q) => q.id === id)
   return i < 0 ? quals.length + 1 : i
+}
+
+// Resolve a stored qualification id to its display label. Custom categories are
+// stored on the trainer by their (random) id, so every UI/export site must
+// resolve through this rather than printing the raw id. Falls back to the id.
+export function qualLabel(quals, id) {
+  if (id == null || id === '') return ''
+  const q = (quals || []).find((x) => x.id === id)
+  return q ? q.label : id
 }

@@ -24,6 +24,14 @@ export const SEED_PROVIDERS = PREFILL.map((name) => ({
   name
 }))
 
+// Resolve a stored provider-course id to its display label. Custom courses are
+// stored by their (random) id, so tables/exports must resolve through this.
+export function courseLabel(courseDefs, id) {
+  if (id == null || id === '') return ''
+  const c = (courseDefs || []).find((x) => x.id === id)
+  return c ? c.label : id
+}
+
 export function emptyProvider(id) {
   return {
     id,

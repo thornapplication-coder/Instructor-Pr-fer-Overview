@@ -16,13 +16,16 @@ function BrandMark() {
 }
 
 export default function TopBar({ tabs, active, onSelect }) {
-  const { t, lang, setLang, data, setTheme, saveNow } = useStore()
+  const { t, lang, setLang, data, setTheme, saveNow, saveError } = useStore()
   const [saved, setSaved] = useState(false)
   const theme = data.theme || 'light'
+  // Only flash the "saved" check when the write actually succeeded; a failed
+  // save (quota/private mode) keeps the error state instead of faking success.
   const doSave = () => {
-    saveNow()
-    setSaved(true)
-    setTimeout(() => setSaved(false), 1300)
+    if (saveNow()) {
+      setSaved(true)
+      setTimeout(() => setSaved(false), 1300)
+    }
   }
   const asOf = new Date(data.updatedAt)
   const asOfStr = isNaN(asOf) ? '' : asOf.toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB')
@@ -54,9 +57,9 @@ export default function TopBar({ tabs, active, onSelect }) {
             ))}
           </div>
           <button
-            className={'icon-round save-btn' + (saved ? ' saved' : '')}
+            className={'icon-round save-btn' + (saved ? ' saved' : '') + (saveError ? ' save-error' : '')}
             onClick={doSave}
-            title={saved ? t('saved') : t('save')}
+            title={saveError ? t('saveErr') : saved ? t('saved') : t('save')}
             aria-label={t('save')}
           >
             {saved ? (

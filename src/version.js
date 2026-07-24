@@ -4,12 +4,45 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.10.4'
+export const APP_VERSION = '1.11.0'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.11.0',
+    date: '2026-07-24',
+    type: 'minor',
+    changes: {
+      de: [
+        'Datenverlust behoben: selbst angelegte Planungsspalten (eigene Schritte) gehen beim Neuladen oder Import nicht mehr verloren.',
+        'Mehrere Tabs/Fenster: Änderungen werden nicht mehr von einem älteren offenen Tab überschrieben; fehlgeschlagene Speicherungen (voller/gesperrter Speicher) werden jetzt angezeigt statt still verschluckt.',
+        'Qualifikationen und Kurse erscheinen überall mit ihrem Namen statt mit interner ID – in Tabellen, Board, Diagrammen, Suche und allen PDF-/Excel-Exporten.',
+        'Umschulungs-Phasen: „nicht gestartet" und „freigegeben" richten sich nach der Position der Phase, nicht nach festen Namen – Phasen umbenennen/löschen bricht KPIs, Warnungen und das Board nicht mehr.',
+        '„Freigegeben" ↔ Status „erledigt" ist jetzt in allen Editoren konsistent (Board, Kapazitäts-Tabelle, Detail-Dialog) inkl. Zurücksetzen beim Verlassen der letzten Phase.',
+        'Kapazität: Trainer in Rente zählen nicht mehr als „verfügbare FTE" – konsistent mit Board und Timeline.',
+        'Import robuster: deutsche Datumsangaben (TT.MM.JJJJ) und Dezimalkomma (0,8) werden korrekt gelesen, zweistellige Jahre richtig zugeordnet, die FTE-Spalte übernommen und Titel-/Kopfzeilen über der Tabelle übersprungen.',
+        'Excel-Export gegen Formel-Einschleusung abgesichert; leere Planungszellen erscheinen im Export leer statt „[offen]".',
+        'Provider löschen entfernt jetzt auch die zugehörigen Planungs-Zuweisungen (mit Warnung, wenn welche bestehen).',
+        'Bedienung per Tastatur: Tabellenzeilen, Sortier-Überschriften und Dialoge sind jetzt per Tastatur bedienbar (Fokus im Dialog, Escape schließt); Drag & Drop funktioniert nun auch in Firefox.',
+        'Kategorien löschen fragt jetzt nach; Dashboard-PDF erzeugt kein leeres Dokument mehr, sondern fällt auf die Tabellenansicht zurück.'
+      ],
+      en: [
+        'Fixed data loss: self-added planning columns (custom steps) are no longer dropped on reload or import.',
+        'Multiple tabs/windows: edits are no longer overwritten by an older open tab; failed saves (full/blocked storage) are now surfaced instead of silently swallowed.',
+        'Qualifications and courses now show their name everywhere instead of an internal id – in tables, board, charts, search and all PDF/Excel exports.',
+        'Conversion stages: “not started” and “released” are derived from stage position, not fixed names – renaming/deleting stages no longer breaks KPIs, alerts or the board.',
+        '“Released” ↔ status “done” is now consistent across all editors (board, capacity table, detail dialog), including resetting when leaving the final stage.',
+        'Capacity: retiring trainers no longer count as “available FTE” – consistent with the board and timeline.',
+        'More robust import: German dates (DD.MM.YYYY) and decimal commas (0.8) read correctly, two-digit years mapped correctly, the FTE column applied, and title/header rows above the table skipped.',
+        'Excel export hardened against formula injection; empty planning cells now export blank instead of “[open]”.',
+        'Deleting a provider now also clears its planning assignments (with a warning when some exist).',
+        'Keyboard support: table rows, sortable headers and dialogs are now keyboard-operable (focus trapped in dialog, Escape closes); drag & drop now works in Firefox too.',
+        'Deleting categories now asks for confirmation; the dashboard PDF no longer produces a blank document but falls back to the table view.'
+      ]
+    }
+  },
   {
     version: '1.10.4',
     date: '2026-07-24',

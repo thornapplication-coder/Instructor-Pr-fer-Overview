@@ -11,6 +11,40 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.11.0] – 2026-07-24
+
+Großes Audit-Fixpaket (Datenintegrität, Konsistenz, Barrierefreiheit, Sicherheit):
+
+- **Datenverlust behoben**: selbst angelegte Planungsspalten (eigene Schritte)
+  gehen beim Neuladen, Import oder Bearbeiten nicht mehr verloren.
+- **Mehrere Tabs/Fenster**: Änderungen werden nicht mehr von einem älteren,
+  offenen Tab überschrieben (Cross-Tab-Sync). Fehlgeschlagene Speicherungen
+  (voller/gesperrter Speicher) werden jetzt angezeigt statt still verschluckt.
+- **Namen statt IDs**: Qualifikationen und Kurse erscheinen überall mit ihrem
+  Namen – Tabellen, Board, Diagramme, Suche und alle PDF-/Excel-Exporte.
+- **Umschulungs-Phasen positionsbasiert**: „nicht gestartet" und „freigegeben"
+  richten sich nach der Position der Phase, nicht nach festen Namen. Phasen
+  umbenennen/löschen bricht KPIs, Warnungen und das Board nicht mehr.
+- **Freigegeben ↔ Status „erledigt"** ist jetzt in allen Editoren konsistent
+  (Board, Kapazitäts-Tabelle, Detail-Dialog), inkl. Zurücksetzen beim Verlassen
+  der letzten Phase.
+- **Kapazität**: Trainer in Rente zählen nicht mehr als „verfügbare FTE"
+  (konsistent mit Board und Timeline).
+- **Import robuster**: deutsche Datumsangaben (TT.MM.JJJJ) und Dezimalkomma
+  („0,8") werden korrekt gelesen, zweistellige Jahre richtig zugeordnet, die
+  FTE-Spalte übernommen und Titel-/Kopfzeilen über der Tabelle übersprungen.
+- **Sicherheit**: Excel-Export gegen Formel-Einschleusung abgesichert; leere
+  Planungszellen erscheinen im Export leer statt „[offen]"; der JSON-Import
+  prüft jetzt die Dateistruktur (keine stille Überschreibung durch Fremd-JSON);
+  zusätzlicher Schutz beim Excel-Import (Prototype-Pollution).
+- **Provider löschen** entfernt jetzt auch die zugehörigen Planungs-Zuweisungen
+  (mit Warnung, wenn welche bestehen).
+- **Barrierefreiheit**: Tabellenzeilen, Sortier-Überschriften und Dialoge sind
+  jetzt per Tastatur bedienbar (Fokus im Dialog, Escape schließt); Drag & Drop
+  funktioniert nun auch in Firefox.
+- **Kategorien löschen** fragt jetzt nach; das Dashboard-PDF erzeugt kein leeres
+  Dokument mehr, sondern fällt auf die Tabellenansicht zurück.
+
 ## [1.10.4] – 2026-07-24
 
 - **Umschulungs-Board**: zusätzlicher horizontaler Scrollbalken **oberhalb** der

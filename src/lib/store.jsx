@@ -7,7 +7,7 @@ import {
   PREFILL_NAMES,
   emptyProvider
 } from '../data/providers.js'
-import { DEFAULT_STAGES, ASSIGNMENT_STEPS, mergeAssignments } from '../data/pipeline.js'
+import { DEFAULT_STAGES, ASSIGNMENT_STEPS, mergeAssignments, releasedStageId } from '../data/pipeline.js'
 import { DEFAULT_QUALS, normalizeQual } from '../data/qualifications.js'
 import { fteFromPartTime } from './format.js'
 import { translate } from './i18n.js'
@@ -32,6 +32,9 @@ function withConvDefaults(trainer) {
     staffType: 'internal',
     aircraft: 'A320',
     ...trainer,
+    // Guarantee a stable unique id: imported/trimmed payloads may omit it, and an
+    // undefined id makes upsert/delete match EVERY id-less record at once.
+    id: trainer.id || newId('trn'),
     // FTE is editable; default it from the part-time workload only when unset.
     fte: typeof trainer.fte === 'number' ? trainer.fte : fteFromPartTime(trainer.partTime),
     qual: normalizeQual(trainer.qual),
@@ -84,22 +87,24 @@ function freshData(lang = 'de') {
   }
 }
 
+// One-time: ensure the standard providers exist (add missing ones by name).
+// Shared by loadData and importData so both paths seed identically.
+function seedMissingProviders(data) {
+  if (data._provSeeded) return data
+  const have = new Set(data.providers.map((p) => (p.name || '').trim().toLowerCase()))
+  const add = PREFILL_NAMES.filter((n) => !have.has(n.toLowerCase())).map((n) => ({
+    ...emptyProvider('prov-' + n.toLowerCase()),
+    name: n
+  }))
+  return { ...data, providers: [...data.providers, ...add], _provSeeded: true }
+}
+
 function loadData() {
   try {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return freshData()
     const parsed = JSON.parse(raw)
-    let data = normalize(parsed)
-    // One-time: ensure the standard providers exist (add missing ones by name).
-    if (!data._provSeeded) {
-      const have = new Set(data.providers.map((p) => (p.name || '').trim().toLowerCase()))
-      const add = PREFILL_NAMES.filter((n) => !have.has(n.toLowerCase())).map((n) => ({
-        ...emptyProvider('prov-' + n.toLowerCase()),
-        name: n
-      }))
-      data = { ...data, providers: [...data.providers, ...add], _provSeeded: true }
-    }
-    return data
+    return seedMissingProviders(normalize(parsed))
   } catch (e) {
     console.warn('Failed to load stored data, using seed.', e)
     return freshData()
@@ -117,23 +122,20 @@ function normalize(obj) {
       ? obj.trainers.map((t) => withConvDefaults({ ...t }))
       : base.trainers,
     providers: Array.isArray(obj.providers) ? obj.providers.map(normalizeProvider) : [],
-    stages:
-      Array.isArray(obj.stages) && obj.stages.length
-        ? obj.stages.map(migrateStage)
-        : base.stages,
-    quals: Array.isArray(obj.quals) && obj.quals.length ? obj.quals.map((q) => ({ ...q })) : base.quals,
-    assignmentSteps:
-      Array.isArray(obj.assignmentSteps) && obj.assignmentSteps.length
-        ? obj.assignmentSteps.map((s) => ({ ...s }))
-        : base.assignmentSteps,
-    providerCourses:
-      Array.isArray(obj.providerCourses) && obj.providerCourses.length
-        ? obj.providerCourses.map((x) => ({ ...x }))
-        : base.providerCourses,
-    providerStatus:
-      Array.isArray(obj.providerStatus) && obj.providerStatus.length
-        ? obj.providerStatus.map((x) => ({ ...x }))
-        : base.providerStatus,
+    // A user-managed list that is present but EMPTY is a deliberate choice (the
+    // category manager lets you empty it); only a missing key falls back to the
+    // shipped defaults. `&& length` wrongly resurrected defaults the user deleted.
+    stages: Array.isArray(obj.stages) ? obj.stages.map(migrateStage) : base.stages,
+    quals: Array.isArray(obj.quals) ? obj.quals.map((q) => ({ ...q })) : base.quals,
+    assignmentSteps: Array.isArray(obj.assignmentSteps)
+      ? obj.assignmentSteps.map((s) => ({ ...s }))
+      : base.assignmentSteps,
+    providerCourses: Array.isArray(obj.providerCourses)
+      ? obj.providerCourses.map((x) => ({ ...x }))
+      : base.providerCourses,
+    providerStatus: Array.isArray(obj.providerStatus)
+      ? obj.providerStatus.map((x) => ({ ...x }))
+      : base.providerStatus,
     conversionFrom: obj.conversionFrom || 'A320',
     conversionTo: obj.conversionTo || 'B737',
     theme: obj.theme === 'dark' ? 'dark' : 'light',
@@ -171,32 +173,68 @@ function normalize(obj) {
 
 export function StoreProvider({ children }) {
   const [data, setData] = useState(loadData)
+  const [saveError, setSaveError] = useState(false)
   const saveTimer = useRef(null)
   const dataRef = useRef(data)
   dataRef.current = data
+  // The exact JSON we last persisted, and whether THIS tab holds edits not yet
+  // flushed. Together they stop a stale tab from clobbering a newer one and let
+  // us adopt another tab's writes instead of racing them.
+  const lastSavedRef = useRef(null)
+  const dirtyRef = useRef(false)
+
+  // Write to localStorage unless the bytes are unchanged; report success so the
+  // UI can surface a real failure (quota/private mode) instead of a false check.
+  const persist = (d) => {
+    const json = JSON.stringify(d)
+    if (json === lastSavedRef.current) {
+      dirtyRef.current = false
+      return true
+    }
+    try {
+      localStorage.setItem(STORAGE_KEY, json)
+      lastSavedRef.current = json
+      dirtyRef.current = false
+      return true
+    } catch (e) {
+      return false
+    }
+  }
 
   // Debounced persistence to localStorage. (Cloud sync will hook in here later.)
   useEffect(() => {
     if (saveTimer.current) clearTimeout(saveTimer.current)
     saveTimer.current = setTimeout(() => {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(data))
-      } catch (e) {
-        console.warn('Persist failed', e)
-      }
+      setSaveError(!persist(data))
     }, 250)
     return () => saveTimer.current && clearTimeout(saveTimer.current)
   }, [data])
 
+  // Cross-tab sync: when ANOTHER tab writes our key, adopt its state instead of
+  // keeping (and later flushing) a stale snapshot over it. Skip while this tab
+  // has unsaved edits, and ignore the echo of our own write.
+  useEffect(() => {
+    const onStorage = (e) => {
+      if (e.key !== STORAGE_KEY || e.newValue == null) return
+      if (dirtyRef.current || e.newValue === lastSavedRef.current) return
+      try {
+        const next = seedMissingProviders(normalize(JSON.parse(e.newValue)))
+        lastSavedRef.current = JSON.stringify(next)
+        setData(next)
+      } catch (_) {
+        /* ignore malformed cross-tab payloads */
+      }
+    }
+    window.addEventListener('storage', onStorage)
+    return () => window.removeEventListener('storage', onStorage)
+  }, [])
+
   // Synchronous flush on page exit so an edit made within the 250ms debounce
-  // window survives the reload/update buttons and tab closes.
+  // window survives the reload/update buttons and tab closes. Only flush when
+  // THIS tab actually has unsaved edits, so a stale tab closing writes nothing.
   useEffect(() => {
     const flush = () => {
-      try {
-        localStorage.setItem(STORAGE_KEY, JSON.stringify(dataRef.current))
-      } catch (e) {
-        /* ignore */
-      }
+      if (dirtyRef.current) persist(dataRef.current)
     }
     window.addEventListener('pagehide', flush)
     window.addEventListener('beforeunload', flush)
@@ -217,23 +255,22 @@ export function StoreProvider({ children }) {
   }, [theme])
 
   const api = useMemo(() => {
-    const patch = (mut) =>
+    const patch = (mut) => {
+      dirtyRef.current = true
       setData((d) => {
         const next = typeof mut === 'function' ? mut(d) : mut
         return { ...next, updatedAt: nowIso() }
       })
+    }
 
     return {
       setLang: (l) => patch((d) => ({ ...d, lang: l })),
       setTheme: (th) => patch((d) => ({ ...d, theme: th })),
       // Force an immediate persist (the explicit Save button); returns success.
       saveNow: () => {
-        try {
-          localStorage.setItem(STORAGE_KEY, JSON.stringify(dataRef.current))
-          return true
-        } catch (e) {
-          return false
-        }
+        const ok = persist(dataRef.current)
+        setSaveError(!ok)
+        return ok
       },
 
       upsertTrainer: (trainer) =>
@@ -256,13 +293,27 @@ export function StoreProvider({ children }) {
       setTrainers: (trainers) =>
         patch((d) => ({ ...d, trainers: trainers.map((t) => withConvDefaults(t)) })),
 
+      // Central place for the stage<->status coupling so EVERY editor (board
+      // drag, Kapazität inline editor, detail modal) stays consistent: reaching
+      // the final (released) stage marks status 'done'; leaving it clears the
+      // auto 'done' back to 'on_track'.
       setConversion: (id, convPatch) =>
-        patch((d) => ({
-          ...d,
-          trainers: d.trainers.map((x) =>
-            x.id === id ? { ...x, conv: { ...x.conv, ...convPatch } } : x
-          )
-        })),
+        patch((d) => {
+          const releasedId = releasedStageId(d.stages)
+          return {
+            ...d,
+            trainers: d.trainers.map((x) => {
+              if (x.id !== id) return x
+              const prev = x.conv || {}
+              const conv = { ...prev, ...convPatch }
+              const nowReleased = conv.stage === releasedId
+              const wasReleased = prev.stage === releasedId
+              if (nowReleased) conv.status = 'done'
+              else if (wasReleased && conv.status === 'done') conv.status = 'on_track'
+              return { ...x, conv }
+            })
+          }
+        }),
 
       setAssignment: (id, stepId, changes) =>
         patch((d) => ({
@@ -291,8 +342,26 @@ export function StoreProvider({ children }) {
           }
         }),
 
+      // Delete the provider AND scrub the now-dangling providerId from every
+      // trainer assignment so planning cells don't silently blank out (and
+      // exports don't print an orphaned status with no provider name).
       deleteProvider: (id) =>
-        patch((d) => ({ ...d, providers: d.providers.filter((x) => x.id !== id) })),
+        patch((d) => ({
+          ...d,
+          providers: d.providers.filter((x) => x.id !== id),
+          trainers: d.trainers.map((tr) => {
+            if (!tr.assignments) return tr
+            let touched = false
+            const next = {}
+            for (const [k, a] of Object.entries(tr.assignments)) {
+              if (a && a.providerId === id) {
+                next[k] = { ...a, providerId: '' }
+                touched = true
+              } else next[k] = a
+            }
+            return touched ? { ...tr, assignments: next } : tr
+          })
+        })),
 
       setStages: (stages) => patch((d) => ({ ...d, stages })),
       setQuals: (quals) => patch((d) => ({ ...d, quals })),
@@ -302,14 +371,24 @@ export function StoreProvider({ children }) {
       setProviderCourses: (providerCourses) => patch((d) => ({ ...d, providerCourses })),
       setProviderStatus: (providerStatus) => patch((d) => ({ ...d, providerStatus })),
 
+      // Validate the shape before replacing everything: an arbitrary JSON file
+      // would otherwise be silently accepted, wiping the roster with the seed
+      // and clearing providers while still reporting success. Returns whether
+      // the payload was accepted so the UI can show a real error. Also runs the
+      // one-time provider prefill (loadData does; importData used to skip it).
       importData: (obj) => {
-        const next = normalize(obj)
-        setData(next)
+        if (!obj || typeof obj !== 'object' || !Array.isArray(obj.trainers)) return false
+        dirtyRef.current = true
+        setData(seedMissingProviders(normalize(obj)))
+        return true
       },
 
       exportData: () => data,
 
-      resetData: () => setData(freshData(data.lang))
+      resetData: () => {
+        dirtyRef.current = true
+        setData(freshData(data.lang))
+      }
     }
   }, [data])
 
@@ -317,11 +396,12 @@ export function StoreProvider({ children }) {
     () => ({
       data,
       lang,
+      saveError,
       t: (key) => translate(lang, key),
       newId,
       ...api
     }),
-    [data, lang, api]
+    [data, lang, saveError, api]
   )
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

@@ -1,6 +1,6 @@
 // Deadline / attention flags for the conversion monitoring.
 // Pure functions over trainer data so they are easy to test and reuse.
-import { stageLabel } from '../data/pipeline.js'
+import { stageLabel, firstStageId, releasedStageId } from '../data/pipeline.js'
 
 const SOON_DAYS = 30 // a target within this many days counts as "coming up"
 
@@ -24,12 +24,12 @@ function startOfDay(d) {
 // - overdue (red): blocked, or a target date already in the past (not released)
 // - risk (amber): at risk, or a target coming up within SOON_DAYS
 // Retiring people and already-released people never raise a flag.
-export function trainerAlerts(trainer, today) {
+export function trainerAlerts(trainer, today, stages) {
   const now = startOfDay(today || new Date())
   const empty = { level: null, reasons: [], days: null }
   if ((trainer.ore || '') === 'Rente') return empty
-  const stage = trainer.conv?.stage || 'nominated'
-  if (stage === 'released') return empty
+  const stage = trainer.conv?.stage || firstStageId(stages)
+  if (stage === releasedStageId(stages)) return empty
 
   const status = trainer.conv?.status
   const target = parseISO(trainer.conv?.target)
@@ -50,10 +50,10 @@ export function trainerAlerts(trainer, today) {
 }
 
 // All flagged trainers, most urgent first (overdue before risk, earliest date first).
-export function collectAlerts(trainers, today) {
+export function collectAlerts(trainers, today, stages) {
   const rank = { overdue: 0, risk: 1 }
   return trainers
-    .map((t) => ({ trainer: t, ...trainerAlerts(t, today) }))
+    .map((t) => ({ trainer: t, ...trainerAlerts(t, today, stages) }))
     .filter((a) => a.level)
     .sort((a, b) => {
       if (rank[a.level] !== rank[b.level]) return rank[a.level] - rank[b.level]
@@ -68,16 +68,19 @@ export function stageName(stages, id) {
 // Conversion target dates grouped by calendar month (YYYY-MM), ascending.
 // Released trainers and those without a target date are skipped. Each entry
 // carries its alert flag so the timeline can colour it.
-export function targetsByMonth(trainers, today) {
+export function targetsByMonth(trainers, today, stages) {
+  const releasedId = releasedStageId(stages)
+  const firstId = firstStageId(stages)
   const map = new Map()
   for (const t of trainers) {
-    const stage = t.conv?.stage || 'nominated'
-    if (stage === 'released') continue
+    if ((t.ore || '') === 'Rente') continue // retirees never appear on the timeline
+    const stage = t.conv?.stage || firstId
+    if (stage === releasedId) continue
     const d = parseISO(t.conv?.target)
     if (!d) continue
     const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
     if (!map.has(key)) map.set(key, [])
-    map.get(key).push({ trainer: t, date: d, ...trainerAlerts(t, today) })
+    map.get(key).push({ trainer: t, date: d, ...trainerAlerts(t, today, stages) })
   }
   return [...map.entries()]
     .sort((a, b) => a[0].localeCompare(b[0]))

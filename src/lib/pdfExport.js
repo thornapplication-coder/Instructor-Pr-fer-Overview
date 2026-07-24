@@ -4,7 +4,9 @@
 // opens in the share sheet). jsPDF + autotable are lazy-loaded (heavy).
 import { BRAND_NAME, BRAND_HEX, hexToRgb, footerLine, fileStamp, reportDate } from './brand.js'
 import { formatPartTime, formatFte, formatDate } from './format.js'
-import { stageLabel, CONV_STATUS, ASSIGNMENT_STATUS } from '../data/pipeline.js'
+import { stageLabel, CONV_STATUS, ASSIGNMENT_STATUS, firstStageId } from '../data/pipeline.js'
+import { qualLabel } from '../data/qualifications.js'
+import { courseLabel } from '../data/providers.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import {
   headcount,
@@ -89,7 +91,9 @@ function table(ctx, { section, head, body, foot, columnStyles }) {
 }
 
 // Place the whole capture on a SINGLE A4 page, scaled to fit under the branded
-// header (keeps the entire dashboard on one page).
+// header. Returns true on success, false for a degenerate (zero-size) canvas so
+// the caller can fall back to the data-table dashboard instead of emitting a
+// blank page.
 function addCanvasOnePage(doc, canvas, title, lang) {
   const pageW = doc.internal.pageSize.getWidth()
   const pageH = doc.internal.pageSize.getHeight()
@@ -98,7 +102,7 @@ function addCanvasOnePage(doc, canvas, title, lang) {
   const bottom = 24
   const availW = pageW - margin * 2
   const availH = pageH - top - bottom
-  if (!canvas.width || !canvas.height) return
+  if (!canvas.width || !canvas.height) return false
   const scale = Math.min(availW / canvas.width, availH / canvas.height)
   const w = canvas.width * scale
   const h = canvas.height * scale
@@ -109,6 +113,7 @@ function addCanvasOnePage(doc, canvas, title, lang) {
   // Safari caps total canvas memory and GC is lazy.
   canvas.width = 0
   canvas.height = 0
+  return true
 }
 
 // opts.output: 'save' downloads the file; 'print' opens the PDF and triggers the
@@ -161,7 +166,7 @@ async function exportTrainersPdf(data, t, lang, opts) {
   table(ctx, {
     head: [t('f_qual'), t('f_base'), t('f_tlc'), t('f_name'), t('f_remark'), t('f_partTime'), t('f_fte'), t('f_aircraft'), t('f_ore'), t('f_staffType'), t('f_authority'), t('f_conversion')],
     body: rows.map((x) => [
-      x.qual || '', x.base || '', x.tlc || '', x.name || '', x.remark || '',
+      qualLabel(data.quals, x.qual), x.base || '', x.tlc || '', x.name || '', x.remark || '',
       formatPartTime(x.partTime, lang), formatFte(x.fte), x.aircraft || '', x.ore || '',
       t('staff_' + (x.staffType || 'internal')), x.authority || '',
       stageLabel(data.stages.find((s) => s.id === x.conv?.stage))
@@ -185,18 +190,22 @@ async function exportPlanningPdf(data, t, lang, opts) {
     if (p && p.name) return p.name
     return a.location || ''
   }
+  // Untouched cells (no provider/location, default 'open') export as empty –
+  // matching the on-screen "+ zuweisen" state – instead of " [offen]".
   const stepCell = (x, s) => {
     const a = x.assignments?.[s.id]
     if (!a) return ''
     const lbl = cellLabel(a)
+    if (!lbl) return ''
+    if (a.status === 'na') return lbl
     const st = ASSIGNMENT_STATUS[a.status]
-    const stl = st && a.status && a.status !== 'na' ? ` [${lang === 'de' ? st.de : st.en}]` : ''
-    return (lbl || '') + stl
+    const stl = st ? ` [${lang === 'de' ? st.de : st.en}]` : ''
+    return lbl + stl
   }
   table(ctx, {
     head: [t('f_name'), t('f_base'), t('f_qual'), t('f_aircraft'), t('f_staffType'), ...steps.map((s) => s.label)],
     body: rows.map((x) => [
-      x.name || '', x.base || '', x.qual || '', x.aircraft || '',
+      x.name || '', x.base || '', qualLabel(data.quals, x.qual), x.aircraft || '',
       t('staff_' + (x.staffType || 'internal')), ...steps.map((s) => stepCell(x, s))
     ])
   })
@@ -214,7 +223,8 @@ async function exportProvidersPdf(data, t, lang, opts) {
     section: t('providers_title'),
     head: [t('p_name'), t('p_courses'), t('p_locations'), t('p_authority'), t('p_contact'), t('p_capacity'), t('p_status')],
     body: providers.map((p) => [
-      p.name || '', [...(p.courses || [])].sort().join(', '), [...(p.locations || [])].sort().join(', '),
+      p.name || '', [...(p.courses || [])].map((c) => courseLabel(data.providerCourses, c)).sort().join(', '),
+      [...(p.locations || [])].sort().join(', '),
       p.authority || '', p.contactPerson || '', p.capacity || '', statusLabel(p.status)
     ])
   })
@@ -229,8 +239,8 @@ async function exportProvidersPdf(data, t, lang, opts) {
 }
 
 // ---------------------------------------------------------------- Capacity ---
-function capBody(cap) {
-  return cap.rows.map((r) => [r.key, String(r.headcount), String(r.total), String(r.inConversion), String(r.available), String(r.ac[cap.aircraft[0]] ?? 0), String(r.ac[cap.aircraft[1]] ?? 0)])
+function capBody(cap, labelFor) {
+  return cap.rows.map((r) => [labelFor ? labelFor(r.key) : r.key, String(r.headcount), String(r.total), String(r.inConversion), String(r.available), String(r.ac[cap.aircraft[0]] ?? 0), String(r.ac[cap.aircraft[1]] ?? 0)])
 }
 function capFoot(cap, totalLabel) {
   const tt = cap.totals
@@ -240,13 +250,13 @@ async function exportCapacityPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, t('capacity_title'), lang)
-  const capQ = capacityByQual(data.trainers, AIRCRAFT)
-  const capB = capacityByBase(data.trainers, AIRCRAFT)
+  const capQ = capacityByQual(data.trainers, AIRCRAFT, data.stages)
+  const capB = capacityByBase(data.trainers, AIRCRAFT, data.stages)
   const numCols = { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right' } }
   const headRow = (first) => [first, t('cap_head'), t('cap_total'), t('cap_inConv'), t('cap_avail'), AIRCRAFT[0], AIRCRAFT[1]]
-  table(ctx, { section: t('capacity_byQual'), head: headRow(t('f_qual')), body: capBody(capQ), foot: capFoot(capQ, t('total')), columnStyles: numCols })
+  table(ctx, { section: t('capacity_byQual'), head: headRow(t('f_qual')), body: capBody(capQ, (k) => qualLabel(data.quals, k)), foot: capFoot(capQ, t('total')), columnStyles: numCols })
   table(ctx, { section: t('capacity_byBase'), head: headRow(t('f_base')), body: capBody(capB), foot: capFoot(capB, t('total')), columnStyles: numCols })
-  const months = targetsByMonth(data.trainers)
+  const months = targetsByMonth(data.trainers, null, data.stages)
   const tl = []
   for (const m of months) for (const it of m.items) tl.push([monthLabel(m.month, lang), it.trainer.name || '', it.trainer.base || '', stageName(data.stages, it.trainer.conv?.stage), formatDate(it.trainer.conv?.target, lang)])
   table(ctx, {
@@ -261,18 +271,21 @@ async function exportCapacityPdf(data, t, lang, opts) {
 async function exportDashboardPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
   // Preferred: a rasterized copy of the on-screen dashboard (KPI tiles + charts),
-  // sliced across A4 pages. Falls back to a data table view if capture failed.
+  // scaled to fit one A4 page. Falls back to the data-table view below when no
+  // capture was supplied or the capture came back degenerate (zero-size).
   if (opts && opts.canvas) {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
-    addCanvasOnePage(doc, opts.canvas, 'Dashboard', lang)
-    return finalize(doc, 'dashboard', opts)
+    if (addCanvasOnePage(doc, opts.canvas, 'Dashboard', lang)) {
+      return finalize(doc, 'dashboard', opts)
+    }
+    // fall through to the table-based dashboard rather than saving a blank page
   }
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, 'Dashboard', lang)
   const trainers = data.trainers
   const hc = headcount(trainers)
-  const cs = conversionSummary(trainers)
-  const fte = conversionFteSummary(trainers)
+  const cs = conversionSummary(trainers, data.stages)
+  const fte = conversionFteSummary(trainers, data.stages)
   table(ctx, {
     section: 'KPIs',
     head: [t('category'), t('count')],
@@ -292,7 +305,7 @@ async function exportDashboardPdf(data, t, lang, opts) {
   })
   const bd = (label, rows) =>
     table(ctx, { section: label, head: [t('category'), t('count')], body: rows.map((r) => [r.label || r.key, String(r.count)]), columnStyles: { 1: { halign: 'right', cellWidth: 80 } } })
-  bd(t('stat_qual'), byQual(trainers, data.quals.map((q) => q.id)))
+  bd(t('stat_qual'), byQual(trainers, data.quals.map((q) => q.id)).map((r) => ({ ...r, label: qualLabel(data.quals, r.key) })))
   bd(t('stat_base'), byBase(trainers))
   bd(t('chart_byOre'), byOre(trainers))
   bd(t('stat_authority'), byAuthority(trainers))
@@ -301,7 +314,7 @@ async function exportDashboardPdf(data, t, lang, opts) {
   bd(t('stat_function'), [{ key: t('withFunction'), count: fn.withFunction }, { key: t('withoutFunction'), count: fn.withoutFunction }])
   const staffInt = trainers.filter((x) => (x.staffType || 'internal') === 'internal').length
   bd(t('filterStaff'), [{ key: t('staff_internal'), count: staffInt }, { key: t('staff_external'), count: trainers.length - staffInt }])
-  const alerts = collectAlerts(trainers)
+  const alerts = collectAlerts(trainers, null, data.stages)
   table(ctx, {
     section: t('alerts_title'),
     head: [t('f_name'), t('f_base'), t('stage'), t('status'), t('targetDate')],
@@ -319,8 +332,9 @@ async function exportConversionPdf(data, t, lang, opts) {
   const ctx = makeCtx(doc, autoTable, t('conversion_title'), lang)
   const stages = data.stages
   const stageIds = new Set(stages.map((s) => s.id))
+  const firstId = firstStageId(stages)
   const visible = data.trainers.filter((x) => x.ore !== 'Rente')
-  const fte = conversionFteSummary(data.trainers)
+  const fte = conversionFteSummary(data.trainers, stages)
   table(ctx, {
     section: t('conversion_title'),
     head: [t('category'), t('count')],
@@ -333,7 +347,7 @@ async function exportConversionPdf(data, t, lang, opts) {
   })
   stages.forEach((s, si) => {
     const cards = visible.filter((x) => {
-      const stg = x.conv?.stage || 'nominated'
+      const stg = x.conv?.stage || firstId
       return stg === s.id || (si === 0 && !stageIds.has(stg))
     })
     table(ctx, {
@@ -341,7 +355,7 @@ async function exportConversionPdf(data, t, lang, opts) {
       head: [t('f_name'), t('f_base'), t('f_qual'), t('f_aircraft'), t('status'), t('targetDate')],
       body: cards.length
         ? cards.map((x) => [
-            x.name || '', x.base || '', x.qual || '', x.aircraft || '',
+            x.name || '', x.base || '', qualLabel(data.quals, x.qual), x.aircraft || '',
             (CONV_STATUS[x.conv?.status] ? (lang === 'de' ? CONV_STATUS[x.conv.status].de : CONV_STATUS[x.conv.status].en) : ''),
             x.conv?.target ? formatDate(x.conv.target, lang) : '-'
           ])

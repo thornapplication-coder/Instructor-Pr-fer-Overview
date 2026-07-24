@@ -1,15 +1,45 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef } from 'react'
+
+const FOCUSABLE =
+  'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
 
 export default function Modal({ title, onClose, children, footer, wide }) {
+  const ref = useRef(null)
+  const lastFocused = useRef(null)
+
   useEffect(() => {
-    const onKey = (e) => e.key === 'Escape' && onClose()
+    lastFocused.current = document.activeElement
+    const node = ref.current
+    const focusables = () => (node ? Array.from(node.querySelectorAll(FOCUSABLE)) : [])
+    // Move focus into the dialog so keyboard users aren't stranded behind it.
+    const first = focusables()[0]
+    if (first) first.focus()
+    else if (node) node.focus()
+
+    const onKey = (e) => {
+      if (e.key === 'Escape') { onClose(); return }
+      if (e.key !== 'Tab') return
+      // Trap Tab within the dialog.
+      const list = focusables()
+      if (!list.length) return
+      const idx = list.indexOf(document.activeElement)
+      if (e.shiftKey && idx <= 0) { e.preventDefault(); list[list.length - 1].focus() }
+      else if (!e.shiftKey && idx === list.length - 1) { e.preventDefault(); list[0].focus() }
+    }
     window.addEventListener('keydown', onKey)
-    return () => window.removeEventListener('keydown', onKey)
+    return () => {
+      window.removeEventListener('keydown', onKey)
+      // Restore focus to whatever opened the dialog.
+      const prev = lastFocused.current
+      if (prev && typeof prev.focus === 'function') prev.focus()
+    }
   }, [onClose])
 
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>
       <div
+        ref={ref}
+        tabIndex={-1}
         className={'modal' + (wide ? ' modal-wide' : '')}
         onMouseDown={(e) => e.stopPropagation()}
         role="dialog"

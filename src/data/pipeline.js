@@ -55,12 +55,19 @@ export function emptyAssignments() {
   return a
 }
 
+const EMPTY_STEP = { providerId: '', location: '', date: '', status: 'open', note: '' }
+
+// Merge stored assignments onto the defaults WITHOUT dropping data stored under
+// user-added custom step columns: iterate the union of the default step ids and
+// whatever keys the stored object actually carries.
 export function mergeAssignments(a) {
   const base = emptyAssignments()
-  if (a && typeof a === 'object') {
-    for (const k of Object.keys(base)) base[k] = { ...base[k], ...(a[k] || {}) }
+  if (!a || typeof a !== 'object') return base
+  const out = { ...base }
+  for (const k of Object.keys(a)) {
+    out[k] = { ...(base[k] || EMPTY_STEP), ...(a[k] || {}) }
   }
-  return base
+  return out
 }
 
 export function stageIndex(stages, id) {
@@ -68,10 +75,20 @@ export function stageIndex(stages, id) {
   return i < 0 ? 0 : i
 }
 
+// Stage semantics are positional, NOT tied to the literal ids 'nominated' /
+// 'released' (those stages are user-editable and can be renamed or deleted):
+// the FIRST stage means "not started", the LAST stage means "released / done".
+export function firstStageId(stages) {
+  return (stages && stages.length && stages[0].id) || 'nominated'
+}
+export function releasedStageId(stages) {
+  return (stages && stages.length && stages[stages.length - 1].id) || 'released'
+}
+
 // Progress 0..1 based on how far along the pipeline a trainer is.
 export function conversionProgress(stages, conv) {
   if (!conv) return 0
   const idx = stageIndex(stages, conv.stage)
-  if (conv.stage === 'released') return 1
-  return idx / (stages.length - 1)
+  if (conv.stage === releasedStageId(stages)) return 1
+  return stages.length > 1 ? idx / (stages.length - 1) : 0
 }

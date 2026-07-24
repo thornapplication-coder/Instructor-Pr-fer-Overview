@@ -15,6 +15,7 @@ import {
   conversionFteSummary
 } from '../lib/stats.js'
 import { conversionProgress, STAFF_TYPE } from '../data/pipeline.js'
+import { qualLabel } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { collectAlerts, stageName, parseISO } from '../lib/alerts.js'
 import { formatDate } from '../lib/format.js'
@@ -43,7 +44,7 @@ function daysText(t, days) {
 }
 
 function AlertsCard({ trainers, stages, lang, t }) {
-  const alerts = collectAlerts(trainers)
+  const alerts = collectAlerts(trainers, null, stages)
   return (
     <section className="card alerts-card">
       <div className="card-head">
@@ -84,9 +85,9 @@ export default function Dashboard() {
 
   const qualColor = (key) => (qualDefs.find((q) => q.id === key) || {}).color || '#787878'
   const hc = headcount(trainers)
-  const cs = conversionSummary(trainers)
-  const fteS = conversionFteSummary(trainers)
-  const quals = byQual(trainers, qualDefs.map((q) => q.id))
+  const cs = conversionSummary(trainers, stages)
+  const fteS = conversionFteSummary(trainers, stages)
+  const quals = byQual(trainers, qualDefs.map((q) => q.id)).map((r) => ({ ...r, label: qualLabel(qualDefs, r.key) }))
   const bases = byBase(trainers)
   const ore = byOre(trainers).map((r) => ({ ...r, color: ORE_COLORS[r.key] }))
   const auth = byAuthority(trainers)

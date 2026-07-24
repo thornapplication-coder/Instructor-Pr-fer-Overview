@@ -1,5 +1,23 @@
 // Live aggregations over the trainer list. Category orders mirror the Excel
 // "Statistik_Daten" tab so the numbers line up 1:1 with the source file.
+import { firstStageId, releasedStageId } from '../data/pipeline.js'
+
+// Resolve stage semantics positionally instead of by the literal ids
+// 'nominated'/'released' (stages are user-editable): first = not started, last =
+// released. An unknown/deleted stage id counts as "not started" – the same
+// bucket the board's first-column fallback puts it in. When no stage list is
+// passed the literal defaults apply (backwards-compatible).
+function stageResolver(stages) {
+  const has = stages && stages.length
+  const firstId = firstStageId(stages)
+  const releasedId = releasedStageId(stages)
+  const valid = has ? new Set(stages.map((s) => s.id)) : null
+  const stageOf = (t) => {
+    const s = t.conv?.stage || firstId
+    return valid && !valid.has(s) ? firstId : s
+  }
+  return { firstId, releasedId, stageOf }
+}
 
 const QUAL_ORDER = ['SEN', 'TRE', 'TRI', 'LTC', 'SFI', 'TKI']
 const BASE_ORDER = ['PMI', 'VIE', 'SZG', 'PRG', 'ARN']
@@ -68,14 +86,15 @@ export function byFunction(trainers) {
 }
 
 // Conversion summary for the Overview KPIs.
-export function conversionSummary(trainers) {
+export function conversionSummary(trainers, stages) {
+  const { firstId, releasedId, stageOf } = stageResolver(stages)
   let released = 0
   let notStarted = 0
   let inProgress = 0
   for (const t of trainers) {
-    const stage = t.conv?.stage || 'nominated'
-    if (stage === 'released') released++
-    else if (stage === 'nominated') notStarted++
+    const stage = stageOf(t)
+    if (stage === releasedId) released++
+    else if (stage === firstId) notStarted++
     else inProgress++
   }
   return { released, inProgress, notStarted, total: trainers.length }
@@ -87,17 +106,19 @@ export function conversionSummary(trainers) {
 function round1(x) {
   return Math.round(x * 10) / 10
 }
-export function conversionFteSummary(trainers) {
+export function conversionFteSummary(trainers, stages) {
+  const { firstId, releasedId, stageOf } = stageResolver(stages)
   let total = 0
   let inConversion = 0
   let released = 0
   let notStarted = 0
   for (const t of trainers) {
+    if ((t.ore || '') === 'Rente') continue // retirees are not deployable capacity
     const f = typeof t.fte === 'number' ? t.fte : 1
     total += f
-    const stage = t.conv?.stage || 'nominated'
-    if (stage === 'released') released += f
-    else if (stage === 'nominated') notStarted += f
+    const stage = stageOf(t)
+    if (stage === releasedId) released += f
+    else if (stage === firstId) notStarted += f
     else inConversion += f
   }
   return {
@@ -110,14 +131,16 @@ export function conversionFteSummary(trainers) {
 }
 
 export function pipelineDistribution(trainers, stages) {
-  const map = tally(trainers, (t) => t.conv?.stage || 'nominated')
+  const { stageOf } = stageResolver(stages)
+  const map = tally(trainers, (t) => stageOf(t))
   return stages.map((s) => ({ ...s, count: map.get(s.id) || 0 }))
 }
 
 // Capacity aggregation: how much FTE sits in each group, how much is tied up in
 // an active conversion, how much stays available, split by current aircraft.
 // "in conversion" = not nominated, not released (mirrors conversionFteSummary).
-function capacityBy(trainers, keyFn, aircraftList, order) {
+function capacityBy(trainers, keyFn, aircraftList, order, stages) {
+  const { firstId, releasedId, stageOf } = stageResolver(stages)
   const acs = aircraftList && aircraftList.length ? aircraftList : ['A320', 'B737']
   const map = new Map()
   const get = (k) => {
@@ -129,12 +152,13 @@ function capacityBy(trainers, keyFn, aircraftList, order) {
     return map.get(k)
   }
   for (const t of trainers) {
+    if ((t.ore || '') === 'Rente') continue // retirees are not deployable capacity
     const fte = typeof t.fte === 'number' ? t.fte : 1
     const row = get(keyFn(t))
     row.total += fte
     row.headcount += 1
-    const stage = t.conv?.stage || 'nominated'
-    if (stage !== 'nominated' && stage !== 'released') row.inConversion += fte
+    const stage = stageOf(t)
+    if (stage !== firstId && stage !== releasedId) row.inConversion += fte
     if (t.aircraft && row.ac[t.aircraft] != null) row.ac[t.aircraft] += fte
   }
   const rows = [...map.values()].map((r) => {
@@ -169,8 +193,8 @@ function capacityBy(trainers, keyFn, aircraftList, order) {
   return { rows, totals, aircraft: acs }
 }
 
-export function capacityByBase(trainers, aircraftList) {
-  return capacityBy(trainers, (t) => t.base || '—', aircraftList)
+export function capacityByBase(trainers, aircraftList, stages) {
+  return capacityBy(trainers, (t) => t.base || '—', aircraftList, null, stages)
 }
 
 // Legacy "new TRI" still folds into "TRI" (defensive for old/imported data);
@@ -190,8 +214,8 @@ export function qualRankIndex(key) {
   return i < 0 ? QUAL_RANK.length + 1 : i
 }
 
-export function capacityByQual(trainers, aircraftList) {
-  return capacityBy(trainers, (t) => qualGroup(t.qual), aircraftList, QUAL_RANK)
+export function capacityByQual(trainers, aircraftList, stages) {
+  return capacityBy(trainers, (t) => qualGroup(t.qual), aircraftList, QUAL_RANK, stages)
 }
 
 // Provider load vs. capacity. Demand = planning assignments pointing at each

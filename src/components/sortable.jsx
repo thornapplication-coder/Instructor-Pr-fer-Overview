@@ -28,11 +28,20 @@ export function useSort(rows, accessors, initialKey, initialDir = 'asc') {
   return { sorted, sortKey, dir, toggle }
 }
 
-// Sortable table header cell.
+// Sortable table header cell. Keyboard-operable (Enter/Space) and announces the
+// current sort direction via aria-sort.
 export function Th({ label, k, sortKey, dir, onSort, className }) {
   const active = sortKey === k
+  const ariaSort = active ? (dir === 'asc' ? 'ascending' : 'descending') : 'none'
   return (
-    <th className={(className || '') + ' sortable' + (active ? ' active' : '')} onClick={() => onSort(k)}>
+    <th
+      className={(className || '') + ' sortable' + (active ? ' active' : '')}
+      onClick={() => onSort(k)}
+      tabIndex={0}
+      role="button"
+      aria-sort={ariaSort}
+      onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); onSort(k) } }}
+    >
       <span className="th-inner">
         {label}
         <span className="sort-arrow">{active ? (dir === 'asc' ? '▲' : '▼') : '⇅'}</span>

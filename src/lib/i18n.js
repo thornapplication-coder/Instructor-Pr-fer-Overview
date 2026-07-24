@@ -172,6 +172,10 @@ const DICT = {
     en: 'No providers yet. Add your first one.'
   },
   deleteProviderConfirm: { de: 'Diesen Provider wirklich löschen?', en: 'Really delete this provider?' },
+  deleteProviderAssignedConfirm: {
+    de: 'Dieser Provider ist {n}× in der Planung zugewiesen. Beim Löschen werden diese Zuweisungen entfernt. Fortfahren?',
+    en: 'This provider is assigned {n}× in planning. Deleting will clear those assignments. Continue?'
+  },
   p_name: { de: 'Anbieter', en: 'Provider' },
   p_types: { de: 'Angebot', en: 'Offering' },
   p_courses: { de: 'Kurse', en: 'Courses' },
@@ -245,6 +249,10 @@ const DICT = {
   },
   importOk: { de: 'Daten erfolgreich importiert.', en: 'Data imported successfully.' },
   importErr: { de: 'Import fehlgeschlagen: ungültige Datei.', en: 'Import failed: invalid file.' },
+  saveErr: {
+    de: 'Speichern fehlgeschlagen – Speicher voll oder blockiert. Bitte ein Backup exportieren.',
+    en: 'Save failed – storage full or blocked. Please export a backup.'
+  },
   resetData: { de: 'Auf Auslieferungsstand zurücksetzen', en: 'Reset to shipped data' },
   xlsImport_title: { de: 'Trainer aus Excel/CSV importieren', en: 'Import trainers from Excel/CSV' },
   xlsImport_hint: {
@@ -302,6 +310,10 @@ const DICT = {
 
   // ---- category management (editable taxonomies)
   addCategory: { de: 'Eintrag hinzufügen', en: 'Add entry' },
+  deleteCategoryConfirm: {
+    de: 'Diese Kategorie wirklich löschen? Bestehende Einträge behalten den Wert, verlieren aber Farbe/Reihenfolge.',
+    en: 'Really delete this category? Existing records keep the value but lose colour/order.'
+  },
   manage: { de: 'Verwalten', en: 'Manage' },
   manageStages: { de: 'Phasen bearbeiten', en: 'Edit stages' },
   manageQuals: { de: 'Berechtigungen bearbeiten', en: 'Edit qualifications' },

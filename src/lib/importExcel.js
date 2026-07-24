@@ -5,6 +5,8 @@
 // conversion status and planning assignments are preserved.
 // SheetJS is heavy, so it is loaded lazily (only when an import actually runs).
 
+import { fteFromPartTime } from './format.js'
+
 const norm = (s) => String(s == null ? '' : s).toLowerCase().replace(/\s+/g, ' ').trim()
 
 // Header text -> trainer field. Normalized, lower-case, tolerant.
@@ -15,6 +17,7 @@ const FIELD_ALIASES = {
   name: ['name'],
   remark: ['funktion / anmerkung', 'funktion/anmerkung', 'funktion', 'anmerkung', 'bemerkung', 'function / remark', 'function/remark', 'function', 'remark'],
   partTime: ['part-time', 'part time', 'parttime', 'teilzeit', 'pt'],
+  fte: ['fte', 'fte (1 = 100%)', 'fte 1 = 100%', 'vollzeitäquivalent', 'vollzeitaequivalent', 'vze'],
   ore: ['ore a–c', 'ore a-c', 'ore', 'ore priorität', 'ore prioritaet'],
   authority: ['ausstellende behörde', 'ausstellende behoerde', 'behörde', 'behoerde', 'issuing authority', 'authority'],
   ltcDate: ['ltc seit', 'ltc since', 'ltc'],
@@ -45,10 +48,24 @@ function toISO(v) {
   if (m) return `${m[1]}-${m[2]}-${m[3]}`
   m = /^(\d{1,2})[.\/](\d{1,2})[.\/](\d{2,4})$/.exec(s)
   if (m) {
-    const y = m[3].length === 2 ? '20' + m[3] : m[3]
+    // Two-digit years pivot at 50: "98" -> 1998 (a past LTC/TRI/TRE date),
+    // "05" -> 2005. Blindly prefixing "20" turned "01.06.98" into 2098.
+    let y = m[3]
+    if (y.length === 2) {
+      const yy = Number(y)
+      y = String(yy <= 50 ? 2000 + yy : 1900 + yy)
+    }
     return `${y}-${m[2].padStart(2, '0')}-${m[1].padStart(2, '0')}`
   }
   return s
+}
+
+// Numeric FTE (accepts "0,8" decimal comma), clamped to a sane range; else null.
+function toFte(v) {
+  if (v == null || v === '') return null
+  const n = typeof v === 'number' ? v : Number(String(v).trim().replace(',', '.'))
+  if (isNaN(n)) return null
+  return Math.max(0, Math.min(2, n))
 }
 
 // Normalize a part-time value (number, "VZ", "80%", "0,8", messy string).
@@ -80,6 +97,12 @@ function pickFields(rec) {
   if (str(rec.authority)) out.authority = str(rec.authority)
   const pt = toPartTime(rec.partTime)
   if (pt !== '') out.partTime = pt
+  // Keep FTE in step with the roster: use an explicit FTE column when present,
+  // otherwise derive it from part-time (mirrors the in-app part-time -> FTE
+  // coupling) so a refreshed part-time doesn't leave a stale FTE behind.
+  const fte = toFte(rec.fte)
+  if (fte != null) out.fte = fte
+  else if (pt !== '') out.fte = fteFromPartTime(pt)
   const ltc = toISO(rec.ltcDate)
   if (ltc) out.ltcDate = ltc
   const tri = toISO(rec.triDate)
@@ -89,17 +112,103 @@ function pickFields(rec) {
   return out
 }
 
-// Parse the first worksheet of an .xlsx/.xls/.csv file into roster records.
-export async function parseTrainersFromArrayBuffer(buf) {
+// A binary spreadsheet? .xlsx is a ZIP ("PK"), legacy .xls is an OLE compound
+// file (D0 CF 11 E0). Anything else we treat as CSV/plain text.
+function isSpreadsheetBinary(bytes) {
+  if (bytes.length >= 2 && bytes[0] === 0x50 && bytes[1] === 0x4b) return true
+  if (bytes.length >= 4 && bytes[0] === 0xd0 && bytes[1] === 0xcf && bytes[2] === 0x11 && bytes[3] === 0xe0) return true
+  return false
+}
+
+function decodeText(bytes) {
+  let s = new TextDecoder('utf-8').decode(bytes)
+  if (s.charCodeAt(0) === 0xfeff) s = s.slice(1) // strip UTF-8 BOM
+  return s
+}
+
+// Minimal RFC-4180-ish CSV parser (handles quotes and , or ; delimiters). We
+// parse CSV ourselves rather than via SheetJS so German dd.mm.yyyy dates and
+// decimal-comma values ("0,8") stay as raw strings for toISO / toPartTime,
+// instead of being US-fuzzy-parsed (day/month swapped, "0,8" -> 8).
+function parseCsvRows(text) {
+  const nl = text.indexOf('\n')
+  const firstLine = nl >= 0 ? text.slice(0, nl) : text
+  const delim = firstLine.split(';').length > firstLine.split(',').length ? ';' : ','
+  const rows = []
+  let row = []
+  let field = ''
+  let inQ = false
+  for (let i = 0; i < text.length; i++) {
+    const c = text[i]
+    if (inQ) {
+      if (c === '"') {
+        if (text[i + 1] === '"') { field += '"'; i++ }
+        else inQ = false
+      } else field += c
+    } else if (c === '"') inQ = true
+    else if (c === delim) { row.push(field); field = '' }
+    else if (c === '\n') { row.push(field); rows.push(row); row = []; field = '' }
+    else if (c !== '\r') field += c
+  }
+  if (field !== '' || row.length) { row.push(field); rows.push(row) }
+  return rows
+}
+
+// Read an .xlsx/.xls workbook with a prototype-pollution guard around the parse.
+// CVE-2023-30533 lets a crafted workbook inject keys onto Object.prototype during
+// XLSX.read; the maintained fix ships only on the SheetJS CDN (not reachable from
+// this build's package registry). XLSX.read is synchronous, so we snapshot
+// Object.prototype's own keys and strip any newly-added ones immediately after –
+// before any awaited app code (normalize/merge) can observe a polluted prototype.
+function readWorkbookGuarded(XLSX, buf) {
+  const proto = Object.prototype
+  const before = new Set(Object.getOwnPropertyNames(proto))
+  try {
+    return XLSX.read(buf, { type: 'array', cellDates: true })
+  } finally {
+    for (const k of Object.getOwnPropertyNames(proto)) {
+      if (!before.has(k)) { try { delete proto[k] } catch (_) { /* non-configurable */ } }
+    }
+  }
+}
+
+async function sheetToRows(buf) {
+  const bytes = new Uint8Array(buf)
+  if (!isSpreadsheetBinary(bytes)) return parseCsvRows(decodeText(bytes))
   const XLSX = await import('xlsx')
-  const wb = XLSX.read(buf, { type: 'array', cellDates: true })
+  const wb = readWorkbookGuarded(XLSX, buf)
   const sheet = wb.Sheets[wb.SheetNames[0]]
   if (!sheet) return []
-  const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: '' })
+  return XLSX.utils.sheet_to_json(sheet, { header: 1, raw: true, defval: '' })
+}
+
+// Score a row by how many recognized field headers it carries; the real header
+// row wins over a metadata/cover block that merely happens to contain "Name".
+function headerScore(row) {
+  if (!Array.isArray(row)) return { score: 0, hasName: false }
+  let score = 0
+  let hasName = false
+  for (const c of row) {
+    const f = fieldForHeader(c)
+    if (f) { score++; if (f === 'name') hasName = true }
+  }
+  return { score, hasName }
+}
+
+// Parse the first worksheet of an .xlsx/.xls/.csv file into roster records.
+export async function parseTrainersFromArrayBuffer(buf) {
+  const rows = await sheetToRows(buf)
   if (!rows.length) return []
-  // Find the header row (the first row that contains a "Name" cell), so title
-  // rows or merged banners above the table are skipped.
-  let hIdx = rows.findIndex((r) => Array.isArray(r) && r.some((c) => norm(c) === 'name'))
+  // Pick the row with the MOST recognized headers (and a Name column), so a
+  // cover/metadata block like ["Erstellt von","Name","Datum"] above the table
+  // no longer hijacks header detection.
+  let hIdx = -1
+  let best = 0
+  rows.forEach((r, i) => {
+    const { score, hasName } = headerScore(r)
+    if (hasName && score > best) { best = score; hIdx = i }
+  })
+  if (hIdx < 0) hIdx = rows.findIndex((r) => Array.isArray(r) && r.some((c) => norm(c) === 'name'))
   if (hIdx < 0) hIdx = 0
   const headerMap = {}
   rows[hIdx].forEach((h, i) => {

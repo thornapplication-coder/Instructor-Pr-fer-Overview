@@ -3,13 +3,14 @@ import { useStore } from '../lib/store.jsx'
 import { capacityByBase, capacityByQual, conversionFteSummary, qualRankIndex } from '../lib/stats.js'
 import { targetsByMonth, monthLabel, stageName } from '../lib/alerts.js'
 import { useSort, Th } from '../components/sortable.jsx'
-import { CONV_STATUS, stageLabel } from '../data/pipeline.js'
+import { CONV_STATUS, stageLabel, firstStageId, releasedStageId } from '../data/pipeline.js'
+import { qualLabel } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { formatDate } from '../lib/format.js'
 
 // One sortable capacity table (per base or per qualification). Qualification
 // rows default to the canonical rank (SEN → TRE → TRI → LTC → SFI → TKI).
-function CapTable({ title, firstCol, cap, keyKind }) {
+function CapTable({ title, firstCol, cap, keyKind, labelFor }) {
   const { t } = useStore()
   const accessors = useMemo(() => {
     const a = {
@@ -44,7 +45,7 @@ function CapTable({ title, firstCol, cap, keyKind }) {
           <tbody>
             {sorted.map((r) => (
               <tr key={r.key}>
-                <td className="strong">{r.key}</td>
+                <td className="strong">{labelFor ? labelFor(r.key) : r.key}</td>
                 <td className="num">{r.headcount}</td>
                 <td className="num">{r.total}</td>
                 <td className="num">{r.inConversion}</td>
@@ -73,22 +74,24 @@ function CapTable({ title, firstCol, cap, keyKind }) {
 
 // Inline editor for phase / status / target date per person. Drives the
 // timeline below and the alerts on the dashboard.
-function ConversionEditor({ trainers, stages }) {
+function ConversionEditor({ trainers, stages, quals }) {
   const { t, lang, setConversion } = useStore()
   const [q, setQ] = useState('')
   const [fBase, setFBase] = useState('')
   const [hideDone, setHideDone] = useState(false)
   const bases = useMemo(() => [...new Set(trainers.map((x) => x.base))].filter(Boolean).sort(), [trainers])
+  const releasedId = releasedStageId(stages)
+  const firstId = firstStageId(stages)
 
   const rows = useMemo(() => {
     const n = q.trim().toLowerCase()
     return trainers
       .filter((x) => x.ore !== 'Rente')
       .filter((x) => (fBase ? x.base === fBase : true))
-      .filter((x) => (hideDone ? (x.conv?.stage || 'nominated') !== 'released' : true))
-      .filter((x) => (n ? [x.name, x.tlc, x.base, x.qual].join(' ').toLowerCase().includes(n) : true))
+      .filter((x) => (hideDone ? (x.conv?.stage || firstId) !== releasedId : true))
+      .filter((x) => (n ? [x.name, x.tlc, x.base, qualLabel(quals, x.qual)].join(' ').toLowerCase().includes(n) : true))
       .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-  }, [trainers, q, fBase, hideDone])
+  }, [trainers, q, fBase, hideDone, quals, firstId, releasedId])
 
   const statusOptions = Object.entries(CONV_STATUS).sort((a, b) =>
     (lang === 'de' ? a[1].de : a[1].en).localeCompare(lang === 'de' ? b[1].de : b[1].en)
@@ -127,12 +130,12 @@ function ConversionEditor({ trainers, stages }) {
               <tr key={x.id}>
                 <td>
                   <div className="strong">{x.name}</div>
-                  <div className="muted small">{x.base} · {x.qual}{x.aircraft ? ' · ' + x.aircraft : ''}</div>
+                  <div className="muted small">{x.base} · {qualLabel(quals, x.qual)}{x.aircraft ? ' · ' + x.aircraft : ''}</div>
                 </td>
                 <td>
                   <select
                     className="input"
-                    value={x.conv?.stage || 'nominated'}
+                    value={x.conv?.stage || firstId}
                     onChange={(e) => setConversion(x.id, { stage: e.target.value })}
                   >
                     {stages.map((s) => (
@@ -173,11 +176,11 @@ function ConversionEditor({ trainers, stages }) {
 
 export default function Capacity() {
   const { data, t, lang } = useStore()
-  const { trainers, stages } = data
-  const capBase = useMemo(() => capacityByBase(trainers, AIRCRAFT), [trainers])
-  const capQual = useMemo(() => capacityByQual(trainers, AIRCRAFT), [trainers])
-  const fteS = conversionFteSummary(trainers)
-  const months = useMemo(() => targetsByMonth(trainers), [trainers])
+  const { trainers, stages, quals } = data
+  const capBase = useMemo(() => capacityByBase(trainers, AIRCRAFT, stages), [trainers, stages])
+  const capQual = useMemo(() => capacityByQual(trainers, AIRCRAFT, stages), [trainers, stages])
+  const fteS = conversionFteSummary(trainers, stages)
+  const months = useMemo(() => targetsByMonth(trainers, null, stages), [trainers, stages])
 
   return (
     <div className="tab-pane">
@@ -192,11 +195,11 @@ export default function Capacity() {
         <span className="fte-pill fte-total">FTE {t('total')}: <b>{fteS.total}</b></span>
       </div>
 
-      <CapTable title={t('capacity_byQual')} firstCol={t('f_qual')} cap={capQual} keyKind="qual" />
+      <CapTable title={t('capacity_byQual')} firstCol={t('f_qual')} cap={capQual} keyKind="qual" labelFor={(k) => qualLabel(quals, k)} />
       <CapTable title={t('capacity_byBase')} firstCol={t('f_base')} cap={capBase} keyKind="base" />
 
 
-      <ConversionEditor trainers={trainers} stages={stages} />
+      <ConversionEditor trainers={trainers} stages={stages} quals={quals} />
 
       <section className="card">
         <h3 className="card-title">{t('capacity_timeline')}</h3>

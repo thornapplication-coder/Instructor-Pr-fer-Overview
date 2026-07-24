@@ -28,7 +28,7 @@ function fmtBytes(n) {
 }
 
 export default function Settings() {
-  const { data, t, lang, setLang, exportData, importData, resetData, setTrainers } = useStore()
+  const { data, t, lang, setLang, exportData, importData, resetData, setTrainers, saveError } = useStore()
   const captureTabImage = useContext(CaptureContext)
   const fileRef = useRef(null)
   const xlsRef = useRef(null)
@@ -87,14 +87,18 @@ export default function Settings() {
   const doImport = (file) => {
     const reader = new FileReader()
     reader.onload = () => {
+      let obj
       try {
-        const obj = JSON.parse(reader.result)
-        if (!window.confirm(t('importConfirm'))) return
-        importData(obj)
-        setMsg({ ok: true, text: t('importOk') })
+        obj = JSON.parse(reader.result)
       } catch (e) {
         setMsg({ ok: false, text: t('importErr') })
+        return
       }
+      if (!window.confirm(t('importConfirm'))) return
+      // importData validates the shape now and reports whether it was accepted,
+      // so a random JSON file no longer silently wipes the roster with the seed.
+      const ok = importData(obj)
+      setMsg(ok ? { ok: true, text: t('importOk') } : { ok: false, text: t('importErr') })
     }
     reader.readAsText(file)
   }
@@ -185,6 +189,7 @@ export default function Settings() {
       <section className="card">
         <h3 className="card-title">{t('dataMgmt')}</h3>
         <p className="muted small">{t('lastSaved')}: {lastSavedStr}</p>
+        {saveError && <p className="inline-msg err">⚠ {t('saveErr')}</p>}
         <div className="btn-row">
           <button className="btn btn-primary" onClick={doExport}>⤓ {t('exportData')}</button>
           <button className="btn btn-ghost" onClick={() => fileRef.current?.click()}>

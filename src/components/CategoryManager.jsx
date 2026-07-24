@@ -9,7 +9,14 @@ export default function CategoryManager({ items, onChange, hasColor = true, defa
   const [drag, setDrag] = useState(null)
 
   const update = (i, patch) => onChange(items.map((it, idx) => (idx === i ? { ...it, ...patch } : it)))
-  const remove = (i) => onChange(items.filter((_, idx) => idx !== i))
+  // Confirm before removing an established (labelled) category: records still
+  // referencing it keep the raw value but lose colour/order, and re-adding mints
+  // a new random id, so an accidental one-click delete is hard to undo.
+  const remove = (i) => {
+    const it = items[i]
+    if (it && it.label && !window.confirm(t('deleteCategoryConfirm'))) return
+    onChange(items.filter((_, idx) => idx !== i))
+  }
   const add = () =>
     onChange([...items, { id: newId('cat'), label: '', color: defaultColor }])
   const move = (from, to) => {
@@ -28,7 +35,14 @@ export default function CategoryManager({ items, onChange, hasColor = true, defa
             key={it.id}
             className={'catman-row' + (drag === i ? ' dragging' : '')}
             draggable
-            onDragStart={() => setDrag(i)}
+            onDragStart={(e) => {
+              setDrag(i)
+              // Firefox won't start a drag whose data store is empty.
+              try {
+                e.dataTransfer.setData('text/plain', String(i))
+                e.dataTransfer.effectAllowed = 'move'
+              } catch (_) { /* older browsers */ }
+            }}
             onDragOver={(e) => e.preventDefault()}
             onDrop={() => {
               if (drag !== null && drag !== i) move(drag, i)

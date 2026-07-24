@@ -3,7 +3,7 @@ import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
-import { emptyProvider } from '../data/providers.js'
+import { emptyProvider, courseLabel } from '../data/providers.js'
 import { providerUtilization } from '../lib/stats.js'
 
 function UtilBar({ value }) {
@@ -108,13 +108,23 @@ export default function Providers() {
               {main.sorted.map((p) => {
                 const st = providerStatus.find((s) => s.id === p.status) || { label: p.status || '–', color: '#787878' }
                 return (
-                  <tr key={p.id} className="clickable" onClick={() => setEditing({ ...p })}>
+                  <tr
+                    key={p.id}
+                    className="clickable"
+                    onClick={() => setEditing({ ...p })}
+                    tabIndex={0}
+                    role="button"
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing({ ...p }) } }}
+                  >
                     <td className="strong">{p.name || '–'}</td>
                     <td>
                       <div className="type-tags">
-                        {[...(p.courses || [])].sort().map((c) => (
-                          <span key={c} className="type-tag">{c}</span>
-                        ))}
+                        {[...(p.courses || [])]
+                          .map((c) => courseLabel(providerCourses, c))
+                          .sort()
+                          .map((label) => (
+                            <span key={label} className="type-tag">{label}</span>
+                          ))}
                       </div>
                     </td>
                     <td>
@@ -158,7 +168,14 @@ export default function Providers() {
               </thead>
               <tbody>
                 {utilS.sorted.map((u) => (
-                  <tr key={u.provider.id} className="clickable" onClick={() => setEditing({ ...u.provider })}>
+                  <tr
+                    key={u.provider.id}
+                    className="clickable"
+                    onClick={() => setEditing({ ...u.provider })}
+                    tabIndex={0}
+                    role="button"
+                    onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing({ ...u.provider }) } }}
+                  >
                     <td className="strong">{u.provider.name || '–'}</td>
                     <td>
                       <div className="type-tags">
@@ -189,7 +206,15 @@ export default function Providers() {
           onClose={() => setEditing(null)}
           onSave={(p) => { upsertProvider(p); setEditing(null) }}
           onDelete={(id) => {
-            if (window.confirm(t('deleteProviderConfirm'))) { deleteProvider(id); setEditing(null) }
+            const assignedCount = trainers.reduce(
+              (n, tr) => n + Object.values(tr.assignments || {}).filter((x) => x && x.providerId === id).length,
+              0
+            )
+            const msg =
+              assignedCount > 0
+                ? t('deleteProviderAssignedConfirm').replace('{n}', assignedCount)
+                : t('deleteProviderConfirm')
+            if (window.confirm(msg)) { deleteProvider(id); setEditing(null) }
           }}
           isNew={!providers.some((x) => x.id === editing.id)}
         />

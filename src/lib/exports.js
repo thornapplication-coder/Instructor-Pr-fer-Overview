@@ -5,10 +5,12 @@ import { BRAND_NAME, BRAND_HEX, footerLine, fileStamp, reportDate } from './bran
 import { translate } from './i18n.js'
 
 function esc(v) {
-  return String(v == null ? '' : v)
-    .replace(/&/g, '&amp;')
-    .replace(/</g, '&lt;')
-    .replace(/>/g, '&gt;')
+  let s = String(v == null ? '' : v)
+  // Spreadsheet formula/DDE injection guard: a cell beginning with = + - @ (or a
+  // control char) is parsed as a live formula by Excel's HTML importer. Prefix a
+  // single quote so such values (typed or imported verbatim) stay literal text.
+  if (/^[=+\-@\t\r\n]/.test(s)) s = "'" + s
+  return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 }
 
 function download(blob, filename) {

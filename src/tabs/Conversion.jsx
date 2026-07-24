@@ -3,7 +3,8 @@ import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import HScroll from '../components/HScroll.jsx'
-import { CONV_STATUS, stageIndex, stageLabel, STAFF_TYPE } from '../data/pipeline.js'
+import { CONV_STATUS, stageIndex, stageLabel, STAFF_TYPE, firstStageId } from '../data/pipeline.js'
+import { qualLabel } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { conversionFteSummary } from '../lib/stats.js'
 import { trainerAlerts } from '../lib/alerts.js'
@@ -32,7 +33,8 @@ export default function Conversion() {
 
   const bases = useMemo(() => [...new Set(trainers.map((x) => x.base))].sort(), [trainers])
   const stageIds = useMemo(() => new Set(stages.map((s) => s.id)), [stages])
-  const fteS = conversionFteSummary(trainers)
+  const firstId = firstStageId(stages)
+  const fteS = conversionFteSummary(trainers, stages)
 
   const needle = q.trim().toLowerCase()
   const visible = trainers.filter(
@@ -44,18 +46,16 @@ export default function Conversion() {
       (fStaff ? (x.staffType || 'internal') === fStaff : true) &&
       (fAircraft ? x.aircraft === fAircraft : true) &&
       (needle
-        ? [x.name, x.qual, x.base, x.tlc, x.aircraft, t('staff_' + (x.staffType || 'internal'))]
+        ? [x.name, qualLabel(quals, x.qual), x.base, x.tlc, x.aircraft, t('staff_' + (x.staffType || 'internal'))]
             .join(' ')
             .toLowerCase()
             .includes(needle)
         : true)
   )
 
-  const setStage = (tr, stageId) => {
-    const patch = { stage: stageId }
-    if (stageId === 'released') patch.status = 'done'
-    setConversion(tr.id, patch)
-  }
+  // The stage<->status coupling now lives in the store's setConversion, so all
+  // editors (board drag, inline editor, detail modal) behave identically.
+  const setStage = (tr, stageId) => setConversion(tr.id, { stage: stageId })
   const move = (tr, dir) => {
     const idx = stageIndex(stages, tr.conv.stage)
     const nidx = Math.max(0, Math.min(stages.length - 1, idx + dir))
@@ -109,7 +109,7 @@ export default function Conversion() {
       <HScroll className="board">
         {stages.map((s, si) => {
           const cards = visible.filter((x) => {
-            const stg = x.conv?.stage || 'nominated'
+            const stg = x.conv?.stage || firstId
             return stg === s.id || (si === 0 && !stageIds.has(stg))
           })
           return (
@@ -129,13 +129,20 @@ export default function Conversion() {
               <div className="board-col-body">
                 {cards.map((x) => {
                   const st = CONV_STATUS[x.conv?.status] || CONV_STATUS.on_track
-                  const al = trainerAlerts(x)
+                  const al = trainerAlerts(x, null, stages)
                   return (
                     <div
                       className={'conv-card' + (dragId === x.id ? ' dragging' : '') + (al.level ? ' alert-' + al.level : '')}
                       key={x.id}
                       draggable
-                      onDragStart={() => setDragId(x.id)}
+                      onDragStart={(e) => {
+                        setDragId(x.id)
+                        // Firefox aborts a drag whose data store is empty, so set data.
+                        try {
+                          e.dataTransfer.setData('text/plain', x.id)
+                          e.dataTransfer.effectAllowed = 'move'
+                        } catch (_) { /* older browsers */ }
+                      }}
                       onDragEnd={() => { setDragId(null); setOverStage(null) }}
                     >
                       <div className="conv-card-top">
@@ -143,7 +150,7 @@ export default function Conversion() {
                         <button className="conv-name" onClick={() => setDetail({ ...x })}>{x.name}</button>
                       </div>
                       <div className="conv-meta">
-                        <span className="qual-tag sm">{x.qual}</span>
+                        <span className="qual-tag sm">{qualLabel(quals, x.qual)}</span>
                         <span className="chip-sm">{x.base}</span>
                         {x.aircraft && <span className="ac-tag sm">{x.aircraft}</span>}
                         <span className={'ore-tag ore-' + (x.ore || 'none')}>{x.ore || '–'}</span>

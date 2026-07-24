@@ -5,7 +5,7 @@ import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
 import { formatPartTime, formatDate, classNames, fteFromPartTime, formatFte } from '../lib/format.js'
 import { CONV_STATUS, STAFF_TYPE, stageLabel, stageIndex } from '../data/pipeline.js'
-import { qualIndex } from '../data/qualifications.js'
+import { qualIndex, qualLabel } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 
 const ORE_RANK = { A: 0, B: 1, C: 2, Rente: 3 }
@@ -68,7 +68,7 @@ export default function Trainers() {
       .filter((x) => (fAircraft ? x.aircraft === fAircraft : true))
       .filter((x) =>
         needle
-          ? [x.name, x.tlc, x.remark, x.base, x.authority, x.aircraft, x.qual]
+          ? [x.name, x.tlc, x.remark, x.base, x.authority, x.aircraft, qualLabel(quals, x.qual)]
               .join(' ')
               .toLowerCase()
               .includes(needle)
@@ -187,8 +187,15 @@ export default function Trainers() {
           </thead>
           <tbody>
             {sorted.map((x) => (
-              <tr key={x.id} onClick={() => setEditing({ ...x })} className="clickable">
-                <td><span className="qual-tag" style={{ background: qualColor(x.qual) }}>{x.qual}</span></td>
+              <tr
+                key={x.id}
+                onClick={() => setEditing({ ...x })}
+                className="clickable"
+                tabIndex={0}
+                role="button"
+                onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing({ ...x }) } }}
+              >
+                <td><span className="qual-tag" style={{ background: qualColor(x.qual) }}>{qualLabel(quals, x.qual)}</span></td>
                 <td>{x.base}</td>
                 <td className="mono">{x.tlc}</td>
                 <td className="strong">{x.name}</td>
@@ -270,7 +277,7 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
     }
     delete out.partTimeInput
     delete out._isNew
-    if (!out.name.trim()) {
+    if (!(out.name || '').trim()) {
       window.alert(lang === 'de' ? 'Bitte einen Namen eingeben.' : 'Please enter a name.')
       return
     }
@@ -298,7 +305,7 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
     >
       <div className="form-grid">
         <Field label={t('f_name')} span2>
-          <input className="input" value={f.name} onChange={(e) => set('name', e.target.value)} />
+          <input className="input" value={f.name || ''} onChange={(e) => set('name', e.target.value)} />
         </Field>
         <Field label={t('f_qual')}>
           <select className="input" value={f.qual} onChange={(e) => set('qual', e.target.value)}>
