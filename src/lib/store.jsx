@@ -9,6 +9,7 @@ import {
 } from '../data/providers.js'
 import { DEFAULT_STAGES, ASSIGNMENT_STEPS, mergeAssignments } from '../data/pipeline.js'
 import { DEFAULT_QUALS, normalizeQual } from '../data/qualifications.js'
+import { fteFromPartTime } from './format.js'
 import { translate } from './i18n.js'
 
 const STORAGE_KEY = 'ewl737:data:v1'
@@ -31,7 +32,8 @@ function withConvDefaults(trainer) {
     staffType: 'internal',
     aircraft: 'A320',
     ...trainer,
-    fte: typeof trainer.fte === 'number' ? trainer.fte : 1,
+    // FTE always follows the part-time workload (single source of truth).
+    fte: fteFromPartTime(trainer.partTime),
     qual: normalizeQual(trainer.qual),
     conv: {
       stage: 'nominated',
@@ -105,12 +107,7 @@ function loadData() {
     const raw = localStorage.getItem(STORAGE_KEY)
     if (!raw) return freshData()
     const parsed = JSON.parse(raw)
-    // One-time migration when upgrading from an older schema: set all FTE to 1.
-    const resetFte = parsed.schema !== SCHEMA
     let data = normalize(parsed)
-    if (resetFte) {
-      data = { ...data, trainers: data.trainers.map((t) => ({ ...t, fte: 1 })) }
-    }
     // One-time: ensure the standard providers exist (add missing ones by name).
     if (!data._provSeeded) {
       const have = new Set(data.providers.map((p) => (p.name || '').trim().toLowerCase()))

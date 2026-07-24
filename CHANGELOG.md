@@ -11,6 +11,13 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.2.1] – 2026-07-24
+
+- **FTE folgt der Part-Time**: Der FTE-Wert ergibt sich jetzt automatisch aus
+  der Part-Time (VZ = 1, 80 % = 0,8 …) und wird in den Details nur noch
+  angezeigt – kein separates Eintragen mehr nötig.
+- Feld **„B ab"** bei den Trainern entfernt.
+
 ## [1.2.0] – 2026-07-23
 
 - **Alle Downloads zentral in den Einstellungen** – im Eurowings-Style: jede

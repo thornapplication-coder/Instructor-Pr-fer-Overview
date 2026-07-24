@@ -3,7 +3,7 @@ import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
-import { formatPartTime, formatDate, classNames } from '../lib/format.js'
+import { formatPartTime, formatDate, classNames, fteFromPartTime, formatFte } from '../lib/format.js'
 import { CONV_STATUS, STAFF_TYPE, stageLabel, stageIndex } from '../data/pipeline.js'
 import { qualIndex } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
@@ -111,7 +111,6 @@ export default function Trainers() {
       triDate: '',
       treDate: '',
       authority: '',
-      bFrom: '',
       conv: { stage: 'nominated', status: 'on_track', target: '', note: '' },
       _isNew: true
     })
@@ -195,7 +194,7 @@ export default function Trainers() {
                 <td className="strong">{x.name}</td>
                 <td className="muted">{x.remark || '–'}</td>
                 <td className="num">{formatPartTime(x.partTime, lang)}</td>
-                <td className="num">{(typeof x.fte === 'number' ? x.fte : 1).toFixed(2).replace(/\.00$/, '')}</td>
+                <td className="num">{formatFte(x.fte)}</td>
                 <td><span className="ac-tag">{x.aircraft || '–'}</span></td>
                 <td>
                   <span className={classNames('ore-tag', 'ore-' + (x.ore || 'none'))}>
@@ -258,6 +257,8 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }))
   const firstStage = stages[0]?.id
   const aircraftDerived = (f.conv?.stage || firstStage) === firstStage ? (data.conversionFrom || 'A320') : (data.conversionTo || 'B737')
+  // FTE follows the part-time workload; shown read-only, recomputed live.
+  const fteDerived = fteFromPartTime(ptFromInput(f.partTimeInput))
 
   const submit = () => {
     const out = {
@@ -265,7 +266,7 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
       partTime: ptFromInput(f.partTimeInput),
       simSessions: Number(f.simSessions) || 0,
       lifusLegs: Number(f.lifusLegs) || 0,
-      fte: f.fte === '' || f.fte == null || isNaN(Number(f.fte)) ? 1 : Number(f.fte),
+      fte: fteDerived,
       aircraft: aircraftDerived
     }
     delete out.partTimeInput
@@ -318,15 +319,7 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
           <input className="input" value={f.partTimeInput} placeholder="VZ / 80%" onChange={(e) => set('partTimeInput', e.target.value)} />
         </Field>
         <Field label={t('f_fte') + ' (1 = 100%)'}>
-          <input
-            className="input"
-            type="number"
-            step="0.05"
-            min="0"
-            max="2"
-            value={f.fte ?? 1}
-            onChange={(e) => set('fte', e.target.value)}
-          />
+          <input className="input input-readonly" value={formatFte(fteDerived)} readOnly title={t('fteAutoHint')} />
         </Field>
         <Field label={t('f_remark')} span2>
           <input className="input" value={f.remark} onChange={(e) => set('remark', e.target.value)} />
@@ -361,9 +354,6 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
         </Field>
         <Field label={t('f_tre')}>
           <input className="input" type="date" value={f.treDate} onChange={(e) => set('treDate', e.target.value)} />
-        </Field>
-        <Field label={t('f_bFrom')}>
-          <input className="input" value={f.bFrom} onChange={(e) => set('bFrom', e.target.value)} />
         </Field>
 
         <div className="form-sep span2">{t('f_conversion')}</div>

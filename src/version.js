@@ -4,12 +4,27 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.2.0'
-export const APP_BUILD_DATE = '2026-07-23'
+export const APP_VERSION = '1.2.1'
+export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.2.1',
+    date: '2026-07-24',
+    type: 'patch',
+    changes: {
+      de: [
+        'FTE ergibt sich jetzt automatisch aus der Part-Time (VZ = 1, 80 % = 0,8 …) – kein separates Eintragen mehr nötig.',
+        'Feld „B ab" bei den Trainern entfernt.'
+      ],
+      en: [
+        'FTE is now derived automatically from part-time (FT = 1, 80% = 0.8 …) – no separate entry needed.',
+        'Removed the “B from” field on trainers.'
+      ]
+    }
+  },
   {
     version: '1.2.0',
     date: '2026-07-23',

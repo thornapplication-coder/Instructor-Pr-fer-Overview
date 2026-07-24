@@ -2,7 +2,7 @@
 // Centralized here so the (single) Downloads section in Settings owns all
 // downloads; the individual tabs no longer carry their own export controls.
 import { downloadExcel } from './exports.js'
-import { formatPartTime } from './format.js'
+import { formatPartTime, formatFte } from './format.js'
 import { stageLabel, ASSIGNMENT_STATUS } from '../data/pipeline.js'
 
 const byName = (a, b) => (a.name || '').localeCompare(b.name || '')
@@ -21,7 +21,7 @@ export function exportTrainersExcel(data, t, lang) {
       { label: t('f_name'), value: (x) => x.name },
       { label: t('f_remark'), value: (x) => x.remark },
       { label: t('f_partTime'), value: (x) => formatPartTime(x.partTime, lang) },
-      { label: t('f_fte'), value: (x) => (typeof x.fte === 'number' ? x.fte : 1) },
+      { label: t('f_fte'), value: (x) => formatFte(x.fte) },
       { label: t('f_aircraft'), value: (x) => x.aircraft },
       { label: t('f_ore'), value: (x) => x.ore },
       { label: t('f_staffType'), value: (x) => t('staff_' + (x.staffType || 'internal')) },

@@ -80,6 +80,10 @@ const DICT = {
   f_bFrom: { de: 'B ab', en: 'B from' },
   f_conversion: { de: 'Umschulung', en: 'Conversion' },
   f_fte: { de: 'FTE', en: 'FTE' },
+  fteAutoHint: {
+    de: 'Ergibt sich automatisch aus der Part-Time (VZ = 1).',
+    en: 'Derived automatically from part-time (FT = 1).'
+  },
   f_aircraft: { de: 'Aircraft', en: 'Aircraft' },
   filterAircraft: { de: 'Aircraft', en: 'Aircraft' },
   stat_aircraft: { de: 'Aktuelles Aircraft', en: 'Current aircraft' },

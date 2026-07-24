@@ -22,6 +22,20 @@ export function partTimeFactor(pt) {
   return null
 }
 
+// FTE follows the part-time workload: VZ / full / unknown -> 1.0 (100%),
+// a part-time factor otherwise. Clamped to a sane range.
+export function fteFromPartTime(pt) {
+  const f = partTimeFactor(pt)
+  if (f == null) return 1
+  return Math.max(0, Math.min(2, f))
+}
+
+// Compact FTE display: 1, 0.8, 0.75 (no trailing zeros).
+export function formatFte(fte) {
+  const n = typeof fte === 'number' ? fte : 1
+  return String(Number(n.toFixed(2)))
+}
+
 export function formatDate(iso, lang) {
   if (!iso) return '–'
   // Non-date strings (e.g. "C weil 25%") pass through unchanged.
