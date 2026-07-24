@@ -383,6 +383,17 @@ textarea.input { resize: vertical; }
 .tl-name { display: block; font-weight: 800; font-size: 13px; color: var(--ink); }
 .tl-meta { display: block; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 
+/* ---------- Provider utilization ---------- */
+.util { display: flex; align-items: center; gap: 8px; min-width: 130px; }
+.util-track { flex: 1; height: 8px; background: var(--chart-track); border-radius: 999px; overflow: hidden; }
+.util-fill { height: 100%; border-radius: 999px; }
+.util-fill.ok { background: var(--green); }
+.util-fill.high { background: var(--amber); }
+.util-fill.over { background: var(--red); }
+.util-pct { font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
+.util-pct.high { color: var(--amber); }
+.util-pct.over { color: var(--red); }
+
 /* ---------- Deadlines & alerts ---------- */
 .alerts-card { border-left: 4px solid var(--amber); }
 .alerts-empty { color: var(--green); font-weight: 800; font-size: 14px; margin: 4px 0 0; }

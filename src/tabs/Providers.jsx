@@ -3,10 +3,29 @@ import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { emptyProvider } from '../data/providers.js'
+import { providerUtilization } from '../lib/stats.js'
+
+function UtilBar({ value }) {
+  if (value == null) return <span className="muted small">–</span>
+  const pct = Math.round(value * 100)
+  const lvl = value > 1 ? 'over' : value >= 0.8 ? 'high' : 'ok'
+  return (
+    <div className="util">
+      <div className="util-track">
+        <div className={'util-fill ' + lvl} style={{ width: Math.min(100, pct) + '%' }} />
+      </div>
+      <span className={'util-pct ' + lvl}>{pct}%</span>
+    </div>
+  )
+}
 
 export default function Providers() {
   const { data, t, upsertProvider, deleteProvider, newId, setProviderCourses, setProviderStatus } = useStore()
-  const { providers, providerCourses, providerStatus } = data
+  const { providers, providerCourses, providerStatus, trainers, assignmentSteps } = data
+  const util = useMemo(
+    () => providerUtilization(trainers, providers, assignmentSteps),
+    [trainers, providers, assignmentSteps]
+  )
   const [q, setQ] = useState('')
   const [editing, setEditing] = useState(null)
   const [manageCourses, setManageCourses] = useState(false)
@@ -90,6 +109,46 @@ export default function Providers() {
             </tbody>
           </table>
         </div>
+      )}
+
+      {providers.length > 0 && (
+        <section className="card" style={{ marginTop: 18 }}>
+          <h3 className="card-title">{t('prov_capacity')}</h3>
+          <p className="muted small">{t('prov_capacityHint')}</p>
+          <div className="table-wrap">
+            <table className="data-table">
+              <thead>
+                <tr>
+                  <th>{t('p_name')}</th>
+                  <th>{t('p_courses')}</th>
+                  <th className="num">{t('prov_assigned')}</th>
+                  <th className="num">{t('prov_slots')}</th>
+                  <th>{t('prov_util')}</th>
+                </tr>
+              </thead>
+              <tbody>
+                {util.map((u) => (
+                  <tr key={u.provider.id} className="clickable" onClick={() => setEditing({ ...u.provider })}>
+                    <td className="strong">{u.provider.name || '–'}</td>
+                    <td>
+                      <div className="type-tags">
+                        {assignmentSteps
+                          .filter((s) => u.byStep[s.id])
+                          .map((s) => (
+                            <span key={s.id} className="type-tag">{s.label}: {u.byStep[s.id]}</span>
+                          ))}
+                        {u.demand === 0 && <span className="muted small">–</span>}
+                      </div>
+                    </td>
+                    <td className="num strong">{u.demand}</td>
+                    <td className="num">{u.slots || '–'}</td>
+                    <td><UtilBar value={u.util} /></td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </section>
       )}
 
       {editing && (
@@ -237,6 +296,9 @@ function ProviderForm({ provider, providerCourses, providerStatus, onClose, onSa
         </Field>
         <Field label={t('p_capacity')}>
           <input className="input" value={p.capacity} onChange={(e) => set('capacity', e.target.value)} />
+        </Field>
+        <Field label={t('p_slots')}>
+          <input className="input" type="number" min="0" step="1" value={p.slots ?? ''} onChange={(e) => set('slots', e.target.value)} />
         </Field>
         <Field label={t('p_notes')} span2>
           <textarea className="input" rows={3} value={p.notes} onChange={(e) => set('notes', e.target.value)} />

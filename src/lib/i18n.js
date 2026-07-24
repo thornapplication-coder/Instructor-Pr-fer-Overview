@@ -191,9 +191,18 @@ const DICT = {
   p_phone: { de: 'Telefon', en: 'Phone' },
   p_website: { de: 'Website', en: 'Website' },
   p_price: { de: 'Preis / Konditionen', en: 'Price / terms' },
-  p_capacity: { de: 'Kapazität / Slots', en: 'Capacity / slots' },
+  p_capacity: { de: 'Kapazität / Konditionen', en: 'Capacity / terms' },
+  p_slots: { de: 'Kapazität (Plätze, Anzahl)', en: 'Capacity (slots, number)' },
   p_status: { de: 'Status', en: 'Status' },
   p_notes: { de: 'Notizen', en: 'Notes' },
+  prov_capacity: { de: 'Kapazität & Auslastung', en: 'Capacity & utilization' },
+  prov_capacityHint: {
+    de: 'Aktive Planungs-Zuweisungen je Provider gegenüber der Platz-Kapazität. Kapazität pro Provider im Bearbeiten-Dialog setzen; Zeile antippen zum Bearbeiten.',
+    en: 'Active planning assignments per provider vs. the number of slots. Set the capacity per provider in the edit dialog; tap a row to edit.'
+  },
+  prov_assigned: { de: 'Zugewiesen', en: 'Assigned' },
+  prov_slots: { de: 'Kapazität', en: 'Slots' },
+  prov_util: { de: 'Auslastung', en: 'Utilization' },
 
   // ---- staff type & planning / assignments
   f_staffType: { de: 'Zugehörigkeit', en: 'Affiliation' },

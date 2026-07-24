@@ -37,6 +37,7 @@ export function emptyProvider(id) {
     website: '',
     price: '',
     capacity: '',
+    slots: '', // capacity as a number of seats/slots (for utilization)
     status: '',
     notes: ''
   }

@@ -4,12 +4,27 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.6.0'
+export const APP_VERSION = '1.7.0'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.7.0',
+    date: '2026-07-24',
+    type: 'minor',
+    changes: {
+      de: [
+        'Provider: neue „Kapazität & Auslastung" – aktive Planungs-Zuweisungen je Provider (nach Kurs) gegenüber der Platz-Kapazität, mit Auslastungsbalken (grün/gelb/rot bei Überbuchung).',
+        'Provider: neues Feld „Kapazität (Plätze)" im Bearbeiten-Dialog.'
+      ],
+      en: [
+        'Providers: new “Capacity & utilization” – active planning assignments per provider (by course) vs. the number of slots, with a utilization bar (green/amber/red when over-booked).',
+        'Providers: new “Capacity (slots)” field in the edit dialog.'
+      ]
+    }
+  },
   {
     version: '1.6.0',
     date: '2026-07-24',

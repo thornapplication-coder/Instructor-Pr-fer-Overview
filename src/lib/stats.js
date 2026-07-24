@@ -184,6 +184,42 @@ export function capacityByQual(trainers, aircraftList) {
   return capacityBy(trainers, (t) => qualGroup(t.qual), aircraftList, ['TRE', 'TRI', 'LTC', 'SFI', 'TKI', 'SEN'])
 }
 
+// Provider load vs. capacity. Demand = planning assignments pointing at each
+// provider that are still active (any status except "n/a" and "completed").
+// util = demand / slots (null when no slots number is set).
+export function providerUtilization(trainers, providers, steps) {
+  const demand = new Map()
+  const bump = (pid, step, entry) => {
+    const d = demand.get(pid) || { total: 0, byStep: {}, people: [] }
+    d.total += 1
+    d.byStep[step.id] = (d.byStep[step.id] || 0) + 1
+    d.people.push(entry)
+    demand.set(pid, d)
+  }
+  for (const t of trainers) {
+    for (const s of steps) {
+      const a = t.assignments?.[s.id]
+      if (!a || !a.providerId) continue
+      if (a.status === 'na' || a.status === 'done') continue
+      bump(a.providerId, s, { trainer: t, step: s, date: a.date || '', status: a.status || 'open' })
+    }
+  }
+  return providers
+    .map((p) => {
+      const d = demand.get(p.id) || { total: 0, byStep: {}, people: [] }
+      const slots = Number(p.slots) || 0
+      return {
+        provider: p,
+        demand: d.total,
+        byStep: d.byStep,
+        slots,
+        util: slots > 0 ? d.total / slots : null,
+        people: d.people
+      }
+    })
+    .sort((a, b) => (a.provider.name || '').localeCompare(b.provider.name || ''))
+}
+
 // Head-count style KPIs.
 export function headcount(trainers) {
   const EXAMINER = new Set(['SEN', 'TRE'])

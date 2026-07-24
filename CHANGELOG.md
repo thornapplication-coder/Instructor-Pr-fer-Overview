@@ -11,6 +11,13 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.7.0] – 2026-07-24
+
+- **Provider – Kapazität & Auslastung**: aktive Planungs-Zuweisungen je Provider
+  (aufgeschlüsselt nach Kurs) gegenüber der **Platz-Kapazität**, mit
+  Auslastungsbalken (grün / gelb / rot bei Überbuchung).
+- Neues Provider-Feld **„Kapazität (Plätze)"** im Bearbeiten-Dialog.
+
 ## [1.6.0] – 2026-07-24
 
 - **Kapazität editierbar**: neue Tabelle „Zieltermine & Umschulung bearbeiten" –
