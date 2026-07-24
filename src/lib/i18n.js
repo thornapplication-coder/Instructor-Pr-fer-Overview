@@ -62,6 +62,17 @@ const DICT = {
   chart_convProgress: { de: 'Umschulungs-Fortschritt', en: 'Conversion progress' },
   overallProgress: { de: 'Gesamtfortschritt', en: 'Overall progress' },
 
+  // ---- deadlines / alerts
+  alerts_title: { de: 'Fristen & Warnungen', en: 'Deadlines & alerts' },
+  alerts_none: { de: 'Alles im Plan – keine offenen Warnungen.', en: 'All on track – no open alerts.' },
+  alert_overdue: { de: 'Zieltermin überfällig', en: 'target overdue' },
+  alert_blocked: { de: 'blockiert', en: 'blocked' },
+  alert_at_risk: { de: 'gefährdet', en: 'at risk' },
+  alert_soon: { de: 'Zieltermin bald fällig', en: 'target due soon' },
+  alert_daysLeft: { de: 'Tage', en: 'days' },
+  alert_daysOver: { de: 'Tage über', en: 'days over' },
+  alert_today: { de: 'heute', en: 'today' },
+
   // ---- trainer fields
   f_qual: { de: 'Qualifikation', en: 'Qualification' },
   f_base: { de: 'Base', en: 'Base' },

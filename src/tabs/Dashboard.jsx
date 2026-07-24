@@ -16,6 +16,8 @@ import {
 } from '../lib/stats.js'
 import { conversionProgress, STAFF_TYPE } from '../data/pipeline.js'
 import { AIRCRAFT } from '../data/aircraft.js'
+import { collectAlerts, stageName, parseISO } from '../lib/alerts.js'
+import { formatDate } from '../lib/format.js'
 
 const ORE_COLORS = { A: '#AF1E65', B: '#00A6CF', C: '#6BCCE0', Rente: '#BDBABA' }
 const AC_COLORS = { A320: '#AF1E65', B737: '#2196F3' }
@@ -33,8 +35,50 @@ function Card({ title, total, children }) {
   )
 }
 
+function daysText(t, days) {
+  if (days == null) return ''
+  if (days === 0) return t('alert_today')
+  if (days < 0) return `${-days} ${t('alert_daysOver')}`
+  return `${days} ${t('alert_daysLeft')}`
+}
+
+function AlertsCard({ trainers, stages, lang, t }) {
+  const alerts = collectAlerts(trainers)
+  return (
+    <section className="card alerts-card">
+      <div className="card-head">
+        <h3 className="card-title">{t('alerts_title')}</h3>
+        {alerts.length > 0 && <span className="card-total alert-count">{alerts.length}</span>}
+      </div>
+      {alerts.length === 0 ? (
+        <p className="alerts-empty">✓ {t('alerts_none')}</p>
+      ) : (
+        <ul className="alert-list">
+          {alerts.map((a) => (
+            <li className={'alert-row ' + a.level} key={a.trainer.id}>
+              <span className="alert-flag" aria-hidden="true" />
+              <span className="alert-name">{a.trainer.name}</span>
+              <span className="alert-meta">
+                {a.trainer.base} · {stageName(stages, a.trainer.conv?.stage)}
+              </span>
+              <span className="alert-reasons">
+                {a.reasons.map((r) => t('alert_' + r)).join(' · ')}
+              </span>
+              {parseISO(a.trainer.conv?.target) && (
+                <span className="alert-date">
+                  {formatDate(a.trainer.conv.target, lang)} · {daysText(t, a.days)}
+                </span>
+              )}
+            </li>
+          ))}
+        </ul>
+      )}
+    </section>
+  )
+}
+
 export default function Dashboard() {
-  const { data, t } = useStore()
+  const { data, t, lang } = useStore()
   const { trainers, stages, quals: qualDefs } = data
   const total = trainers.length
 
@@ -73,6 +117,8 @@ export default function Dashboard() {
         <KpiTile value={fteS.inConversion} label={t('kpi_fteInConversion')} accent="#E8A33D" sub={`/ ${fteS.total} FTE`} />
         <KpiTile value={fteS.available} label={t('kpi_fteAvailable')} accent="#2FA36B" sub={`/ ${fteS.total} FTE`} />
       </div>
+
+      <AlertsCard trainers={trainers} stages={stages} lang={lang} t={t} />
 
       <div className="grid-2">
         <section className="card">

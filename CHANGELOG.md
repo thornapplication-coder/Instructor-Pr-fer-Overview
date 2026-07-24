@@ -11,6 +11,14 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.3.0] – 2026-07-24
+
+- **Fristen & Warnungen** auf dem Dashboard: eine neue Karte listet überfällige,
+  gefährdete und blockierte Umschulungen sowie bald fällige Zieltermine – nach
+  Dringlichkeit sortiert, rot/gelb markiert.
+- Das **Umschulungs-Board** hebt überfällige (rot) und gefährdete (gelb) Karten
+  farblich hervor.
+
 ## [1.2.1] – 2026-07-24
 
 - **FTE folgt der Part-Time**: Der FTE-Wert ergibt sich jetzt automatisch aus

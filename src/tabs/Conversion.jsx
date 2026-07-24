@@ -5,6 +5,7 @@ import CategoryManager from '../components/CategoryManager.jsx'
 import { CONV_STATUS, stageIndex, stageLabel, STAFF_TYPE } from '../data/pipeline.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { conversionFteSummary } from '../lib/stats.js'
+import { trainerAlerts } from '../lib/alerts.js'
 import { formatDate } from '../lib/format.js'
 
 function assignTarget(providers, a) {
@@ -136,9 +137,10 @@ export default function Conversion() {
               <div className="board-col-body">
                 {cards.map((x) => {
                   const st = CONV_STATUS[x.conv?.status] || CONV_STATUS.on_track
+                  const al = trainerAlerts(x)
                   return (
                     <div
-                      className={'conv-card' + (dragId === x.id ? ' dragging' : '')}
+                      className={'conv-card' + (dragId === x.id ? ' dragging' : '') + (al.level ? ' alert-' + al.level : '')}
                       key={x.id}
                       draggable
                       onDragStart={() => setDragId(x.id)}

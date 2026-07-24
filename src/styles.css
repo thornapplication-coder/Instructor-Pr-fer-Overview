@@ -364,6 +364,33 @@ textarea.input { resize: vertical; }
 .ver-patch { background: var(--muted); }
 .changelog ul { margin: 0; padding-left: 18px; color: var(--text); font-size: 13.5px; display: flex; flex-direction: column; gap: 4px; }
 
+/* ---------- Deadlines & alerts ---------- */
+.alerts-card { border-left: 4px solid var(--amber); }
+.alerts-empty { color: var(--green); font-weight: 800; font-size: 14px; margin: 4px 0 0; }
+.alert-count { background: var(--red); color: #fff; border-radius: 999px; padding: 1px 10px; }
+.alert-list { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
+.alert-row {
+  display: grid; grid-template-columns: 10px 1.4fr 1fr auto auto; align-items: center; gap: 10px;
+  padding: 9px 12px; border: 1px solid var(--hair); border-radius: var(--radius-sm); background: #fff;
+}
+.alert-row .alert-flag { width: 10px; height: 10px; border-radius: 50%; }
+.alert-row.overdue { border-left: 4px solid var(--red); }
+.alert-row.overdue .alert-flag { background: var(--red); }
+.alert-row.risk { border-left: 4px solid var(--amber); }
+.alert-row.risk .alert-flag { background: var(--amber); }
+.alert-name { font-weight: 800; color: var(--ink); }
+.alert-meta { color: var(--muted); font-size: 12.5px; }
+.alert-reasons { font-size: 12.5px; font-weight: 700; color: var(--burg-dark); }
+.alert-date { font-size: 12.5px; font-weight: 700; color: var(--muted); white-space: nowrap; }
+.alert-row.overdue .alert-date { color: var(--red); }
+@media (max-width: 620px) {
+  .alert-row { grid-template-columns: 10px 1fr; row-gap: 3px; }
+  .alert-row .alert-meta, .alert-row .alert-reasons, .alert-row .alert-date { grid-column: 2; }
+}
+/* board card highlight */
+.conv-card.alert-overdue { border-color: var(--red); box-shadow: 0 0 0 1px var(--red) inset; }
+.conv-card.alert-risk { border-color: var(--amber); }
+
 /* ---------- Card head with total ---------- */
 .card-head { display: flex; align-items: baseline; justify-content: space-between; gap: 8px; margin-bottom: 14px; }
 .card-head .card-title { margin-bottom: 0; }
@@ -463,6 +490,7 @@ textarea.input { resize: vertical; }
 :root[data-theme='dark'] .empty-state,
 :root[data-theme='dark'] .cell-assign,
 :root[data-theme='dark'] .dl-btn,
+:root[data-theme='dark'] .alert-row,
 :root[data-theme='dark'] .color-input { background: var(--white); }
 :root[data-theme='dark'] .btn-ghost { color: var(--ink); }
 :root[data-theme='dark'] .input { color: var(--text); }
