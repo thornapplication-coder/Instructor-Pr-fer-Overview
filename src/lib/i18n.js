@@ -12,8 +12,6 @@ const DICT = {
   saved: { de: 'Gespeichert', en: 'Saved' },
   darkMode: { de: 'Dunkelmodus', en: 'Dark mode' },
   lightMode: { de: 'Hellmodus', en: 'Light mode' },
-  exportPdf: { de: 'Als PDF', en: 'As PDF' },
-  exportExcel: { de: 'Als Excel', en: 'As Excel' },
   updateAvailable: { de: 'Neue Version verfügbar', en: 'New version available' },
   updateNow: { de: 'Jetzt aktualisieren', en: 'Update now' },
   later: { de: 'Später', en: 'Later' },
@@ -237,8 +235,11 @@ const DICT = {
     en: 'Choose per page: download as PDF or Excel, or print directly. All exports are branded and contain the current data.'
   },
   print: { de: 'Drucken', en: 'Print' },
-  dl_pdf: { de: 'Seiten als PDF', en: 'Pages as PDF' },
-  dl_excel: { de: 'Tabellen als Excel', en: 'Tables as Excel' },
+  pdfErr: { de: 'Export fehlgeschlagen. Bitte erneut versuchen.', en: 'Export failed. Please try again.' },
+  pdfPrintFellBack: {
+    de: 'Druckfenster wurde blockiert – die PDF wurde stattdessen heruntergeladen.',
+    en: 'Print window was blocked – the PDF was downloaded instead.'
+  },
   dataMgmt: { de: 'Datenverwaltung', en: 'Data management' },
   exportData: { de: 'Alle Daten exportieren (JSON)', en: 'Export all data (JSON)' },
   importData: { de: 'Daten importieren (JSON)', en: 'Import data (JSON)' },

@@ -113,9 +113,19 @@ export async function parseTrainersFromArrayBuffer(buf) {
     const rec = {}
     for (const [field, ci] of Object.entries(headerMap)) rec[field] = r[ci]
     if (!norm(rec.name) && !norm(rec.tlc)) continue // skip blank rows
+    if (isExportBanner(r)) continue // skip our own brand / copyright rows on re-import
     records.push(pickFields(rec))
   }
   return records
+}
+
+// Rows the app's own export adds (the "737 TRAINER …" banner and the copyright
+// footer) land in column 0; on re-import they must not become phantom trainers.
+function isExportBanner(row) {
+  return row.some((cell) => {
+    const s = norm(cell)
+    return s.includes('737 trainer') || s.includes('copyright') || s.includes('©')
+  })
 }
 
 // Merge records into the existing trainer list. Match by TLC, then name.

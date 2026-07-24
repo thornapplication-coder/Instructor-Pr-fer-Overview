@@ -4,12 +4,33 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.9.2'
+export const APP_VERSION = '1.9.3'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.9.3',
+    date: '2026-07-24',
+    type: 'patch',
+    changes: {
+      de: [
+        'Fehler behoben: Beim erneuten Import eines aus der App exportierten Excels wurde fälschlich ein „Copyright"-Trainer angelegt – das passiert nicht mehr.',
+        '„Drucken" öffnet jetzt zuverlässig (auch auf iPhone/iPad/Safari); falls das Fenster blockiert wird, lädt die PDF herunter und es erscheint ein Hinweis.',
+        'Excel-Exporte vollständig lokalisiert (Datum + „Stand"/„as of" je Sprache, Datum ohne Uhrzeit); Dateinamen mit lokalem Datum.',
+        'Export-Buttons zeigen den laufenden Export an; klare Fehlermeldung, wenn ein Export fehlschlägt.',
+        'Kleinere Aufräumarbeiten (Darkmode-Druckbutton, gemeinsame Marken-/Farbquelle, Speicher-Freigabe).'
+      ],
+      en: [
+        'Fixed: re-importing an Excel that was exported from the app wrongly added a “Copyright” trainer – no longer happens.',
+        'Print now opens reliably (incl. iPhone/iPad/Safari); if the window is blocked, the PDF downloads and a hint is shown.',
+        'Excel exports fully localized (date + “Stand”/“as of” by language, date without time); filenames use the local date.',
+        'Export buttons show which export is running; clear error message when an export fails.',
+        'Minor cleanups (dark-mode print button, shared brand/colour source, memory release).'
+      ]
+    }
+  },
   {
     version: '1.9.2',
     date: '2026-07-24',

@@ -11,6 +11,23 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.9.3] – 2026-07-24
+
+Behebungen aus dem Code-Audit der Export-Funktionen (v1.9.0):
+
+- **Fehler behoben**: Beim erneuten Import eines aus der App exportierten Excels
+  wurde aus der Copyright-/Marken-Zeile fälschlich ein Phantom-Trainer angelegt –
+  diese Zeilen werden beim Import jetzt übersprungen.
+- **„Drucken"** öffnet das Druckfenster jetzt gesten-sicher (zuverlässig auch auf
+  iPhone/iPad/Safari); bei blockiertem Fenster lädt die PDF herunter und ein
+  Hinweis erscheint. Das PDF-Blob wird korrekt wieder freigegeben.
+- **Excel-Exporte** vollständig lokalisiert (Datum + „Stand"/„as of" je Sprache,
+  Datum ohne Uhrzeit); Datei­namen nutzen das lokale Datum (kein UTC-Versatz mehr).
+- **Export-Buttons** zeigen den laufenden Export an; klare Fehlermeldung bei
+  fehlgeschlagenem PDF-/Excel-Export.
+- Aufräumarbeiten: Darkmode-Kontrast des „Drucken"-Buttons, gemeinsame
+  Marken-/Farbquelle für PDF & Excel, entfernte tote i18n-Keys und Print-CSS.
+
 ## [1.9.2] – 2026-07-24
 
 - **FTE und Aircraft je Trainer direkt editierbar** (nicht mehr schreibgeschützt).

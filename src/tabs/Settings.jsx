@@ -8,15 +8,15 @@ import { APP_VERSION, APP_BUILD_DATE, CHANGELOG, COPYRIGHT } from '../version.js
 import { cloudConfigured } from '../lib/supabaseSync.js'
 import { persistenceStatus } from '../lib/persistence.js'
 
-// Per-page export choices (order matches the tab bar). `excel` names the Excel
-// builder where a tabular export makes sense; every page offers PDF + Print.
+// Per-page export choices (order matches the tab bar). `excel` is the Excel
+// builder itself where a tabular export makes sense; every page offers PDF + Print.
 const EXPORT_PAGES = [
   { id: 'dashboard', key: 'tab_dashboard' },
   { id: 'conversion', key: 'tab_conversion' },
   { id: 'capacity', key: 'tab_capacity' },
-  { id: 'trainers', key: 'tab_trainers', excel: 'trainers' },
-  { id: 'planning', key: 'tab_planning', excel: 'planning' },
-  { id: 'providers', key: 'tab_providers', excel: 'providers' }
+  { id: 'trainers', key: 'tab_trainers', excel: exportTrainersExcel },
+  { id: 'planning', key: 'tab_planning', excel: exportPlanningExcel },
+  { id: 'providers', key: 'tab_providers', excel: exportProvidersExcel }
 ]
 
 function fmtBytes(n) {
@@ -32,22 +32,37 @@ export default function Settings() {
   const xlsRef = useRef(null)
   const [msg, setMsg] = useState(null)
   const [xlsMsg, setXlsMsg] = useState(null)
-  const [pdfBusy, setPdfBusy] = useState(false)
+  const [pdfBusy, setPdfBusy] = useState(null) // `${pageId}:${output}` of the running export
+  const [pdfMsg, setPdfMsg] = useState(null)
   const [persist, setPersist] = useState(null)
 
-  const EXCEL = { trainers: exportTrainersExcel, planning: exportPlanningExcel, providers: exportProvidersExcel }
-
   const doPdf = async (pageId, output) => {
-    setPdfBusy(true)
+    setPdfMsg(null)
+    setPdfBusy(pageId + ':' + output)
+    // For printing, open the window *inside the click* so it survives popup
+    // blockers (Safari/iOS); the export navigates it once the PDF is ready.
+    let win = null
+    if (output === 'print') {
+      try { win = window.open('', '_blank') } catch (e) { win = null }
+    }
     try {
-      await exportPagePdf(pageId, data, t, lang, output)
+      const result = await exportPagePdf(pageId, data, t, lang, { output, win })
+      if (output === 'print' && result === 'saved') setPdfMsg({ ok: true, text: t('pdfPrintFellBack') })
     } catch (e) {
-      /* ignore – nothing downloaded */
+      if (win) { try { win.close() } catch (_) { /* ignore */ } }
+      setPdfMsg({ ok: false, text: t('pdfErr') })
     } finally {
-      setPdfBusy(false)
+      setPdfBusy(null)
     }
   }
-  const doExcel = (excelId) => EXCEL[excelId](data, t, lang)
+  const doExcel = (fn) => {
+    setPdfMsg(null)
+    try {
+      fn(data, t, lang)
+    } catch (e) {
+      setPdfMsg({ ok: false, text: t('pdfErr') })
+    }
+  }
 
   useEffect(() => {
     persistenceStatus().then(setPersist)
@@ -129,17 +144,20 @@ export default function Settings() {
             <div className="dl-row" key={p.id}>
               <span className="dl-row-name">{t(p.key)}</span>
               <div className="dl-row-actions">
-                <button className="dl-chip pdf" disabled={pdfBusy} onClick={() => doPdf(p.id, 'save')}>PDF</button>
+                <button className="dl-chip pdf" disabled={!!pdfBusy} onClick={() => doPdf(p.id, 'save')}>
+                  {pdfBusy === p.id + ':save' ? '…' : 'PDF'}
+                </button>
                 {p.excel && (
-                  <button className="dl-chip xls" onClick={() => doExcel(p.excel)}>Excel</button>
+                  <button className="dl-chip xls" disabled={!!pdfBusy} onClick={() => doExcel(p.excel)}>Excel</button>
                 )}
-                <button className="dl-chip print" disabled={pdfBusy} onClick={() => doPdf(p.id, 'print')}>
-                  {t('print')}
+                <button className="dl-chip print" disabled={!!pdfBusy} onClick={() => doPdf(p.id, 'print')}>
+                  {pdfBusy === p.id + ':print' ? '…' : t('print')}
                 </button>
               </div>
             </div>
           ))}
         </div>
+        {pdfMsg && <p className={'inline-msg ' + (pdfMsg.ok ? 'ok' : 'err')}>{pdfMsg.text}</p>}
       </section>
 
       <section className="card safety-card">

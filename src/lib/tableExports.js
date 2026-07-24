@@ -32,7 +32,8 @@ export function exportTrainersExcel(data, t, lang) {
       { label: t('f_conversion'), value: (x) => stageLabel(stages.find((s) => s.id === x.conv?.stage)) }
     ],
     rows,
-    t('trainers_title')
+    t('trainers_title'),
+    lang
   )
 }
 
@@ -65,11 +66,12 @@ export function exportPlanningExcel(data, t, lang) {
       ...assignmentSteps.map((s) => ({ label: s.label, value: (x) => stepCell(x, s) }))
     ],
     rows,
-    t('planning_title')
+    t('planning_title'),
+    lang
   )
 }
 
-export function exportProvidersExcel(data, t) {
+export function exportProvidersExcel(data, t, lang) {
   const { providers, providerStatus } = data
   const rows = [...providers].sort(byName)
   const statusLabel = (id) => (providerStatus.find((s) => s.id === id) || {}).label || ''
@@ -87,6 +89,7 @@ export function exportProvidersExcel(data, t) {
       { label: t('p_status'), value: (p) => statusLabel(p.status) }
     ],
     rows,
-    t('providers_title')
+    t('providers_title'),
+    lang
   )
 }

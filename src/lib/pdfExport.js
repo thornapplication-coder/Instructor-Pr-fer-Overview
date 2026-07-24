@@ -2,7 +2,7 @@
 // No window.print(), no DOM scraping: this guarantees the correct page and the
 // current data on every platform (desktop, iPhone, iPad – the file downloads /
 // opens in the share sheet). jsPDF + autotable are lazy-loaded (heavy).
-import { APP_VERSION, COPYRIGHT } from '../version.js'
+import { BRAND_NAME, BRAND_HEX, hexToRgb, footerLine, fileStamp, reportDate } from './brand.js'
 import { formatPartTime, formatFte, formatDate } from './format.js'
 import { stageLabel, CONV_STATUS, ASSIGNMENT_STATUS } from '../data/pipeline.js'
 import { AIRCRAFT } from '../data/aircraft.js'
@@ -22,10 +22,9 @@ import {
 } from './stats.js'
 import { collectAlerts, stageName, targetsByMonth, monthLabel } from './alerts.js'
 
-const BURG = [175, 30, 101]
-const BURG_DARK = [135, 28, 84]
-const GREEN = [47, 163, 107]
-const GREY = [120, 120, 120]
+const BURG = hexToRgb(BRAND_HEX.burg)
+const BURG_DARK = hexToRgb(BRAND_HEX.burgDark)
+const GREY = hexToRgb(BRAND_HEX.grey)
 
 let _pdf = null
 async function loadPdf() {
@@ -35,12 +34,6 @@ async function loadPdf() {
   return _pdf
 }
 
-function stamp() {
-  return new Date().toISOString().slice(0, 10)
-}
-function dateStrOf(lang) {
-  return new Date().toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB')
-}
 
 // Branded header + footer, drawn on every page via autotable's didDrawPage.
 function decorate(doc, title, lang, dateStr) {
@@ -51,7 +44,7 @@ function decorate(doc, title, lang, dateStr) {
   doc.setTextColor(255, 255, 255)
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(15)
-  doc.text('737 TRAINER', 40, 23)
+  doc.text(BRAND_NAME, 40, 23)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(11)
   doc.text(title, 40, 40)
@@ -59,12 +52,12 @@ function decorate(doc, title, lang, dateStr) {
   doc.text(dateStr, W - 40, 23, { align: 'right' })
   doc.setTextColor(...GREY)
   doc.setFontSize(8)
-  doc.text(`${COPYRIGHT} · v${APP_VERSION}`, 40, H - 16)
+  doc.text(footerLine(), 40, H - 16)
   doc.text(String(doc.internal.getCurrentPageInfo().pageNumber), W - 40, H - 16, { align: 'right' })
 }
 
 function makeCtx(doc, autoTable, title, lang) {
-  const ctx = { doc, autoTable, title, lang, dateStr: dateStrOf(lang), y: 66 }
+  const ctx = { doc, autoTable, title, lang, dateStr: reportDate(lang), y: 66 }
   return ctx
 }
 
@@ -95,22 +88,49 @@ function table(ctx, { section, head, body, foot, columnStyles }) {
   return ctx.y
 }
 
-// output: 'save' downloads the file; 'print' opens the PDF and triggers the
-// browser's print dialog (falls back to download if the window is blocked).
-function finalize(doc, page, output) {
-  const name = `737trainer-${page}-${stamp()}.pdf`
-  if (output === 'print') {
-    doc.autoPrint()
-    const url = doc.output('bloburl')
-    const w = window.open(url, '_blank')
-    if (!w) doc.save(name)
-    return
+// opts.output: 'save' downloads the file; 'print' opens the PDF and triggers the
+// browser's print dialog. opts.win is a window the caller opened synchronously
+// inside the click (so it survives popup blockers). Returns 'saved' | 'printed'.
+// The PDF is serialized exactly once and its blob URL is revoked after a delay.
+function finalize(doc, page, opts) {
+  const { output = 'save', win = null } = opts || {}
+  const name = `737trainer-${page}-${fileStamp()}.pdf`
+  if (output !== 'print') {
+    doc.save(name)
+    return 'saved'
   }
-  doc.save(name)
+  doc.autoPrint()
+  const url = URL.createObjectURL(doc.output('blob'))
+  const cleanup = () => setTimeout(() => URL.revokeObjectURL(url), 60000)
+  if (win && !win.closed) {
+    win.location.href = url
+    cleanup()
+    return 'printed'
+  }
+  let opened = null
+  try {
+    opened = window.open(url, '_blank')
+  } catch (e) {
+    opened = null
+  }
+  if (opened) {
+    cleanup()
+    return 'printed'
+  }
+  // Popup blocked and no pre-opened window: download the already-built blob
+  // (no second serialization) instead.
+  const a = document.createElement('a')
+  a.href = url
+  a.download = name
+  document.body.appendChild(a)
+  a.click()
+  document.body.removeChild(a)
+  cleanup()
+  return 'saved'
 }
 
 // ---------------------------------------------------------------- Trainers ---
-async function exportTrainersPdf(data, t, lang, output) {
+async function exportTrainersPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, t('trainers_title'), lang)
@@ -125,11 +145,11 @@ async function exportTrainersPdf(data, t, lang, output) {
     ]),
     columnStyles: { 3: { cellWidth: 120 }, 4: { cellWidth: 90 } }
   })
-  finalize(doc, 'trainer', output)
+  finalize(doc, 'trainer', opts)
 }
 
 // ---------------------------------------------------------------- Planning ---
-async function exportPlanningPdf(data, t, lang, output) {
+async function exportPlanningPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, t('planning_title'), lang)
@@ -157,11 +177,11 @@ async function exportPlanningPdf(data, t, lang, output) {
       t('staff_' + (x.staffType || 'internal')), ...steps.map((s) => stepCell(x, s))
     ])
   })
-  finalize(doc, 'planung', output)
+  finalize(doc, 'planung', opts)
 }
 
 // --------------------------------------------------------------- Providers ---
-async function exportProvidersPdf(data, t, lang, output) {
+async function exportProvidersPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, t('providers_title'), lang)
@@ -182,7 +202,7 @@ async function exportProvidersPdf(data, t, lang, output) {
     body: util.map((u) => [u.provider.name || '', String(u.demand), u.slots ? String(u.slots) : '-', u.util == null ? '-' : Math.round(u.util * 100) + '%']),
     columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } }
   })
-  finalize(doc, 'provider', output)
+  finalize(doc, 'provider', opts)
 }
 
 // ---------------------------------------------------------------- Capacity ---
@@ -193,7 +213,7 @@ function capFoot(cap, totalLabel) {
   const tt = cap.totals
   return [[totalLabel, String(tt.headcount), String(tt.total), String(tt.inConversion), String(tt.available), String(tt.ac[cap.aircraft[0]] ?? 0), String(tt.ac[cap.aircraft[1]] ?? 0)]]
 }
-async function exportCapacityPdf(data, t, lang, output) {
+async function exportCapacityPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, t('capacity_title'), lang)
@@ -211,11 +231,11 @@ async function exportCapacityPdf(data, t, lang, output) {
     head: [t('stage'), t('f_name'), t('f_base'), t('stage'), t('targetDate')],
     body: tl.length ? tl : [['-', t('capacity_noTargets'), '', '', '']]
   })
-  finalize(doc, 'kapazitaet', output)
+  finalize(doc, 'kapazitaet', opts)
 }
 
 // --------------------------------------------------------------- Dashboard ---
-async function exportDashboardPdf(data, t, lang, output) {
+async function exportDashboardPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, 'Dashboard', lang)
@@ -259,11 +279,11 @@ async function exportDashboardPdf(data, t, lang, output) {
       ? alerts.map((a) => [a.trainer.name || '', a.trainer.base || '', stageName(data.stages, a.trainer.conv?.stage), a.reasons.map((r) => t('alert_' + r)).join(', '), a.trainer.conv?.target ? formatDate(a.trainer.conv.target, lang) : '-'])
       : [['-', t('alerts_none'), '', '', '']]
   })
-  finalize(doc, 'dashboard', output)
+  finalize(doc, 'dashboard', opts)
 }
 
 // -------------------------------------------------------------- Conversion ---
-async function exportConversionPdf(data, t, lang, output) {
+async function exportConversionPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, t('conversion_title'), lang)
@@ -298,7 +318,7 @@ async function exportConversionPdf(data, t, lang, output) {
         : [['-', '', '', '', '', '']]
     })
   })
-  finalize(doc, 'umschulung', output)
+  finalize(doc, 'umschulung', opts)
 }
 
 const EXPORTERS = {
@@ -311,8 +331,8 @@ const EXPORTERS = {
 }
 
 // Dispatch by tab id. Returns a promise that resolves once the PDF is saved.
-export function exportPagePdf(pageId, data, t, lang, output = 'save') {
+export function exportPagePdf(pageId, data, t, lang, opts = {}) {
   const fn = EXPORTERS[pageId]
   if (!fn) return Promise.reject(new Error('unknown page ' + pageId))
-  return fn(data, t, lang, output)
+  return fn(data, t, lang, opts)
 }
