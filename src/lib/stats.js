@@ -180,8 +180,17 @@ export function qualGroup(q) {
   return s || '—'
 }
 
+// Canonical qualification ranking, highest first (spec): the order used
+// everywhere qualifications are shown or sorted.
+export const QUAL_RANK = ['SEN', 'TRE', 'TRI', 'new TRI', 'LTC', 'SFI', 'TKI']
+
+export function qualRankIndex(key) {
+  const i = QUAL_RANK.indexOf(key)
+  return i < 0 ? QUAL_RANK.length + 1 : i
+}
+
 export function capacityByQual(trainers, aircraftList) {
-  return capacityBy(trainers, (t) => qualGroup(t.qual), aircraftList, ['TRE', 'TRI', 'LTC', 'SFI', 'TKI', 'SEN'])
+  return capacityBy(trainers, (t) => qualGroup(t.qual), aircraftList, QUAL_RANK)
 }
 
 // Provider load vs. capacity. Demand = planning assignments pointing at each

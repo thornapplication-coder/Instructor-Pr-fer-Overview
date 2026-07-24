@@ -87,7 +87,7 @@ export default function Conversion() {
         </select>
         <select className="input" value={fQual} onChange={(e) => setFQual(e.target.value)}>
           <option value="">{t('filterQual')}: {t('all')}</option>
-          {[...quals].sort((a, b) => a.label.localeCompare(b.label)).map((qv) => <option key={qv.id} value={qv.id}>{qv.label}</option>)}
+          {quals.map((qv) => <option key={qv.id} value={qv.id}>{qv.label}</option>)}
         </select>
         <select className="input" value={fStaff} onChange={(e) => setFStaff(e.target.value)}>
           <option value="">{t('filterStaff')}: {t('all')}</option>

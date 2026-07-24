@@ -1,14 +1,29 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
-import { capacityByBase, capacityByQual, conversionFteSummary } from '../lib/stats.js'
+import { capacityByBase, capacityByQual, conversionFteSummary, qualRankIndex } from '../lib/stats.js'
 import { targetsByMonth, monthLabel, stageName } from '../lib/alerts.js'
+import { useSort, Th } from '../components/sortable.jsx'
 import { CONV_STATUS, stageLabel } from '../data/pipeline.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { formatDate } from '../lib/format.js'
 
-// One capacity table (per base or per qualification).
-function CapTable({ title, firstCol, cap }) {
+// One sortable capacity table (per base or per qualification). Qualification
+// rows default to the canonical rank (SEN → TRE → TRI → new TRI → LTC → SFI → TKI).
+function CapTable({ title, firstCol, cap, keyKind }) {
   const { t } = useStore()
+  const accessors = useMemo(() => {
+    const a = {
+      key: keyKind === 'qual' ? (r) => qualRankIndex(r.key) : (r) => r.key,
+      headcount: (r) => r.headcount,
+      total: (r) => r.total,
+      inConversion: (r) => r.inConversion,
+      available: (r) => r.available
+    }
+    for (const ac of cap.aircraft) a['ac_' + ac] = (r) => r.ac[ac]
+    return a
+  }, [cap.aircraft, keyKind])
+  const { sorted, sortKey, dir, toggle } = useSort(cap.rows, accessors, 'key')
+  const sp = { sortKey, dir, onSort: toggle }
   return (
     <section className="card">
       <h3 className="card-title">{title}</h3>
@@ -16,18 +31,18 @@ function CapTable({ title, firstCol, cap }) {
         <table className="data-table cap-table">
           <thead>
             <tr>
-              <th>{firstCol}</th>
-              <th className="num">{t('cap_head')}</th>
-              <th className="num">{t('cap_total')}</th>
-              <th className="num">{t('cap_inConv')}</th>
-              <th className="num">{t('cap_avail')}</th>
+              <Th label={firstCol} k="key" {...sp} />
+              <Th label={t('cap_head')} k="headcount" className="num" {...sp} />
+              <Th label={t('cap_total')} k="total" className="num" {...sp} />
+              <Th label={t('cap_inConv')} k="inConversion" className="num" {...sp} />
+              <Th label={t('cap_avail')} k="available" className="num" {...sp} />
               {cap.aircraft.map((a) => (
-                <th key={a} className="num">{a}</th>
+                <Th key={a} label={a} k={'ac_' + a} className="num" {...sp} />
               ))}
             </tr>
           </thead>
           <tbody>
-            {cap.rows.map((r) => (
+            {sorted.map((r) => (
               <tr key={r.key}>
                 <td className="strong">{r.key}</td>
                 <td className="num">{r.headcount}</td>
@@ -177,10 +192,9 @@ export default function Capacity() {
         <span className="fte-pill fte-total">FTE {t('total')}: <b>{fteS.total}</b></span>
       </div>
 
-      <div className="grid-2">
-        <CapTable title={t('capacity_byBase')} firstCol={t('f_base')} cap={capBase} />
-        <CapTable title={t('capacity_byQual')} firstCol={t('f_qual')} cap={capQual} />
-      </div>
+      <CapTable title={t('capacity_byQual')} firstCol={t('f_qual')} cap={capQual} keyKind="qual" />
+      <CapTable title={t('capacity_byBase')} firstCol={t('f_base')} cap={capBase} keyKind="base" />
+
 
       <ConversionEditor trainers={trainers} stages={stages} />
 

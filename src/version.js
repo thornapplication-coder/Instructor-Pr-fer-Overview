@@ -4,12 +4,31 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.7.0'
+export const APP_VERSION = '1.7.1'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.7.1',
+    date: '2026-07-24',
+    type: 'patch',
+    changes: {
+      de: [
+        'iPhone: breite Tabellen laufen nicht mehr aus dem Bildschirm – sie scrollen jetzt sauber horizontal.',
+        'Kapazität: „je Qualifikation" steht jetzt oben; beide Tabellen sind spaltenweise sortierbar.',
+        'Qualifikationen erscheinen überall in fester Rangfolge: SEN → TRE → TRI → new TRI → LTC → SFI → TKI.',
+        'Provider-Tabellen (Liste & Auslastung) sind jetzt ebenfalls sortierbar.'
+      ],
+      en: [
+        'iPhone: wide tables no longer overflow the screen – they scroll horizontally instead.',
+        'Capacity: “per qualification” is now on top; both tables are sortable by column.',
+        'Qualifications appear everywhere in a fixed ranking: SEN → TRE → TRI → new TRI → LTC → SFI → TKI.',
+        'Provider tables (list & utilization) are now sortable too.'
+      ]
+    }
+  },
   {
     version: '1.7.0',
     date: '2026-07-24',

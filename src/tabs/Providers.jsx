@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
+import { useSort, Th } from '../components/sortable.jsx'
 import { emptyProvider } from '../data/providers.js'
 import { providerUtilization } from '../lib/stats.js'
 
@@ -31,19 +32,44 @@ export default function Providers() {
   const [manageCourses, setManageCourses] = useState(false)
   const [manageStatus, setManageStatus] = useState(false)
 
+  const statusLabel = (id) => (providerStatus.find((s) => s.id === id) || {}).label || ''
+
   const rows = useMemo(() => {
     const n = q.trim().toLowerCase()
-    return providers
-      .filter((p) =>
-        n
-          ? [p.name, (p.locations || []).join(' '), p.authority, p.contactPerson, (p.courses || []).join(' ')]
-              .join(' ')
-              .toLowerCase()
-              .includes(n)
-          : true
-      )
-      .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+    return providers.filter((p) =>
+      n
+        ? [p.name, (p.locations || []).join(' '), p.authority, p.contactPerson, (p.courses || []).join(' ')]
+            .join(' ')
+            .toLowerCase()
+            .includes(n)
+        : true
+    )
   }, [providers, q])
+
+  const mainAcc = useMemo(
+    () => ({
+      name: (p) => p.name || '',
+      courses: (p) => [...(p.courses || [])].sort().join(', '),
+      locations: (p) => [...(p.locations || [])].sort().join(', '),
+      authority: (p) => p.authority || '',
+      contact: (p) => p.contactPerson || '',
+      capacity: (p) => p.capacity || '',
+      status: (p) => statusLabel(p.status)
+    }),
+    [providerStatus]
+  )
+  const main = useSort(rows, mainAcc, 'name')
+
+  const utilAcc = useMemo(
+    () => ({
+      name: (u) => u.provider.name || '',
+      assigned: (u) => u.demand,
+      slots: (u) => u.slots,
+      util: (u) => (u.util == null ? -1 : u.util)
+    }),
+    []
+  )
+  const utilS = useSort(util, utilAcc, 'name')
 
   return (
     <div className="tab-pane">
@@ -66,18 +92,20 @@ export default function Providers() {
         <div className="table-wrap">
           <table className="data-table">
             <thead>
+              {(() => { const sp = { sortKey: main.sortKey, dir: main.dir, onSort: main.toggle }; return (
               <tr>
-                <th>{t('p_name')}</th>
-                <th>{t('p_courses')}</th>
-                <th>{t('p_locations')}</th>
-                <th>{t('p_authority')}</th>
-                <th>{t('p_contact')}</th>
-                <th>{t('p_capacity')}</th>
-                <th>{t('p_status')}</th>
+                <Th label={t('p_name')} k="name" {...sp} />
+                <Th label={t('p_courses')} k="courses" {...sp} />
+                <Th label={t('p_locations')} k="locations" {...sp} />
+                <Th label={t('p_authority')} k="authority" {...sp} />
+                <Th label={t('p_contact')} k="contact" {...sp} />
+                <Th label={t('p_capacity')} k="capacity" {...sp} />
+                <Th label={t('p_status')} k="status" {...sp} />
               </tr>
+              ) })()}
             </thead>
             <tbody>
-              {rows.map((p) => {
+              {main.sorted.map((p) => {
                 const st = providerStatus.find((s) => s.id === p.status) || { label: p.status || '–', color: '#787878' }
                 return (
                   <tr key={p.id} className="clickable" onClick={() => setEditing({ ...p })}>
@@ -118,16 +146,18 @@ export default function Providers() {
           <div className="table-wrap">
             <table className="data-table">
               <thead>
+                {(() => { const sp = { sortKey: utilS.sortKey, dir: utilS.dir, onSort: utilS.toggle }; return (
                 <tr>
-                  <th>{t('p_name')}</th>
+                  <Th label={t('p_name')} k="name" {...sp} />
                   <th>{t('p_courses')}</th>
-                  <th className="num">{t('prov_assigned')}</th>
-                  <th className="num">{t('prov_slots')}</th>
-                  <th>{t('prov_util')}</th>
+                  <Th label={t('prov_assigned')} k="assigned" className="num" {...sp} />
+                  <Th label={t('prov_slots')} k="slots" className="num" {...sp} />
+                  <Th label={t('prov_util')} k="util" {...sp} />
                 </tr>
+                ) })()}
               </thead>
               <tbody>
-                {util.map((u) => (
+                {utilS.sorted.map((u) => (
                   <tr key={u.provider.id} className="clickable" onClick={() => setEditing({ ...u.provider })}>
                     <td className="strong">{u.provider.name || '–'}</td>
                     <td>

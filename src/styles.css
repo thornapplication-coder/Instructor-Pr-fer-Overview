@@ -140,6 +140,10 @@ button { font-family: inherit; }
 .card-title { font-size: 15px; margin-bottom: 14px; color: var(--burg-dark); }
 .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 18px; }
 .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 18px; }
+/* Let grid/flex children shrink below their content so inner .table-wrap
+   scrolls horizontally instead of pushing the whole page wider (mobile). */
+.grid-2 > *, .grid-3 > * { min-width: 0; }
+.tab-pane > * { min-width: 0; }
 
 /* ---------- Charts ---------- */
 .donut { display: flex; align-items: center; gap: 18px; flex-wrap: wrap; }

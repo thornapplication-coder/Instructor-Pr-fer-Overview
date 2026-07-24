@@ -11,6 +11,16 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.7.1] – 2026-07-24
+
+- **iPhone**: breite Tabellen laufen nicht mehr aus dem Bildschirm – sie
+  scrollen jetzt horizontal innerhalb ihrer Karte.
+- **Kapazität**: „FTE-Kapazität je Qualifikation" steht jetzt **oben**; beide
+  Tabellen sind spaltenweise **sortierbar**.
+- **Qualifikationen** erscheinen überall in fester Rangfolge:
+  SEN → TRE → TRI → new TRI → LTC → SFI → TKI.
+- **Provider**-Tabellen (Liste & Auslastung) sind jetzt ebenfalls sortierbar.
+
 ## [1.7.0] – 2026-07-24
 
 - **Provider – Kapazität & Auslastung**: aktive Planungs-Zuweisungen je Provider

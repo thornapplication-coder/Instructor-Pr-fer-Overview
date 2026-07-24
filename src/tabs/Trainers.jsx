@@ -132,7 +132,7 @@ export default function Trainers() {
         </select>
         <select className="input" value={fQual} onChange={(e) => setFQual(e.target.value)}>
           <option value="">{t('filterQual')}: {t('all')}</option>
-          {[...quals].sort((a, b) => a.label.localeCompare(b.label)).map((qv) => (
+          {quals.map((qv) => (
             <option key={qv.id} value={qv.id}>{qv.label}</option>
           ))}
         </select>
@@ -305,7 +305,7 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
           <select className="input" value={f.qual} onChange={(e) => set('qual', e.target.value)}>
             <option value=""></option>
             {!quals.some((qq) => qq.id === f.qual) && f.qual && <option value={f.qual}>{f.qual}</option>}
-            {[...quals].sort((a, b) => a.label.localeCompare(b.label)).map((qq) => <option key={qq.id} value={qq.id}>{qq.label}</option>)}
+            {quals.map((qq) => <option key={qq.id} value={qq.id}>{qq.label}</option>)}
           </select>
         </Field>
         <Field label={t('f_base')}>
