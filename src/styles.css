@@ -364,6 +364,21 @@ textarea.input { resize: vertical; }
 .ver-patch { background: var(--muted); }
 .changelog ul { margin: 0; padding-left: 18px; color: var(--text); font-size: 13.5px; display: flex; flex-direction: column; gap: 4px; }
 
+/* ---------- Capacity & timeline ---------- */
+.cap-table .avail { color: var(--green); }
+.data-table .total-row td { border-top: 2px solid var(--hair); background: var(--panel2); font-weight: 900; color: var(--burg-dark); }
+.timeline { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
+.tl-col { flex: 0 0 190px; min-width: 190px; background: var(--panel2); border-radius: var(--radius); display: flex; flex-direction: column; }
+.tl-head { display: flex; align-items: center; justify-content: space-between; padding: 10px 12px; background: #fff; border-top: 4px solid var(--burg); border-radius: var(--radius) var(--radius) 0 0; }
+.tl-month { font-weight: 800; font-size: 13px; color: var(--ink); }
+.tl-count { background: var(--panel2); color: var(--muted); border-radius: 999px; padding: 1px 9px; font-weight: 800; font-size: 12px; }
+.tl-body { padding: 10px; display: flex; flex-direction: column; gap: 8px; min-height: 40px; }
+.tl-chip { background: #fff; border: 1px solid var(--hair); border-left: 4px solid var(--sky); border-radius: var(--radius-sm); padding: 7px 10px; }
+.tl-chip.overdue { border-left-color: var(--red); }
+.tl-chip.risk { border-left-color: var(--amber); }
+.tl-name { display: block; font-weight: 800; font-size: 13px; color: var(--ink); }
+.tl-meta { display: block; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
+
 /* ---------- Deadlines & alerts ---------- */
 .alerts-card { border-left: 4px solid var(--amber); }
 .alerts-empty { color: var(--green); font-weight: 800; font-size: 14px; margin: 4px 0 0; }
@@ -491,7 +506,10 @@ textarea.input { resize: vertical; }
 :root[data-theme='dark'] .cell-assign,
 :root[data-theme='dark'] .dl-btn,
 :root[data-theme='dark'] .alert-row,
+:root[data-theme='dark'] .tl-head,
+:root[data-theme='dark'] .tl-chip,
 :root[data-theme='dark'] .color-input { background: var(--white); }
+:root[data-theme='dark'] .tl-col { background: var(--panel2); }
 :root[data-theme='dark'] .btn-ghost { color: var(--ink); }
 :root[data-theme='dark'] .input { color: var(--text); }
 :root[data-theme='dark'] .card-title { color: #E86FB0; }

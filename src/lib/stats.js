@@ -114,6 +114,53 @@ export function pipelineDistribution(trainers, stages) {
   return stages.map((s) => ({ ...s, count: map.get(s.id) || 0 }))
 }
 
+// Capacity per base: how much FTE sits in each base, how much is tied up in an
+// active conversion, how much stays available, split by current aircraft.
+// Mirrors conversionFteSummary ("in conversion" = not nominated, not released).
+export function capacityByBase(trainers, aircraftList) {
+  const acs = aircraftList && aircraftList.length ? aircraftList : ['A320', 'B737']
+  const map = new Map()
+  const get = (b) => {
+    if (!map.has(b)) {
+      const ac = {}
+      for (const a of acs) ac[a] = 0
+      map.set(b, { base: b, total: 0, inConversion: 0, headcount: 0, ac })
+    }
+    return map.get(b)
+  }
+  for (const t of trainers) {
+    const fte = typeof t.fte === 'number' ? t.fte : 1
+    const row = get(t.base || '—')
+    row.total += fte
+    row.headcount += 1
+    const stage = t.conv?.stage || 'nominated'
+    if (stage !== 'nominated' && stage !== 'released') row.inConversion += fte
+    if (t.aircraft && row.ac[t.aircraft] != null) row.ac[t.aircraft] += fte
+  }
+  const rows = [...map.values()].map((r) => {
+    const ac = {}
+    for (const a of acs) ac[a] = round1(r.ac[a])
+    return {
+      base: r.base,
+      headcount: r.headcount,
+      total: round1(r.total),
+      inConversion: round1(r.inConversion),
+      available: round1(r.total - r.inConversion),
+      ac
+    }
+  })
+  rows.sort((a, b) => a.base.localeCompare(b.base))
+  const totals = {
+    base: '',
+    headcount: rows.reduce((s, r) => s + r.headcount, 0),
+    total: round1(rows.reduce((s, r) => s + r.total, 0)),
+    inConversion: round1(rows.reduce((s, r) => s + r.inConversion, 0)),
+    available: round1(rows.reduce((s, r) => s + r.available, 0)),
+    ac: Object.fromEntries(acs.map((a) => [a, round1(rows.reduce((s, r) => s + r.ac[a], 0))]))
+  }
+  return { rows, totals, aircraft: acs }
+}
+
 // Head-count style KPIs.
 export function headcount(trainers) {
   const EXAMINER = new Set(['SEN', 'TRE'])

@@ -40,7 +40,25 @@ const DICT = {
   tab_statistics: { de: 'Statistik', en: 'Statistics' },
   tab_providers: { de: 'Provider', en: 'Providers' },
   tab_planning: { de: 'Planung', en: 'Planning' },
+  tab_capacity: { de: 'Kapazität', en: 'Capacity' },
   tab_settings: { de: 'Einstellungen', en: 'Settings' },
+
+  // ---- capacity & timeline
+  capacity_title: { de: 'Kapazität & Timeline', en: 'Capacity & timeline' },
+  capacity_hint: {
+    de: 'FTE je Base (verfügbar vs. in Umschulung, nach Aircraft) und die Zieltermine der Umschulung im Zeitverlauf.',
+    en: 'FTE per base (available vs. in conversion, by aircraft) and conversion target dates over time.'
+  },
+  capacity_byBase: { de: 'FTE-Kapazität je Base', en: 'FTE capacity per base' },
+  capacity_timeline: { de: 'Zieltermine je Monat', en: 'Target dates per month' },
+  capacity_noTargets: {
+    de: 'Noch keine Zieltermine gesetzt. Sobald du in der Umschulung Zieltermine vergibst, erscheinen sie hier auf der Zeitachse.',
+    en: 'No target dates yet. As soon as you set conversion target dates, they show up here on the timeline.'
+  },
+  cap_head: { de: 'Köpfe', en: 'Head' },
+  cap_total: { de: 'FTE gesamt', en: 'FTE total' },
+  cap_inConv: { de: 'in Umschulung', en: 'in conversion' },
+  cap_avail: { de: 'verfügbar', en: 'available' },
 
   // ---- overview / KPIs
   kpi_totalTrainers: { de: 'Trainer & Prüfer', en: 'Trainers & Examiners' },

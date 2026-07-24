@@ -11,6 +11,7 @@ import { persistenceStatus } from '../lib/persistence.js'
 const PDF_PAGES = [
   { id: 'dashboard', key: 'tab_dashboard' },
   { id: 'conversion', key: 'tab_conversion' },
+  { id: 'capacity', key: 'tab_capacity' },
   { id: 'trainers', key: 'tab_trainers' },
   { id: 'planning', key: 'tab_planning' },
   { id: 'providers', key: 'tab_providers' }

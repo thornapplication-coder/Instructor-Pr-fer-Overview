@@ -64,3 +64,32 @@ export function collectAlerts(trainers, today) {
 export function stageName(stages, id) {
   return stageLabel(stages.find((s) => s.id === id)) || ''
 }
+
+// Conversion target dates grouped by calendar month (YYYY-MM), ascending.
+// Released trainers and those without a target date are skipped. Each entry
+// carries its alert flag so the timeline can colour it.
+export function targetsByMonth(trainers, today) {
+  const map = new Map()
+  for (const t of trainers) {
+    const stage = t.conv?.stage || 'nominated'
+    if (stage === 'released') continue
+    const d = parseISO(t.conv?.target)
+    if (!d) continue
+    const key = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}`
+    if (!map.has(key)) map.set(key, [])
+    map.get(key).push({ trainer: t, date: d, ...trainerAlerts(t, today) })
+  }
+  return [...map.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([month, items]) => ({
+      month,
+      items: items.sort((a, b) => a.date - b.date)
+    }))
+}
+
+export function monthLabel(key, lang) {
+  const m = /^(\d{4})-(\d{2})$/.exec(key)
+  if (!m) return key
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, 1)
+  return d.toLocaleDateString(lang === 'de' ? 'de-DE' : 'en-GB', { month: 'short', year: 'numeric' })
+}

@@ -5,6 +5,7 @@ import UpdatePrompt from './components/UpdatePrompt.jsx'
 import Dashboard from './tabs/Dashboard.jsx'
 import Trainers from './tabs/Trainers.jsx'
 import Conversion from './tabs/Conversion.jsx'
+import Capacity from './tabs/Capacity.jsx'
 import Planning from './tabs/Planning.jsx'
 import Providers from './tabs/Providers.jsx'
 import Settings from './tabs/Settings.jsx'
@@ -14,6 +15,7 @@ const TABS = [
   { id: 'dashboard', labelKey: 'tab_dashboard', Comp: Dashboard },
   { id: 'trainers', labelKey: 'tab_trainers', Comp: Trainers },
   { id: 'conversion', labelKey: 'tab_conversion', Comp: Conversion },
+  { id: 'capacity', labelKey: 'tab_capacity', Comp: Capacity },
   { id: 'planning', labelKey: 'tab_planning', Comp: Planning },
   { id: 'providers', labelKey: 'tab_providers', Comp: Providers },
   { id: 'settings', labelKey: 'tab_settings', Comp: Settings }
