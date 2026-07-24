@@ -4,12 +4,21 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.10.2'
+export const APP_VERSION = '1.10.3'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.10.3',
+    date: '2026-07-24',
+    type: 'patch',
+    changes: {
+      de: ['Diagramm-Legenden: lange Beschriftungen (z. B. „Office/MGMT/Funktion") brechen jetzt innerhalb der Karte um – der Wert wird nicht mehr abgeschnitten.'],
+      en: ['Chart legends: long labels (e.g. “Office/MGMT/Funktion”) now wrap inside the card – the value is no longer clipped.']
+    }
+  },
   {
     version: '1.10.2',
     date: '2026-07-24',

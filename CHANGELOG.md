@@ -11,6 +11,12 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.10.3] – 2026-07-24
+
+- **Diagramm-Legenden**: lange Beschriftungen (z. B. „Office/MGMT/Funktion")
+  brechen jetzt innerhalb der Karte um; der Zahlenwert wird nicht mehr am
+  Kartenrand abgeschnitten (wirkt auch im Dashboard-PDF).
+
 ## [1.10.2] – 2026-07-24
 
 Behebungen aus dem Branch-Review:

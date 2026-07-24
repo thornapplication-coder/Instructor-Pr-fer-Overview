@@ -153,9 +153,10 @@ button { font-family: inherit; }
 .legend-wrap { flex-direction: row; flex-wrap: wrap; gap: 10px 16px; }
 .legend li { display: flex; align-items: center; gap: 8px; font-size: 13px; }
 .legend .dot { width: 11px; height: 11px; border-radius: 3px; flex: none; }
-.legend-key { color: var(--text); }
-.legend-val { margin-left: auto; font-weight: 800; color: var(--ink); }
-.legend-wrap .legend-val { margin-left: 4px; }
+.legend-key { color: var(--text); min-width: 0; overflow-wrap: anywhere; }
+.legend-val { margin-left: auto; padding-left: 8px; font-weight: 800; color: var(--ink); flex: none; }
+.legend-wrap .legend-key { overflow-wrap: normal; }
+.legend-wrap .legend-val { margin-left: 4px; padding-left: 0; }
 
 .hbars { display: flex; flex-direction: column; gap: 10px; }
 .hbar-row { display: grid; grid-template-columns: 90px 1fr 34px; align-items: center; gap: 10px; }
