@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { downloadJson } from '../lib/format.js'
 import { exportTrainersExcel, exportPlanningExcel, exportProvidersExcel } from '../lib/tableExports.js'
+import { parseTrainersFromArrayBuffer, mergeTrainerRecords } from '../lib/importExcel.js'
 import { APP_VERSION, APP_BUILD_DATE, CHANGELOG, COPYRIGHT } from '../version.js'
 import { cloudConfigured } from '../lib/supabaseSync.js'
 import { persistenceStatus } from '../lib/persistence.js'
@@ -25,9 +26,11 @@ function fmtBytes(n) {
 }
 
 export default function Settings({ onPrintTab }) {
-  const { data, t, lang, setLang, exportData, importData, resetData } = useStore()
+  const { data, t, lang, setLang, exportData, importData, resetData, setTrainers } = useStore()
   const fileRef = useRef(null)
+  const xlsRef = useRef(null)
   const [msg, setMsg] = useState(null)
+  const [xlsMsg, setXlsMsg] = useState(null)
   const [persist, setPersist] = useState(null)
 
   useEffect(() => {
@@ -56,6 +59,26 @@ export default function Settings({ onPrintTab }) {
       }
     }
     reader.readAsText(file)
+  }
+
+  const doXlsImport = async (file) => {
+    try {
+      const buf = await file.arrayBuffer()
+      const records = await parseTrainersFromArrayBuffer(buf)
+      if (!records.length) {
+        setXlsMsg({ ok: false, text: t('xlsImport_none') })
+        return
+      }
+      if (!window.confirm(t('xlsImport_confirm').replace('{n}', records.length))) return
+      const { trainers, updated, added } = mergeTrainerRecords(data.trainers, records)
+      setTrainers(trainers)
+      setXlsMsg({
+        ok: true,
+        text: t('xlsImport_ok').replace('{u}', updated).replace('{a}', added)
+      })
+    } catch (e) {
+      setXlsMsg({ ok: false, text: t('xlsImport_err') })
+    }
   }
 
   const lastSaved = new Date(data.updatedAt)
@@ -157,6 +180,27 @@ export default function Settings({ onPrintTab }) {
         {msg && (
           <p className={'inline-msg ' + (msg.ok ? 'ok' : 'err')}>{msg.text}</p>
         )}
+      </section>
+
+      <section className="card">
+        <h3 className="card-title">{t('xlsImport_title')}</h3>
+        <p className="muted small">{t('xlsImport_hint')}</p>
+        <div className="btn-row">
+          <button className="btn btn-primary" onClick={() => xlsRef.current?.click()}>
+            ⤒ {t('xlsImport_btn')}
+          </button>
+          <input
+            ref={xlsRef}
+            type="file"
+            accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              if (e.target.files[0]) doXlsImport(e.target.files[0])
+              e.target.value = ''
+            }}
+          />
+        </div>
+        {xlsMsg && <p className={'inline-msg ' + (xlsMsg.ok ? 'ok' : 'err')}>{xlsMsg.text}</p>}
       </section>
 
       <section className="card">

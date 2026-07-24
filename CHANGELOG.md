@@ -11,6 +11,14 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.5.0] – 2026-07-24
+
+- **Trainer aus Excel/CSV importieren** (Einstellungen): aktualisierte Liste
+  (.xlsx / .xls / .csv) hochladen. Spalten werden über die Überschriften erkannt
+  (Name, TLC, Base, Qualifikation, Part-Time, ORE, Behörde, LTC/TRI/TRE …).
+- Bestehende Trainer werden per **TLC** (sonst Name) aktualisiert, neue ergänzt –
+  **Umschulung & Planung bleiben erhalten**, nur die Stammdaten werden aufgefrischt.
+
 ## [1.4.0] – 2026-07-24
 
 - Neuer Reiter **„Kapazität"**: FTE je Base – verfügbar vs. in Umschulung,

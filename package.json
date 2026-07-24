@@ -1,7 +1,7 @@
 {
   "name": "ewl-737-trainer-monitoring",
   "private": true,
-  "version": "1.4.0",
+  "version": "1.5.0",
   "type": "module",
   "description": "737 Trainer & Examiner Monitoring – PWA for steering the A320 -> B737 instructor/examiner phase-in.",
   "scripts": {
@@ -12,7 +12,8 @@
   "dependencies": {
     "@supabase/supabase-js": "^2.45.4",
     "react": "^18.3.1",
-    "react-dom": "^18.3.1"
+    "react-dom": "^18.3.1",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.3.4",

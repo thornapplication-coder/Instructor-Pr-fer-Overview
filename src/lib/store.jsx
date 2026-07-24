@@ -266,6 +266,22 @@ export function StoreProvider({ children }) {
       deleteTrainer: (id) =>
         patch((d) => ({ ...d, trainers: d.trainers.filter((x) => x.id !== id) })),
 
+      // Replace the whole trainer list (used by the Excel/CSV import after the
+      // merge). Re-applies conv defaults + derived aircraft/FTE to every entry.
+      setTrainers: (trainers) =>
+        patch((d) => {
+          const from = d.conversionFrom || 'A320'
+          const to = d.conversionTo || 'B737'
+          return {
+            ...d,
+            trainers: trainers.map((t) => {
+              const x = withConvDefaults(t)
+              x.aircraft = deriveAircraft(x.conv, d.stages, from, to)
+              return x
+            })
+          }
+        }),
+
       setConversion: (id, convPatch) =>
         patch((d) => {
           const from = d.conversionFrom || 'A320'

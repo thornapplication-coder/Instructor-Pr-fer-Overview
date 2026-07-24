@@ -232,6 +232,25 @@ const DICT = {
   importOk: { de: 'Daten erfolgreich importiert.', en: 'Data imported successfully.' },
   importErr: { de: 'Import fehlgeschlagen: ungültige Datei.', en: 'Import failed: invalid file.' },
   resetData: { de: 'Auf Auslieferungsstand zurücksetzen', en: 'Reset to shipped data' },
+  xlsImport_title: { de: 'Trainer aus Excel/CSV importieren', en: 'Import trainers from Excel/CSV' },
+  xlsImport_hint: {
+    de: 'Aktualisierte Liste (.xlsx / .xls / .csv) hochladen. Spalten werden über die Überschriften erkannt (Name, TLC, Base, Qualifikation, Part-Time, ORE, Behörde, LTC/TRI/TRE …). Bestehende Trainer werden per TLC (sonst Name) aktualisiert, neue ergänzt – Umschulung & Planung bleiben erhalten.',
+    en: 'Upload an updated list (.xlsx / .xls / .csv). Columns are matched by header (Name, TLC, Base, qualification, part-time, ORE, authority, LTC/TRI/TRE …). Existing trainers are updated by TLC (else name), new ones added – conversion & planning are preserved.'
+  },
+  xlsImport_btn: { de: 'Datei auswählen', en: 'Choose file' },
+  xlsImport_confirm: {
+    de: '{n} Zeilen erkannt. Trainerdaten jetzt aktualisieren bzw. ergänzen?',
+    en: '{n} rows detected. Update / add trainer data now?'
+  },
+  xlsImport_ok: {
+    de: 'Import erfolgreich: {u} aktualisiert, {a} neu hinzugefügt.',
+    en: 'Import successful: {u} updated, {a} newly added.'
+  },
+  xlsImport_none: {
+    de: 'Keine Trainerzeilen erkannt. Prüfe die Spaltenüberschriften (mind. „Name" und „TLC").',
+    en: 'No trainer rows detected. Check the column headers (at least “Name” and “TLC”).'
+  },
+  xlsImport_err: { de: 'Import fehlgeschlagen: Datei konnte nicht gelesen werden.', en: 'Import failed: could not read the file.' },
   resetConfirm: {
     de: 'Wirklich alle Änderungen verwerfen und Excel-Auslieferungsstand laden?',
     en: 'Really discard all changes and load the shipped Excel data?'
