@@ -30,23 +30,11 @@ export default function App() {
     requestPersistence()
   }, [])
 
-  // PDF export lives in Settings, but print CSS scopes the printout to the
-  // visible tab. So briefly switch to the requested tab, let it render/paint,
-  // print, then return to Settings.
-  const printTab = (tabId) => {
-    const restore = active
-    setActive(tabId)
-    window.setTimeout(() => {
-      window.print()
-      setActive(restore)
-    }, 300)
-  }
-
   return (
     <div className="app">
       <TopBar tabs={TABS} active={active} onSelect={setActive} />
       <main className="content">
-        <Current onPrintTab={printTab} />
+        <Current />
       </main>
       <footer className="app-footer">
         <span>{COPYRIGHT} · v{APP_VERSION}</span>

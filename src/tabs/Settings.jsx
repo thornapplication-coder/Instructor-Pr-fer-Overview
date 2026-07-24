@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { downloadJson } from '../lib/format.js'
 import { exportTrainersExcel, exportPlanningExcel, exportProvidersExcel } from '../lib/tableExports.js'
+import { exportPagePdf } from '../lib/pdfExport.js'
 import { parseTrainersFromArrayBuffer, mergeTrainerRecords } from '../lib/importExcel.js'
 import { APP_VERSION, APP_BUILD_DATE, CHANGELOG, COPYRIGHT } from '../version.js'
 import { cloudConfigured } from '../lib/supabaseSync.js'
@@ -25,13 +26,25 @@ function fmtBytes(n) {
   return (n / 1024 / 1024).toFixed(1) + ' MB'
 }
 
-export default function Settings({ onPrintTab }) {
+export default function Settings() {
   const { data, t, lang, setLang, exportData, importData, resetData, setTrainers } = useStore()
   const fileRef = useRef(null)
   const xlsRef = useRef(null)
   const [msg, setMsg] = useState(null)
   const [xlsMsg, setXlsMsg] = useState(null)
+  const [pdfBusy, setPdfBusy] = useState(null)
   const [persist, setPersist] = useState(null)
+
+  const doPdf = async (pageId) => {
+    setPdfBusy(pageId)
+    try {
+      await exportPagePdf(pageId, data, t, lang)
+    } catch (e) {
+      /* ignore – nothing downloaded */
+    } finally {
+      setPdfBusy(null)
+    }
+  }
 
   useEffect(() => {
     persistenceStatus().then(setPersist)
@@ -113,8 +126,8 @@ export default function Settings({ onPrintTab }) {
           <div className="dl-group-title">{t('dl_pdf')}</div>
           <div className="dl-grid">
             {PDF_PAGES.map((p) => (
-              <button key={p.id} className="dl-btn" onClick={() => onPrintTab && onPrintTab(p.id)}>
-                <span className="dl-badge pdf">PDF</span>
+              <button key={p.id} className="dl-btn" onClick={() => doPdf(p.id)} disabled={pdfBusy === p.id}>
+                <span className="dl-badge pdf">{pdfBusy === p.id ? '…' : 'PDF'}</span>
                 <span className="dl-btn-lbl">{t(p.key)}</span>
               </button>
             ))}

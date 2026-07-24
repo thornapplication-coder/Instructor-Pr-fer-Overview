@@ -11,6 +11,16 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.8.0] – 2026-07-24
+
+- **PDF-Export komplett neu**: statt der (auf iPhone/PWA unzuverlässigen)
+  Druckansicht werden jetzt **echte PDF-Dateien direkt aus den aktuellen Daten**
+  erzeugt. Dadurch ist garantiert **immer die richtige Seite mit aktuellen
+  Daten** enthalten – zuverlässig auf iPhone, iPad und Desktop.
+- Jede Seite als eigener **gebrandeter Report** (Dashboard, Umschulung,
+  Kapazität, Trainer, Planung, Provider) mit Kopf-/Fußzeile: 737-TRAINER-Kopf,
+  Datum, Copyright und Seitenzahl.
+
 ## [1.7.1] – 2026-07-24
 
 - **iPhone**: breite Tabellen laufen nicht mehr aus dem Bildschirm – sie
