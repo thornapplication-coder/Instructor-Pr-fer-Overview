@@ -135,10 +135,6 @@ const DICT = {
 
   // ---- conversion
   conversion_title: { de: 'Umschulung', en: 'Conversion' },
-  conv_targetHint: {
-    de: 'Ab der 2. Phase wird das Aircraft automatisch auf das Ziel gesetzt.',
-    en: 'From the 2nd stage on, aircraft is set to the target automatically.'
-  },
   stage: { de: 'Phase', en: 'Stage' },
   status: { de: 'Status', en: 'Status' },
   targetDate: { de: 'Zieltermin', en: 'Target date' },

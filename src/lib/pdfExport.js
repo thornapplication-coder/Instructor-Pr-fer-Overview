@@ -105,6 +105,10 @@ function addCanvasOnePage(doc, canvas, title, lang) {
   const x = margin + (availW - w) / 2
   decorate(doc, title, lang, reportDate(lang))
   doc.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', x, top, w, h)
+  // Release the (potentially tens-of-MB) capture backing store promptly – iOS
+  // Safari caps total canvas memory and GC is lazy.
+  canvas.width = 0
+  canvas.height = 0
 }
 
 // opts.output: 'save' downloads the file; 'print' opens the PDF and triggers the
@@ -164,7 +168,7 @@ async function exportTrainersPdf(data, t, lang, opts) {
     ]),
     columnStyles: { 3: { cellWidth: 120 }, 4: { cellWidth: 90 } }
   })
-  finalize(doc, 'trainer', opts)
+  return finalize(doc, 'trainer', opts)
 }
 
 // ---------------------------------------------------------------- Planning ---
@@ -196,7 +200,7 @@ async function exportPlanningPdf(data, t, lang, opts) {
       t('staff_' + (x.staffType || 'internal')), ...steps.map((s) => stepCell(x, s))
     ])
   })
-  finalize(doc, 'planung', opts)
+  return finalize(doc, 'planung', opts)
 }
 
 // --------------------------------------------------------------- Providers ---
@@ -221,7 +225,7 @@ async function exportProvidersPdf(data, t, lang, opts) {
     body: util.map((u) => [u.provider.name || '', String(u.demand), u.slots ? String(u.slots) : '-', u.util == null ? '-' : Math.round(u.util * 100) + '%']),
     columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } }
   })
-  finalize(doc, 'provider', opts)
+  return finalize(doc, 'provider', opts)
 }
 
 // ---------------------------------------------------------------- Capacity ---
@@ -250,7 +254,7 @@ async function exportCapacityPdf(data, t, lang, opts) {
     head: [t('stage'), t('f_name'), t('f_base'), t('stage'), t('targetDate')],
     body: tl.length ? tl : [['-', t('capacity_noTargets'), '', '', '']]
   })
-  finalize(doc, 'kapazitaet', opts)
+  return finalize(doc, 'kapazitaet', opts)
 }
 
 // --------------------------------------------------------------- Dashboard ---
@@ -305,7 +309,7 @@ async function exportDashboardPdf(data, t, lang, opts) {
       ? alerts.map((a) => [a.trainer.name || '', a.trainer.base || '', stageName(data.stages, a.trainer.conv?.stage), a.reasons.map((r) => t('alert_' + r)).join(', '), a.trainer.conv?.target ? formatDate(a.trainer.conv.target, lang) : '-'])
       : [['-', t('alerts_none'), '', '', '']]
   })
-  finalize(doc, 'dashboard', opts)
+  return finalize(doc, 'dashboard', opts)
 }
 
 // -------------------------------------------------------------- Conversion ---
@@ -344,7 +348,7 @@ async function exportConversionPdf(data, t, lang, opts) {
         : [['-', '', '', '', '', '']]
     })
   })
-  finalize(doc, 'umschulung', opts)
+  return finalize(doc, 'umschulung', opts)
 }
 
 const EXPORTERS = {

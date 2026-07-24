@@ -337,6 +337,7 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
         </Field>
         <Field label={t('f_aircraft')}>
           <select className="input" value={f.aircraft || 'A320'} onChange={(e) => set('aircraft', e.target.value)}>
+            {!AIRCRAFT.includes(f.aircraft) && f.aircraft && <option value={f.aircraft}>{f.aircraft}</option>}
             {AIRCRAFT.map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
         </Field>

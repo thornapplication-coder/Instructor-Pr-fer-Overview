@@ -119,13 +119,13 @@ export async function parseTrainersFromArrayBuffer(buf) {
   return records
 }
 
-// Rows the app's own export adds (the "737 TRAINER …" banner and the copyright
-// footer) land in column 0; on re-import they must not become phantom trainers.
+// Rows the app's own export adds (the "737 TRAINER …" banner and the "©
+// Copyright …" footer) always occupy column 0. Anchor the check there and to
+// unmistakable markers so a legitimate remark like "Senior 737 Trainer" in some
+// other column is never mistaken for a banner and dropped.
 function isExportBanner(row) {
-  return row.some((cell) => {
-    const s = norm(cell)
-    return s.includes('737 trainer') || s.includes('copyright') || s.includes('©')
-  })
+  const s = norm(row && row[0])
+  return s.startsWith('737 trainer') || s.includes('©')
 }
 
 // Merge records into the existing trainer list. Match by TLC, then name.

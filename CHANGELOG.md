@@ -11,6 +11,19 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.10.2] – 2026-07-24
+
+Behebungen aus dem Branch-Review:
+
+- **Umschulung**: der seit v1.9.2 funktionslose A320→B737-Regler (oben) wurde
+  entfernt – das Aircraft wird pro Trainer gesetzt.
+- **Drucken**: der Hinweis „Druckfenster blockiert – als PDF heruntergeladen"
+  erscheint jetzt bei **allen** Seiten (vorher nur beim Dashboard).
+- **Import** robuster: Anmerkungen wie „Senior 737 Trainer" oder ein „©" in
+  einer anderen Spalte führen nicht mehr dazu, dass die Zeile verworfen wird.
+- Kleinere Aufräumarbeiten (Capture-Speicher wird früher freigegeben,
+  Aircraft-Auswahl-Konsistenz, tote CSS/i18n entfernt).
+
 ## [1.10.1] – 2026-07-24
 
 - **Dashboard-PDF auf einer Seite**: der Screenshot des Dashboards wird jetzt so

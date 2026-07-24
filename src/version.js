@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.10.1'
+export const APP_VERSION = '1.10.2'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.10.2',
+    date: '2026-07-24',
+    type: 'patch',
+    changes: {
+      de: [
+        'Umschulung: der funktionslose A320→B737-Regler oben wurde entfernt (Aircraft wird pro Trainer gesetzt).',
+        'Drucken: der Hinweis „Fenster blockiert – als PDF geladen" erscheint jetzt bei allen Seiten, nicht nur beim Dashboard.',
+        'Import robuster: Anmerkungen wie „Senior 737 Trainer" führen nicht mehr dazu, dass eine Zeile übersprungen wird.'
+      ],
+      en: [
+        'Conversion: removed the non-functional A320→B737 selector at the top (aircraft is set per trainer).',
+        'Print: the “window blocked – downloaded as PDF” hint now appears for every page, not just the dashboard.',
+        'More robust import: remarks like “Senior 737 Trainer” no longer cause a row to be skipped.'
+      ]
+    }
+  },
   {
     version: '1.10.1',
     date: '2026-07-24',
