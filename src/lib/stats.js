@@ -139,7 +139,9 @@ export function pipelineDistribution(trainers, stages) {
 // Capacity aggregation: how much FTE sits in each group, how much is tied up in
 // an active conversion, how much stays available, split by current aircraft.
 // "in conversion" = not nominated, not released (mirrors conversionFteSummary).
-function capacityBy(trainers, keyFn, aircraftList, order, stages) {
+// `seedKeys` guarantees those rows exist even when no trainer matches them, so
+// e.g. the B737 row stays visible (all zeros) instead of vanishing.
+function capacityBy(trainers, keyFn, aircraftList, order, stages, seedKeys) {
   const { firstId, releasedId, stageOf } = stageResolver(stages)
   const acs = aircraftList && aircraftList.length ? aircraftList : ['A320', 'B737']
   const map = new Map()
@@ -151,6 +153,7 @@ function capacityBy(trainers, keyFn, aircraftList, order, stages) {
     }
     return map.get(k)
   }
+  for (const k of seedKeys || []) get(k)
   for (const t of trainers) {
     if ((t.ore || '') === 'Rente') continue // retirees are not deployable capacity
     const fte = typeof t.fte === 'number' ? t.fte : 1
@@ -197,10 +200,11 @@ export function capacityByBase(trainers, aircraftList, stages) {
   return capacityBy(trainers, (t) => t.base || '—', aircraftList, null, stages)
 }
 
-// FTE capacity grouped by the trainer's CURRENT aircraft (A320 / B737).
+// FTE capacity grouped by the trainer's CURRENT aircraft. Every known aircraft
+// keeps its row even at zero, so B737 stays visible before the phase-in starts.
 export function capacityByAircraft(trainers, aircraftList, stages) {
   const acs = aircraftList && aircraftList.length ? aircraftList : ['A320', 'B737']
-  return capacityBy(trainers, (t) => t.aircraft || '—', acs, acs, stages)
+  return capacityBy(trainers, (t) => t.aircraft || '—', acs, acs, stages, acs)
 }
 
 // Legacy "new TRI" still folds into "TRI" (defensive for old/imported data);

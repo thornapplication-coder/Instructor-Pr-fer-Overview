@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.13.0'
+export const APP_VERSION = '1.13.1'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.13.1',
+    date: '2026-07-24',
+    type: 'patch',
+    changes: {
+      de: [
+        'Provider: die Buttons „Kurse bearbeiten", „SIM Versionen bearbeiten" und „Status bearbeiten" liegen nicht mehr in der Toolbar. Ausgewählt wird direkt im Detail-Fenster; die Listen lassen sich dort über ein kleines ⚙ neben dem Feld erweitern.',
+        'Kapazität: A320 und B737 werden in „FTE-Kapazität je Aircraft" immer angezeigt – auch wenn überall 0 steht.',
+        'Trainer: bei „Ausstellende Behörde" wird das „EASA"-Präfix weggelassen, es steht nur noch das Land (z. B. „Austria"). Gilt für Tabelle, Dashboard-Statistik und alle Exporte.'
+      ],
+      en: [
+        'Providers: the “Edit courses”, “Edit SIM versions” and “Edit statuses” buttons no longer sit in the toolbar. Selection happens in the detail dialog, where a small ⚙ next to each field extends the list.',
+        'Capacity: A320 and B737 always appear in “FTE capacity per aircraft” – even when everything is 0.',
+        'Trainers: the issuing authority drops the “EASA” prefix and shows the country only (e.g. “Austria”). Applies to the table, the dashboard statistic and every export.'
+      ]
+    }
+  },
   {
     version: '1.13.0',
     date: '2026-07-24',

@@ -22,6 +22,7 @@ const DICT = {
   edit: { de: 'Bearbeiten', en: 'Edit' },
   add: { de: 'Hinzufügen', en: 'Add' },
   close: { de: 'Schließen', en: 'Close' },
+  back: { de: 'Zurück', en: 'Back' },
   confirm: { de: 'Bestätigen', en: 'Confirm' },
   search: { de: 'Suchen…', en: 'Search…' },
   all: { de: 'Alle', en: 'All' },

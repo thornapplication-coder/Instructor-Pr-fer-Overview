@@ -36,6 +36,18 @@ export function formatFte(fte) {
   return String(Number(n.toFixed(2)))
 }
 
+// Issuing authority is stored/entered as "EASA - Austria"; only the country is
+// of interest, so the EASA prefix (and its separator) is stripped. A value that
+// carries no country ("EASA") is kept as-is so nothing is lost.
+export function normalizeAuthority(a) {
+  const s = String(a == null ? '' : a).trim()
+  if (!s) return ''
+  const m = /^easa\b[\s._/–—-]*(.*)$/i.exec(s)
+  if (!m) return s
+  const rest = m[1].trim()
+  return rest || s
+}
+
 export function formatDate(iso, lang) {
   if (!iso) return '–'
   // Non-date strings (e.g. "C weil 25%") pass through unchanged.

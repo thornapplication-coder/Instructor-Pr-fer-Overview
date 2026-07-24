@@ -10,7 +10,7 @@ import {
 } from '../data/providers.js'
 import { DEFAULT_STAGES, ASSIGNMENT_STEPS, mergeAssignments, releasedStageId } from '../data/pipeline.js'
 import { DEFAULT_QUALS, normalizeQual } from '../data/qualifications.js'
-import { fteFromPartTime } from './format.js'
+import { fteFromPartTime, normalizeAuthority } from './format.js'
 import { translate } from './i18n.js'
 
 const STORAGE_KEY = 'ewl737:data:v1'
@@ -41,6 +41,8 @@ function withConvDefaults(trainer) {
     // FTE is editable; default it from the part-time workload only when unset.
     fte: typeof trainer.fte === 'number' ? trainer.fte : fteFromPartTime(trainer.partTime),
     qual: normalizeQual(trainer.qual),
+    // Only the country is shown, not the "EASA -" prefix.
+    authority: normalizeAuthority(trainer.authority),
     conv: {
       stage: 'nominated',
       status: 'on_track',

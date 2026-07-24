@@ -29,9 +29,6 @@ export default function Providers() {
   )
   const [q, setQ] = useState('')
   const [editing, setEditing] = useState(null)
-  const [manageCourses, setManageCourses] = useState(false)
-  const [manageStatus, setManageStatus] = useState(false)
-  const [manageSim, setManageSim] = useState(false)
 
   const statusLabel = (id) => (providerStatus.find((s) => s.id === id) || {}).label || ''
 
@@ -84,9 +81,6 @@ export default function Providers() {
         <h2 className="pane-title">{t('providers_title')}</h2>
         <input className="input search" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
         <span className="push-right" />
-        <button className="btn btn-ghost" onClick={() => setManageCourses(true)}>⚙ {t('manageCourses')}</button>
-        <button className="btn btn-ghost" onClick={() => setManageSim(true)}>⚙ {t('manageSimVersions')}</button>
-        <button className="btn btn-ghost" onClick={() => setManageStatus(true)}>⚙ {t('manageProviderStatus')}</button>
         <button className="btn btn-primary" onClick={() => setEditing(emptyProvider(newId('prov')))}>+ {t('addProvider')}</button>
       </div>
 
@@ -239,27 +233,6 @@ export default function Providers() {
         />
       )}
 
-      {manageCourses && (
-        <Modal title={t('manageCourses')} onClose={() => setManageCourses(false)}
-          footer={<div className="foot-row"><p className="muted small">{t('dragHint')}</p>
-            <div className="push-right"><button className="btn btn-primary" onClick={() => setManageCourses(false)}>{t('close')}</button></div></div>}>
-          <CategoryManager items={providerCourses} onChange={setProviderCourses} hasColor={false} />
-        </Modal>
-      )}
-      {manageSim && (
-        <Modal title={t('manageSimVersions')} onClose={() => setManageSim(false)}
-          footer={<div className="foot-row"><p className="muted small">{t('dragHint')}</p>
-            <div className="push-right"><button className="btn btn-primary" onClick={() => setManageSim(false)}>{t('close')}</button></div></div>}>
-          <CategoryManager items={simVersions} onChange={setSimVersions} hasColor={false} />
-        </Modal>
-      )}
-      {manageStatus && (
-        <Modal title={t('manageProviderStatus')} onClose={() => setManageStatus(false)}
-          footer={<div className="foot-row"><p className="muted small">{t('dragHint')}</p>
-            <div className="push-right"><button className="btn btn-primary" onClick={() => setManageStatus(false)}>{t('close')}</button></div></div>}>
-          <CategoryManager items={providerStatus} onChange={setProviderStatus} />
-        </Modal>
-      )}
     </div>
   )
 }
@@ -325,20 +298,69 @@ function MultiPick({ value, options, labelOf, placeholder, tagClass, onChange })
   )
 }
 
+// Small "⚙" next to a field label that opens the list editor for that field
+// inside this same dialog (no nested modal).
+function ManageLink({ onClick, title }) {
+  return (
+    <button
+      type="button"
+      className="field-manage"
+      // The field is wrapped in a <label>, so suppress label activation which
+      // would otherwise click/focus the field's own control.
+      onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClick() }}
+      title={title}
+      aria-label={title}
+    >
+      ⚙
+    </button>
+  )
+}
+
 function ProviderForm({ provider, providerCourses, providerStatus, simVersions, onClose, onSave, onDelete, isNew }) {
-  const { t } = useStore()
+  const { t, setProviderCourses, setProviderStatus, setSimVersions } = useStore()
   const [p, setP] = useState({
     ...provider,
     courses: provider.courses || [],
     locations: provider.locations || [],
     simVersions: provider.simVersions || []
   })
+  // Which taxonomy list is being edited in-place ('courses' | 'sim' | 'status').
+  const [manage, setManage] = useState(null)
   const set = (k, v) => setP((s) => ({ ...s, [k]: v }))
   const toggleCourse = (id) =>
     setP((s) => {
       const has = (s.courses || []).includes(id)
       return { ...s, courses: has ? s.courses.filter((x) => x !== id) : [...(s.courses || []), id] }
     })
+
+  const MANAGERS = {
+    courses: { title: t('manageCourses'), items: providerCourses, onChange: setProviderCourses, hasColor: false },
+    sim: { title: t('manageSimVersions'), items: simVersions, onChange: setSimVersions, hasColor: false },
+    status: { title: t('manageProviderStatus'), items: providerStatus, onChange: setProviderStatus, hasColor: true }
+  }
+
+  // Sub-view: edit one of the selectable lists without leaving the dialog, so
+  // the half-filled provider form is preserved behind it.
+  if (manage) {
+    const m = MANAGERS[manage]
+    return (
+      <Modal
+        title={m.title}
+        onClose={() => setManage(null)}
+        wide
+        footer={
+          <div className="foot-row">
+            <p className="muted small">{t('dragHint')}</p>
+            <div className="push-right">
+              <button className="btn btn-primary" onClick={() => setManage(null)}>← {t('back')}</button>
+            </div>
+          </div>
+        }
+      >
+        <CategoryManager items={m.items} onChange={m.onChange} hasColor={m.hasColor} />
+      </Modal>
+    )
+  }
 
   return (
     <Modal
@@ -370,7 +392,7 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
         <Field label={t('p_name')} span2>
           <input className="input" value={p.name} onChange={(e) => set('name', e.target.value)} />
         </Field>
-        <Field label={t('p_courses')} span2>
+        <Field label={t('p_courses')} span2 extra={<ManageLink onClick={() => setManage('courses')} title={t('manageCourses')} />}>
           <div className="checks">
             {[...providerCourses].sort((a, b) => a.label.localeCompare(b.label)).map((c) => (
               <label key={c.id} className={'check-pill' + ((p.courses || []).includes(c.id) ? ' on' : '')}>
@@ -380,7 +402,7 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
             ))}
           </div>
         </Field>
-        <Field label={t('p_simVersion')} span2>
+        <Field label={t('p_simVersion')} span2 extra={<ManageLink onClick={() => setManage('sim')} title={t('manageSimVersions')} />}>
           <MultiPick
             value={p.simVersions || []}
             options={simVersions}
@@ -393,7 +415,7 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
         <Field label={t('p_locations')} span2>
           <IcaoInput value={p.locations || []} onChange={(v) => set('locations', v)} />
         </Field>
-        <Field label={t('p_status')}>
+        <Field label={t('p_status')} extra={<ManageLink onClick={() => setManage('status')} title={t('manageProviderStatus')} />}>
           <select className="input" value={p.status} onChange={(e) => set('status', e.target.value)}>
             <option value=""></option>
             {[...providerStatus].sort((a, b) => (a.label || '').localeCompare(b.label || '')).map((v) => (
@@ -430,10 +452,13 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
   )
 }
 
-function Field({ label, children, span2 }) {
+function Field({ label, children, span2, extra }) {
   return (
     <label className={'field' + (span2 ? ' span2' : '')}>
-      <span className="field-label">{label}</span>
+      <span className="field-label">
+        {label}
+        {extra}
+      </span>
       {children}
     </label>
   )

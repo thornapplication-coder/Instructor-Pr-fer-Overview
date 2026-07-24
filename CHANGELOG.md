@@ -11,6 +11,20 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.13.1] – 2026-07-24
+
+- **Provider – aufgeräumte Toolbar**: „Kurse bearbeiten", „SIM Versionen
+  bearbeiten" und „Status bearbeiten" liegen nicht mehr außen. Ausgewählt wird
+  direkt im Detail-Fenster; wer die Auswahllisten erweitern will, nutzt dort das
+  kleine **⚙** neben dem jeweiligen Feld (öffnet den Listen-Editor im selben
+  Dialog, die halb ausgefüllte Provider-Maske bleibt erhalten).
+- **Kapazität**: In „FTE-Kapazität je Aircraft" sind **A320 und B737 immer
+  sichtbar** – auch solange überall 0 steht.
+- **Trainer – Ausstellende Behörde ohne „EASA"**: gespeichert und angezeigt wird
+  nur noch das Land („EASA - Austria" → „Austria"). Wirkt in der Tabelle, im
+  Dashboard-Diagramm und in allen Exporten; Werte ohne EASA-Präfix bleiben
+  unverändert.
+
 ## [1.13.0] – 2026-07-24
 
 - **Planung – neuer Kurskalender**: Monatsansicht aller Kursstarts (Kürzel +
