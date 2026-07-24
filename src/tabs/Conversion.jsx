@@ -151,6 +151,12 @@ export default function Conversion() {
                       </div>
                       <div className="conv-meta">
                         <span className="qual-tag sm">{qualLabel(quals, x.qual)}</span>
+                        <span
+                          className={'role-tag sm ' + (x.role === 'fo' ? 'role-fo' : 'role-captain')}
+                          title={t(x.role === 'fo' ? 'role_fo' : 'role_captain')}
+                        >
+                          {t(x.role === 'fo' ? 'role_foShort' : 'role_captainShort')}
+                        </span>
                         <span className="chip-sm">{x.base}</span>
                         {x.aircraft && <span className="ac-tag sm">{x.aircraft}</span>}
                         <span className={'ore-tag ore-' + (x.ore || 'none')}>{x.ore || '–'}</span>

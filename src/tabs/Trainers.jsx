@@ -13,6 +13,21 @@ const alpha = (arr) => [...arr].sort((a, b) => String(a).localeCompare(String(b)
 
 const ORES = ['A', 'B', 'C', 'Rente', '']
 
+// Cockpit role: everyone is a Captain unless explicitly marked First Officer.
+const roleOf = (x) => (x.role === 'fo' ? 'fo' : 'captain')
+
+function RoleTag({ role, t }) {
+  const fo = role === 'fo'
+  return (
+    <span
+      className={'role-tag ' + (fo ? 'role-fo' : 'role-captain')}
+      title={fo ? t('role_fo') : t('role_captain')}
+    >
+      {fo ? t('role_foShort') : t('role_captainShort')}
+    </span>
+  )
+}
+
 function ptToInput(pt) {
   if (pt === '' || pt === null || pt === undefined) return ''
   if (typeof pt === 'number') return pt >= 1 ? 'VZ' : Math.round(pt * 100) + '%'
@@ -49,6 +64,7 @@ export default function Trainers() {
   const [fOre, setFOre] = useState('')
   const [fStaff, setFStaff] = useState('')
   const [fAircraft, setFAircraft] = useState('')
+  const [fRole, setFRole] = useState('')
   const [editing, setEditing] = useState(null) // trainer object or null
   const [manageQuals, setManageQuals] = useState(false)
 
@@ -66,15 +82,20 @@ export default function Trainers() {
       .filter((x) => (fOre ? x.ore === fOre : true))
       .filter((x) => (fStaff ? (x.staffType || 'internal') === fStaff : true))
       .filter((x) => (fAircraft ? x.aircraft === fAircraft : true))
+      .filter((x) => (fRole ? roleOf(x) === fRole : true))
       .filter((x) =>
         needle
-          ? [x.name, x.tlc, x.remark, x.base, x.authority, x.aircraft, qualLabel(quals, x.qual)]
+          ? [
+              x.name, x.tlc, x.remark, x.base, x.authority, x.aircraft,
+              qualLabel(quals, x.qual),
+              t(roleOf(x) === 'fo' ? 'role_fo' : 'role_captain')
+            ]
               .join(' ')
               .toLowerCase()
               .includes(needle)
           : true
       )
-  }, [trainers, q, fBase, fQual, fOre, fStaff, fAircraft])
+  }, [trainers, q, fBase, fQual, fOre, fStaff, fAircraft, fRole, quals, t])
 
   const accessors = useMemo(
     () => ({
@@ -82,6 +103,7 @@ export default function Trainers() {
       base: (x) => x.base,
       tlc: (x) => x.tlc,
       name: (x) => x.name,
+      role: (x) => (roleOf(x) === 'captain' ? 0 : 1), // Captains first
       remark: (x) => x.remark || '',
       fte: (x) => (typeof x.fte === 'number' ? x.fte : 1),
       aircraft: (x) => x.aircraft || '',
@@ -101,6 +123,7 @@ export default function Trainers() {
       base: '',
       tlc: '',
       name: '',
+      role: 'captain',
       remark: '',
       partTime: 'VZ',
       fte: 1,
@@ -148,6 +171,11 @@ export default function Trainers() {
             <option key={o} value={o}>{o}</option>
           ))}
         </select>
+        <select className="input" value={fRole} onChange={(e) => setFRole(e.target.value)}>
+          <option value="">{t('f_role')}: {t('all')}</option>
+          <option value="captain">{t('role_captain')}</option>
+          <option value="fo">{t('role_fo')}</option>
+        </select>
         <select className="input" value={fStaff} onChange={(e) => setFStaff(e.target.value)}>
           <option value="">{t('filterStaff')}: {t('all')}</option>
           <option value="internal">{t('staff_internal')}</option>
@@ -174,6 +202,7 @@ export default function Trainers() {
               <Th label={t('f_base')} k="base" {...p} />
               <Th label={t('f_tlc')} k="tlc" {...p} />
               <Th label={t('f_name')} k="name" {...p} />
+              <Th label={t('f_role')} k="role" {...p} />
               <Th label={t('f_remark')} k="remark" {...p} />
               <Th label={t('f_partTime')} k="fte" className="num" {...p} />
               <Th label={t('f_fte')} k="fte" className="num" {...p} />
@@ -199,6 +228,7 @@ export default function Trainers() {
                 <td>{x.base}</td>
                 <td className="mono">{x.tlc}</td>
                 <td className="strong">{x.name}</td>
+                <td><RoleTag role={roleOf(x)} t={t} /></td>
                 <td className="muted">{x.remark || '–'}</td>
                 <td className="num">{formatPartTime(x.partTime, lang)}</td>
                 <td className="num">{formatFte(x.fte)}</td>
@@ -219,7 +249,7 @@ export default function Trainers() {
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={12} className="empty-row">{t('noTrainers')}</td>
+                <td colSpan={13} className="empty-row">{t('noTrainers')}</td>
               </tr>
             )}
           </tbody>
@@ -312,6 +342,12 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
             <option value=""></option>
             {!quals.some((qq) => qq.id === f.qual) && f.qual && <option value={f.qual}>{f.qual}</option>}
             {quals.map((qq) => <option key={qq.id} value={qq.id}>{qq.label}</option>)}
+          </select>
+        </Field>
+        <Field label={t('f_role')}>
+          <select className="input" value={f.role === 'fo' ? 'fo' : 'captain'} onChange={(e) => set('role', e.target.value)}>
+            <option value="captain">{t('role_captain')}</option>
+            <option value="fo">{t('role_fo')}</option>
           </select>
         </Field>
         <Field label={t('f_base')}>

@@ -21,6 +21,7 @@ export function exportTrainersExcel(data, t, lang) {
       { label: t('f_base'), value: (x) => x.base },
       { label: t('f_tlc'), value: (x) => x.tlc },
       { label: t('f_name'), value: (x) => x.name },
+      { label: t('f_role'), value: (x) => t(x.role === 'fo' ? 'role_fo' : 'role_captain') },
       { label: t('f_remark'), value: (x) => x.remark },
       { label: t('f_partTime'), value: (x) => formatPartTime(x.partTime, lang) },
       { label: t('f_fte'), value: (x) => formatFte(x.fte) },

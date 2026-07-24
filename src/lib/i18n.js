@@ -68,8 +68,13 @@ const DICT = {
   // ---- overview / KPIs
   kpi_totalTrainers: { de: 'Trainer & Prüfer', en: 'Trainers & Examiners' },
   kpi_active: { de: 'Aktiv (ohne Rente)', en: 'Active (excl. retiring)' },
-  kpi_examiners: { de: 'Prüfer (TRE)', en: 'Examiners (TRE)' },
+  kpi_examiners: { de: 'Prüfer (SEN/TRE)', en: 'Examiners (SEN/TRE)' },
   kpi_instructors: { de: 'Instruktoren (TRI/LTC)', en: 'Instructors (TRI/LTC)' },
+  kpi_tri: { de: 'Instruktoren (TRI)', en: 'Instructors (TRI)' },
+  kpi_ltc: { de: 'Instruktoren (LTC)', en: 'Instructors (LTC)' },
+  kpi_sfiTki: { de: 'Instruktoren (SFI/TKI)', en: 'Instructors (SFI/TKI)' },
+  kpi_captain: { de: 'Captain', en: 'Captain' },
+  kpi_fo: { de: 'First Officer (FO)', en: 'First Officer (FO)' },
   kpi_released: { de: 'Auf 737 freigegeben', en: 'Released on 737' },
   kpi_inProgress: { de: 'In Umschulung', en: 'In conversion' },
   kpi_notStarted: { de: 'Noch nicht gestartet', en: 'Not started yet' },
@@ -83,7 +88,26 @@ const DICT = {
   chart_byOre: { de: 'ORE-Priorität (A–C)', en: 'ORE priority (A–C)' },
   chart_pipeline: { de: 'Umschulungs-Pipeline', en: 'Conversion pipeline' },
   chart_convProgress: { de: 'Umschulungs-Fortschritt', en: 'Conversion progress' },
+  chart_qualByAircraft: { de: 'Qualifikation je Aircraft', en: 'Qualification by aircraft' },
+  chart_role: { de: 'Captain / First Officer', en: 'Captain / First Officer' },
   overallProgress: { de: 'Gesamtfortschritt', en: 'Overall progress' },
+
+  // ---- dashboard sections + arrange mode
+  section_overview: { de: 'Instruktoren & Prüfer Overview', en: 'Instructors & Examiners overview' },
+  section_conversion: { de: 'B737 Umschulung', en: 'B737 conversion' },
+  dashArrange: { de: 'Anordnen', en: 'Arrange' },
+  dashDone: { de: 'Fertig', en: 'Done' },
+  dashArrangeHint: {
+    de: 'Kacheln und Diagramme lassen sich per Drag & Drop innerhalb ihrer Gruppe verschieben. Die Reihenfolge wird gespeichert.',
+    en: 'Drag & drop tiles and charts to reorder them within their group. The order is saved.'
+  },
+
+  // ---- cockpit role
+  f_role: { de: 'Rolle (Cockpit)', en: 'Role (cockpit)' },
+  role_captain: { de: 'Captain', en: 'Captain' },
+  role_fo: { de: 'First Officer (FO)', en: 'First Officer (FO)' },
+  role_captainShort: { de: 'CPT', en: 'CPT' },
+  role_foShort: { de: 'FO', en: 'FO' },
 
   // ---- deadlines / alerts
   alerts_title: { de: 'Fristen & Warnungen', en: 'Deadlines & alerts' },

@@ -254,14 +254,20 @@ export function providerUtilization(trainers, providers, steps) {
     .sort((a, b) => (a.provider.name || '').localeCompare(b.provider.name || ''))
 }
 
-// Head-count style KPIs.
+// Head-count style KPIs. Qualification tiles follow the canonical rank
+// SEN · TRE · TRI · LTC · SFI · TKI; each person counts once (no double-count).
 export function headcount(trainers) {
   const EXAMINER = new Set(['SEN', 'TRE'])
-  const INSTRUCTOR = new Set(['TRI', 'LTC', 'SFI', 'TKI'])
+  const isQual = (t, id) => t.qual === id
   const active = trainers.filter((t) => t.ore !== 'Rente')
   const examiners = trainers.filter((t) => EXAMINER.has(t.qual) || String(t.qual).startsWith('TRE'))
-  const instructors = trainers.filter((t) => INSTRUCTOR.has(t.qual))
+  const tri = trainers.filter((t) => isQual(t, 'TRI'))
+  const ltc = trainers.filter((t) => isQual(t, 'LTC'))
+  const sfiTki = trainers.filter((t) => isQual(t, 'SFI') || isQual(t, 'TKI'))
+  const instructors = trainers.filter((t) => new Set(['TRI', 'LTC', 'SFI', 'TKI']).has(t.qual))
   const retiring = trainers.filter((t) => t.ore === 'Rente')
+  const firstOfficers = trainers.filter((t) => t.role === 'fo')
+  const captains = trainers.filter((t) => t.role !== 'fo')
   // Weighted FTE from the per-person editable FTE field (default 1.0).
   let fte = 0
   for (const t of trainers) {
@@ -271,8 +277,42 @@ export function headcount(trainers) {
     total: trainers.length,
     active: active.length,
     examiners: examiners.length,
+    tri: tri.length,
+    ltc: ltc.length,
+    sfiTki: sfiTki.length,
     instructors: instructors.length,
     retiring: retiring.length,
+    captains: captains.length,
+    firstOfficers: firstOfficers.length,
     fte: Math.round(fte * 10) / 10
   }
+}
+
+// Qualification breakdown split by current aircraft (A320 vs B737). Rows follow
+// the given qual order (canonical rank), custom quals appended by size.
+export function qualByAircraft(trainers, order) {
+  const ord = order && order.length ? order : QUAL_RANK
+  const map = new Map()
+  for (const t of trainers) {
+    const q = t.qual
+    if (q === undefined || q === null || q === '') continue
+    if (!map.has(q)) map.set(q, { key: q, A320: 0, B737: 0, count: 0 })
+    const row = map.get(q)
+    row.count += 1
+    if (t.aircraft === 'A320') row.A320 += 1
+    else if (t.aircraft === 'B737') row.B737 += 1
+  }
+  const rank = (k) => {
+    const i = ord.indexOf(k)
+    return i < 0 ? 999 : i
+  }
+  return [...map.values()].sort((a, b) => rank(a.key) - rank(b.key) || b.count - a.count)
+}
+
+// Captain vs First Officer split (each person counts once).
+export function byRole(trainers) {
+  let captains = 0
+  let fo = 0
+  for (const t of trainers) (t.role === 'fo' ? fo++ : captains++)
+  return { captains, fo, total: trainers.length }
 }

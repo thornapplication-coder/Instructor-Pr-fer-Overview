@@ -35,6 +35,8 @@ function withConvDefaults(trainer) {
     // Guarantee a stable unique id: imported/trimmed payloads may omit it, and an
     // undefined id makes upsert/delete match EVERY id-less record at once.
     id: trainer.id || newId('trn'),
+    // Cockpit role: everyone defaults to Captain; First Officers are marked 'fo'.
+    role: trainer.role === 'fo' ? 'fo' : 'captain',
     // FTE is editable; default it from the part-time workload only when unset.
     fte: typeof trainer.fte === 'number' ? trainer.fte : fteFromPartTime(trainer.partTime),
     qual: normalizeQual(trainer.qual),
@@ -79,10 +81,12 @@ function freshData(lang = 'de') {
     providerStatus: DEFAULT_PROVIDER_STATUS.map((x) => ({ ...x })),
     conversionFrom: 'A320',
     conversionTo: 'B737',
+    dashboard: { order: {} },
     _provSeeded: true,
     _courseSeed2: true,
     _provStatus2: true,
     _qualMerge: true,
+    _roleSeed: true,
     updatedAt: nowIso()
   }
 }
@@ -138,11 +142,16 @@ function normalize(obj) {
       : base.providerStatus,
     conversionFrom: obj.conversionFrom || 'A320',
     conversionTo: obj.conversionTo || 'B737',
+    dashboard:
+      obj.dashboard && typeof obj.dashboard === 'object' && obj.dashboard.order && typeof obj.dashboard.order === 'object'
+        ? { order: obj.dashboard.order }
+        : base.dashboard,
     theme: obj.theme === 'dark' ? 'dark' : 'light',
     _provSeeded: obj._provSeeded === true,
     _courseSeed2: obj._courseSeed2 === true,
     _provStatus2: obj._provStatus2 === true,
     _qualMerge: obj._qualMerge === true,
+    _roleSeed: obj._roleSeed === true,
     updatedAt: obj.updatedAt || nowIso()
   }
   // One-time: merge newly shipped default courses (e.g. "SIM only") into stored
@@ -167,6 +176,16 @@ function normalize(obj) {
   if (!result._qualMerge) {
     result.quals = result.quals.filter((q) => q.id !== 'new TRI')
     result._qualMerge = true
+  }
+  // One-time: everyone defaults to Captain (done in withConvDefaults); the two
+  // known First Officers (by TLC) are flipped to 'fo'. Gated so that later
+  // manual role edits are preserved on subsequent loads.
+  if (!result._roleSeed) {
+    const FO = new Set(['m7h', 't9j'])
+    result.trainers = result.trainers.map((t) =>
+      FO.has((t.tlc || '').toLowerCase()) || FO.has((t.id || '').toLowerCase()) ? { ...t, role: 'fo' } : t
+    )
+    result._roleSeed = true
   }
   return result
 }
@@ -361,6 +380,13 @@ export function StoreProvider({ children }) {
             }
             return touched ? { ...tr, assignments: next } : tr
           })
+        })),
+
+      // Persist the user's dashboard widget order for one zone (kpi/chart group).
+      setDashboardOrder: (zone, ids) =>
+        patch((d) => ({
+          ...d,
+          dashboard: { ...(d.dashboard || { order: {} }), order: { ...((d.dashboard && d.dashboard.order) || {}), [zone]: ids } }
         })),
 
       setStages: (stages) => patch((d) => ({ ...d, stages })),

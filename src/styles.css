@@ -165,6 +165,50 @@ button { font-family: inherit; }
 .hbar-fill { height: 100%; border-radius: 999px; min-width: 3px; transition: width .3s ease; }
 .hbar-val { text-align: right; font-weight: 800; font-size: 13px; color: var(--ink); }
 
+/* Stacked variant: segments sit side by side inside one track. */
+.hbars.stacked .hbar-track { display: flex; }
+.hbar-seg { height: 100%; min-width: 3px; transition: width .3s ease; }
+.hbars.stacked .hbar-seg:first-child { border-radius: 999px 0 0 999px; }
+.hbars.stacked .hbar-seg:last-child { border-radius: 0 999px 999px 0; }
+.hbars.stacked .hbar-seg:only-child { border-radius: 999px; }
+.stacked-legend { margin-top: 4px; }
+
+/* ---------- Dashboard sections & arrange mode ---------- */
+.dash-section-title {
+  font-size: 16px; font-weight: 800; letter-spacing: .2px;
+  color: var(--burg); margin: 26px 0 2px; padding-bottom: 8px;
+  border-bottom: 2px solid var(--burg);
+}
+.tab-pane > .dash-section-title:first-of-type { margin-top: 14px; }
+.dash-charts { margin-top: 4px; }
+.dash-item { position: relative; min-width: 0; }
+/* The widget itself fills the cell; the drag badge keeps its intrinsic size. */
+.dash-item > *:not(.dash-drag) { height: 100%; }
+.dash-editing .dash-item {
+  cursor: grab; border-radius: var(--radius);
+  outline: 2px dashed transparent; outline-offset: 3px; transition: outline-color .15s ease;
+}
+.dash-editing .dash-item:hover { outline-color: var(--burg-light, #D41370); }
+.dash-editing .dash-item.dragging { opacity: .45; }
+.dash-editing .dash-item.drop-over { outline-color: var(--burg); outline-style: solid; }
+.dash-drag {
+  position: absolute; top: 6px; right: 8px; z-index: 2;
+  font-size: 14px; line-height: 1; color: #fff; background: var(--burg);
+  border-radius: 6px; padding: 3px 5px; pointer-events: none; opacity: .9;
+}
+
+/* Role (cockpit) tag: Captain vs First Officer. */
+.role-tag {
+  display: inline-block; padding: 2px 8px; border-radius: 999px;
+  font-size: 11.5px; font-weight: 800; color: #fff; letter-spacing: .3px;
+}
+.role-captain { background: #AF1E65; }
+.role-fo { background: #00A6CF; }
+.role-tag.sm { font-size: 10.5px; padding: 1px 6px; }
+
+/* Controls that must never appear in the rasterized PDF capture. */
+.pdf-capture-content .no-capture { display: none !important; }
+
 .progress-ring { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .ring-num { font-size: 24px; font-weight: 900; fill: var(--burg); }
 .progress-ring-label { font-size: 12px; color: var(--muted); font-weight: 700; }

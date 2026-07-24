@@ -92,6 +92,45 @@ export function HBars({ data, colorFn }) {
   )
 }
 
+// ---- Stacked horizontal bars (one bar per row, split into series) ---------
+// data rows: { key, label?, [series.key]: number }. series: [{ key, label, color }].
+export function StackedBars({ data, series }) {
+  const rowTotal = (d) => series.reduce((s, ser) => s + (d[ser.key] || 0), 0)
+  const max = Math.max(1, ...data.map(rowTotal))
+  return (
+    <div className="hbars stacked">
+      {data.map((d) => (
+        <div className="hbar-row" key={d.key}>
+          <div className="hbar-label" title={d.label || d.key}>{d.label || d.key}</div>
+          <div className="hbar-track">
+            {series.map((ser) => {
+              const v = d[ser.key] || 0
+              return v ? (
+                <div
+                  key={ser.key}
+                  className="hbar-seg"
+                  style={{ width: `${(v / max) * 100}%`, background: ser.color }}
+                  title={`${ser.label}: ${v}`}
+                />
+              ) : null
+            })}
+          </div>
+          <div className="hbar-val">{rowTotal(d)}</div>
+        </div>
+      ))}
+      <ul className="legend legend-wrap stacked-legend">
+        {series.map((ser) => (
+          <li key={ser.key}>
+            <span className="dot" style={{ background: ser.color }} />
+            <span className="legend-key">{ser.label}</span>
+            <span className="legend-val">{data.reduce((s, d) => s + (d[ser.key] || 0), 0)}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 // ---- Overall progress ring ------------------------------------------------
 export function ProgressRing({ value, size = 128, thickness = 14, label }) {
   const r = (size - thickness) / 2

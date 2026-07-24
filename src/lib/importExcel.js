@@ -16,6 +16,7 @@ const FIELD_ALIASES = {
   tlc: ['tlc', 'kürzel', 'kuerzel', 'kz'],
   name: ['name'],
   remark: ['funktion / anmerkung', 'funktion/anmerkung', 'funktion', 'anmerkung', 'bemerkung', 'function / remark', 'function/remark', 'function', 'remark'],
+  role: ['rolle (cockpit)', 'rolle', 'role (cockpit)', 'role', 'funktion cockpit', 'cockpit'],
   partTime: ['part-time', 'part time', 'parttime', 'teilzeit', 'pt'],
   fte: ['fte', 'fte (1 = 100%)', 'fte 1 = 100%', 'vollzeitäquivalent', 'vollzeitaequivalent', 'vze'],
   ore: ['ore a–c', 'ore a-c', 'ore', 'ore priorität', 'ore prioritaet'],
@@ -60,6 +61,16 @@ function toISO(v) {
   return s
 }
 
+// Cockpit role -> 'fo' | 'captain' | null (null = column absent/unrecognized, so
+// the existing value is kept). Accepts FO / F/O / First Officer / Copilot as FO.
+function toRole(v) {
+  const s = String(v == null ? '' : v).trim().toLowerCase()
+  if (!s) return null
+  if (/^(fo|f\/o|f\.o\.?)$/.test(s) || /first\s*officer|copilot|co-?pilot|kopilot/.test(s)) return 'fo'
+  if (/^(cpt|capt|c)$/.test(s) || /captain|kapit/.test(s)) return 'captain'
+  return null
+}
+
 // Numeric FTE (accepts "0,8" decimal comma), clamped to a sane range; else null.
 function toFte(v) {
   if (v == null || v === '') return null
@@ -94,6 +105,8 @@ function pickFields(rec) {
   if (str(rec.base)) out.base = str(rec.base)
   if (rec.remark != null && str(rec.remark) !== '') out.remark = str(rec.remark)
   if (str(rec.ore)) out.ore = str(rec.ore)
+  const role = toRole(rec.role)
+  if (role) out.role = role
   if (str(rec.authority)) out.authority = str(rec.authority)
   const pt = toPartTime(rec.partTime)
   if (pt !== '') out.partTime = pt

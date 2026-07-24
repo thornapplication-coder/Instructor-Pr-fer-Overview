@@ -18,11 +18,13 @@ import {
   byAuthority,
   byPartTime,
   byFunction,
+  byRole,
+  qualByAircraft,
   capacityByBase,
   capacityByQual,
   providerUtilization
 } from './stats.js'
-import { collectAlerts, stageName, targetsByMonth, monthLabel } from './alerts.js'
+import { stageName, targetsByMonth, monthLabel } from './alerts.js'
 
 const BURG = hexToRgb(BRAND_HEX.burg)
 const BURG_DARK = hexToRgb(BRAND_HEX.burgDark)
@@ -164,14 +166,15 @@ async function exportTrainersPdf(data, t, lang, opts) {
   const ctx = makeCtx(doc, autoTable, t('trainers_title'), lang)
   const rows = [...data.trainers].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
   table(ctx, {
-    head: [t('f_qual'), t('f_base'), t('f_tlc'), t('f_name'), t('f_remark'), t('f_partTime'), t('f_fte'), t('f_aircraft'), t('f_ore'), t('f_staffType'), t('f_authority'), t('f_conversion')],
+    head: [t('f_qual'), t('f_base'), t('f_tlc'), t('f_name'), t('f_role'), t('f_remark'), t('f_partTime'), t('f_fte'), t('f_aircraft'), t('f_ore'), t('f_staffType'), t('f_authority'), t('f_conversion')],
     body: rows.map((x) => [
-      qualLabel(data.quals, x.qual), x.base || '', x.tlc || '', x.name || '', x.remark || '',
+      qualLabel(data.quals, x.qual), x.base || '', x.tlc || '', x.name || '',
+      t(x.role === 'fo' ? 'role_foShort' : 'role_captainShort'), x.remark || '',
       formatPartTime(x.partTime, lang), formatFte(x.fte), x.aircraft || '', x.ore || '',
       t('staff_' + (x.staffType || 'internal')), x.authority || '',
       stageLabel(data.stages.find((s) => s.id === x.conv?.stage))
     ]),
-    columnStyles: { 3: { cellWidth: 120 }, 4: { cellWidth: 90 } }
+    columnStyles: { 3: { cellWidth: 110 }, 5: { cellWidth: 80 } }
   })
   return finalize(doc, 'trainer', opts)
 }
@@ -286,14 +289,49 @@ async function exportDashboardPdf(data, t, lang, opts) {
   const hc = headcount(trainers)
   const cs = conversionSummary(trainers, data.stages)
   const fte = conversionFteSummary(trainers, data.stages)
+  const bd = (label, rows) =>
+    table(ctx, { section: label, head: [t('category'), t('count')], body: rows.map((r) => [r.label || r.key, String(r.count)]), columnStyles: { 1: { halign: 'right', cellWidth: 80 } } })
+  // Mirrors the on-screen sections: overview first, then the B737 conversion.
   table(ctx, {
-    section: 'KPIs',
+    section: t('section_overview'),
     head: [t('category'), t('count')],
     body: [
       [t('kpi_totalTrainers'), String(hc.total)],
       [t('kpi_examiners'), String(hc.examiners)],
-      [t('kpi_instructors'), String(hc.instructors)],
+      [t('kpi_tri'), String(hc.tri)],
+      [t('kpi_ltc'), String(hc.ltc)],
+      [t('kpi_sfiTki'), String(hc.sfiTki)],
+      [t('kpi_captain'), String(hc.captains)],
+      [t('kpi_fo'), String(hc.firstOfficers)],
       [t('kpi_active'), String(hc.active)],
+      ['FTE ' + t('total'), String(hc.fte)]
+    ],
+    columnStyles: { 1: { halign: 'right', cellWidth: 80 } }
+  })
+  bd(t('stat_qual'), byQual(trainers, data.quals.map((q) => q.id)).map((r) => ({ ...r, label: qualLabel(data.quals, r.key) })))
+  // Qualification per aircraft (A320 / B737) as one row per qual.
+  table(ctx, {
+    section: t('chart_qualByAircraft'),
+    head: [t('f_qual'), AIRCRAFT[0], AIRCRAFT[1], t('total')],
+    body: qualByAircraft(trainers, data.quals.map((q) => q.id)).map((r) => [
+      qualLabel(data.quals, r.key), String(r[AIRCRAFT[0]] || 0), String(r[AIRCRAFT[1]] || 0), String(r.count)
+    ]),
+    columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } }
+  })
+  const rl = byRole(trainers)
+  bd(t('chart_role'), [{ key: t('role_captain'), count: rl.captains }, { key: t('role_fo'), count: rl.fo }])
+  bd(t('stat_base'), byBase(trainers))
+  bd(t('stat_aircraft'), AIRCRAFT.map((a) => ({ key: a, count: trainers.filter((x) => x.aircraft === a).length })))
+  bd(t('stat_authority'), byAuthority(trainers))
+  bd(t('stat_partTime'), byPartTime(trainers))
+  const fn = byFunction(trainers)
+  bd(t('stat_function'), [{ key: t('withFunction'), count: fn.withFunction }, { key: t('withoutFunction'), count: fn.withoutFunction }])
+  const staffInt = trainers.filter((x) => (x.staffType || 'internal') === 'internal').length
+  bd(t('filterStaff'), [{ key: t('staff_internal'), count: staffInt }, { key: t('staff_external'), count: trainers.length - staffInt }])
+  table(ctx, {
+    section: t('section_conversion'),
+    head: [t('category'), t('count')],
+    body: [
       [t('kpi_released'), String(cs.released)],
       [t('kpi_inProgress'), String(cs.inProgress)],
       [t('kpi_notStarted'), String(cs.notStarted)],
@@ -303,25 +341,7 @@ async function exportDashboardPdf(data, t, lang, opts) {
     ],
     columnStyles: { 1: { halign: 'right', cellWidth: 80 } }
   })
-  const bd = (label, rows) =>
-    table(ctx, { section: label, head: [t('category'), t('count')], body: rows.map((r) => [r.label || r.key, String(r.count)]), columnStyles: { 1: { halign: 'right', cellWidth: 80 } } })
-  bd(t('stat_qual'), byQual(trainers, data.quals.map((q) => q.id)).map((r) => ({ ...r, label: qualLabel(data.quals, r.key) })))
-  bd(t('stat_base'), byBase(trainers))
   bd(t('chart_byOre'), byOre(trainers))
-  bd(t('stat_authority'), byAuthority(trainers))
-  bd(t('stat_partTime'), byPartTime(trainers))
-  const fn = byFunction(trainers)
-  bd(t('stat_function'), [{ key: t('withFunction'), count: fn.withFunction }, { key: t('withoutFunction'), count: fn.withoutFunction }])
-  const staffInt = trainers.filter((x) => (x.staffType || 'internal') === 'internal').length
-  bd(t('filterStaff'), [{ key: t('staff_internal'), count: staffInt }, { key: t('staff_external'), count: trainers.length - staffInt }])
-  const alerts = collectAlerts(trainers, null, data.stages)
-  table(ctx, {
-    section: t('alerts_title'),
-    head: [t('f_name'), t('f_base'), t('stage'), t('status'), t('targetDate')],
-    body: alerts.length
-      ? alerts.map((a) => [a.trainer.name || '', a.trainer.base || '', stageName(data.stages, a.trainer.conv?.stage), a.reasons.map((r) => t('alert_' + r)).join(', '), a.trainer.conv?.target ? formatDate(a.trainer.conv.target, lang) : '-'])
-      : [['-', t('alerts_none'), '', '', '']]
-  })
   return finalize(doc, 'dashboard', opts)
 }
 

@@ -11,6 +11,29 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.12.0] – 2026-07-24
+
+- **Rolle „Captain" / „First Officer (FO)"** je Person: auswählbar im
+  Bearbeiten-Dialog, als farbige **CPT**-/**FO**-Marke in der Trainer-Tabelle und
+  auf den Umschulungs-Karten sichtbar, dazu ein eigener Filter „Rolle (Cockpit)".
+  Standard ist **Captain**; **M7H** und **T9J** sind als **FO** hinterlegt
+  (einmalige Umstellung, spätere manuelle Änderungen bleiben erhalten).
+- **Dashboard in zwei Rubriken gegliedert**: „Instruktoren & Prüfer Overview"
+  und „B737 Umschulung".
+- **Dashboard editierbar**: Über „⠿ Anordnen" lassen sich Kacheln und Diagramme
+  per Drag & Drop innerhalb ihrer Gruppe verschieben; die Reihenfolge wird
+  gespeichert und übersteht einen Neustart.
+- **Instruktoren-Kacheln aufgeteilt**: eigene Kacheln für „Instruktoren (TRI)"
+  und „Instruktoren (LTC)", neu „Instruktoren (SFI/TKI)". Durchgängige Reihenfolge
+  SEN → TRE → TRI → LTC → SFI → TKI; jede Person zählt genau einmal (keine
+  Doppelungen).
+- **Neue Statistik „Qualifikation je Aircraft"** (gestapelt A320/B737) und neues
+  Diagramm **„Captain / First Officer"**.
+- **„Fristen & Warnungen" vom Dashboard entfernt** (die Kapazitäts-Timeline
+  färbt Zieltermine weiterhin nach Dringlichkeit).
+- Die Rolle steht auch in den **Trainer-Exporten (PDF/Excel)** und wird beim
+  **Excel-/CSV-Import** erkannt (FO, F/O, First Officer, Captain, CPT …).
+
 ## [1.11.0] – 2026-07-24
 
 Großes Audit-Fixpaket (Datenintegrität, Konsistenz, Barrierefreiheit, Sicherheit):

@@ -4,12 +4,37 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.11.0'
+export const APP_VERSION = '1.12.0'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.12.0',
+    date: '2026-07-24',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neu bei den Personen: Rolle „Captain" oder „First Officer (FO)" – auswählbar im Bearbeiten-Dialog, als farbige CPT-/FO-Marke in der Tabelle und auf den Umschulungs-Karten, plus eigener Filter. Standard ist Captain; M7H und T9J sind als FO hinterlegt.',
+        'Dashboard neu gegliedert: „Instruktoren & Prüfer Overview" und „B737 Umschulung" als eigene Rubriken.',
+        'Dashboard ist jetzt editierbar: über „Anordnen" lassen sich Kacheln und Diagramme per Drag & Drop innerhalb ihrer Gruppe verschieben – die Reihenfolge wird gespeichert.',
+        'Instruktoren-Kachel aufgeteilt in „Instruktoren (TRI)" und „Instruktoren (LTC)"; neue Kachel „Instruktoren (SFI/TKI)". Reihenfolge durchgängig SEN → TRE → TRI → LTC → SFI → TKI, jede Person zählt genau einmal.',
+        'Neue Statistik „Qualifikation je Aircraft" (A320/B737) und neues Diagramm „Captain / First Officer".',
+        '„Fristen & Warnungen" wurde vom Dashboard entfernt.',
+        'Rolle ist auch in den Trainer-Exporten (PDF/Excel) enthalten und wird beim Excel-/CSV-Import übernommen.'
+      ],
+      en: [
+        'New on persons: role “Captain” or “First Officer (FO)” – selectable in the edit dialog, shown as a colour-coded CPT/FO badge in the table and on conversion cards, plus its own filter. Captain is the default; M7H and T9J are set to FO.',
+        'Dashboard restructured: “Instructors & Examiners overview” and “B737 conversion” as separate sections.',
+        'The dashboard is now editable: use “Arrange” to drag & drop tiles and charts within their group – the order is saved.',
+        'Instructor tile split into “Instructors (TRI)” and “Instructors (LTC)”; new “Instructors (SFI/TKI)” tile. Consistent order SEN → TRE → TRI → LTC → SFI → TKI, each person counted exactly once.',
+        'New “Qualification by aircraft” statistic (A320/B737) and a new “Captain / First Officer” chart.',
+        '“Deadlines & alerts” removed from the dashboard.',
+        'The role is included in the trainer exports (PDF/Excel) and picked up by the Excel/CSV import.'
+      ]
+    }
+  },
   {
     version: '1.11.0',
     date: '2026-07-24',
