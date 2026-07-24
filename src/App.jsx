@@ -1,5 +1,6 @@
-import React, { useState, useEffect } from 'react'
+import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { requestPersistence } from './lib/persistence.js'
+import { CaptureContext } from './lib/capture.js'
 import TopBar from './components/TopBar.jsx'
 import UpdatePrompt from './components/UpdatePrompt.jsx'
 import Dashboard from './tabs/Dashboard.jsx'
@@ -23,6 +24,8 @@ const TABS = [
 
 export default function App() {
   const [active, setActive] = useState('dashboard')
+  const [captureTab, setCaptureTab] = useState(null)
+  const captureRef = useRef(null)
   const Current = TABS.find((t) => t.id === active)?.Comp || Dashboard
 
   // Ask the browser to keep our local data (prevents automatic eviction).
@@ -30,17 +33,57 @@ export default function App() {
     requestPersistence()
   }, [])
 
+  // Render a tab off-screen at desktop width and rasterize it to a canvas, so
+  // the dashboard PDF looks exactly like the on-screen dashboard (KPI tiles +
+  // charts) even when exported from a phone. Returns null on failure.
+  const captureTabImage = useCallback(async (tabId) => {
+    setCaptureTab(tabId)
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+    await new Promise((r) => setTimeout(r, 250))
+    let canvas = null
+    try {
+      const html2canvas = (await import('html2canvas')).default
+      const node = captureRef.current?.firstElementChild
+      if (node) {
+        canvas = await html2canvas(node, {
+          scale: 2,
+          backgroundColor: '#ffffff',
+          logging: false,
+          windowWidth: 1200,
+          scrollX: 0,
+          scrollY: 0
+        })
+      }
+    } catch (e) {
+      canvas = null
+    }
+    setCaptureTab(null)
+    return canvas
+  }, [])
+
+  const CaptureTab = captureTab ? TABS.find((t) => t.id === captureTab)?.Comp : null
+
   return (
-    <div className="app">
-      <TopBar tabs={TABS} active={active} onSelect={setActive} />
-      <main className="content">
-        <Current />
-      </main>
-      <footer className="app-footer">
-        <span>{COPYRIGHT} · v{APP_VERSION}</span>
-      </footer>
-      {/* Last in DOM so keyboard tab order matches its bottom-of-screen position */}
-      <UpdatePrompt />
-    </div>
+    <CaptureContext.Provider value={captureTabImage}>
+      <div className="app">
+        <TopBar tabs={TABS} active={active} onSelect={setActive} />
+        <main className="content">
+          <Current />
+        </main>
+        <footer className="app-footer">
+          <span>{COPYRIGHT} · v{APP_VERSION}</span>
+        </footer>
+        {/* Last in DOM so keyboard tab order matches its bottom-of-screen position */}
+        <UpdatePrompt />
+      </div>
+      {/* Off-screen host used to rasterize a tab at desktop width for PDF export. */}
+      <div ref={captureRef} className="pdf-capture" aria-hidden="true">
+        {CaptureTab && (
+          <div className="content pdf-capture-content">
+            <CaptureTab />
+          </div>
+        )}
+      </div>
+    </CaptureContext.Provider>
   )
 }

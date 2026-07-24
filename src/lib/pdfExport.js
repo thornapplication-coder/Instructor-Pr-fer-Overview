@@ -88,6 +88,35 @@ function table(ctx, { section, head, body, foot, columnStyles }) {
   return ctx.y
 }
 
+// Place a tall screenshot canvas across A4 pages, each with the branded header
+// and footer. Slices the source canvas so nothing is cut mid-line at the seam.
+function addCanvasPaged(doc, canvas, title, lang) {
+  const pageW = doc.internal.pageSize.getWidth()
+  const pageH = doc.internal.pageSize.getHeight()
+  const margin = 24
+  const top = 60 // below the header bar
+  const bottom = 28
+  const dateStr = reportDate(lang)
+  const drawW = pageW - margin * 2
+  const scale = drawW / canvas.width // canvas px -> pt
+  const sliceHpt = pageH - top - bottom
+  const sliceHpx = Math.max(1, Math.floor(sliceHpt / scale))
+  let ySrc = 0
+  let first = true
+  while (ySrc < canvas.height) {
+    const h = Math.min(sliceHpx, canvas.height - ySrc)
+    const tmp = document.createElement('canvas')
+    tmp.width = canvas.width
+    tmp.height = h
+    tmp.getContext('2d').drawImage(canvas, 0, ySrc, canvas.width, h, 0, 0, canvas.width, h)
+    if (!first) doc.addPage()
+    decorate(doc, title, lang, dateStr)
+    doc.addImage(tmp.toDataURL('image/jpeg', 0.92), 'JPEG', margin, top, drawW, h * scale)
+    ySrc += h
+    first = false
+  }
+}
+
 // opts.output: 'save' downloads the file; 'print' opens the PDF and triggers the
 // browser's print dialog. opts.win is a window the caller opened synchronously
 // inside the click (so it survives popup blockers). Returns 'saved' | 'printed'.
@@ -237,6 +266,13 @@ async function exportCapacityPdf(data, t, lang, opts) {
 // --------------------------------------------------------------- Dashboard ---
 async function exportDashboardPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
+  // Preferred: a rasterized copy of the on-screen dashboard (KPI tiles + charts),
+  // sliced across A4 pages. Falls back to a data table view if capture failed.
+  if (opts && opts.canvas) {
+    const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
+    addCanvasPaged(doc, opts.canvas, 'Dashboard', lang)
+    return finalize(doc, 'dashboard', opts)
+  }
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, 'Dashboard', lang)
   const trainers = data.trainers

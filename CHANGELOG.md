@@ -11,6 +11,14 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.10.0] – 2026-07-24
+
+- **Dashboard-PDF im echten Layout**: der Dashboard-Export übernimmt jetzt das
+  genaue Layout des Desktop-Dashboards (KPI-Kacheln + Diagramme) statt reiner
+  Tabellen. Das Dashboard wird dafür unsichtbar in Desktop-Breite gerendert und
+  als Bild ins PDF gesetzt – so kommt auch beim Export vom iPhone/iPad das
+  Desktop-Layout heraus. Die übrigen Seiten bleiben als saubere Tabellen-PDFs.
+
 ## [1.9.3] – 2026-07-24
 
 Behebungen aus dem Code-Audit der Export-Funktionen (v1.9.0):

@@ -4,12 +4,25 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.9.3'
+export const APP_VERSION = '1.10.0'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.10.0',
+    date: '2026-07-24',
+    type: 'minor',
+    changes: {
+      de: [
+        'Dashboard-PDF übernimmt jetzt das genaue Layout des Desktop-Dashboards (KPI-Kacheln + Diagramme) – auch beim Export vom iPhone/iPad wird das Desktop-Layout verwendet.'
+      ],
+      en: [
+        'The dashboard PDF now mirrors the exact desktop dashboard layout (KPI tiles + charts) – the desktop layout is used even when exporting from iPhone/iPad.'
+      ]
+    }
+  },
   {
     version: '1.9.3',
     date: '2026-07-24',

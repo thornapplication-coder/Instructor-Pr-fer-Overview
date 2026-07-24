@@ -332,6 +332,10 @@ textarea.input { resize: vertical; }
 /* ---------- Settings ---------- */
 .settings .card { max-width: 780px; }
 
+/* ---------- Off-screen capture host (PDF rasterization) ---------- */
+.pdf-capture { position: fixed; left: -12000px; top: 0; z-index: -1; pointer-events: none; }
+.pdf-capture-content { width: 1160px; max-width: 1160px; margin: 0; background: #fff; }
+
 /* ---------- Downloads (EW style) ---------- */
 .downloads-card { border-left: 4px solid var(--burg); }
 .dl-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }

@@ -1,5 +1,6 @@
-import React, { useEffect, useRef, useState } from 'react'
+import React, { useContext, useEffect, useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import { CaptureContext } from '../lib/capture.js'
 import { downloadJson } from '../lib/format.js'
 import { exportTrainersExcel, exportPlanningExcel, exportProvidersExcel } from '../lib/tableExports.js'
 import { exportPagePdf } from '../lib/pdfExport.js'
@@ -28,6 +29,7 @@ function fmtBytes(n) {
 
 export default function Settings() {
   const { data, t, lang, setLang, exportData, importData, resetData, setTrainers } = useStore()
+  const captureTabImage = useContext(CaptureContext)
   const fileRef = useRef(null)
   const xlsRef = useRef(null)
   const [msg, setMsg] = useState(null)
@@ -46,7 +48,12 @@ export default function Settings() {
       try { win = window.open('', '_blank') } catch (e) { win = null }
     }
     try {
-      const result = await exportPagePdf(pageId, data, t, lang, { output, win })
+      // The dashboard PDF mirrors the on-screen layout: rasterize it first.
+      let canvas = null
+      if (pageId === 'dashboard' && captureTabImage) {
+        canvas = await captureTabImage('dashboard')
+      }
+      const result = await exportPagePdf(pageId, data, t, lang, { output, win, canvas })
       if (output === 'print' && result === 'saved') setPdfMsg({ ok: true, text: t('pdfPrintFellBack') })
     } catch (e) {
       if (win) { try { win.close() } catch (_) { /* ignore */ } }
