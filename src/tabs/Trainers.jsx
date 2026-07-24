@@ -252,13 +252,12 @@ export default function Trainers() {
 }
 
 function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSave, onDelete }) {
-  const { t, lang, data } = useStore()
+  const { t, lang } = useStore()
   const [f, setF] = useState({ ...trainer, partTimeInput: ptToInput(trainer.partTime) })
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }))
-  const firstStage = stages[0]?.id
-  const aircraftDerived = (f.conv?.stage || firstStage) === firstStage ? (data.conversionFrom || 'A320') : (data.conversionTo || 'B737')
-  // FTE follows the part-time workload; shown read-only, recomputed live.
-  const fteDerived = fteFromPartTime(ptFromInput(f.partTimeInput))
+  // Changing part-time pre-fills FTE (still editable afterwards).
+  const setPartTime = (v) =>
+    setF((s) => ({ ...s, partTimeInput: v, fte: fteFromPartTime(ptFromInput(v)) }))
 
   const submit = () => {
     const out = {
@@ -266,8 +265,8 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
       partTime: ptFromInput(f.partTimeInput),
       simSessions: Number(f.simSessions) || 0,
       lifusLegs: Number(f.lifusLegs) || 0,
-      fte: fteDerived,
-      aircraft: aircraftDerived
+      fte: f.fte === '' || f.fte == null || isNaN(Number(f.fte)) ? 1 : Number(f.fte),
+      aircraft: f.aircraft || 'A320'
     }
     delete out.partTimeInput
     delete out._isNew
@@ -309,23 +308,37 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
           </select>
         </Field>
         <Field label={t('f_base')}>
-          <input className="input" list="baseList" value={f.base} onChange={(e) => set('base', e.target.value)} />
-          <datalist id="baseList">{bases.map((b) => <option key={b} value={b} />)}</datalist>
+          <select className="input" value={f.base} onChange={(e) => set('base', e.target.value)}>
+            <option value=""></option>
+            {!bases.includes(f.base) && f.base && <option value={f.base}>{f.base}</option>}
+            {bases.map((b) => <option key={b} value={b}>{b}</option>)}
+          </select>
         </Field>
         <Field label={t('f_tlc')}>
           <input className="input" value={f.tlc} onChange={(e) => set('tlc', e.target.value)} />
         </Field>
         <Field label={t('f_partTime')}>
-          <input className="input" value={f.partTimeInput} placeholder="VZ / 80%" onChange={(e) => set('partTimeInput', e.target.value)} />
+          <input className="input" value={f.partTimeInput} placeholder="VZ / 80%" onChange={(e) => setPartTime(e.target.value)} />
         </Field>
         <Field label={t('f_fte') + ' (1 = 100%)'}>
-          <input className="input input-readonly" value={formatFte(fteDerived)} readOnly title={t('fteAutoHint')} />
+          <input
+            className="input"
+            type="number"
+            step="0.05"
+            min="0"
+            max="2"
+            value={f.fte ?? 1}
+            onChange={(e) => set('fte', e.target.value)}
+            title={t('fteAutoHint')}
+          />
         </Field>
         <Field label={t('f_remark')} span2>
           <input className="input" value={f.remark} onChange={(e) => set('remark', e.target.value)} />
         </Field>
         <Field label={t('f_aircraft')}>
-          <input className="input input-readonly" value={aircraftDerived} readOnly title={t('conv_targetHint')} />
+          <select className="input" value={f.aircraft || 'A320'} onChange={(e) => set('aircraft', e.target.value)}>
+            {AIRCRAFT.map((a) => <option key={a} value={a}>{a}</option>)}
+          </select>
         </Field>
         <Field label={t('f_ore')}>
           <select className="input" value={f.ore} onChange={(e) => set('ore', e.target.value)}>

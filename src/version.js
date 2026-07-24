@@ -4,12 +4,27 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.9.1'
+export const APP_VERSION = '1.9.2'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.9.2',
+    date: '2026-07-24',
+    type: 'patch',
+    changes: {
+      de: [
+        'FTE und Aircraft je Trainer sind jetzt direkt editierbar (nicht mehr schreibgeschützt). FTE wird beim Ändern der Part-Time weiterhin vorbefüllt, kann aber überschrieben werden.',
+        'Base ist jetzt ein Dropdown aller bekannten Bases – alphabetisch, mit leerer Zelle ganz oben.'
+      ],
+      en: [
+        'FTE and aircraft per trainer are now directly editable (no longer read-only). FTE is still pre-filled when part-time changes but can be overridden.',
+        'Base is now a dropdown of all known bases – alphabetical, with an empty entry at the top.'
+      ]
+    }
+  },
   {
     version: '1.9.1',
     date: '2026-07-24',

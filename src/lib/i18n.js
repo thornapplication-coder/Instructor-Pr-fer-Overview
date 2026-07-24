@@ -117,8 +117,8 @@ const DICT = {
   f_conversion: { de: 'Umschulung', en: 'Conversion' },
   f_fte: { de: 'FTE', en: 'FTE' },
   fteAutoHint: {
-    de: 'Ergibt sich automatisch aus der Part-Time (VZ = 1).',
-    en: 'Derived automatically from part-time (FT = 1).'
+    de: 'Wird beim Ändern der Part-Time vorbefüllt (VZ = 1), bleibt aber editierbar.',
+    en: 'Pre-filled when part-time changes (FT = 1), but stays editable.'
   },
   f_aircraft: { de: 'Aircraft', en: 'Aircraft' },
   filterAircraft: { de: 'Aircraft', en: 'Aircraft' },

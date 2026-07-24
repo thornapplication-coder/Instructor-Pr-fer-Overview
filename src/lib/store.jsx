@@ -32,8 +32,8 @@ function withConvDefaults(trainer) {
     staffType: 'internal',
     aircraft: 'A320',
     ...trainer,
-    // FTE always follows the part-time workload (single source of truth).
-    fte: fteFromPartTime(trainer.partTime),
+    // FTE is editable; default it from the part-time workload only when unset.
+    fte: typeof trainer.fte === 'number' ? trainer.fte : fteFromPartTime(trainer.partTime),
     qual: normalizeQual(trainer.qual),
     conv: {
       stage: 'nominated',
@@ -51,16 +51,6 @@ function migrateStage(s) {
   return { id: s.id, label: s.label ?? s.de ?? s.en ?? s.id, color: s.color || '#AF1E65' }
 }
 
-// The first stage ("Nominierung") = not yet started; everyone else is in/after
-// conversion. Aircraft follows automatically: first stage -> "from" (A320),
-// any other stage -> "to" (B737).
-function firstStageId(stages) {
-  return (stages && stages[0] && stages[0].id) || 'nominated'
-}
-function deriveAircraft(conv, stages, from, to) {
-  const stage = (conv && conv.stage) || firstStageId(stages)
-  return stage === firstStageId(stages) ? from : to
-}
 // Provider forward-compat: single `location` -> `locations[]`; ensure `courses[]`.
 function normalizeProvider(p) {
   const base = emptyProvider(p.id || newId('prov'))
@@ -69,15 +59,6 @@ function normalizeProvider(p) {
     ...p,
     locations: Array.isArray(p.locations) ? p.locations : p.location ? [p.location] : [],
     courses: Array.isArray(p.courses) ? p.courses : []
-  }
-}
-
-function applyAircraft(d) {
-  const from = d.conversionFrom || 'A320'
-  const to = d.conversionTo || 'B737'
-  return {
-    ...d,
-    trainers: d.trainers.map((t) => ({ ...t, aircraft: deriveAircraft(t.conv, d.stages, from, to) }))
   }
 }
 
@@ -185,8 +166,7 @@ function normalize(obj) {
     result.quals = result.quals.filter((q) => q.id !== 'new TRI')
     result._qualMerge = true
   }
-  // Aircraft is derived from the conversion stage (automatic).
-  return applyAircraft(result)
+  return result
 }
 
 export function StoreProvider({ children }) {
@@ -258,10 +238,7 @@ export function StoreProvider({ children }) {
 
       upsertTrainer: (trainer) =>
         patch((d) => {
-          const from = d.conversionFrom || 'A320'
-          const to = d.conversionTo || 'B737'
           const t = withConvDefaults(trainer)
-          t.aircraft = deriveAircraft(t.conv, d.stages, from, to)
           const exists = d.trainers.some((x) => x.id === t.id)
           return {
             ...d,
@@ -275,34 +252,17 @@ export function StoreProvider({ children }) {
         patch((d) => ({ ...d, trainers: d.trainers.filter((x) => x.id !== id) })),
 
       // Replace the whole trainer list (used by the Excel/CSV import after the
-      // merge). Re-applies conv defaults + derived aircraft/FTE to every entry.
+      // merge). Applies conv defaults; aircraft & FTE are preserved as given.
       setTrainers: (trainers) =>
-        patch((d) => {
-          const from = d.conversionFrom || 'A320'
-          const to = d.conversionTo || 'B737'
-          return {
-            ...d,
-            trainers: trainers.map((t) => {
-              const x = withConvDefaults(t)
-              x.aircraft = deriveAircraft(x.conv, d.stages, from, to)
-              return x
-            })
-          }
-        }),
+        patch((d) => ({ ...d, trainers: trainers.map((t) => withConvDefaults(t)) })),
 
       setConversion: (id, convPatch) =>
-        patch((d) => {
-          const from = d.conversionFrom || 'A320'
-          const to = d.conversionTo || 'B737'
-          return {
-            ...d,
-            trainers: d.trainers.map((x) => {
-              if (x.id !== id) return x
-              const conv = { ...x.conv, ...convPatch }
-              return { ...x, conv, aircraft: deriveAircraft(conv, d.stages, from, to) }
-            })
-          }
-        }),
+        patch((d) => ({
+          ...d,
+          trainers: d.trainers.map((x) =>
+            x.id === id ? { ...x, conv: { ...x.conv, ...convPatch } } : x
+          )
+        })),
 
       setAssignment: (id, stepId, changes) =>
         patch((d) => ({
@@ -334,11 +294,11 @@ export function StoreProvider({ children }) {
       deleteProvider: (id) =>
         patch((d) => ({ ...d, providers: d.providers.filter((x) => x.id !== id) })),
 
-      setStages: (stages) => patch((d) => applyAircraft({ ...d, stages })),
+      setStages: (stages) => patch((d) => ({ ...d, stages })),
       setQuals: (quals) => patch((d) => ({ ...d, quals })),
       setAssignmentSteps: (assignmentSteps) => patch((d) => ({ ...d, assignmentSteps })),
       setConversionAircraft: (from, to) =>
-        patch((d) => applyAircraft({ ...d, conversionFrom: from, conversionTo: to })),
+        patch((d) => ({ ...d, conversionFrom: from, conversionTo: to })),
       setProviderCourses: (providerCourses) => patch((d) => ({ ...d, providerCourses })),
       setProviderStatus: (providerStatus) => patch((d) => ({ ...d, providerStatus })),
 
