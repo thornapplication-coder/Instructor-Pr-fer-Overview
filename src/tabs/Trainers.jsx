@@ -97,7 +97,7 @@ export default function Trainers() {
   const startAdd = () =>
     setEditing({
       id: newId('trn'),
-      qual: 'new TRI',
+      qual: 'TRI',
       base: '',
       tlc: '',
       name: '',

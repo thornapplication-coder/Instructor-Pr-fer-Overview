@@ -98,6 +98,7 @@ function freshData(lang = 'de') {
     _provSeeded: true,
     _courseSeed2: true,
     _provStatus2: true,
+    _qualMerge: true,
     updatedAt: nowIso()
   }
 }
@@ -158,6 +159,7 @@ function normalize(obj) {
     _provSeeded: obj._provSeeded === true,
     _courseSeed2: obj._courseSeed2 === true,
     _provStatus2: obj._provStatus2 === true,
+    _qualMerge: obj._qualMerge === true,
     updatedAt: obj.updatedAt || nowIso()
   }
   // One-time: merge newly shipped default courses (e.g. "SIM only") into stored
@@ -176,6 +178,12 @@ function normalize(obj) {
     const valid = new Set(result.providerStatus.map((s) => s.id))
     result.providers = result.providers.map((p) => (valid.has(p.status) ? p : { ...p, status: '' }))
     result._provStatus2 = true
+  }
+  // One-time: "new TRI" was merged into "TRI" – drop the obsolete category from
+  // the stored list. (Trainer quals are migrated by normalizeQual on load.)
+  if (!result._qualMerge) {
+    result.quals = result.quals.filter((q) => q.id !== 'new TRI')
+    result._qualMerge = true
   }
   // Aircraft is derived from the conversion stage (automatic).
   return applyAircraft(result)

@@ -118,7 +118,7 @@ export const SEED_TRAINERS = [
   },
   {
     "id": "AP4",
-    "qual": "new TRI",
+    "qual": "TRI",
     "base": "ARN",
     "tlc": "AP4",
     "name": "Alex, Patrik",
@@ -187,7 +187,7 @@ export const SEED_TRAINERS = [
   },
   {
     "id": "B6M",
-    "qual": "new TRI",
+    "qual": "TRI",
     "base": "SZG",
     "tlc": "B6M",
     "name": "Bleier, Mathias",
@@ -739,7 +739,7 @@ export const SEED_TRAINERS = [
   },
   {
     "id": "T5F",
-    "qual": "new TRI",
+    "qual": "TRI",
     "base": "VIE",
     "tlc": "T5F",
     "name": "Tankovits, Florian",
@@ -900,7 +900,7 @@ export const SEED_TRAINERS = [
   },
   {
     "id": "BV3",
-    "qual": "new TRI",
+    "qual": "TRI",
     "base": "PMI",
     "tlc": "BV3",
     "name": "Beverage, Stefan",
@@ -923,7 +923,7 @@ export const SEED_TRAINERS = [
   },
   {
     "id": "CJ4",
-    "qual": "new TRI",
+    "qual": "TRI",
     "base": "PMI",
     "tlc": "CJ4",
     "name": "Ceballos Serrano, Jose",
@@ -946,7 +946,7 @@ export const SEED_TRAINERS = [
   },
   {
     "id": "K6N",
-    "qual": "new TRI",
+    "qual": "TRI",
     "base": "SZG",
     "tlc": "K6N",
     "name": "Klezl, Nikolaus",
@@ -1061,7 +1061,7 @@ export const SEED_TRAINERS = [
   },
   {
     "id": "S6V",
-    "qual": "new TRI",
+    "qual": "TRI",
     "base": "PMI",
     "tlc": "S6V",
     "name": "Varga, Sebastian",

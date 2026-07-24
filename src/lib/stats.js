@@ -1,7 +1,7 @@
 // Live aggregations over the trainer list. Category orders mirror the Excel
 // "Statistik_Daten" tab so the numbers line up 1:1 with the source file.
 
-const QUAL_ORDER = ['SEN', 'TRE', 'TRI', 'new TRI', 'LTC', 'SFI', 'TKI']
+const QUAL_ORDER = ['SEN', 'TRE', 'TRI', 'LTC', 'SFI', 'TKI']
 const BASE_ORDER = ['PMI', 'VIE', 'SZG', 'PRG', 'ARN']
 const ORE_ORDER = ['A', 'B', 'C', 'Rente']
 
@@ -173,7 +173,8 @@ export function capacityByBase(trainers, aircraftList) {
   return capacityBy(trainers, (t) => t.base || '—', aircraftList)
 }
 
-// TRI and "new TRI" are counted together as one "TRI" group; other quals stay.
+// Legacy "new TRI" still folds into "TRI" (defensive for old/imported data);
+// other quals stay as-is.
 export function qualGroup(q) {
   const s = String(q || '').trim()
   if (s === 'TRI' || s === 'new TRI') return 'TRI'
@@ -182,7 +183,7 @@ export function qualGroup(q) {
 
 // Canonical qualification ranking, highest first (spec): the order used
 // everywhere qualifications are shown or sorted.
-export const QUAL_RANK = ['SEN', 'TRE', 'TRI', 'new TRI', 'LTC', 'SFI', 'TKI']
+export const QUAL_RANK = ['SEN', 'TRE', 'TRI', 'LTC', 'SFI', 'TKI']
 
 export function qualRankIndex(key) {
   const i = QUAL_RANK.indexOf(key)
@@ -232,7 +233,7 @@ export function providerUtilization(trainers, providers, steps) {
 // Head-count style KPIs.
 export function headcount(trainers) {
   const EXAMINER = new Set(['SEN', 'TRE'])
-  const INSTRUCTOR = new Set(['TRI', 'new TRI', 'LTC', 'SFI', 'TKI'])
+  const INSTRUCTOR = new Set(['TRI', 'LTC', 'SFI', 'TKI'])
   const active = trainers.filter((t) => t.ore !== 'Rente')
   const examiners = trainers.filter((t) => EXAMINER.has(t.qual) || String(t.qual).startsWith('TRE'))
   const instructors = trainers.filter((t) => INSTRUCTOR.has(t.qual))

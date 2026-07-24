@@ -11,6 +11,13 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.9.1] – 2026-07-24
+
+- **„new TRI" entfällt**: alle bisherigen „new TRI" zählen jetzt als **„TRI"** –
+  auch in bereits gespeicherten Daten (einmalige automatische Umstellung) und in
+  der Statistik/Kapazität. Die Qualifikation „new TRI" ist aus der Liste entfernt.
+- Qualifikations-Rangfolge jetzt: **SEN → TRE → TRI → LTC → SFI → TKI**.
+
 ## [1.9.0] – 2026-07-24
 
 - **Export-Auswahl pro Seite**: PDF herunterladen, Excel herunterladen (wo

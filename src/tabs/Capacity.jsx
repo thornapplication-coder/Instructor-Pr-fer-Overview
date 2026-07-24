@@ -8,7 +8,7 @@ import { AIRCRAFT } from '../data/aircraft.js'
 import { formatDate } from '../lib/format.js'
 
 // One sortable capacity table (per base or per qualification). Qualification
-// rows default to the canonical rank (SEN → TRE → TRI → new TRI → LTC → SFI → TKI).
+// rows default to the canonical rank (SEN → TRE → TRI → LTC → SFI → TKI).
 function CapTable({ title, firstCol, cap, keyKind }) {
   const { t } = useStore()
   const accessors = useMemo(() => {
