@@ -8,15 +8,15 @@ import { APP_VERSION, APP_BUILD_DATE, CHANGELOG, COPYRIGHT } from '../version.js
 import { cloudConfigured } from '../lib/supabaseSync.js'
 import { persistenceStatus } from '../lib/persistence.js'
 
-// Pages exportable as PDF (order matches the tab bar). Umschulung/Planung use
-// their own label keys; the PDF is scoped to that page by the print stylesheet.
-const PDF_PAGES = [
+// Per-page export choices (order matches the tab bar). `excel` names the Excel
+// builder where a tabular export makes sense; every page offers PDF + Print.
+const EXPORT_PAGES = [
   { id: 'dashboard', key: 'tab_dashboard' },
   { id: 'conversion', key: 'tab_conversion' },
   { id: 'capacity', key: 'tab_capacity' },
-  { id: 'trainers', key: 'tab_trainers' },
-  { id: 'planning', key: 'tab_planning' },
-  { id: 'providers', key: 'tab_providers' }
+  { id: 'trainers', key: 'tab_trainers', excel: 'trainers' },
+  { id: 'planning', key: 'tab_planning', excel: 'planning' },
+  { id: 'providers', key: 'tab_providers', excel: 'providers' }
 ]
 
 function fmtBytes(n) {
@@ -32,19 +32,22 @@ export default function Settings() {
   const xlsRef = useRef(null)
   const [msg, setMsg] = useState(null)
   const [xlsMsg, setXlsMsg] = useState(null)
-  const [pdfBusy, setPdfBusy] = useState(null)
+  const [pdfBusy, setPdfBusy] = useState(false)
   const [persist, setPersist] = useState(null)
 
-  const doPdf = async (pageId) => {
-    setPdfBusy(pageId)
+  const EXCEL = { trainers: exportTrainersExcel, planning: exportPlanningExcel, providers: exportProvidersExcel }
+
+  const doPdf = async (pageId, output) => {
+    setPdfBusy(true)
     try {
-      await exportPagePdf(pageId, data, t, lang)
+      await exportPagePdf(pageId, data, t, lang, output)
     } catch (e) {
       /* ignore – nothing downloaded */
     } finally {
-      setPdfBusy(null)
+      setPdfBusy(false)
     }
   }
+  const doExcel = (excelId) => EXCEL[excelId](data, t, lang)
 
   useEffect(() => {
     persistenceStatus().then(setPersist)
@@ -121,35 +124,21 @@ export default function Settings() {
       <section className="card downloads-card">
         <h3 className="card-title">{t('downloads')}</h3>
         <p className="muted small">{t('downloadsHint')}</p>
-
-        <div className="dl-group">
-          <div className="dl-group-title">{t('dl_pdf')}</div>
-          <div className="dl-grid">
-            {PDF_PAGES.map((p) => (
-              <button key={p.id} className="dl-btn" onClick={() => doPdf(p.id)} disabled={pdfBusy === p.id}>
-                <span className="dl-badge pdf">{pdfBusy === p.id ? '…' : 'PDF'}</span>
-                <span className="dl-btn-lbl">{t(p.key)}</span>
-              </button>
-            ))}
-          </div>
-        </div>
-
-        <div className="dl-group">
-          <div className="dl-group-title">{t('dl_excel')}</div>
-          <div className="dl-grid">
-            <button className="dl-btn" onClick={() => exportTrainersExcel(data, t, lang)}>
-              <span className="dl-badge xls">XLS</span>
-              <span className="dl-btn-lbl">{t('tab_trainers')}</span>
-            </button>
-            <button className="dl-btn" onClick={() => exportPlanningExcel(data, t, lang)}>
-              <span className="dl-badge xls">XLS</span>
-              <span className="dl-btn-lbl">{t('tab_planning')}</span>
-            </button>
-            <button className="dl-btn" onClick={() => exportProvidersExcel(data, t)}>
-              <span className="dl-badge xls">XLS</span>
-              <span className="dl-btn-lbl">{t('tab_providers')}</span>
-            </button>
-          </div>
+        <div className="dl-list">
+          {EXPORT_PAGES.map((p) => (
+            <div className="dl-row" key={p.id}>
+              <span className="dl-row-name">{t(p.key)}</span>
+              <div className="dl-row-actions">
+                <button className="dl-chip pdf" disabled={pdfBusy} onClick={() => doPdf(p.id, 'save')}>PDF</button>
+                {p.excel && (
+                  <button className="dl-chip xls" onClick={() => doExcel(p.excel)}>Excel</button>
+                )}
+                <button className="dl-chip print" disabled={pdfBusy} onClick={() => doPdf(p.id, 'print')}>
+                  {t('print')}
+                </button>
+              </div>
+            </div>
+          ))}
         </div>
       </section>
 

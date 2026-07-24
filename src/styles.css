@@ -335,29 +335,29 @@ textarea.input { resize: vertical; }
 
 /* ---------- Downloads (EW style) ---------- */
 .downloads-card { border-left: 4px solid var(--burg); }
-.dl-group { margin-top: 16px; }
-.dl-group:first-of-type { margin-top: 14px; }
-.dl-group-title {
-  font-size: 11px; text-transform: uppercase; letter-spacing: .6px;
-  font-weight: 900; color: var(--burg-dark); margin-bottom: 10px;
-}
-.dl-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; }
-.dl-btn {
-  display: flex; align-items: center; gap: 10px; text-align: left;
+.dl-list { display: flex; flex-direction: column; gap: 8px; margin-top: 12px; }
+.dl-row {
+  display: flex; align-items: center; justify-content: space-between; gap: 12px;
   background: #fff; border: 1px solid var(--hair); border-radius: var(--radius-sm);
-  padding: 11px 13px; cursor: pointer; transition: border-color .15s, box-shadow .15s, background .15s;
+  padding: 9px 12px;
 }
-.dl-btn:hover { border-color: var(--burg); box-shadow: 0 0 0 3px rgba(175,30,101,.10); }
-.dl-btn:active { background: var(--panel2); }
-.dl-btn:disabled { opacity: .6; cursor: default; box-shadow: none; }
-.dl-badge {
-  flex: none; width: 42px; height: 30px; border-radius: 6px; color: #fff;
-  font-size: 11px; font-weight: 900; letter-spacing: .5px;
-  display: inline-flex; align-items: center; justify-content: center;
+.dl-row-name { font-weight: 800; font-size: 14px; color: var(--ink); }
+.dl-row-actions { display: inline-flex; gap: 6px; flex-wrap: wrap; justify-content: flex-end; }
+.dl-chip {
+  border: 1px solid var(--hair); background: var(--panel); color: var(--ink);
+  border-radius: 999px; padding: 6px 14px; font-size: 12.5px; font-weight: 800; cursor: pointer;
+  transition: filter .15s, background .15s, border-color .15s;
 }
-.dl-badge.pdf { background: var(--burg); }
-.dl-badge.xls { background: var(--green); }
-.dl-btn-lbl { font-weight: 800; font-size: 13.5px; color: var(--ink); }
+.dl-chip.pdf { background: var(--burg); color: #fff; border-color: var(--burg); }
+.dl-chip.xls { background: var(--green); color: #fff; border-color: var(--green); }
+.dl-chip.print { background: #fff; color: var(--burg-dark); border-color: var(--hair); }
+.dl-chip:hover { filter: brightness(1.05); }
+.dl-chip.print:hover { background: var(--panel2); }
+.dl-chip:disabled { opacity: .55; cursor: default; filter: none; }
+@media (max-width: 520px) {
+  .dl-row { flex-direction: column; align-items: flex-start; gap: 8px; }
+  .dl-row-actions { width: 100%; justify-content: flex-start; }
+}
 .inline-msg { margin-top: 10px; font-weight: 700; font-size: 13px; }
 .inline-msg.ok { color: var(--green); }
 .inline-msg.err { color: var(--red); }
@@ -524,7 +524,7 @@ textarea.input { resize: vertical; }
 :root[data-theme='dark'] .btn-light,
 :root[data-theme='dark'] .empty-state,
 :root[data-theme='dark'] .cell-assign,
-:root[data-theme='dark'] .dl-btn,
+:root[data-theme='dark'] .dl-row,
 :root[data-theme='dark'] .alert-row,
 :root[data-theme='dark'] .tl-head,
 :root[data-theme='dark'] .tl-chip,

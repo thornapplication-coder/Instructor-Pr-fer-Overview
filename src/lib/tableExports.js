@@ -31,7 +31,8 @@ export function exportTrainersExcel(data, t, lang) {
       { label: t('f_tre'), value: (x) => x.treDate },
       { label: t('f_conversion'), value: (x) => stageLabel(stages.find((s) => s.id === x.conv?.stage)) }
     ],
-    rows
+    rows,
+    t('trainers_title')
   )
 }
 
@@ -63,7 +64,8 @@ export function exportPlanningExcel(data, t, lang) {
       { label: t('f_staffType'), value: (x) => t('staff_' + (x.staffType || 'internal')) },
       ...assignmentSteps.map((s) => ({ label: s.label, value: (x) => stepCell(x, s) }))
     ],
-    rows
+    rows,
+    t('planning_title')
   )
 }
 
@@ -84,6 +86,7 @@ export function exportProvidersExcel(data, t) {
       { label: t('p_capacity'), value: (p) => p.capacity },
       { label: t('p_status'), value: (p) => statusLabel(p.status) }
     ],
-    rows
+    rows,
+    t('providers_title')
   )
 }

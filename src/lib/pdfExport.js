@@ -95,12 +95,22 @@ function table(ctx, { section, head, body, foot, columnStyles }) {
   return ctx.y
 }
 
-function save(doc, page) {
-  doc.save(`737trainer-${page}-${stamp()}.pdf`)
+// output: 'save' downloads the file; 'print' opens the PDF and triggers the
+// browser's print dialog (falls back to download if the window is blocked).
+function finalize(doc, page, output) {
+  const name = `737trainer-${page}-${stamp()}.pdf`
+  if (output === 'print') {
+    doc.autoPrint()
+    const url = doc.output('bloburl')
+    const w = window.open(url, '_blank')
+    if (!w) doc.save(name)
+    return
+  }
+  doc.save(name)
 }
 
 // ---------------------------------------------------------------- Trainers ---
-async function exportTrainersPdf(data, t, lang) {
+async function exportTrainersPdf(data, t, lang, output) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, t('trainers_title'), lang)
@@ -115,11 +125,11 @@ async function exportTrainersPdf(data, t, lang) {
     ]),
     columnStyles: { 3: { cellWidth: 120 }, 4: { cellWidth: 90 } }
   })
-  save(doc, 'trainer')
+  finalize(doc, 'trainer', output)
 }
 
 // ---------------------------------------------------------------- Planning ---
-async function exportPlanningPdf(data, t, lang) {
+async function exportPlanningPdf(data, t, lang, output) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, t('planning_title'), lang)
@@ -147,11 +157,11 @@ async function exportPlanningPdf(data, t, lang) {
       t('staff_' + (x.staffType || 'internal')), ...steps.map((s) => stepCell(x, s))
     ])
   })
-  save(doc, 'planung')
+  finalize(doc, 'planung', output)
 }
 
 // --------------------------------------------------------------- Providers ---
-async function exportProvidersPdf(data, t, lang) {
+async function exportProvidersPdf(data, t, lang, output) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, t('providers_title'), lang)
@@ -172,7 +182,7 @@ async function exportProvidersPdf(data, t, lang) {
     body: util.map((u) => [u.provider.name || '', String(u.demand), u.slots ? String(u.slots) : '-', u.util == null ? '-' : Math.round(u.util * 100) + '%']),
     columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } }
   })
-  save(doc, 'provider')
+  finalize(doc, 'provider', output)
 }
 
 // ---------------------------------------------------------------- Capacity ---
@@ -183,7 +193,7 @@ function capFoot(cap, totalLabel) {
   const tt = cap.totals
   return [[totalLabel, String(tt.headcount), String(tt.total), String(tt.inConversion), String(tt.available), String(tt.ac[cap.aircraft[0]] ?? 0), String(tt.ac[cap.aircraft[1]] ?? 0)]]
 }
-async function exportCapacityPdf(data, t, lang) {
+async function exportCapacityPdf(data, t, lang, output) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, t('capacity_title'), lang)
@@ -201,11 +211,11 @@ async function exportCapacityPdf(data, t, lang) {
     head: [t('stage'), t('f_name'), t('f_base'), t('stage'), t('targetDate')],
     body: tl.length ? tl : [['-', t('capacity_noTargets'), '', '', '']]
   })
-  save(doc, 'kapazitaet')
+  finalize(doc, 'kapazitaet', output)
 }
 
 // --------------------------------------------------------------- Dashboard ---
-async function exportDashboardPdf(data, t, lang) {
+async function exportDashboardPdf(data, t, lang, output) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, 'Dashboard', lang)
@@ -249,11 +259,11 @@ async function exportDashboardPdf(data, t, lang) {
       ? alerts.map((a) => [a.trainer.name || '', a.trainer.base || '', stageName(data.stages, a.trainer.conv?.stage), a.reasons.map((r) => t('alert_' + r)).join(', '), a.trainer.conv?.target ? formatDate(a.trainer.conv.target, lang) : '-'])
       : [['-', t('alerts_none'), '', '', '']]
   })
-  save(doc, 'dashboard')
+  finalize(doc, 'dashboard', output)
 }
 
 // -------------------------------------------------------------- Conversion ---
-async function exportConversionPdf(data, t, lang) {
+async function exportConversionPdf(data, t, lang, output) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, t('conversion_title'), lang)
@@ -288,7 +298,7 @@ async function exportConversionPdf(data, t, lang) {
         : [['-', '', '', '', '', '']]
     })
   })
-  save(doc, 'umschulung')
+  finalize(doc, 'umschulung', output)
 }
 
 const EXPORTERS = {
@@ -301,8 +311,8 @@ const EXPORTERS = {
 }
 
 // Dispatch by tab id. Returns a promise that resolves once the PDF is saved.
-export function exportPagePdf(pageId, data, t, lang) {
+export function exportPagePdf(pageId, data, t, lang, output = 'save') {
   const fn = EXPORTERS[pageId]
   if (!fn) return Promise.reject(new Error('unknown page ' + pageId))
-  return fn(data, t, lang)
+  return fn(data, t, lang, output)
 }

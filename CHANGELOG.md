@@ -11,6 +11,14 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.9.0] – 2026-07-24
+
+- **Export-Auswahl pro Seite**: PDF herunterladen, Excel herunterladen (wo
+  sinnvoll) oder direkt **Drucken** – frei wählbar je Seite.
+- Auch die **Excel-Exporte sind jetzt gebrandet** (737-TRAINER-Kopf,
+  Report-Titel, Datum, Copyright) – passend zu den PDF-Reports.
+- **Datum in allen Exporten ohne Uhrzeit.**
+
 ## [1.8.0] – 2026-07-24
 
 - **PDF-Export komplett neu**: statt der (auf iPhone/PWA unzuverlässigen)

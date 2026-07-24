@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.8.0'
+export const APP_VERSION = '1.9.0'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.9.0',
+    date: '2026-07-24',
+    type: 'minor',
+    changes: {
+      de: [
+        'Export-Auswahl pro Seite: PDF herunterladen, Excel herunterladen (wo sinnvoll) oder direkt Drucken.',
+        'Auch die Excel-Exporte sind jetzt gebrandet (737-TRAINER-Kopf, Report-Titel, Datum, Copyright).',
+        'Datum in allen Exporten ohne Uhrzeit.'
+      ],
+      en: [
+        'Per-page export choice: download PDF, download Excel (where useful) or print directly.',
+        'Excel exports are now branded too (737-TRAINER header, report title, date, copyright).',
+        'Date in all exports without time.'
+      ]
+    }
+  },
   {
     version: '1.8.0',
     date: '2026-07-24',

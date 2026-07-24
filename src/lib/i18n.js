@@ -233,9 +233,10 @@ const DICT = {
   language: { de: 'Sprache', en: 'Language' },
   downloads: { de: 'Downloads & Export', en: 'Downloads & export' },
   downloadsHint: {
-    de: 'Alle Downloads zentral: jede Seite als PDF, die Tabellen zusätzlich als Excel.',
-    en: 'All downloads in one place: every page as PDF, plus the tables as Excel.'
+    de: 'Pro Seite wählen: als PDF oder Excel herunterladen oder direkt drucken. Alle Exporte sind gebrandet und enthalten die aktuellen Daten.',
+    en: 'Choose per page: download as PDF or Excel, or print directly. All exports are branded and contain the current data.'
   },
+  print: { de: 'Drucken', en: 'Print' },
   dl_pdf: { de: 'Seiten als PDF', en: 'Pages as PDF' },
   dl_excel: { de: 'Tabellen als Excel', en: 'Tables as Excel' },
   dataMgmt: { de: 'Datenverwaltung', en: 'Data management' },
