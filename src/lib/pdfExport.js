@@ -6,7 +6,8 @@ import { BRAND_NAME, BRAND_HEX, hexToRgb, footerLine, fileStamp, reportDate } fr
 import { formatPartTime, formatFte, formatDate } from './format.js'
 import { stageLabel, CONV_STATUS, ASSIGNMENT_STATUS, firstStageId } from '../data/pipeline.js'
 import { qualLabel } from '../data/qualifications.js'
-import { courseLabel } from '../data/providers.js'
+import { courseLabel, simVersionLabel } from '../data/providers.js'
+import { conversionTrainers } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import {
   headcount,
@@ -22,9 +23,11 @@ import {
   qualByAircraft,
   capacityByBase,
   capacityByQual,
+  capacityByAircraft,
   providerUtilization
 } from './stats.js'
 import { stageName, targetsByMonth, monthLabel } from './alerts.js'
+import { courseEntries, courseMonths, monthTitle } from './courseCalendar.js'
 
 const BURG = hexToRgb(BRAND_HEX.burg)
 const BURG_DARK = hexToRgb(BRAND_HEX.burgDark)
@@ -206,12 +209,40 @@ async function exportPlanningPdf(data, t, lang, opts) {
     return lbl + stl
   }
   table(ctx, {
+    section: t('planning_title'),
     head: [t('f_name'), t('f_base'), t('f_qual'), t('f_aircraft'), t('f_staffType'), ...steps.map((s) => s.label)],
     body: rows.map((x) => [
       x.name || '', x.base || '', qualLabel(data.quals, x.qual), x.aircraft || '',
       t('staff_' + (x.staffType || 'internal')), ...steps.map((s) => stepCell(x, s))
     ])
   })
+  // Course calendar: one table per month, so the printout shows at a glance
+  // when each trainer starts which course.
+  const entries = courseEntries(data.trainers, steps, data.providers)
+  const months = courseMonths(entries).filter((m) => m.items.length)
+  if (months.length) {
+    for (const m of months) {
+      table(ctx, {
+        section: `${monthTitle(m.month, lang)} — ${t('planning_calendarStarts')}: ${m.items.length}`,
+        head: [t('targetDate'), t('f_tlc'), t('f_name'), t('stage'), t('provider'), t('status')],
+        body: m.items.map((it) => [
+          formatDate(it.iso, lang),
+          it.trainer.tlc || '',
+          it.trainer.name || '',
+          it.step.label,
+          it.where || '-',
+          ASSIGNMENT_STATUS[it.status] ? (lang === 'de' ? ASSIGNMENT_STATUS[it.status].de : ASSIGNMENT_STATUS[it.status].en) : ''
+        ]),
+        columnStyles: { 0: { cellWidth: 62 }, 1: { cellWidth: 40 } }
+      })
+    }
+  } else {
+    table(ctx, {
+      section: t('planning_calendar'),
+      head: [t('targetDate'), t('f_name'), t('stage')],
+      body: [['-', t('planning_calendarEmpty'), '']]
+    })
+  }
   return finalize(doc, 'planung', opts)
 }
 
@@ -224,11 +255,12 @@ async function exportProvidersPdf(data, t, lang, opts) {
   const statusLabel = (id) => (data.providerStatus.find((s) => s.id === id) || {}).label || ''
   table(ctx, {
     section: t('providers_title'),
-    head: [t('p_name'), t('p_courses'), t('p_locations'), t('p_authority'), t('p_contact'), t('p_capacity'), t('p_status')],
+    head: [t('p_name'), t('p_courses'), t('p_simVersion'), t('p_locations'), t('p_contact'), t('p_capacity'), t('p_status')],
     body: providers.map((p) => [
       p.name || '', [...(p.courses || [])].map((c) => courseLabel(data.providerCourses, c)).sort().join(', '),
+      [...(p.simVersions || [])].map((s) => simVersionLabel(data.simVersions, s)).sort().join(', '),
       [...(p.locations || [])].sort().join(', '),
-      p.authority || '', p.contactPerson || '', p.capacity || '', statusLabel(p.status)
+      p.contactPerson || '', p.capacity || '', statusLabel(p.status)
     ])
   })
   const util = providerUtilization(data.trainers, data.providers, data.assignmentSteps)
@@ -254,12 +286,14 @@ async function exportCapacityPdf(data, t, lang, opts) {
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, t('capacity_title'), lang)
   const capQ = capacityByQual(data.trainers, AIRCRAFT, data.stages)
+  const capA = capacityByAircraft(data.trainers, AIRCRAFT, data.stages)
   const capB = capacityByBase(data.trainers, AIRCRAFT, data.stages)
   const numCols = { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right' } }
   const headRow = (first) => [first, t('cap_head'), t('cap_total'), t('cap_inConv'), t('cap_avail'), AIRCRAFT[0], AIRCRAFT[1]]
   table(ctx, { section: t('capacity_byQual'), head: headRow(t('f_qual')), body: capBody(capQ, (k) => qualLabel(data.quals, k)), foot: capFoot(capQ, t('total')), columnStyles: numCols })
+  table(ctx, { section: t('capacity_byAircraft'), head: headRow(t('f_aircraft')), body: capBody(capA), foot: capFoot(capA, t('total')), columnStyles: numCols })
   table(ctx, { section: t('capacity_byBase'), head: headRow(t('f_base')), body: capBody(capB), foot: capFoot(capB, t('total')), columnStyles: numCols })
-  const months = targetsByMonth(data.trainers, null, data.stages)
+  const months = targetsByMonth(conversionTrainers(data.trainers), null, data.stages)
   const tl = []
   for (const m of months) for (const it of m.items) tl.push([monthLabel(m.month, lang), it.trainer.name || '', it.trainer.base || '', stageName(data.stages, it.trainer.conv?.stage), formatDate(it.trainer.conv?.target, lang)])
   table(ctx, {
@@ -287,8 +321,10 @@ async function exportDashboardPdf(data, t, lang, opts) {
   const ctx = makeCtx(doc, autoTable, 'Dashboard', lang)
   const trainers = data.trainers
   const hc = headcount(trainers)
-  const cs = conversionSummary(trainers, data.stages)
-  const fte = conversionFteSummary(trainers, data.stages)
+  // Conversion figures cover SEN / TRE / TRI / LTC only (no SFI / TKI).
+  const convPool = conversionTrainers(trainers)
+  const cs = conversionSummary(convPool, data.stages)
+  const fte = conversionFteSummary(convPool, data.stages)
   const bd = (label, rows) =>
     table(ctx, { section: label, head: [t('category'), t('count')], body: rows.map((r) => [r.label || r.key, String(r.count)]), columnStyles: { 1: { halign: 'right', cellWidth: 80 } } })
   // Mirrors the on-screen sections: overview first, then the B737 conversion.
@@ -341,7 +377,7 @@ async function exportDashboardPdf(data, t, lang, opts) {
     ],
     columnStyles: { 1: { halign: 'right', cellWidth: 80 } }
   })
-  bd(t('chart_byOre'), byOre(trainers))
+  bd(t('chart_byOre'), byOre(convPool))
   return finalize(doc, 'dashboard', opts)
 }
 
@@ -353,8 +389,10 @@ async function exportConversionPdf(data, t, lang, opts) {
   const stages = data.stages
   const stageIds = new Set(stages.map((s) => s.id))
   const firstId = firstStageId(stages)
-  const visible = data.trainers.filter((x) => x.ore !== 'Rente')
-  const fte = conversionFteSummary(data.trainers, stages)
+  // Conversion covers SEN / TRE / TRI / LTC only (no SFI / TKI).
+  const convPool = conversionTrainers(data.trainers)
+  const visible = convPool.filter((x) => x.ore !== 'Rente')
+  const fte = conversionFteSummary(convPool, stages)
   table(ctx, {
     section: t('conversion_title'),
     head: [t('category'), t('count')],

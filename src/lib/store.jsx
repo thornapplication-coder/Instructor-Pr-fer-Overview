@@ -4,6 +4,7 @@ import {
   SEED_PROVIDERS,
   DEFAULT_PROVIDER_COURSES,
   DEFAULT_PROVIDER_STATUS,
+  DEFAULT_SIM_VERSIONS,
   PREFILL_NAMES,
   emptyProvider
 } from '../data/providers.js'
@@ -63,7 +64,8 @@ function normalizeProvider(p) {
     ...base,
     ...p,
     locations: Array.isArray(p.locations) ? p.locations : p.location ? [p.location] : [],
-    courses: Array.isArray(p.courses) ? p.courses : []
+    courses: Array.isArray(p.courses) ? p.courses : [],
+    simVersions: Array.isArray(p.simVersions) ? p.simVersions : []
   }
 }
 
@@ -79,6 +81,7 @@ function freshData(lang = 'de') {
     assignmentSteps: ASSIGNMENT_STEPS.map((s) => ({ ...s })),
     providerCourses: DEFAULT_PROVIDER_COURSES.map((x) => ({ ...x })),
     providerStatus: DEFAULT_PROVIDER_STATUS.map((x) => ({ ...x })),
+    simVersions: DEFAULT_SIM_VERSIONS.map((x) => ({ ...x })),
     conversionFrom: 'A320',
     conversionTo: 'B737',
     dashboard: { order: {} },
@@ -140,6 +143,9 @@ function normalize(obj) {
     providerStatus: Array.isArray(obj.providerStatus)
       ? obj.providerStatus.map((x) => ({ ...x }))
       : base.providerStatus,
+    simVersions: Array.isArray(obj.simVersions)
+      ? obj.simVersions.map((x) => ({ ...x }))
+      : base.simVersions,
     conversionFrom: obj.conversionFrom || 'A320',
     conversionTo: obj.conversionTo || 'B737',
     dashboard:
@@ -396,6 +402,7 @@ export function StoreProvider({ children }) {
         patch((d) => ({ ...d, conversionFrom: from, conversionTo: to })),
       setProviderCourses: (providerCourses) => patch((d) => ({ ...d, providerCourses })),
       setProviderStatus: (providerStatus) => patch((d) => ({ ...d, providerStatus })),
+      setSimVersions: (simVersions) => patch((d) => ({ ...d, simVersions })),
 
       // Validate the shape before replacing everything: an arbitrary JSON file
       // would otherwise be silently accepted, wiping the roster with the seed

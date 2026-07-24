@@ -49,6 +49,7 @@ const DICT = {
   },
   capacity_byBase: { de: 'FTE-Kapazität je Base', en: 'FTE capacity per base' },
   capacity_byQual: { de: 'FTE-Kapazität je Qualifikation', en: 'FTE capacity per qualification' },
+  capacity_byAircraft: { de: 'FTE-Kapazität je Aircraft', en: 'FTE capacity per aircraft' },
   capacity_edit: { de: 'Zieltermine & Umschulung bearbeiten', en: 'Edit target dates & conversion' },
   capacity_editHint: {
     de: 'Phase, Status und Zieltermin je Person direkt hier setzen – die Zeitachse unten und die Warnungen im Dashboard aktualisieren sich sofort.',
@@ -169,6 +170,10 @@ const DICT = {
     de: 'Karte antippen zum Bearbeiten · Pfeile verschieben die Phase',
     en: 'Tap a card to edit · arrows move the stage'
   },
+  convScopeHint: {
+    de: 'Umschulung betrifft nur {q}',
+    en: 'Conversion applies to {q} only'
+  },
 
   // ---- statistics
   statistics_title: { de: 'Statistik', en: 'Statistics' },
@@ -203,6 +208,9 @@ const DICT = {
   p_name: { de: 'Anbieter', en: 'Provider' },
   p_types: { de: 'Angebot', en: 'Offering' },
   p_courses: { de: 'Kurse', en: 'Courses' },
+  p_simVersion: { de: 'SIM Version', en: 'SIM version' },
+  addSimVersion: { de: 'SIM Version wählen …', en: 'Choose SIM version …' },
+  manageSimVersions: { de: 'SIM Versionen bearbeiten', en: 'Edit SIM versions' },
   p_locations: { de: 'Standorte (ICAO)', en: 'Locations (ICAO)' },
   addIcao: { de: 'ICAO eingeben + Enter', en: 'Enter ICAO + Enter' },
   manageCourses: { de: 'Kurse bearbeiten', en: 'Edit courses' },
@@ -232,6 +240,20 @@ const DICT = {
   staff_external: { de: 'extern', en: 'external' },
   filterStaff: { de: 'Intern/Extern', en: 'Internal/External' },
   planning_title: { de: 'Planung – wer macht was, wo?', en: 'Planning – who does what, where?' },
+  planning_view: { de: 'Ansicht', en: 'View' },
+  planning_viewTable: { de: 'Tabelle', en: 'Table' },
+  planning_viewCalendar: { de: 'Kalender', en: 'Calendar' },
+  planning_calendar: { de: 'Kurskalender – Kursstarts je Monat', en: 'Course calendar – course starts per month' },
+  planning_calendarStarts: { de: 'Kursstarts', en: 'course starts' },
+  planning_calendarHint: {
+    de: 'Jeder Eintrag zeigt Kürzel und Kurs am Starttermin. Termine werden in der Tabelle bzw. im Zuweisungs-Dialog gesetzt.',
+    en: 'Each entry shows the TLC and course on its start date. Dates are set in the table / assignment dialog.'
+  },
+  planning_calendarEmpty: {
+    de: 'Noch keine Termine gesetzt – sobald ein Kurs ein Datum hat, erscheint er hier.',
+    en: 'No dates set yet – as soon as a course has a date it shows up here.'
+  },
+  resetFilters: { de: 'Filter zurücksetzen', en: 'Reset filters' },
   planning_hint: {
     de: 'Weise pro Person Provider/Ort für Type Rating, TRI-Kurs, LIFUS und Examiner-Prüfung zu. Zelle antippen zum Bearbeiten.',
     en: 'Assign a provider/location per person for Type Rating, TRI course, LIFUS and examiner check. Tap a cell to edit.'

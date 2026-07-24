@@ -3,6 +3,7 @@ import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
+import CourseCalendar from '../components/CourseCalendar.jsx'
 import { formatDate } from '../lib/format.js'
 import { ASSIGNMENT_STATUS, STAFF_TYPE } from '../data/pipeline.js'
 import { qualLabel } from '../data/qualifications.js'
@@ -53,9 +54,14 @@ export default function Planning() {
   const [fAircraft, setFAircraft] = useState('')
   const [editing, setEditing] = useState(null)
   const [manageSteps, setManageSteps] = useState(false)
+  const [view, setView] = useState('table') // 'table' | 'calendar'
 
-  const bases = useMemo(() => [...new Set(trainers.map((x) => x.base))].sort(), [trainers])
+  const bases = useMemo(() => [...new Set(trainers.map((x) => x.base).filter(Boolean))].sort(), [trainers])
+  const anyFilter = !!(q.trim() || fBase || fStaff || fOre || fAircraft)
+  const resetFilters = () => { setQ(''); setFBase(''); setFStaff(''); setFOre(''); setFAircraft('') }
 
+  // The Planung grid always covers EVERY trainer (new ones included); only the
+  // explicit filters above can narrow it, and the counter makes that visible.
   const rows = useMemo(() => {
     const n = q.trim().toLowerCase()
     return trainers
@@ -99,9 +105,21 @@ export default function Planning() {
         </select>
         <select className="input" value={fOre} onChange={(e) => setFOre(e.target.value)}>
           <option value="">{t('filterOre')}: {t('all')}</option>
-          {['A', 'B', 'C'].map((o) => <option key={o} value={o}>{o}</option>)}
+          {['A', 'B', 'C', 'Rente'].map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
+        <span className="count-pill">{rows.length} / {trainers.length} {t('showing')}</span>
+        {anyFilter && (
+          <button className="btn btn-ghost" onClick={resetFilters}>↺ {t('resetFilters')}</button>
+        )}
         <span className="push-right" />
+        <div className="lang-toggle" role="group" aria-label={t('planning_view')}>
+          <button className={'lang-btn' + (view === 'table' ? ' active' : '')} onClick={() => setView('table')}>
+            {t('planning_viewTable')}
+          </button>
+          <button className={'lang-btn' + (view === 'calendar' ? ' active' : '')} onClick={() => setView('calendar')}>
+            {t('planning_viewCalendar')}
+          </button>
+        </div>
         <button className="btn btn-ghost" onClick={() => setManageSteps(true)}>
           ⚙ {t('manageSteps')}
         </button>
@@ -112,7 +130,11 @@ export default function Planning() {
         {providers.length === 0 && <> · {t('planning_noProviders')}</>}
       </p>
 
-      <div className="table-wrap">
+      {view === 'calendar' && (
+        <CourseCalendar trainers={sorted} steps={assignmentSteps} providers={providers} />
+      )}
+
+      <div className="table-wrap" style={view === 'calendar' ? { display: 'none' } : undefined}>
         <table className="data-table planning-table">
           <thead>
             <tr>

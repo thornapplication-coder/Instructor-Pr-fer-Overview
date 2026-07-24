@@ -11,6 +11,30 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.13.0] – 2026-07-24
+
+- **Planung – neuer Kurskalender**: Monatsansicht aller Kursstarts (Kürzel +
+  Kurs-Kürzel am Starttermin, farbig je Kurs, mit Legende). Umschaltbar über
+  „Tabelle / Kalender". Monate ohne Termine bleiben als Brücke sichtbar, damit
+  die Zeitachse durchgängig ist. Im **PDF** wird der Kalender zusätzlich je
+  Monat als Tabelle (Datum · TLC · Name · Kurs · Provider · Status) ausgegeben;
+  beim Drucken bricht kein Monat über zwei Seiten um.
+- **Planung zeigt garantiert alle Trainer** – auch gerade neu angelegte. Neuer
+  Zähler „x / y angezeigt" und ein „Filter zurücksetzen"-Button machen sofort
+  sichtbar, falls ein aktiver Filter jemanden ausblendet; der ORE-Filter kennt
+  jetzt auch „Rente".
+- **Provider**: Spalte **„Zulassung/Behörde" entfernt** (Tabelle, Formular,
+  PDF und Excel).
+- **Provider**: neue Spalte **„SIM Version"** – Dropdown mit leerem Eintrag und
+  **Mehrfachauswahl** (NG, MAX …), gewählte Werte als Chips. Die Auswahlliste
+  ist über „⚙ SIM Versionen bearbeiten" frei erweiterbar.
+- **Kapazität**: neue Statistik **„FTE-Kapazität je Aircraft"** (A320 / B737) –
+  auch im Kapazitäts-PDF.
+- **Umschulung nur für SEN · TRE · TRI · LTC**: SFI und TKI sind aus dem Board,
+  den Umschulungs-KPIs, dem Qualifikations-Filter, der Zieltermin-Timeline und
+  dem Umschulungs-Export ausgenommen. In der Planung und in den
+  Kapazitätstabellen bleiben sie weiterhin enthalten.
+
 ## [1.12.0] – 2026-07-24
 
 - **Rolle „Captain" / „First Officer (FO)"** je Person: auswählbar im

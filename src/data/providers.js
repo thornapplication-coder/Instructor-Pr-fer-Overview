@@ -17,6 +17,19 @@ export const DEFAULT_PROVIDER_STATUS = [
   { id: 'no agreement', label: 'no agreement', color: '#C8102E' }
 ]
 
+// Simulator versions a provider can offer (multi-select). User-editable.
+export const DEFAULT_SIM_VERSIONS = [
+  { id: 'NG', label: 'NG' },
+  { id: 'MAX', label: 'MAX' }
+]
+
+// Resolve a stored SIM-version id to its display label.
+export function simVersionLabel(defs, id) {
+  if (id == null || id === '') return ''
+  const s = (defs || []).find((x) => x.id === id)
+  return s ? s.label : id
+}
+
 // Prefilled providers (names only – fill courses / ICAO locations in the app).
 const PREFILL = ['BAA', 'CAE', 'CATC', 'LAT', 'SunEx', 'TUI']
 export const SEED_PROVIDERS = PREFILL.map((name) => ({
@@ -38,7 +51,7 @@ export function emptyProvider(id) {
     name: '',
     courses: [],
     locations: [], // ICAO codes
-    authority: '',
+    simVersions: [], // e.g. NG / MAX (multi-select)
     contactPerson: '',
     email: '',
     phone: '',

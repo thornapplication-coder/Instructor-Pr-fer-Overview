@@ -17,7 +17,7 @@ import {
   conversionFteSummary
 } from '../lib/stats.js'
 import { conversionProgress, STAFF_TYPE } from '../data/pipeline.js'
-import { qualLabel } from '../data/qualifications.js'
+import { qualLabel, conversionTrainers } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 
 const ORE_COLORS = { A: '#AF1E65', B: '#00A6CF', C: '#6BCCE0', Rente: '#BDBABA' }
@@ -98,13 +98,16 @@ export default function Dashboard() {
   const qualColor = (key) => (qualDefs.find((q) => q.id === key) || {}).color || '#787878'
   const qualOrder = qualDefs.map((q) => q.id)
   const hc = headcount(trainers)
-  const cs = conversionSummary(trainers, stages)
-  const fteS = conversionFteSummary(trainers, stages)
+  // The conversion only applies to SEN / TRE / TRI / LTC (not SFI / TKI).
+  const convPool = conversionTrainers(trainers)
+  const cs = conversionSummary(convPool, stages)
+  const fteS = conversionFteSummary(convPool, stages)
   const role = byRole(trainers)
   const qualData = byQual(trainers, qualOrder).map((r) => ({ ...r, label: qualLabel(qualDefs, r.key) }))
   const qualAc = qualByAircraft(trainers, qualOrder).map((r) => ({ ...r, label: qualLabel(qualDefs, r.key) }))
   const bases = byBase(trainers)
-  const ore = byOre(trainers).map((r) => ({ ...r, color: ORE_COLORS[r.key] }))
+  // ORE is the conversion priority, so it follows the conversion scope.
+  const ore = byOre(convPool).map((r) => ({ ...r, color: ORE_COLORS[r.key] }))
   const auth = byAuthority(trainers)
   const pt = byPartTime(trainers)
   const fn = byFunction(trainers)
@@ -115,8 +118,8 @@ export default function Dashboard() {
     { key: 'A320', label: 'A320', color: AC_COLORS.A320 },
     { key: 'B737', label: 'B737', color: AC_COLORS.B737 }
   ]
-  const pipe = pipelineDistribution(trainers, stages)
-  const relevant = trainers.filter((tr) => tr.ore !== 'Rente')
+  const pipe = pipelineDistribution(convPool, stages)
+  const relevant = convPool.filter((tr) => tr.ore !== 'Rente')
   const overall =
     relevant.length === 0 ? 0 : relevant.reduce((s, tr) => s + conversionProgress(stages, tr.conv), 0) / relevant.length
 
@@ -201,7 +204,7 @@ export default function Dashboard() {
         </section>
       )
     },
-    { id: 'ore', node: <Card title={t('chart_byOre')} total={total}><Donut data={ore} centerBottom="ORE" /></Card> }
+    { id: 'ore', node: <Card title={t('chart_byOre')} total={convPool.length}><Donut data={ore} centerBottom="ORE" /></Card> }
   ]
 
   return (

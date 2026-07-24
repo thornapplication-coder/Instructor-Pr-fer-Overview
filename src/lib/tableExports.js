@@ -5,7 +5,7 @@ import { downloadExcel } from './exports.js'
 import { formatPartTime, formatFte } from './format.js'
 import { stageLabel, ASSIGNMENT_STATUS } from '../data/pipeline.js'
 import { qualLabel } from '../data/qualifications.js'
-import { courseLabel } from '../data/providers.js'
+import { courseLabel, simVersionLabel } from '../data/providers.js'
 
 const byName = (a, b) => (a.name || '').localeCompare(b.name || '')
 
@@ -79,7 +79,7 @@ export function exportPlanningExcel(data, t, lang) {
 }
 
 export function exportProvidersExcel(data, t, lang) {
-  const { providers, providerStatus, providerCourses } = data
+  const { providers, providerStatus, providerCourses, simVersions } = data
   const rows = [...providers].sort(byName)
   const statusLabel = (id) => (providerStatus.find((s) => s.id === id) || {}).label || ''
   downloadExcel(
@@ -87,8 +87,8 @@ export function exportProvidersExcel(data, t, lang) {
     [
       { label: t('p_name'), value: (p) => p.name },
       { label: t('p_courses'), value: (p) => [...(p.courses || [])].map((c) => courseLabel(providerCourses, c)).sort().join(', ') },
+      { label: t('p_simVersion'), value: (p) => [...(p.simVersions || [])].map((s) => simVersionLabel(simVersions, s)).sort().join(', ') },
       { label: t('p_locations'), value: (p) => [...(p.locations || [])].sort().join(', ') },
-      { label: t('p_authority'), value: (p) => p.authority },
       { label: t('p_contact'), value: (p) => p.contactPerson },
       { label: t('p_email'), value: (p) => p.email },
       { label: t('p_phone'), value: (p) => p.phone },

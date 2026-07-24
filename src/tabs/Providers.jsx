@@ -3,7 +3,7 @@ import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
-import { emptyProvider, courseLabel } from '../data/providers.js'
+import { emptyProvider, courseLabel, simVersionLabel } from '../data/providers.js'
 import { providerUtilization } from '../lib/stats.js'
 
 function UtilBar({ value }) {
@@ -21,8 +21,8 @@ function UtilBar({ value }) {
 }
 
 export default function Providers() {
-  const { data, t, upsertProvider, deleteProvider, newId, setProviderCourses, setProviderStatus } = useStore()
-  const { providers, providerCourses, providerStatus, trainers, assignmentSteps } = data
+  const { data, t, upsertProvider, deleteProvider, newId, setProviderCourses, setProviderStatus, setSimVersions } = useStore()
+  const { providers, providerCourses, providerStatus, simVersions, trainers, assignmentSteps } = data
   const util = useMemo(
     () => providerUtilization(trainers, providers, assignmentSteps),
     [trainers, providers, assignmentSteps]
@@ -31,6 +31,7 @@ export default function Providers() {
   const [editing, setEditing] = useState(null)
   const [manageCourses, setManageCourses] = useState(false)
   const [manageStatus, setManageStatus] = useState(false)
+  const [manageSim, setManageSim] = useState(false)
 
   const statusLabel = (id) => (providerStatus.find((s) => s.id === id) || {}).label || ''
 
@@ -38,25 +39,31 @@ export default function Providers() {
     const n = q.trim().toLowerCase()
     return providers.filter((p) =>
       n
-        ? [p.name, (p.locations || []).join(' '), p.authority, p.contactPerson, (p.courses || []).join(' ')]
+        ? [
+            p.name,
+            (p.locations || []).join(' '),
+            p.contactPerson,
+            (p.courses || []).map((c) => courseLabel(providerCourses, c)).join(' '),
+            (p.simVersions || []).map((s) => simVersionLabel(simVersions, s)).join(' ')
+          ]
             .join(' ')
             .toLowerCase()
             .includes(n)
         : true
     )
-  }, [providers, q])
+  }, [providers, q, providerCourses, simVersions])
 
   const mainAcc = useMemo(
     () => ({
       name: (p) => p.name || '',
-      courses: (p) => [...(p.courses || [])].sort().join(', '),
+      courses: (p) => [...(p.courses || [])].map((c) => courseLabel(providerCourses, c)).sort().join(', '),
+      sim: (p) => [...(p.simVersions || [])].map((s) => simVersionLabel(simVersions, s)).sort().join(', '),
       locations: (p) => [...(p.locations || [])].sort().join(', '),
-      authority: (p) => p.authority || '',
       contact: (p) => p.contactPerson || '',
       capacity: (p) => p.capacity || '',
       status: (p) => statusLabel(p.status)
     }),
-    [providerStatus]
+    [providerStatus, providerCourses, simVersions]
   )
   const main = useSort(rows, mainAcc, 'name')
 
@@ -78,6 +85,7 @@ export default function Providers() {
         <input className="input search" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
         <span className="push-right" />
         <button className="btn btn-ghost" onClick={() => setManageCourses(true)}>⚙ {t('manageCourses')}</button>
+        <button className="btn btn-ghost" onClick={() => setManageSim(true)}>⚙ {t('manageSimVersions')}</button>
         <button className="btn btn-ghost" onClick={() => setManageStatus(true)}>⚙ {t('manageProviderStatus')}</button>
         <button className="btn btn-primary" onClick={() => setEditing(emptyProvider(newId('prov')))}>+ {t('addProvider')}</button>
       </div>
@@ -96,8 +104,8 @@ export default function Providers() {
               <tr>
                 <Th label={t('p_name')} k="name" {...sp} />
                 <Th label={t('p_courses')} k="courses" {...sp} />
+                <Th label={t('p_simVersion')} k="sim" {...sp} />
                 <Th label={t('p_locations')} k="locations" {...sp} />
-                <Th label={t('p_authority')} k="authority" {...sp} />
                 <Th label={t('p_contact')} k="contact" {...sp} />
                 <Th label={t('p_capacity')} k="capacity" {...sp} />
                 <Th label={t('p_status')} k="status" {...sp} />
@@ -129,12 +137,22 @@ export default function Providers() {
                     </td>
                     <td>
                       <div className="type-tags">
+                        {[...(p.simVersions || [])]
+                          .map((s) => simVersionLabel(simVersions, s))
+                          .sort()
+                          .map((label) => (
+                            <span key={label} className="sim-tag">{label}</span>
+                          ))}
+                        {!(p.simVersions || []).length && <span className="muted small">–</span>}
+                      </div>
+                    </td>
+                    <td>
+                      <div className="type-tags">
                         {[...(p.locations || [])].sort().map((l) => (
                           <span key={l} className="icao-tag">{l}</span>
                         ))}
                       </div>
                     </td>
-                    <td className="muted small">{p.authority || '–'}</td>
                     <td>
                       {p.contactPerson || '–'}
                       {p.email && <div className="muted small">{p.email}</div>}
@@ -203,6 +221,7 @@ export default function Providers() {
           provider={editing}
           providerCourses={providerCourses}
           providerStatus={providerStatus}
+          simVersions={simVersions}
           onClose={() => setEditing(null)}
           onSave={(p) => { upsertProvider(p); setEditing(null) }}
           onDelete={(id) => {
@@ -225,6 +244,13 @@ export default function Providers() {
           footer={<div className="foot-row"><p className="muted small">{t('dragHint')}</p>
             <div className="push-right"><button className="btn btn-primary" onClick={() => setManageCourses(false)}>{t('close')}</button></div></div>}>
           <CategoryManager items={providerCourses} onChange={setProviderCourses} hasColor={false} />
+        </Modal>
+      )}
+      {manageSim && (
+        <Modal title={t('manageSimVersions')} onClose={() => setManageSim(false)}
+          footer={<div className="foot-row"><p className="muted small">{t('dragHint')}</p>
+            <div className="push-right"><button className="btn btn-primary" onClick={() => setManageSim(false)}>{t('close')}</button></div></div>}>
+          <CategoryManager items={simVersions} onChange={setSimVersions} hasColor={false} />
         </Modal>
       )}
       {manageStatus && (
@@ -270,9 +296,43 @@ function IcaoInput({ value, onChange }) {
   )
 }
 
-function ProviderForm({ provider, providerCourses, providerStatus, onClose, onSave, onDelete, isNew }) {
+// Multi-select built from a dropdown (empty entry on top). Picking an option
+// adds it as a removable chip; already-picked options drop out of the list.
+function MultiPick({ value, options, labelOf, placeholder, tagClass, onChange }) {
+  const picked = value || []
+  const open = (options || []).filter((o) => !picked.includes(o.id))
+  return (
+    <div>
+      <div className="icao-chips">
+        {[...picked].sort((a, b) => labelOf(a).localeCompare(labelOf(b))).map((id) => (
+          <span key={id} className={(tagClass || 'type-tag') + ' removable'}>
+            {labelOf(id)}
+            <button type="button" className="chip-x" onClick={() => onChange(picked.filter((x) => x !== id))}>✕</button>
+          </span>
+        ))}
+      </div>
+      <select
+        className="input"
+        value=""
+        onChange={(e) => { if (e.target.value) onChange([...picked, e.target.value]) }}
+      >
+        <option value="">{placeholder}</option>
+        {[...open].sort((a, b) => (a.label || '').localeCompare(b.label || '')).map((o) => (
+          <option key={o.id} value={o.id}>{o.label}</option>
+        ))}
+      </select>
+    </div>
+  )
+}
+
+function ProviderForm({ provider, providerCourses, providerStatus, simVersions, onClose, onSave, onDelete, isNew }) {
   const { t } = useStore()
-  const [p, setP] = useState({ ...provider, courses: provider.courses || [], locations: provider.locations || [] })
+  const [p, setP] = useState({
+    ...provider,
+    courses: provider.courses || [],
+    locations: provider.locations || [],
+    simVersions: provider.simVersions || []
+  })
   const set = (k, v) => setP((s) => ({ ...s, [k]: v }))
   const toggleCourse = (id) =>
     setP((s) => {
@@ -320,11 +380,18 @@ function ProviderForm({ provider, providerCourses, providerStatus, onClose, onSa
             ))}
           </div>
         </Field>
+        <Field label={t('p_simVersion')} span2>
+          <MultiPick
+            value={p.simVersions || []}
+            options={simVersions}
+            labelOf={(id) => simVersionLabel(simVersions, id)}
+            placeholder={t('addSimVersion')}
+            tagClass="sim-tag"
+            onChange={(v) => set('simVersions', v)}
+          />
+        </Field>
         <Field label={t('p_locations')} span2>
           <IcaoInput value={p.locations || []} onChange={(v) => set('locations', v)} />
-        </Field>
-        <Field label={t('p_authority')}>
-          <input className="input" value={p.authority} onChange={(e) => set('authority', e.target.value)} />
         </Field>
         <Field label={t('p_status')}>
           <select className="input" value={p.status} onChange={(e) => set('status', e.target.value)}>

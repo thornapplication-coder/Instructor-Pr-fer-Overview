@@ -1,10 +1,10 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
-import { capacityByBase, capacityByQual, conversionFteSummary, qualRankIndex } from '../lib/stats.js'
+import { capacityByBase, capacityByQual, capacityByAircraft, conversionFteSummary, qualRankIndex } from '../lib/stats.js'
 import { targetsByMonth, monthLabel, stageName } from '../lib/alerts.js'
 import { useSort, Th } from '../components/sortable.jsx'
 import { CONV_STATUS, stageLabel, firstStageId, releasedStageId } from '../data/pipeline.js'
-import { qualLabel } from '../data/qualifications.js'
+import { qualLabel, conversionTrainers } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { formatDate } from '../lib/format.js'
 
@@ -177,10 +177,14 @@ function ConversionEditor({ trainers, stages, quals }) {
 export default function Capacity() {
   const { data, t, lang } = useStore()
   const { trainers, stages, quals } = data
+  // Conversion-specific views (editor, timeline, FTE pills) only cover the
+  // qualifications that actually convert; the capacity tables cover everyone.
+  const convPool = useMemo(() => conversionTrainers(trainers), [trainers])
   const capBase = useMemo(() => capacityByBase(trainers, AIRCRAFT, stages), [trainers, stages])
   const capQual = useMemo(() => capacityByQual(trainers, AIRCRAFT, stages), [trainers, stages])
-  const fteS = conversionFteSummary(trainers, stages)
-  const months = useMemo(() => targetsByMonth(trainers, null, stages), [trainers, stages])
+  const capAircraft = useMemo(() => capacityByAircraft(trainers, AIRCRAFT, stages), [trainers, stages])
+  const fteS = conversionFteSummary(convPool, stages)
+  const months = useMemo(() => targetsByMonth(convPool, null, stages), [convPool, stages])
 
   return (
     <div className="tab-pane">
@@ -196,10 +200,11 @@ export default function Capacity() {
       </div>
 
       <CapTable title={t('capacity_byQual')} firstCol={t('f_qual')} cap={capQual} keyKind="qual" labelFor={(k) => qualLabel(quals, k)} />
+      <CapTable title={t('capacity_byAircraft')} firstCol={t('f_aircraft')} cap={capAircraft} keyKind="aircraft" />
       <CapTable title={t('capacity_byBase')} firstCol={t('f_base')} cap={capBase} keyKind="base" />
 
 
-      <ConversionEditor trainers={trainers} stages={stages} quals={quals} />
+      <ConversionEditor trainers={convPool} stages={stages} quals={quals} />
 
       <section className="card">
         <h3 className="card-title">{t('capacity_timeline')}</h3>

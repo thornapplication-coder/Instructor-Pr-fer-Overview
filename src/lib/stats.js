@@ -197,6 +197,12 @@ export function capacityByBase(trainers, aircraftList, stages) {
   return capacityBy(trainers, (t) => t.base || '—', aircraftList, null, stages)
 }
 
+// FTE capacity grouped by the trainer's CURRENT aircraft (A320 / B737).
+export function capacityByAircraft(trainers, aircraftList, stages) {
+  const acs = aircraftList && aircraftList.length ? aircraftList : ['A320', 'B737']
+  return capacityBy(trainers, (t) => t.aircraft || '—', acs, acs, stages)
+}
+
 // Legacy "new TRI" still folds into "TRI" (defensive for old/imported data);
 // other quals stay as-is.
 export function qualGroup(q) {

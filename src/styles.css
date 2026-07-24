@@ -209,6 +209,53 @@ button { font-family: inherit; }
 /* Controls that must never appear in the rasterized PDF capture. */
 .pdf-capture-content .no-capture { display: none !important; }
 
+/* ---------- Course calendar (Planung) ---------- */
+.cal-legend { margin: 2px 0 14px; }
+.cal-months { display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 16px; }
+.cal-month { border: 1px solid var(--hair); border-radius: var(--radius); overflow: hidden; background: var(--white); }
+.cal-month-head {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  background: var(--burg); color: #fff; padding: 6px 10px;
+}
+.cal-month-name { font-size: 13px; font-weight: 800; }
+.cal-month-count {
+  background: rgba(255,255,255,.22); border-radius: 999px;
+  padding: 1px 8px; font-size: 11.5px; font-weight: 800;
+}
+.cal-weekdays, .cal-grid { display: grid; grid-template-columns: repeat(7, 1fr); }
+.cal-weekdays {
+  background: var(--panel2); border-bottom: 1px solid var(--hair);
+}
+.cal-weekdays span {
+  text-align: center; font-size: 10.5px; font-weight: 800;
+  color: var(--muted); padding: 3px 0; text-transform: uppercase; letter-spacing: .4px;
+}
+.cal-cell {
+  min-height: 46px; border-right: 1px solid var(--hair); border-bottom: 1px solid var(--hair);
+  padding: 2px 3px; display: flex; flex-direction: column; gap: 2px; min-width: 0;
+}
+.cal-cell:nth-child(7n) { border-right: 0; }
+.cal-cell.empty { background: var(--panel2); }
+.cal-cell.has-items { background: #fff; }
+.cal-day { font-size: 10px; font-weight: 800; color: var(--muted); line-height: 1.1; }
+.cal-chip {
+  display: block; color: #fff; border-radius: 4px; padding: 1px 4px;
+  font-size: 9.5px; line-height: 1.25; overflow: hidden;
+}
+.cal-chip b { display: block; font-weight: 900; letter-spacing: .3px; }
+.cal-chip-step { display: block; opacity: .9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+
+:root[data-theme='dark'] .cal-month { background: var(--panel); }
+:root[data-theme='dark'] .cal-cell.has-items { background: var(--panel); }
+
+/* Print: keep each month together on a page and let the grid fill the sheet. */
+@media print {
+  .no-print { display: none !important; }
+  .cal-months { grid-template-columns: repeat(2, 1fr); gap: 10px; }
+  .cal-month { break-inside: avoid; page-break-inside: avoid; }
+  .cal-card { box-shadow: none; border: 0; padding: 0; }
+}
+
 .progress-ring { display: flex; flex-direction: column; align-items: center; gap: 6px; }
 .ring-num { font-size: 24px; font-weight: 900; fill: var(--burg); }
 .progress-ring-label { font-size: 12px; color: var(--muted); font-weight: 700; }
@@ -370,6 +417,10 @@ textarea.input { resize: vertical; }
 .icao-tag { display: inline-block; background: #eef1f4; color: #333; border: 1px solid var(--hair); border-radius: 5px; padding: 1px 7px; font-size: 11.5px; font-weight: 800; font-family: ui-monospace, 'SF Mono', Menlo, monospace; letter-spacing: .5px; }
 .icao-chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 8px; }
 .icao-tag.removable { display: inline-flex; align-items: center; gap: 5px; }
+.sim-tag { display: inline-block; background: var(--burg); color: #fff; border-radius: 5px; padding: 1px 7px; font-size: 11px; font-weight: 800; letter-spacing: .3px; }
+.sim-tag.removable { display: inline-flex; align-items: center; gap: 5px; }
+.sim-tag .chip-x { color: rgba(255,255,255,.75); }
+.sim-tag .chip-x:hover { color: #fff; }
 .chip-x { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 11px; padding: 0; line-height: 1; }
 .chip-x:hover { color: var(--red); }
 .status-tag { color: #fff; border-radius: 6px; padding: 2px 9px; font-size: 11.5px; font-weight: 800; }

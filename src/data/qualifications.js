@@ -24,6 +24,20 @@ export function normalizeQual(q) {
   return s
 }
 
+// Only these qualifications take part in the A320 -> B737 conversion. SFI and
+// TKI do not convert, so they are excluded from the conversion board and from
+// every conversion KPI / timeline (they still count as head-count elsewhere).
+export const CONVERSION_QUALS = ['SEN', 'TRE', 'TRI', 'LTC']
+
+export function isConversionQual(qual) {
+  return CONVERSION_QUALS.includes(String(qual || '').trim())
+}
+
+// The trainers the conversion actually applies to.
+export function conversionTrainers(trainers) {
+  return (trainers || []).filter((t) => isConversionQual(t.qual))
+}
+
 // Index for sorting; unknown values sort last (stable, alphabetical among them).
 export function qualIndex(quals, id) {
   const i = quals.findIndex((q) => q.id === id)

@@ -4,7 +4,7 @@ import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import HScroll from '../components/HScroll.jsx'
 import { CONV_STATUS, stageIndex, stageLabel, STAFF_TYPE, firstStageId } from '../data/pipeline.js'
-import { qualLabel } from '../data/qualifications.js'
+import { qualLabel, isConversionQual, conversionTrainers, CONVERSION_QUALS } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { conversionFteSummary } from '../lib/stats.js'
 import { trainerAlerts } from '../lib/alerts.js'
@@ -31,13 +31,15 @@ export default function Conversion() {
   const [dragId, setDragId] = useState(null)
   const [overStage, setOverStage] = useState(null)
 
-  const bases = useMemo(() => [...new Set(trainers.map((x) => x.base))].sort(), [trainers])
+  // Only SEN / TRE / TRI / LTC take part in the conversion – SFI and TKI do not.
+  const convPool = useMemo(() => conversionTrainers(trainers), [trainers])
+  const bases = useMemo(() => [...new Set(convPool.map((x) => x.base))].sort(), [convPool])
   const stageIds = useMemo(() => new Set(stages.map((s) => s.id)), [stages])
   const firstId = firstStageId(stages)
-  const fteS = conversionFteSummary(trainers, stages)
+  const fteS = conversionFteSummary(convPool, stages)
 
   const needle = q.trim().toLowerCase()
-  const visible = trainers.filter(
+  const visible = convPool.filter(
     (x) =>
       x.ore !== 'Rente' &&
       (fBase ? x.base === fBase : true) &&
@@ -79,7 +81,7 @@ export default function Conversion() {
         </select>
         <select className="input" value={fQual} onChange={(e) => setFQual(e.target.value)}>
           <option value="">{t('filterQual')}: {t('all')}</option>
-          {quals.map((qv) => <option key={qv.id} value={qv.id}>{qv.label}</option>)}
+          {quals.filter((qv) => isConversionQual(qv.id)).map((qv) => <option key={qv.id} value={qv.id}>{qv.label}</option>)}
         </select>
         <select className="input" value={fStaff} onChange={(e) => setFStaff(e.target.value)}>
           <option value="">{t('filterStaff')}: {t('all')}</option>
@@ -103,7 +105,7 @@ export default function Conversion() {
         <span className="fte-pill fte-in">{t('fteInConversionShort')}: <b>{fteS.inConversion}</b></span>
         <span className="fte-pill fte-av">{t('fteAvailableShort')}: <b>{fteS.available}</b></span>
         <span className="fte-pill fte-total">FTE gesamt: <b>{fteS.total}</b></span>
-        <span className="board-hint">{t('boardHint')}</span>
+        <span className="board-hint">{t('boardHint')} · {t('convScopeHint').replace('{q}', CONVERSION_QUALS.join(' · '))}</span>
       </div>
 
       <HScroll className="board">

@@ -4,12 +4,35 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.12.0'
+export const APP_VERSION = '1.13.0'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.13.0',
+    date: '2026-07-24',
+    type: 'minor',
+    changes: {
+      de: [
+        'Planung: neuer Kurskalender – Monatsansicht mit allen Kursstarts (Kürzel + Kurs am Starttermin), umschaltbar über „Tabelle / Kalender". Im PDF wird der Kalender je Monat als eigene Übersicht ausgegeben.',
+        'Planung zeigt garantiert alle Trainer – auch neu hinzugefügte. Ein Zähler „x / y angezeigt" und „Filter zurücksetzen" machen sofort sichtbar, wenn ein Filter etwas ausblendet.',
+        'Provider: Spalte „Zulassung/Behörde" entfernt.',
+        'Provider: neue Spalte „SIM Version" (Dropdown mit leerem Eintrag, Mehrfachauswahl – NG, MAX …). Die Auswahlliste ist über „SIM Versionen bearbeiten" erweiterbar.',
+        'Kapazität: neue Statistik „FTE-Kapazität je Aircraft" (A320 / B737).',
+        'Umschulung berücksichtigt nur noch SEN, TRE, TRI und LTC – SFI und TKI sind aus Board, KPIs, Timeline und Umschulungs-Export ausgenommen (in der Planung und den Kapazitätstabellen bleiben sie enthalten).'
+      ],
+      en: [
+        'Planning: new course calendar – a monthly view of all course starts (TLC + course on the start date), switchable via “Table / Calendar”. The PDF renders the calendar as a per-month overview.',
+        'Planning always lists every trainer, including newly added ones. An “x / y showing” counter and a “Reset filters” button make it obvious when a filter hides someone.',
+        'Providers: the “authority” column has been removed.',
+        'Providers: new “SIM version” column (dropdown with an empty entry, multi-select – NG, MAX …). The list can be extended via “Edit SIM versions”.',
+        'Capacity: new “FTE capacity per aircraft” statistic (A320 / B737).',
+        'Conversion now covers SEN, TRE, TRI and LTC only – SFI and TKI are excluded from the board, KPIs, timeline and conversion export (they remain in planning and the capacity tables).'
+      ]
+    }
+  },
   {
     version: '1.12.0',
     date: '2026-07-24',
