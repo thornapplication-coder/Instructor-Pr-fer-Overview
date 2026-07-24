@@ -4,12 +4,37 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.13.2'
+export const APP_VERSION = '1.14.0'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.14.0',
+    date: '2026-07-24',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neuer Reiter „Other Pilots" (vor den Einstellungen): Linienpiloten der Firma – keine Trainer/Prüfer – mit gültigem B737-Rating, abgelaufenem Rating oder Boeing-Erfahrung.',
+        'Je Pilot: Name, TLC, Base, Position (Captain / First Officer), B737-Status und das Datum („gültig bis" bzw. „abgelaufen am") sowie eine Anmerkung.',
+        'Piloten sind vollständig editierbar: hinzufügen, bearbeiten, löschen – dazu Suche, Filter nach Base/Position/Status, sortierbare Spalten und Zähler je Status.',
+        'Import aus Excel/CSV in den Einstellungen: Spalten werden über die Überschriften erkannt (DE/EN), bestehende Piloten werden per TLC (sonst Name) aktualisiert. Fehlt der Status, wird er aus dem Datum abgeleitet.',
+        'Export als PDF (nach B737-Status gruppiert) und als Excel – wie gewohnt in den Einstellungen unter „Downloads".',
+        'Ein als „gültig" markiertes Rating mit einem Datum in der Vergangenheit wird rot mit ⚠ hervorgehoben.',
+        'Die Piloten sind bewusst von den Trainern getrennt: sie fließen in keine Trainer-Statistik, in die Umschulung oder die Kapazität ein.'
+      ],
+      en: [
+        'New “Other Pilots” tab (before Settings): company line pilots – not trainers/examiners – holding a valid B737 rating, an expired rating, or Boeing experience.',
+        'Per pilot: name, TLC, base, position (captain / first officer), B737 status and the date (“valid until” / “expired on”), plus a remark.',
+        'Pilots are fully editable: add, edit, delete – with search, filters by base/position/status, sortable columns and per-status counters.',
+        'Excel/CSV import in Settings: columns are matched by header (DE/EN), existing pilots are updated by TLC (else name). A missing status is derived from the date.',
+        'Export as PDF (grouped by B737 status) and as Excel – as usual under “Downloads” in Settings.',
+        'A rating marked “valid” whose date is already in the past is highlighted in red with ⚠.',
+        'Pilots are deliberately kept apart from the trainers: they never feed the trainer statistics, the conversion or the capacity figures.'
+      ]
+    }
+  },
   {
     version: '1.13.2',
     date: '2026-07-24',

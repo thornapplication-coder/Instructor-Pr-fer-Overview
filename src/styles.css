@@ -444,6 +444,9 @@ select.input { cursor: pointer; }
 .field-manage:focus-visible { outline: 2px solid var(--burg); outline-offset: 1px; }
 :root[data-theme='dark'] .field-manage { color: #F58FBE; background: #232a31; }
 
+/* "valid" rating whose date already passed. */
+.overdue-date { color: var(--red); }
+
 /* Keyboard focus for the clickable table rows (Trainer / Provider). */
 tr.clickable:focus-visible { outline: 2px solid var(--burg); outline-offset: -2px; }
 .form-sep { grid-column: 1/-1; font-weight: 800; color: var(--burg-dark); font-size: 13px; border-top: 1px solid var(--hair); padding-top: 12px; text-transform: uppercase; letter-spacing: .5px; }

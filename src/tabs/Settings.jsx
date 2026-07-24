@@ -2,9 +2,10 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { CaptureContext } from '../lib/capture.js'
 import { downloadJson } from '../lib/format.js'
-import { exportTrainersExcel, exportPlanningExcel, exportProvidersExcel } from '../lib/tableExports.js'
+import { exportTrainersExcel, exportPlanningExcel, exportProvidersExcel, exportPilotsExcel } from '../lib/tableExports.js'
 import { exportPagePdf } from '../lib/pdfExport.js'
 import { parseTrainersFromArrayBuffer, mergeTrainerRecords } from '../lib/importExcel.js'
+import { parsePilotsFromArrayBuffer, mergePilotRecords } from '../lib/importPilots.js'
 import { resolveQualId } from '../data/qualifications.js'
 import { APP_VERSION, APP_BUILD_DATE, CHANGELOG, COPYRIGHT } from '../version.js'
 import { cloudConfigured } from '../lib/supabaseSync.js'
@@ -18,7 +19,8 @@ const EXPORT_PAGES = [
   { id: 'capacity', key: 'tab_capacity' },
   { id: 'trainers', key: 'tab_trainers', excel: exportTrainersExcel },
   { id: 'planning', key: 'tab_planning', excel: exportPlanningExcel },
-  { id: 'providers', key: 'tab_providers', excel: exportProvidersExcel }
+  { id: 'providers', key: 'tab_providers', excel: exportProvidersExcel },
+  { id: 'pilots', key: 'tab_pilots', excel: exportPilotsExcel }
 ]
 
 function fmtBytes(n) {
@@ -29,12 +31,14 @@ function fmtBytes(n) {
 }
 
 export default function Settings() {
-  const { data, t, lang, setLang, exportData, importData, resetData, setTrainers, saveError } = useStore()
+  const { data, t, lang, setLang, exportData, importData, resetData, setTrainers, setPilots, saveError } = useStore()
   const captureTabImage = useContext(CaptureContext)
   const fileRef = useRef(null)
   const xlsRef = useRef(null)
+  const pilotRef = useRef(null)
   const [msg, setMsg] = useState(null)
   const [xlsMsg, setXlsMsg] = useState(null)
+  const [pilotMsg, setPilotMsg] = useState(null)
   const [pdfBusy, setPdfBusy] = useState(null) // `${pageId}:${output}` of the running export
   const [pdfMsg, setPdfMsg] = useState(null)
   const [persist, setPersist] = useState(null)
@@ -126,6 +130,23 @@ export default function Settings() {
       })
     } catch (e) {
       setXlsMsg({ ok: false, text: t('xlsImport_err') })
+    }
+  }
+
+  const doPilotImport = async (file) => {
+    try {
+      const buf = await file.arrayBuffer()
+      const records = await parsePilotsFromArrayBuffer(buf)
+      if (!records.length) {
+        setPilotMsg({ ok: false, text: t('xlsImport_none') })
+        return
+      }
+      if (!window.confirm(t('xlsImport_confirm').replace('{n}', records.length))) return
+      const { pilots, updated, added } = mergePilotRecords(data.otherPilots || [], records)
+      setPilots(pilots)
+      setPilotMsg({ ok: true, text: t('xlsImport_ok').replace('{u}', updated).replace('{a}', added) })
+    } catch (e) {
+      setPilotMsg({ ok: false, text: t('xlsImport_err') })
     }
   }
 
@@ -239,6 +260,27 @@ export default function Settings() {
           />
         </div>
         {xlsMsg && <p className={'inline-msg ' + (xlsMsg.ok ? 'ok' : 'err')}>{xlsMsg.text}</p>}
+      </section>
+
+      <section className="card">
+        <h3 className="card-title">{t('pilotsImport_title')}</h3>
+        <p className="muted small">{t('pilotsImport_hint')}</p>
+        <div className="btn-row">
+          <button className="btn btn-primary" onClick={() => pilotRef.current?.click()}>
+            ⤒ {t('pilotsImport_btn')}
+          </button>
+          <input
+            ref={pilotRef}
+            type="file"
+            accept=".xlsx,.xls,.csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet,application/vnd.ms-excel,text/csv"
+            style={{ display: 'none' }}
+            onChange={(e) => {
+              if (e.target.files[0]) doPilotImport(e.target.files[0])
+              e.target.value = ''
+            }}
+          />
+        </div>
+        {pilotMsg && <p className={'inline-msg ' + (pilotMsg.ok ? 'ok' : 'err')}>{pilotMsg.text}</p>}
       </section>
 
       <section className="card">

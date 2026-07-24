@@ -7,6 +7,7 @@ import { formatPartTime, formatFte, formatDate } from './format.js'
 import { stageLabel, CONV_STATUS, ASSIGNMENT_STATUS, firstStageId } from '../data/pipeline.js'
 import { qualLabel } from '../data/qualifications.js'
 import { courseLabel, simVersionLabel } from '../data/providers.js'
+import { PILOT_STATUS_IDS, pilotStatusLabel, pilotRole } from '../data/pilots.js'
 import { conversionTrainers } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import {
@@ -421,13 +422,39 @@ async function exportConversionPdf(data, t, lang, opts) {
   return finalize(doc, 'umschulung', opts)
 }
 
+// ----------------------------------------------------------- Other pilots ---
+async function exportPilotsPdf(data, t, lang, opts) {
+  const { jsPDF, autoTable } = await loadPdf()
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
+  const ctx = makeCtx(doc, autoTable, t('pilots_title'), lang)
+  const all = [...(data.otherPilots || [])].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+  const head = [t('f_name'), t('f_tlc'), t('f_base'), t('f_position'), t('f_b737Until'), t('f_comment')]
+  const row = (p) => [
+    p.name || '', p.tlc || '', p.base || '',
+    t(pilotRole(p) === 'fo' ? 'role_fo' : 'role_captain'),
+    p.b737Until ? formatDate(p.b737Until, lang) : '-',
+    p.remark || ''
+  ]
+  // One section per B737 standing, so the printout groups the way the tab does.
+  for (const st of PILOT_STATUS_IDS) {
+    const group = all.filter((p) => p.status === st)
+    table(ctx, {
+      section: `${pilotStatusLabel(st, lang)} (${group.length})`,
+      head,
+      body: group.length ? group.map(row) : [['-', '', '', '', '', '']]
+    })
+  }
+  return finalize(doc, 'other-pilots', opts)
+}
+
 const EXPORTERS = {
   dashboard: exportDashboardPdf,
   conversion: exportConversionPdf,
   capacity: exportCapacityPdf,
   trainers: exportTrainersPdf,
   planning: exportPlanningPdf,
-  providers: exportProvidersPdf
+  providers: exportProvidersPdf,
+  pilots: exportPilotsPdf
 }
 
 // Dispatch by tab id. Returns a promise that resolves once the PDF is saved.

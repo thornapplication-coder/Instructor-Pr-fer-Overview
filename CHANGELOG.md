@@ -11,6 +11,31 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.14.0] – 2026-07-24
+
+- **Neuer Reiter „Other Pilots"** (direkt vor den Einstellungen): Linienpiloten
+  der Firma – **keine** Trainer/Prüfer – in drei Kategorien: **B737 gültig**,
+  **B737 abgelaufen** und **Boeing-Erfahrung** (ohne aktuelles Rating).
+- Je Pilot: **Name, TLC, Base, Position (Captain / First Officer), B737-Status**
+  und das **Datum** – im Formular beschriftet als „Gültig bis" bzw. „Abgelaufen
+  am", je nach Status – dazu eine freie Anmerkung.
+- **Voll editierbar**: hinzufügen, bearbeiten, löschen (mit Rückfrage). Dazu
+  Volltextsuche, Filter nach Base / Position / B737-Status, sortierbare Spalten
+  und Zähler je Status über der Tabelle.
+- **Excel-/CSV-Import** in den Einstellungen: Spalten werden über die
+  Überschriften erkannt (deutsch und englisch, u. a. Name, TLC, Base, Position,
+  Status, „Gültig bis"). Bestehende Piloten werden per **TLC** (sonst Name)
+  aktualisiert, neue ergänzt. Fehlt der Status in der Datei, wird er aus dem
+  Datum abgeleitet (Datum in der Zukunft = gültig, in der Vergangenheit =
+  abgelaufen). Es gelten dieselben Schutzmechanismen wie beim Trainer-Import
+  (deutsche Datumsformate, Kopfzeilen-Erkennung, Prototype-Pollution-Schutz).
+- **Export als PDF** (nach B737-Status gruppiert, je Kategorie ein Abschnitt)
+  **und als Excel** – in den Einstellungen unter „Downloads".
+- Ein als **„gültig" markiertes Rating mit Datum in der Vergangenheit** wird in
+  der Tabelle rot mit ⚠ hervorgehoben.
+- Die Piloten liegen in einer **eigenen Datensammlung** und fließen bewusst
+  **nicht** in Trainer-Statistiken, Umschulung oder Kapazität ein.
+
 ## [1.13.2] – 2026-07-24
 
 Behebungen aus dem Code-Review (vier parallele Review-Durchgänge:

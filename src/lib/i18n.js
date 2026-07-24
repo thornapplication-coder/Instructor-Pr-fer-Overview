@@ -40,6 +40,7 @@ const DICT = {
   tab_providers: { de: 'Provider', en: 'Providers' },
   tab_planning: { de: 'Planung', en: 'Planning' },
   tab_capacity: { de: 'Kapazität', en: 'Capacity' },
+  tab_pilots: { de: 'Other Pilots', en: 'Other Pilots' },
   tab_settings: { de: 'Einstellungen', en: 'Settings' },
 
   // ---- capacity & timeline
@@ -105,6 +106,38 @@ const DICT = {
     de: 'Kacheln und Diagramme lassen sich per Drag & Drop innerhalb ihrer Gruppe verschieben. Die Reihenfolge wird gespeichert.',
     en: 'Drag & drop tiles and charts to reorder them within their group. The order is saved.'
   },
+
+  // ---- other pilots (company line pilots, not trainers)
+  pilots_title: { de: 'Other Pilots – Piloten der Firma', en: 'Other pilots – company pilots' },
+  pilots_hint: {
+    de: 'Linienpiloten der Firma (keine Trainer/Prüfer): mit gültigem B737-Rating, mit abgelaufenem Rating oder mit Boeing-Erfahrung ohne aktuelles Rating.',
+    en: 'Company line pilots (not trainers/examiners): holding a valid B737 rating, an expired rating, or Boeing experience without a current rating.'
+  },
+  pilots_empty: {
+    de: 'Noch keine Piloten erfasst. Lege den ersten an oder importiere eine Excel-Datei in den Einstellungen.',
+    en: 'No pilots yet. Add the first one or import an Excel file from Settings.'
+  },
+  pilots_none: { de: 'Keine Piloten gefunden.', en: 'No pilots found.' },
+  pilots_overdueHint: {
+    de: 'Als gültig markiert, das Datum liegt aber in der Vergangenheit.',
+    en: 'Marked as valid, but the date is in the past.'
+  },
+  addPilot: { de: 'Pilot hinzufügen', en: 'Add pilot' },
+  editPilot: { de: 'Pilot bearbeiten', en: 'Edit pilot' },
+  deletePilotConfirm: { de: 'Diesen Piloten wirklich löschen?', en: 'Really delete this pilot?' },
+  pilotNameRequired: { de: 'Bitte einen Namen eingeben.', en: 'Please enter a name.' },
+  f_position: { de: 'Position', en: 'Position' },
+  f_comment: { de: 'Anmerkung', en: 'Remark' },
+  f_b737Status: { de: 'B737-Status', en: 'B737 status' },
+  f_b737Until: { de: 'Gültig bis / abgelaufen am', en: 'Valid until / expired on' },
+  f_b737ValidUntil: { de: 'Gültig bis', en: 'Valid until' },
+  f_b737ExpiredOn: { de: 'Abgelaufen am', en: 'Expired on' },
+  pilotsImport_title: { de: 'Other Pilots aus Excel importieren', en: 'Import other pilots from Excel' },
+  pilotsImport_hint: {
+    de: 'Spalten werden über die Überschriften erkannt: Name, TLC, Base, Position (Captain/FO), Status (gültig / abgelaufen / Erfahrung) und Datum. Bestehende Piloten werden per TLC (sonst Name) aktualisiert, neue ergänzt.',
+    en: 'Columns are matched by header: name, TLC, base, position (captain/FO), status (valid / expired / experience) and date. Existing pilots are updated by TLC (else name), new ones added.'
+  },
+  pilotsImport_btn: { de: 'Excel/CSV wählen', en: 'Choose Excel/CSV' },
 
   // ---- cockpit role
   f_role: { de: 'Rolle (Cockpit)', en: 'Role (cockpit)' },

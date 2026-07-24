@@ -6,6 +6,8 @@ import { formatPartTime, formatFte } from './format.js'
 import { stageLabel, ASSIGNMENT_STATUS } from '../data/pipeline.js'
 import { qualLabel } from '../data/qualifications.js'
 import { courseLabel, simVersionLabel } from '../data/providers.js'
+import { pilotStatusLabel, pilotRole } from '../data/pilots.js'
+import { formatDate } from './format.js'
 
 const byName = (a, b) => (a.name || '').localeCompare(b.name || '')
 
@@ -97,6 +99,26 @@ export function exportProvidersExcel(data, t, lang) {
     ],
     rows,
     t('providers_title'),
+    lang
+  )
+}
+
+// Other pilots (company line pilots, not trainers).
+export function exportPilotsExcel(data, t, lang) {
+  const rows = [...(data.otherPilots || [])].sort(byName)
+  downloadExcel(
+    'other-pilots',
+    [
+      { label: t('f_name'), value: (p) => p.name },
+      { label: t('f_tlc'), value: (p) => p.tlc },
+      { label: t('f_base'), value: (p) => p.base },
+      { label: t('f_position'), value: (p) => t(pilotRole(p) === 'fo' ? 'role_fo' : 'role_captain') },
+      { label: t('f_b737Status'), value: (p) => pilotStatusLabel(p.status, lang) },
+      { label: t('f_b737Until'), value: (p) => (p.b737Until ? formatDate(p.b737Until, lang) : '') },
+      { label: t('f_comment'), value: (p) => p.remark }
+    ],
+    rows,
+    t('pilots_title'),
     lang
   )
 }

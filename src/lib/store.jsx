@@ -10,6 +10,7 @@ import {
 } from '../data/providers.js'
 import { DEFAULT_STAGES, ASSIGNMENT_STEPS, mergeAssignments, releasedStageId, firstStageId } from '../data/pipeline.js'
 import { DEFAULT_QUALS, normalizeQual } from '../data/qualifications.js'
+import { withPilotDefaults } from '../data/pilots.js'
 import { fteFromPartTime, normalizeAuthority } from './format.js'
 import { translate } from './i18n.js'
 
@@ -87,6 +88,7 @@ function freshData(lang = 'de') {
     providerCourses: DEFAULT_PROVIDER_COURSES.map((x) => ({ ...x })),
     providerStatus: DEFAULT_PROVIDER_STATUS.map((x) => ({ ...x })),
     simVersions: DEFAULT_SIM_VERSIONS.map((x) => ({ ...x })),
+    otherPilots: [],
     conversionFrom: 'A320',
     conversionTo: 'B737',
     dashboard: { order: {} },
@@ -154,6 +156,7 @@ function normalize(obj) {
     simVersions: Array.isArray(obj.simVersions)
       ? obj.simVersions.map((x) => ({ ...x }))
       : base.simVersions,
+    otherPilots: Array.isArray(obj.otherPilots) ? obj.otherPilots.map(withPilotDefaults) : base.otherPilots,
     conversionFrom: obj.conversionFrom || 'A320',
     conversionTo: obj.conversionTo || 'B737',
     dashboard:
@@ -414,6 +417,19 @@ export function StoreProvider({ children }) {
       setProviderCourses: (providerCourses) => patch((d) => ({ ...d, providerCourses })),
       setProviderStatus: (providerStatus) => patch((d) => ({ ...d, providerStatus })),
       setSimVersions: (simVersions) => patch((d) => ({ ...d, simVersions })),
+
+      // ---- other pilots (company line pilots, kept apart from `trainers`)
+      upsertPilot: (pilot) =>
+        patch((d) => {
+          const p = withPilotDefaults({ ...pilot, id: pilot.id || newId('plt') })
+          const exists = d.otherPilots.some((x) => x.id === p.id)
+          return {
+            ...d,
+            otherPilots: exists ? d.otherPilots.map((x) => (x.id === p.id ? p : x)) : [...d.otherPilots, p]
+          }
+        }),
+      deletePilot: (id) => patch((d) => ({ ...d, otherPilots: d.otherPilots.filter((x) => x.id !== id) })),
+      setPilots: (otherPilots) => patch((d) => ({ ...d, otherPilots: otherPilots.map(withPilotDefaults) })),
 
       // Validate the shape before replacing everything: an arbitrary JSON file
       // would otherwise be silently accepted, wiping the roster with the seed

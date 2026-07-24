@@ -7,7 +7,7 @@
 
 import { fteFromPartTime } from './format.js'
 
-const norm = (s) => String(s == null ? '' : s).toLowerCase().replace(/\s+/g, ' ').trim()
+export const norm = (s) => String(s == null ? '' : s).toLowerCase().replace(/\s+/g, ' ').trim()
 
 // Header text -> trainer field. Normalized, lower-case, tolerant.
 const FIELD_ALIASES = {
@@ -26,17 +26,17 @@ const FIELD_ALIASES = {
   treDate: ['tre seit', 'tre since', 'tre']
 }
 
-function fieldForHeader(header) {
+function fieldForHeader(header, aliasMap = FIELD_ALIASES) {
   const n = norm(header)
   if (!n) return null
-  for (const [field, aliases] of Object.entries(FIELD_ALIASES)) {
+  for (const [field, aliases] of Object.entries(aliasMap)) {
     if (aliases.includes(n)) return field
   }
   return null
 }
 
 // Excel serial / Date / string -> "YYYY-MM-DD" (non-date text passes through).
-function toISO(v) {
+export function toISO(v) {
   if (v == null || v === '') return ''
   if (v instanceof Date && !isNaN(v)) {
     const y = v.getFullYear()
@@ -197,48 +197,58 @@ async function sheetToRows(buf) {
 
 // Score a row by how many recognized field headers it carries; the real header
 // row wins over a metadata/cover block that merely happens to contain "Name".
-function headerScore(row) {
+function headerScore(row, aliasMap) {
   if (!Array.isArray(row)) return { score: 0, hasName: false }
   let score = 0
   let hasName = false
   for (const c of row) {
-    const f = fieldForHeader(c)
+    const f = fieldForHeader(c, aliasMap)
     if (f) { score++; if (f === 'name') hasName = true }
   }
   return { score, hasName }
 }
 
-// Parse the first worksheet of an .xlsx/.xls/.csv file into roster records.
-export async function parseTrainersFromArrayBuffer(buf) {
+// Generic sheet -> records reader shared by every import (trainers, pilots, …).
+// `aliasMap` maps a target field to the header spellings that mean it; `pick`
+// turns one raw row object into the stored record (or null to skip it).
+export async function parseRecordsFromArrayBuffer(buf, aliasMap, pick) {
   const rows = await sheetToRows(buf)
   if (!rows.length) return []
   // Pick the row with the MOST recognized headers (and a Name column), so a
   // cover/metadata block like ["Erstellt von","Name","Datum"] above the table
-  // no longer hijacks header detection.
+  // cannot hijack header detection.
   let hIdx = -1
   let best = 0
   rows.forEach((r, i) => {
-    const { score, hasName } = headerScore(r)
+    const { score, hasName } = headerScore(r, aliasMap)
     if (hasName && score > best) { best = score; hIdx = i }
   })
   if (hIdx < 0) hIdx = rows.findIndex((r) => Array.isArray(r) && r.some((c) => norm(c) === 'name'))
   if (hIdx < 0) hIdx = 0
   const headerMap = {}
   rows[hIdx].forEach((h, i) => {
-    const field = fieldForHeader(h)
+    const field = fieldForHeader(h, aliasMap)
     if (field && headerMap[field] == null) headerMap[field] = i
   })
   const records = []
   for (let i = hIdx + 1; i < rows.length; i++) {
     const r = rows[i]
     if (!Array.isArray(r)) continue
+    if (isExportBanner(r)) continue // our own brand / copyright rows on re-import
     const rec = {}
     for (const [field, ci] of Object.entries(headerMap)) rec[field] = r[ci]
-    if (!norm(rec.name) && !norm(rec.tlc)) continue // skip blank rows
-    if (isExportBanner(r)) continue // skip our own brand / copyright rows on re-import
-    records.push(pickFields(rec))
+    const out = pick(rec)
+    if (out) records.push(out)
   }
   return records
+}
+
+// Parse the first worksheet of an .xlsx/.xls/.csv file into roster records.
+export function parseTrainersFromArrayBuffer(buf) {
+  return parseRecordsFromArrayBuffer(buf, FIELD_ALIASES, (rec) => {
+    if (!norm(rec.name) && !norm(rec.tlc)) return null // skip blank rows
+    return pickFields(rec)
+  })
 }
 
 // Rows the app's own export adds (the "737 TRAINER …" banner and the "©
