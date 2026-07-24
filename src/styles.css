@@ -366,6 +366,10 @@ textarea.input { resize: vertical; }
 
 /* ---------- Capacity & timeline ---------- */
 .cap-table .avail { color: var(--green); }
+.check-inline { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 700; color: var(--muted); cursor: pointer; white-space: nowrap; }
+.edit-table td { vertical-align: middle; }
+.edit-table select.input, .edit-table input.input { min-width: 130px; padding: 6px 9px; }
+.edit-table td:first-child { min-width: 180px; }
 .data-table .total-row td { border-top: 2px solid var(--hair); background: var(--panel2); font-weight: 900; color: var(--burg-dark); }
 .timeline { display: flex; gap: 12px; overflow-x: auto; padding-bottom: 8px; }
 .tl-col { flex: 0 0 190px; min-width: 190px; background: var(--panel2); border-radius: var(--radius); display: flex; flex-direction: column; }

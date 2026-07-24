@@ -114,23 +114,23 @@ export function pipelineDistribution(trainers, stages) {
   return stages.map((s) => ({ ...s, count: map.get(s.id) || 0 }))
 }
 
-// Capacity per base: how much FTE sits in each base, how much is tied up in an
-// active conversion, how much stays available, split by current aircraft.
-// Mirrors conversionFteSummary ("in conversion" = not nominated, not released).
-export function capacityByBase(trainers, aircraftList) {
+// Capacity aggregation: how much FTE sits in each group, how much is tied up in
+// an active conversion, how much stays available, split by current aircraft.
+// "in conversion" = not nominated, not released (mirrors conversionFteSummary).
+function capacityBy(trainers, keyFn, aircraftList, order) {
   const acs = aircraftList && aircraftList.length ? aircraftList : ['A320', 'B737']
   const map = new Map()
-  const get = (b) => {
-    if (!map.has(b)) {
+  const get = (k) => {
+    if (!map.has(k)) {
       const ac = {}
       for (const a of acs) ac[a] = 0
-      map.set(b, { base: b, total: 0, inConversion: 0, headcount: 0, ac })
+      map.set(k, { key: k, total: 0, inConversion: 0, headcount: 0, ac })
     }
-    return map.get(b)
+    return map.get(k)
   }
   for (const t of trainers) {
     const fte = typeof t.fte === 'number' ? t.fte : 1
-    const row = get(t.base || '—')
+    const row = get(keyFn(t))
     row.total += fte
     row.headcount += 1
     const stage = t.conv?.stage || 'nominated'
@@ -141,7 +141,7 @@ export function capacityByBase(trainers, aircraftList) {
     const ac = {}
     for (const a of acs) ac[a] = round1(r.ac[a])
     return {
-      base: r.base,
+      key: r.key,
       headcount: r.headcount,
       total: round1(r.total),
       inConversion: round1(r.inConversion),
@@ -149,9 +149,17 @@ export function capacityByBase(trainers, aircraftList) {
       ac
     }
   })
-  rows.sort((a, b) => a.base.localeCompare(b.base))
+  if (order && order.length) {
+    const rank = (k) => {
+      const i = order.indexOf(k)
+      return i < 0 ? 999 : i
+    }
+    rows.sort((a, b) => rank(a.key) - rank(b.key) || a.key.localeCompare(b.key))
+  } else {
+    rows.sort((a, b) => a.key.localeCompare(b.key))
+  }
   const totals = {
-    base: '',
+    key: '',
     headcount: rows.reduce((s, r) => s + r.headcount, 0),
     total: round1(rows.reduce((s, r) => s + r.total, 0)),
     inConversion: round1(rows.reduce((s, r) => s + r.inConversion, 0)),
@@ -159,6 +167,21 @@ export function capacityByBase(trainers, aircraftList) {
     ac: Object.fromEntries(acs.map((a) => [a, round1(rows.reduce((s, r) => s + r.ac[a], 0))]))
   }
   return { rows, totals, aircraft: acs }
+}
+
+export function capacityByBase(trainers, aircraftList) {
+  return capacityBy(trainers, (t) => t.base || '—', aircraftList)
+}
+
+// TRI and "new TRI" are counted together as one "TRI" group; other quals stay.
+export function qualGroup(q) {
+  const s = String(q || '').trim()
+  if (s === 'TRI' || s === 'new TRI') return 'TRI'
+  return s || '—'
+}
+
+export function capacityByQual(trainers, aircraftList) {
+  return capacityBy(trainers, (t) => qualGroup(t.qual), aircraftList, ['TRE', 'TRI', 'LTC', 'SFI', 'TKI', 'SEN'])
 }
 
 // Head-count style KPIs.

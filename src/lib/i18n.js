@@ -50,6 +50,13 @@ const DICT = {
     en: 'FTE per base (available vs. in conversion, by aircraft) and conversion target dates over time.'
   },
   capacity_byBase: { de: 'FTE-Kapazität je Base', en: 'FTE capacity per base' },
+  capacity_byQual: { de: 'FTE-Kapazität je Qualifikation', en: 'FTE capacity per qualification' },
+  capacity_edit: { de: 'Zieltermine & Umschulung bearbeiten', en: 'Edit target dates & conversion' },
+  capacity_editHint: {
+    de: 'Phase, Status und Zieltermin je Person direkt hier setzen – die Zeitachse unten und die Warnungen im Dashboard aktualisieren sich sofort.',
+    en: 'Set phase, status and target date per person right here – the timeline below and the dashboard alerts update instantly.'
+  },
+  capacity_hideDone: { de: 'Freigegebene ausblenden', en: 'Hide released' },
   capacity_timeline: { de: 'Zieltermine je Monat', en: 'Target dates per month' },
   capacity_noTargets: {
     de: 'Noch keine Zieltermine gesetzt. Sobald du in der Umschulung Zieltermine vergibst, erscheinen sie hier auf der Zeitachse.',

@@ -11,6 +11,15 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.6.0] – 2026-07-24
+
+- **Kapazität editierbar**: neue Tabelle „Zieltermine & Umschulung bearbeiten" –
+  Phase, Status und **Zieltermin** je Person direkt auf der Seite setzen (mit
+  Suche/Base-Filter). Die Timeline und die Dashboard-Warnungen aktualisieren
+  sich sofort.
+- **FTE-Kapazität je Qualifikation**: neue Tabelle; **TRI und new TRI** werden
+  zu einer Gruppe **„TRI"** zusammengefasst.
+
 ## [1.5.0] – 2026-07-24
 
 - **Trainer aus Excel/CSV importieren** (Einstellungen): aktualisierte Liste
