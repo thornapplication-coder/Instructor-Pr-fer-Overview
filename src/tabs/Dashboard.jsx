@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import KpiTile from '../components/KpiTile.jsx'
-import { Donut, HBars, ProgressRing, PipelineBar, StackedBars } from '../components/charts.jsx'
+import { Donut, HBars, ProgressRing, PipelineBar, StackedBars, colorAt } from '../components/charts.jsx'
 import {
   headcount,
   conversionSummary,
@@ -11,7 +11,6 @@ import {
   byAuthority,
   byPartTime,
   byFunction,
-  byRole,
   qualByAircraft,
   pipelineDistribution,
   conversionFteSummary
@@ -22,7 +21,7 @@ import { AIRCRAFT } from '../data/aircraft.js'
 
 const ORE_COLORS = { A: '#AF1E65', B: '#00A6CF', C: '#6BCCE0', Rente: '#BDBABA' }
 const AC_COLORS = { A320: '#AF1E65', B737: '#2196F3' }
-const ROLE_COLORS = { captain: '#AF1E65', fo: '#00A6CF' }
+const ROLE_COLORS = { captain: '#AF1E65', fo: '#00688F' }
 
 function Card({ title, total, children }) {
   const { t } = useStore()
@@ -51,7 +50,7 @@ function ordered(widgets, orderIds) {
 // A group of dashboard widgets. In view mode it renders the widgets straight
 // into the grid (identical to before, so the PDF capture is unchanged). In
 // arrange mode each widget gets a drag handle and can be reordered by drag&drop.
-function ReorderZone({ zone, items, className, editing, onReorder }) {
+function ReorderZone({ zone, items, className, editing, onReorder, t }) {
   const [dragId, setDragId] = useState(null)
   const [overId, setOverId] = useState(null)
   if (!editing) {
@@ -65,9 +64,16 @@ function ReorderZone({ zone, items, className, editing, onReorder }) {
     ids.splice(ti, 0, ids.splice(fi, 1)[0])
     onReorder(zone, ids)
   }
+  // Shift by one position. HTML5 drag is unavailable on iOS Safari and to
+  // keyboard users, so these buttons are the primary path there.
+  const shift = (i, dir) => {
+    const to = i + dir
+    if (to < 0 || to >= items.length) return
+    move(items[i].id, items[to].id)
+  }
   return (
     <div className={className + ' dash-editing'}>
-      {items.map((it) => (
+      {items.map((it, i) => (
         <div
           key={it.id}
           className={'dash-item' + (dragId === it.id ? ' dragging' : '') + (overId === it.id ? ' drop-over' : '')}
@@ -80,7 +86,10 @@ function ReorderZone({ zone, items, className, editing, onReorder }) {
           onDrop={() => { if (dragId && dragId !== it.id) move(dragId, it.id); setDragId(null); setOverId(null) }}
           onDragEnd={() => { setDragId(null); setOverId(null) }}
         >
-          <span className="dash-drag" aria-hidden="true">⠿</span>
+          <div className="dash-move">
+            <button className="mini-btn" disabled={i === 0} onClick={() => shift(i, -1)} aria-label={t('moveBack')} title={t('moveBack')}>‹</button>
+            <button className="mini-btn" disabled={i === items.length - 1} onClick={() => shift(i, +1)} aria-label={t('moveForward')} title={t('moveForward')}>›</button>
+          </div>
           {it.node}
         </div>
       ))}
@@ -102,9 +111,8 @@ export default function Dashboard() {
   const convPool = conversionTrainers(trainers)
   const cs = conversionSummary(convPool, stages)
   const fteS = conversionFteSummary(convPool, stages)
-  const role = byRole(trainers)
   const qualData = byQual(trainers, qualOrder).map((r) => ({ ...r, label: qualLabel(qualDefs, r.key) }))
-  const qualAc = qualByAircraft(trainers, qualOrder).map((r) => ({ ...r, label: qualLabel(qualDefs, r.key) }))
+  const qualAc = qualByAircraft(trainers, qualOrder, AIRCRAFT).map((r) => ({ ...r, label: qualLabel(qualDefs, r.key) }))
   const bases = byBase(trainers)
   // ORE is the conversion priority, so it follows the conversion scope.
   const ore = byOre(convPool).map((r) => ({ ...r, color: ORE_COLORS[r.key] }))
@@ -114,10 +122,7 @@ export default function Dashboard() {
   const staffInternal = trainers.filter((x) => (x.staffType || 'internal') === 'internal').length
   const staffExternal = trainers.length - staffInternal
   const aircraft = AIRCRAFT.map((a) => ({ key: a, count: trainers.filter((x) => x.aircraft === a).length, color: AC_COLORS[a] }))
-  const acSeries = [
-    { key: 'A320', label: 'A320', color: AC_COLORS.A320 },
-    { key: 'B737', label: 'B737', color: AC_COLORS.B737 }
-  ]
+  const acSeries = AIRCRAFT.map((a, i) => ({ key: a, label: a, color: AC_COLORS[a] || colorAt(i) }))
   const pipe = pipelineDistribution(convPool, stages)
   const relevant = convPool.filter((tr) => tr.ore !== 'Rente')
   const overall =
@@ -143,8 +148,8 @@ export default function Dashboard() {
         <Card title={t('chart_role')} total={total}>
           <Donut
             data={[
-              { key: t('role_captain'), count: role.captains, color: ROLE_COLORS.captain },
-              { key: t('role_fo'), count: role.fo, color: ROLE_COLORS.fo }
+              { key: t('role_captain'), count: hc.captains, color: ROLE_COLORS.captain },
+              { key: t('role_fo'), count: hc.firstOfficers, color: ROLE_COLORS.fo }
             ]}
             centerBottom="CPT / FO"
           />
@@ -222,12 +227,12 @@ export default function Dashboard() {
       {editing && <p className="planning-note no-capture">{t('dashArrangeHint')}</p>}
 
       <h3 className="dash-section-title">{t('section_overview')}</h3>
-      <ReorderZone zone="ovKpi" items={ordered(ovKpi, order.ovKpi)} className="kpi-grid" editing={editing} onReorder={setDashboardOrder} />
-      <ReorderZone zone="ovChart" items={ordered(ovChart, order.ovChart)} className="grid-3 dash-charts" editing={editing} onReorder={setDashboardOrder} />
+      <ReorderZone zone="ovKpi" items={ordered(ovKpi, order.ovKpi)} className="kpi-grid" editing={editing} onReorder={setDashboardOrder} t={t} />
+      <ReorderZone zone="ovChart" items={ordered(ovChart, order.ovChart)} className="grid-3 dash-charts" editing={editing} onReorder={setDashboardOrder} t={t} />
 
       <h3 className="dash-section-title">{t('section_conversion')}</h3>
-      <ReorderZone zone="cvKpi" items={ordered(cvKpi, order.cvKpi)} className="kpi-grid" editing={editing} onReorder={setDashboardOrder} />
-      <ReorderZone zone="cvChart" items={ordered(cvChart, order.cvChart)} className="grid-2 dash-charts" editing={editing} onReorder={setDashboardOrder} />
+      <ReorderZone zone="cvKpi" items={ordered(cvKpi, order.cvKpi)} className="kpi-grid" editing={editing} onReorder={setDashboardOrder} t={t} />
+      <ReorderZone zone="cvChart" items={ordered(cvChart, order.cvChart)} className="grid-2 dash-charts" editing={editing} onReorder={setDashboardOrder} t={t} />
     </div>
   )
 }

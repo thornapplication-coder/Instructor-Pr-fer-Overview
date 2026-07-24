@@ -6,6 +6,12 @@ const FOCUSABLE =
 export default function Modal({ title, onClose, children, footer, wide }) {
   const ref = useRef(null)
   const lastFocused = useRef(null)
+  // Callers pass a fresh arrow on every render, so keep the latest handler in a
+  // ref instead of in the effect's dep list: re-running the effect per render
+  // would move focus back to the first control after every keystroke that
+  // writes to the store (planning notes, category labels, …).
+  const onCloseRef = useRef(onClose)
+  onCloseRef.current = onClose
 
   useEffect(() => {
     lastFocused.current = document.activeElement
@@ -17,7 +23,7 @@ export default function Modal({ title, onClose, children, footer, wide }) {
     else if (node) node.focus()
 
     const onKey = (e) => {
-      if (e.key === 'Escape') { onClose(); return }
+      if (e.key === 'Escape') { onCloseRef.current(); return }
       if (e.key !== 'Tab') return
       // Trap Tab within the dialog.
       const list = focusables()
@@ -33,7 +39,7 @@ export default function Modal({ title, onClose, children, footer, wide }) {
       const prev = lastFocused.current
       if (prev && typeof prev.focus === 'function') prev.focus()
     }
-  }, [onClose])
+  }, [])
 
   return (
     <div className="modal-backdrop" onMouseDown={onClose}>

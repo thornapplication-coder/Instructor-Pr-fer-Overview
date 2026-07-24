@@ -21,7 +21,7 @@ function UtilBar({ value }) {
 }
 
 export default function Providers() {
-  const { data, t, upsertProvider, deleteProvider, newId, setProviderCourses, setProviderStatus, setSimVersions } = useStore()
+  const { data, t, upsertProvider, deleteProvider, newId } = useStore()
   const { providers, providerCourses, providerStatus, simVersions, trainers, assignmentSteps } = data
   const util = useMemo(
     () => providerUtilization(trainers, providers, assignmentSteps),
@@ -115,7 +115,7 @@ export default function Providers() {
                     className="clickable"
                     onClick={() => setEditing({ ...p })}
                     tabIndex={0}
-                    role="button"
+                    aria-label={p.name || ''}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing({ ...p }) } }}
                   >
                     <td className="strong">{p.name || '–'}</td>
@@ -185,7 +185,7 @@ export default function Providers() {
                     className="clickable"
                     onClick={() => setEditing({ ...u.provider })}
                     tabIndex={0}
-                    role="button"
+                    aria-label={u.provider.name || ''}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing({ ...u.provider }) } }}
                   >
                     <td className="strong">{u.provider.name || '–'}</td>
@@ -302,15 +302,7 @@ function MultiPick({ value, options, labelOf, placeholder, tagClass, onChange })
 // inside this same dialog (no nested modal).
 function ManageLink({ onClick, title }) {
   return (
-    <button
-      type="button"
-      className="field-manage"
-      // The field is wrapped in a <label>, so suppress label activation which
-      // would otherwise click/focus the field's own control.
-      onClick={(e) => { e.preventDefault(); e.stopPropagation(); onClick() }}
-      title={title}
-      aria-label={title}
-    >
+    <button type="button" className="field-manage" onClick={onClick} title={title} aria-label={title}>
       ⚙
     </button>
   )
@@ -339,6 +331,20 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
     status: { title: t('manageProviderStatus'), items: providerStatus, onChange: setProviderStatus, hasColor: true }
   }
 
+  // Leaving the list editor: drop references this form still holds to entries
+  // that were just deleted, otherwise a stale id would be saved back and then
+  // render as a raw "cat-xxxxxxx" tag in the table and the exports.
+  const closeManage = () => {
+    const alive = (defs, id) => (defs || []).some((x) => x.id === id)
+    setP((s) => ({
+      ...s,
+      courses: (s.courses || []).filter((id) => alive(providerCourses, id)),
+      simVersions: (s.simVersions || []).filter((id) => alive(simVersions, id)),
+      status: alive(providerStatus, s.status) ? s.status : ''
+    }))
+    setManage(null)
+  }
+
   // Sub-view: edit one of the selectable lists without leaving the dialog, so
   // the half-filled provider form is preserved behind it.
   if (manage) {
@@ -346,13 +352,13 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
     return (
       <Modal
         title={m.title}
-        onClose={() => setManage(null)}
+        onClose={closeManage}
         wide
         footer={
           <div className="foot-row">
             <p className="muted small">{t('dragHint')}</p>
             <div className="push-right">
-              <button className="btn btn-primary" onClick={() => setManage(null)}>← {t('back')}</button>
+              <button className="btn btn-primary" onClick={closeManage}>← {t('back')}</button>
             </div>
           </div>
         }
@@ -376,7 +382,7 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
               className="btn btn-primary"
               onClick={() => {
                 if (!(p.name || '').trim()) {
-                  window.alert('Bitte einen Anbieternamen eingeben.')
+                  window.alert(t('providerNameRequired'))
                   return
                 }
                 onSave(p)
@@ -452,13 +458,25 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
   )
 }
 
+// With `extra` (the ⚙ list editor) the wrapper must NOT be a <label>: a click
+// that lands next to the button would activate the label and silently toggle
+// the field's first control (e.g. tick a course the provider does not offer).
 function Field({ label, children, span2, extra }) {
+  const cls = 'field' + (span2 ? ' span2' : '')
+  if (extra) {
+    return (
+      <div className={cls}>
+        <span className="field-label">
+          {label}
+          {extra}
+        </span>
+        {children}
+      </div>
+    )
+  }
   return (
-    <label className={'field' + (span2 ? ' span2' : '')}>
-      <span className="field-label">
-        {label}
-        {extra}
-      </span>
+    <label className={cls}>
+      <span className="field-label">{label}</span>
       {children}
     </label>
   )

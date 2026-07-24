@@ -134,7 +134,7 @@ export default function Trainers() {
       triDate: '',
       treDate: '',
       authority: '',
-      conv: { stage: 'nominated', status: 'on_track', target: '', note: '' },
+      conv: { stage: stages[0]?.id ?? 'nominated', status: 'on_track', target: '', note: '' },
       _isNew: true
     })
 
@@ -220,8 +220,10 @@ export default function Trainers() {
                 key={x.id}
                 onClick={() => setEditing({ ...x })}
                 className="clickable"
+                // tabIndex only: role="button" on a <tr> would void the row/cell
+                // semantics and make screen readers read all 13 cells as one name.
                 tabIndex={0}
-                role="button"
+                aria-label={x.name}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing({ ...x }) } }}
               >
                 <td><span className="qual-tag" style={{ background: qualColor(x.qual) }}>{qualLabel(quals, x.qual)}</span></td>

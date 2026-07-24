@@ -92,6 +92,20 @@ button { font-family: inherit; }
 .lang-toggle.big { background: var(--panel2); }
 .lang-toggle.big .lang-btn { color: var(--muted); padding: 9px 20px; font-size: 14px; }
 .lang-toggle.big .lang-btn.active { background: var(--burg); color: #fff; }
+
+/* Segmented control for use on light page panels. (.lang-toggle above is
+   white-on-transparent and only legible inside the burgundy topbar.) */
+.seg-toggle {
+  display: inline-flex; gap: 2px; padding: 3px;
+  background: var(--panel2); border: 1px solid var(--hair); border-radius: 999px;
+}
+.seg-btn {
+  border: 0; background: transparent; color: var(--muted); cursor: pointer;
+  padding: 6px 14px; border-radius: 999px; font-weight: 800; font-size: 12.5px;
+}
+.seg-btn:hover { color: var(--burg); }
+.seg-btn.active { background: var(--burg); color: #fff; }
+.seg-btn:focus-visible { outline: 2px solid var(--burg); outline-offset: 1px; }
 .icon-round {
   border: 0; background: rgba(255,255,255,.16); color: #fff; cursor: pointer;
   width: 34px; height: 34px; border-radius: 50%; line-height: 1;
@@ -191,11 +205,19 @@ button { font-family: inherit; }
 .dash-editing .dash-item:hover { outline-color: var(--burg-light, #D41370); }
 .dash-editing .dash-item.dragging { opacity: .45; }
 .dash-editing .dash-item.drop-over { outline-color: var(--burg); outline-style: solid; }
-.dash-drag {
-  position: absolute; top: 6px; right: 8px; z-index: 2;
-  font-size: 14px; line-height: 1; color: #fff; background: var(--burg);
-  border-radius: 6px; padding: 3px 5px; pointer-events: none; opacity: .9;
+/* Sits on the card's corner (outside the padding box) so it never overlaps a
+   card title or its "Gesamt: N" counter. Drag is unavailable on iOS Safari and
+   to keyboard users, so these ‹ › buttons are the reliable path. */
+.dash-move {
+  position: absolute; top: -11px; right: -6px; z-index: 3;
+  display: flex; gap: 3px;
 }
+.dash-move .mini-btn {
+  background: var(--burg); color: #fff; border: 2px solid var(--panel);
+  border-radius: 999px; min-width: 24px; padding: 1px 6px; font-weight: 900;
+}
+.dash-move .mini-btn:disabled { background: var(--muted); opacity: .5; }
+.dash-move .mini-btn:focus-visible { outline: 2px solid var(--ink); outline-offset: 1px; }
 
 /* Role (cockpit) tag: Captain vs First Officer. */
 .role-tag {
@@ -203,7 +225,8 @@ button { font-family: inherit; }
   font-size: 11.5px; font-weight: 800; color: #fff; letter-spacing: .3px;
 }
 .role-captain { background: #AF1E65; }
-.role-fo { background: #00A6CF; }
+/* Darker than the sky accent so white 11px text clears AA (#00A6CF was 2.9:1). */
+.role-fo { background: #00688F; }
 .role-tag.sm { font-size: 10.5px; padding: 1px 6px; }
 
 /* Controls that must never appear in the rasterized PDF capture. */
@@ -242,7 +265,7 @@ button { font-family: inherit; }
   display: block; color: #fff; border-radius: 4px; padding: 1px 4px;
   font-size: 9.5px; line-height: 1.25; overflow: hidden;
 }
-.cal-chip b { display: block; font-weight: 900; letter-spacing: .3px; }
+.cal-chip b { display: block; font-weight: 900; letter-spacing: .3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cal-chip-step { display: block; opacity: .9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
 :root[data-theme='dark'] .cal-month { background: var(--panel); }
@@ -250,10 +273,17 @@ button { font-family: inherit; }
 
 /* Print: keep each month together on a page and let the grid fill the sheet. */
 @media print {
+  /* Browsers drop background colours when printing, which would turn every
+     white-on-colour chip/badge into white-on-white. Force them to print. */
+  *, *::before, *::after { -webkit-print-color-adjust: exact; print-color-adjust: exact; }
   .no-print { display: none !important; }
+  /* App chrome has no place on paper. */
+  .topbar, .tabs, .app-footer, .modal-backdrop { display: none !important; }
+  .content { padding: 0 !important; }
   .cal-months { grid-template-columns: repeat(2, 1fr); gap: 10px; }
   .cal-month { break-inside: avoid; page-break-inside: avoid; }
   .cal-card { box-shadow: none; border: 0; padding: 0; }
+  .card { box-shadow: none; break-inside: avoid; page-break-inside: avoid; }
 }
 
 .progress-ring { display: flex; flex-direction: column; align-items: center; gap: 6px; }
@@ -411,6 +441,11 @@ select.input { cursor: pointer; }
   cursor: pointer; font-weight: 800;
 }
 .field-manage:hover { background: var(--burg); color: #fff; border-color: var(--burg); }
+.field-manage:focus-visible { outline: 2px solid var(--burg); outline-offset: 1px; }
+:root[data-theme='dark'] .field-manage { color: #F58FBE; background: #232a31; }
+
+/* Keyboard focus for the clickable table rows (Trainer / Provider). */
+tr.clickable:focus-visible { outline: 2px solid var(--burg); outline-offset: -2px; }
 .form-sep { grid-column: 1/-1; font-weight: 800; color: var(--burg-dark); font-size: 13px; border-top: 1px solid var(--hair); padding-top: 12px; text-transform: uppercase; letter-spacing: .5px; }
 textarea.input { resize: vertical; }
 .checks { display: flex; gap: 8px; flex-wrap: wrap; }

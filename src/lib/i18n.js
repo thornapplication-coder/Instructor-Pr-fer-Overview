@@ -97,6 +97,8 @@ const DICT = {
   // ---- dashboard sections + arrange mode
   section_overview: { de: 'Instruktoren & Prüfer Overview', en: 'Instructors & Examiners overview' },
   section_conversion: { de: 'B737 Umschulung', en: 'B737 conversion' },
+  moveBack: { de: 'Nach vorne schieben', en: 'Move earlier' },
+  moveForward: { de: 'Nach hinten schieben', en: 'Move later' },
   dashArrange: { de: 'Anordnen', en: 'Arrange' },
   dashDone: { de: 'Fertig', en: 'Done' },
   dashArrangeHint: {
@@ -190,6 +192,7 @@ const DICT = {
   },
   category: { de: 'Kategorie', en: 'Category' },
   count: { de: 'Anzahl', en: 'Count' },
+  month: { de: 'Monat', en: 'Month' },
   withFunction: { de: 'Office/MGMT/Funktion', en: 'Office/MGMT/function' },
   withoutFunction: { de: 'Ohne Funktion', en: 'Without function' },
 
@@ -202,6 +205,7 @@ const DICT = {
     en: 'No providers yet. Add your first one.'
   },
   deleteProviderConfirm: { de: 'Diesen Provider wirklich löschen?', en: 'Really delete this provider?' },
+  providerNameRequired: { de: 'Bitte einen Anbieternamen eingeben.', en: 'Please enter a provider name.' },
   deleteProviderAssignedConfirm: {
     de: 'Dieser Provider ist {n}× in der Planung zugewiesen. Beim Löschen werden diese Zuweisungen entfernt. Fortfahren?',
     en: 'This provider is assigned {n}× in planning. Deleting will clear those assignments. Continue?'

@@ -17,8 +17,10 @@ export function monthKey(date) {
 // Steps marked "n/a" are skipped – nothing starts there.
 export function courseEntries(trainers, steps, providers) {
   const out = []
+  // Index once: a linear find() per assignment is O(entries x providers).
+  const byId = new Map((providers || []).map((p) => [p.id, p]))
   const providerName = (id) => {
-    const p = (providers || []).find((x) => x.id === id)
+    const p = byId.get(id)
     return p && p.name ? p.name : ''
   }
   for (const tr of trainers || []) {

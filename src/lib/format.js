@@ -42,7 +42,10 @@ export function formatFte(fte) {
 export function normalizeAuthority(a) {
   const s = String(a == null ? '' : a).trim()
   if (!s) return ''
-  const m = /^easa\b[\s._/–—-]*(.*)$/i.exec(s)
+  // "EASA" must be followed by the end of the string or a non-alphanumeric
+  // separator, so "EASAX Land" is left alone; the separator run itself is then
+  // consumed (covers "-", "_", ":", "/", en/em dash, whitespace, …).
+  const m = /^easa(?=$|[^A-Za-z0-9])[\s._:;,|/\\–—-]*(.*)$/i.exec(s)
   if (!m) return s
   const rest = m[1].trim()
   return rest || s

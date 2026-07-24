@@ -19,7 +19,6 @@ import {
   byAuthority,
   byPartTime,
   byFunction,
-  byRole,
   qualByAircraft,
   capacityByBase,
   capacityByQual,
@@ -298,7 +297,7 @@ async function exportCapacityPdf(data, t, lang, opts) {
   for (const m of months) for (const it of m.items) tl.push([monthLabel(m.month, lang), it.trainer.name || '', it.trainer.base || '', stageName(data.stages, it.trainer.conv?.stage), formatDate(it.trainer.conv?.target, lang)])
   table(ctx, {
     section: t('capacity_timeline'),
-    head: [t('stage'), t('f_name'), t('f_base'), t('stage'), t('targetDate')],
+    head: [t('month'), t('f_name'), t('f_base'), t('stage'), t('targetDate')],
     body: tl.length ? tl : [['-', t('capacity_noTargets'), '', '', '']]
   })
   return finalize(doc, 'kapazitaet', opts)
@@ -349,13 +348,12 @@ async function exportDashboardPdf(data, t, lang, opts) {
   table(ctx, {
     section: t('chart_qualByAircraft'),
     head: [t('f_qual'), AIRCRAFT[0], AIRCRAFT[1], t('total')],
-    body: qualByAircraft(trainers, data.quals.map((q) => q.id)).map((r) => [
+    body: qualByAircraft(trainers, data.quals.map((q) => q.id), AIRCRAFT).map((r) => [
       qualLabel(data.quals, r.key), String(r[AIRCRAFT[0]] || 0), String(r[AIRCRAFT[1]] || 0), String(r.count)
     ]),
     columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } }
   })
-  const rl = byRole(trainers)
-  bd(t('chart_role'), [{ key: t('role_captain'), count: rl.captains }, { key: t('role_fo'), count: rl.fo }])
+  bd(t('chart_role'), [{ key: t('role_captain'), count: hc.captains }, { key: t('role_fo'), count: hc.firstOfficers }])
   bd(t('stat_base'), byBase(trainers))
   bd(t('stat_aircraft'), AIRCRAFT.map((a) => ({ key: a, count: trainers.filter((x) => x.aircraft === a).length })))
   bd(t('stat_authority'), byAuthority(trainers))

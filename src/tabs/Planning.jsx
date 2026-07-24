@@ -87,7 +87,7 @@ export default function Planning() {
 
   return (
     <div className="tab-pane">
-      <div className="toolbar">
+      <div className="toolbar no-print">
         <h2 className="pane-title">{t('planning_title')}</h2>
         <input className="input search" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
         <select className="input" value={fBase} onChange={(e) => setFBase(e.target.value)}>
@@ -112,11 +112,19 @@ export default function Planning() {
           <button className="btn btn-ghost" onClick={resetFilters}>↺ {t('resetFilters')}</button>
         )}
         <span className="push-right" />
-        <div className="lang-toggle" role="group" aria-label={t('planning_view')}>
-          <button className={'lang-btn' + (view === 'table' ? ' active' : '')} onClick={() => setView('table')}>
+        <div className="seg-toggle" role="group" aria-label={t('planning_view')}>
+          <button
+            className={'seg-btn' + (view === 'table' ? ' active' : '')}
+            aria-pressed={view === 'table'}
+            onClick={() => setView('table')}
+          >
             {t('planning_viewTable')}
           </button>
-          <button className={'lang-btn' + (view === 'calendar' ? ' active' : '')} onClick={() => setView('calendar')}>
+          <button
+            className={'seg-btn' + (view === 'calendar' ? ' active' : '')}
+            aria-pressed={view === 'calendar'}
+            onClick={() => setView('calendar')}
+          >
             {t('planning_viewCalendar')}
           </button>
         </div>
@@ -134,7 +142,8 @@ export default function Planning() {
         <CourseCalendar trainers={sorted} steps={assignmentSteps} providers={providers} />
       )}
 
-      <div className="table-wrap" style={view === 'calendar' ? { display: 'none' } : undefined}>
+      {view === 'table' && (
+      <div className="table-wrap">
         <table className="data-table planning-table">
           <thead>
             <tr>
@@ -196,6 +205,7 @@ export default function Planning() {
           </tbody>
         </table>
       </div>
+      )}
 
       {editing &&
         (() => {

@@ -8,7 +8,7 @@ import {
   PREFILL_NAMES,
   emptyProvider
 } from '../data/providers.js'
-import { DEFAULT_STAGES, ASSIGNMENT_STEPS, mergeAssignments, releasedStageId } from '../data/pipeline.js'
+import { DEFAULT_STAGES, ASSIGNMENT_STEPS, mergeAssignments, releasedStageId, firstStageId } from '../data/pipeline.js'
 import { DEFAULT_QUALS, normalizeQual } from '../data/qualifications.js'
 import { fteFromPartTime, normalizeAuthority } from './format.js'
 import { translate } from './i18n.js'
@@ -28,7 +28,10 @@ function newId(prefix) {
 
 // Ensure every trainer has conversion, staff type and assignment objects
 // (forward-compatible migration for older / imported payloads).
-function withConvDefaults(trainer) {
+// `firstStage` is the id of the pipeline's first stage; stages are user-editable,
+// so the literal 'nominated' may not exist any more.
+function withConvDefaults(trainer, firstStage) {
+  const stage0 = firstStage || 'nominated'
   return {
     staffType: 'internal',
     aircraft: 'A320',
@@ -44,7 +47,7 @@ function withConvDefaults(trainer) {
     // Only the country is shown, not the "EASA -" prefix.
     authority: normalizeAuthority(trainer.authority),
     conv: {
-      stage: 'nominated',
+      stage: stage0,
       status: 'on_track',
       target: '',
       note: '',
@@ -124,17 +127,20 @@ function loadData() {
 function normalize(obj) {
   const base = freshData(obj?.lang === 'en' ? 'en' : 'de')
   if (!obj || typeof obj !== 'object') return base
+  // Resolve the pipeline first so trainers can default to its first stage.
+  const stages = Array.isArray(obj.stages) ? obj.stages.map(migrateStage) : base.stages
+  const stage0 = firstStageId(stages)
   const result = {
     schema: SCHEMA,
     lang: obj.lang === 'en' ? 'en' : 'de',
     trainers: Array.isArray(obj.trainers)
-      ? obj.trainers.map((t) => withConvDefaults({ ...t }))
+      ? obj.trainers.map((t) => withConvDefaults({ ...t }, stage0))
       : base.trainers,
-    providers: Array.isArray(obj.providers) ? obj.providers.map(normalizeProvider) : [],
+    providers: Array.isArray(obj.providers) ? obj.providers.map(normalizeProvider) : base.providers,
     // A user-managed list that is present but EMPTY is a deliberate choice (the
     // category manager lets you empty it); only a missing key falls back to the
     // shipped defaults. `&& length` wrongly resurrected defaults the user deleted.
-    stages: Array.isArray(obj.stages) ? obj.stages.map(migrateStage) : base.stages,
+    stages,
     quals: Array.isArray(obj.quals) ? obj.quals.map((q) => ({ ...q })) : base.quals,
     assignmentSteps: Array.isArray(obj.assignmentSteps)
       ? obj.assignmentSteps.map((s) => ({ ...s }))
@@ -302,7 +308,7 @@ export function StoreProvider({ children }) {
 
       upsertTrainer: (trainer) =>
         patch((d) => {
-          const t = withConvDefaults(trainer)
+          const t = withConvDefaults(trainer, firstStageId(d.stages))
           const exists = d.trainers.some((x) => x.id === t.id)
           return {
             ...d,
@@ -318,7 +324,10 @@ export function StoreProvider({ children }) {
       // Replace the whole trainer list (used by the Excel/CSV import after the
       // merge). Applies conv defaults; aircraft & FTE are preserved as given.
       setTrainers: (trainers) =>
-        patch((d) => ({ ...d, trainers: trainers.map((t) => withConvDefaults(t)) })),
+        patch((d) => {
+          const stage0 = firstStageId(d.stages)
+          return { ...d, trainers: trainers.map((t) => withConvDefaults(t, stage0)) }
+        }),
 
       // Central place for the stage<->status coupling so EVERY editor (board
       // drag, Kapazität inline editor, detail modal) stays consistent: reaching

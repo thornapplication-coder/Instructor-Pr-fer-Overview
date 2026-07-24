@@ -5,6 +5,7 @@ import { downloadJson } from '../lib/format.js'
 import { exportTrainersExcel, exportPlanningExcel, exportProvidersExcel } from '../lib/tableExports.js'
 import { exportPagePdf } from '../lib/pdfExport.js'
 import { parseTrainersFromArrayBuffer, mergeTrainerRecords } from '../lib/importExcel.js'
+import { resolveQualId } from '../data/qualifications.js'
 import { APP_VERSION, APP_BUILD_DATE, CHANGELOG, COPYRIGHT } from '../version.js'
 import { cloudConfigured } from '../lib/supabaseSync.js'
 import { persistenceStatus } from '../lib/persistence.js'
@@ -106,7 +107,12 @@ export default function Settings() {
   const doXlsImport = async (file) => {
     try {
       const buf = await file.arrayBuffer()
-      const records = await parseTrainersFromArrayBuffer(buf)
+      const parsed = await parseTrainersFromArrayBuffer(buf)
+      // Exports write qualification LABELS, so map them back to stored ids –
+      // otherwise re-importing our own export detaches trainers from their qual.
+      const records = parsed.map((r) =>
+        r.qual ? { ...r, qual: resolveQualId(data.quals, r.qual) } : r
+      )
       if (!records.length) {
         setXlsMsg({ ok: false, text: t('xlsImport_none') })
         return

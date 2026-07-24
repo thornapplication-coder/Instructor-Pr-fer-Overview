@@ -4,12 +4,43 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.13.1'
+export const APP_VERSION = '1.13.2'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.13.2',
+    date: '2026-07-24',
+    type: 'patch',
+    changes: {
+      de: [
+        'Wichtig: In Dialogen konnte man nur ein Zeichen tippen – danach sprang der Cursor auf das ✕. Betraf Ort/Notiz in der Planung und alle Listen-Editoren (Phasen, Berechtigungen, Spalten, Kurse, SIM Versionen, Status). Behoben.',
+        'Planung: die Umschaltung „Tabelle / Kalender" war im Hellmodus praktisch unsichtbar (weiß auf weiß) – jetzt deutlich sichtbar.',
+        'Drucken: Kalender, Marken und Farbflächen kamen weiß auf weiß aus dem Drucker. Jetzt werden die Farben gedruckt; Kopfzeile, Reiter und Filterleisten erscheinen nicht mehr im Ausdruck.',
+        'Provider: das ⚙ neben „Kurse" konnte bei knappem Danebenklicken versehentlich einen Kurs an-/abwählen. Außerdem wird eine im Dialog gelöschte Kategorie jetzt sauber aus dem Provider entfernt, statt als kryptische ID gespeichert zu werden.',
+        'Dashboard-Anordnen: neben Drag & Drop gibt es jetzt ‹ ›-Buttons – dadurch auch auf iPhone/iPad und per Tastatur bedienbar. Der Verschiebe-Knopf überdeckt die „Gesamt"-Zahl nicht mehr.',
+        'Excel-Import: beim Reimport eines eigenen Exports wurde die Qualifikation als Text statt als Kategorie gespeichert – die Person fiel dadurch aus der Umschulung. Behoben.',
+        'Kapazität: „in Umschulung" zählt nur noch SEN/TRE/TRI/LTC, damit Tabelle und FTE-Anzeige oben übereinstimmen.',
+        'Behörde: „EASA_Austria" und „EASA: Austria" werden jetzt ebenfalls korrekt auf das Land gekürzt.',
+        'Neue Trainer starten in der ersten Phase der Pipeline – auch wenn die Standard-Phasen umbenannt oder gelöscht wurden.',
+        'Bessere Lesbarkeit: „FO"-Marke mit ausreichendem Kontrast; Tabellenzeilen zeigen jetzt einen Tastatur-Fokusrahmen und werden von Screenreadern wieder als Tabelle vorgelesen.'
+      ],
+      en: [
+        'Important: dialogs accepted only one character before the cursor jumped to the ✕. This affected location/note in Planning and every list editor (stages, qualifications, columns, courses, SIM versions, statuses). Fixed.',
+        'Planning: the “Table / Calendar” switch was effectively invisible in light mode (white on white) – now clearly visible.',
+        'Printing: calendars, badges and colour fills printed white on white. Colours now print, and the header, tabs and filter bars are excluded from the printout.',
+        'Providers: the ⚙ next to “Courses” could toggle a course when narrowly mis-clicked. A category deleted from inside the dialog is now removed from the provider instead of being saved as a cryptic id.',
+        'Dashboard arrange: ‹ › buttons alongside drag & drop, so it works on iPhone/iPad and by keyboard. The move control no longer covers the “Total” figure.',
+        'Excel import: re-importing our own export stored the qualification as text rather than a category, dropping the person out of the conversion. Fixed.',
+        'Capacity: “in conversion” counts SEN/TRE/TRI/LTC only, so the table and the FTE figures above agree.',
+        'Authority: “EASA_Austria” and “EASA: Austria” are now shortened to the country as well.',
+        'New trainers start in the pipeline’s first stage – even when the default stages were renamed or deleted.',
+        'Readability: the “FO” badge now has sufficient contrast; table rows show a keyboard focus ring and are announced as a table again by screen readers.'
+      ]
+    }
+  },
   {
     version: '1.13.1',
     date: '2026-07-24',

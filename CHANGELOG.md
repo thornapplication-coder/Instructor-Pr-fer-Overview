@@ -11,6 +11,55 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.13.2] – 2026-07-24
+
+Behebungen aus dem Code-Review (vier parallele Review-Durchgänge:
+Korrektheit, versionsübergreifende Regressionen, Code-Qualität, UX/Druck).
+
+**Wichtigster Fix**
+
+- **Dialoge nahmen nur ein Zeichen an**: nach dem ersten Tastendruck sprang der
+  Cursor auf das ✕. Ursache war der Fokus-Trap aus v1.11.0, der bei jedem
+  Render neu ansetzte. Betroffen waren „Ort"/„Notiz" in der Planung und
+  **alle** Listen-Editoren (Phasen, Berechtigungen, Spalten, Kurse, SIM
+  Versionen, Status) – diese Listen waren dadurch praktisch nicht editierbar.
+
+**Weitere Behebungen**
+
+- **Planung**: die Umschaltung „Tabelle / Kalender" war im Hellmodus weiß auf
+  weiß und damit unsichtbar – der Kalender war nicht auffindbar.
+- **Drucken**: Browser drucken Hintergrundfarben standardmäßig nicht, wodurch
+  Kalender-Chips und Marken weiß auf weiß erschienen. Farben werden jetzt
+  gedruckt; Kopfzeile, Reiter, Fußzeile und Filterleisten bleiben draußen.
+- **Provider**: das ⚙ neben „Kurse" lag in einem `<label>` – ein knapper
+  Danebenklick hat einen Kurs an-/abgewählt. Eine im Dialog gelöschte Kategorie
+  wird jetzt aus dem Provider entfernt statt als rohe ID gespeichert.
+- **Dashboard-Anordnen**: zusätzlich zu Drag & Drop gibt es ‹ ›-Buttons, damit
+  das Umsortieren auf iPhone/iPad (kein HTML5-Drag) und per Tastatur
+  funktioniert; das Bedienelement überdeckt die „Gesamt"-Zahl nicht mehr.
+- **Excel-Import**: der Export schreibt Qualifikations-**Namen**, der Import
+  speicherte sie roh – beim Reimport des eigenen Exports fiel die Person aus
+  der Umschulung. Namen werden jetzt wieder auf die Kategorie abgebildet.
+- **Kapazität**: die Spalte „in Umschulung" zählte auch SFI/TKI und wich damit
+  von den FTE-Zahlen darüber ab; jetzt einheitlich SEN/TRE/TRI/LTC.
+- **Behörde**: „EASA_Austria" und „EASA: Austria" werden ebenfalls auf das Land
+  gekürzt (vorher blieb das Präfix bzw. ein Doppelpunkt stehen).
+- **Neue Trainer** starten in der *ersten* Phase der Pipeline statt im fest
+  verdrahteten „nominated" – wichtig, wenn die Phasen umbenannt/gelöscht wurden.
+- **Import ohne Provider-Liste** fällt jetzt auf die Standard-Provider zurück
+  statt auf eine leere Liste.
+- **Kapazitäts-PDF**: die Spalte „Zieltermine je Monat" war doppelt mit „Phase"
+  überschrieben; die erste Spalte heißt jetzt korrekt „Monat".
+- **Lesbarkeit/Bedienung**: „FO"-Marke mit AA-Kontrast, Tastatur-Fokusrahmen auf
+  Tabellenzeilen, `role="button"` von Tabellenzeilen entfernt (Screenreader
+  lasen sonst alle 13 Spalten als einen Knopfnamen), lokalisierte
+  Provider-Fehlermeldung.
+- **Aufräumen**: doppelte Captain/FO-Zählung entfernt, `headcount()` läuft in
+  einem Durchgang statt acht, der Kurskalender wird gecacht und schlägt Provider
+  über eine Map statt linear nach, die Planungstabelle wird in der
+  Kalenderansicht nicht mehr im Hintergrund gerendert, „Qualifikation je
+  Aircraft" leitet seine Spalten aus der Aircraft-Liste ab.
+
 ## [1.13.1] – 2026-07-24
 
 - **Provider – aufgeräumte Toolbar**: „Kurse bearbeiten", „SIM Versionen

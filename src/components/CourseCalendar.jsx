@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { useMemo } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { courseEntries, courseMonths, monthGrid, monthTitle, stepAbbrev, WEEKDAYS } from '../lib/courseCalendar.js'
 import { shortName } from '../lib/format.js'
@@ -8,11 +8,15 @@ import { shortName } from '../lib/format.js'
 // printed (months never break across pages).
 export default function CourseCalendar({ trainers, steps, providers }) {
   const { t, lang } = useStore()
-  const entries = courseEntries(trainers, steps, providers)
-  const months = courseMonths(entries)
+  // Rebuilt only when the underlying data changes, not on every parent render
+  // (the Planung search box re-renders this on every keystroke).
+  const months = useMemo(() => {
+    const entries = courseEntries(trainers, steps, providers)
+    return { list: courseMonths(entries), count: entries.length }
+  }, [trainers, steps, providers])
   const wd = WEEKDAYS[lang === 'de' ? 'de' : 'en']
 
-  if (!months.length) {
+  if (!months.list.length) {
     return (
       <section className="card">
         <h3 className="card-title">{t('planning_calendar')}</h3>
@@ -25,7 +29,7 @@ export default function CourseCalendar({ trainers, steps, providers }) {
     <section className="card cal-card">
       <div className="card-head">
         <h3 className="card-title">{t('planning_calendar')}</h3>
-        <span className="card-total">{t('planning_calendarStarts')}: {entries.length}</span>
+        <span className="card-total">{t('planning_calendarStarts')}: {months.count}</span>
       </div>
       <p className="muted small no-print">{t('planning_calendarHint')}</p>
 
@@ -42,7 +46,7 @@ export default function CourseCalendar({ trainers, steps, providers }) {
       </ul>
 
       <div className="cal-months">
-        {months.map((m) => (
+        {months.list.map((m) => (
           <div className="cal-month" key={m.month}>
             <div className="cal-month-head">
               <span className="cal-month-name">{monthTitle(m.month, lang)}</span>

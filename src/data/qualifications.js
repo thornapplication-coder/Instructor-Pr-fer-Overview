@@ -44,6 +44,22 @@ export function qualIndex(quals, id) {
   return i < 0 ? quals.length + 1 : i
 }
 
+// Reverse of qualLabel: turn whatever a spreadsheet cell holds back into a
+// stored qual id. Exports write LABELS, so re-importing the app's own export
+// must map "TRI (MAX)" back to the id "TRI" instead of storing the label.
+export function resolveQualId(quals, value) {
+  const s = String(value == null ? '' : value).trim()
+  if (!s) return ''
+  const list = quals || []
+  const byId = list.find((q) => q.id === s)
+  if (byId) return byId.id
+  const lower = s.toLowerCase()
+  const byLabel = list.find((q) => String(q.label || '').trim().toLowerCase() === lower)
+  if (byLabel) return byLabel.id
+  const byIdCase = list.find((q) => String(q.id).toLowerCase() === lower)
+  return byIdCase ? byIdCase.id : s
+}
+
 // Resolve a stored qualification id to its display label. Custom categories are
 // stored on the trainer by their (random) id, so every UI/export site must
 // resolve through this rather than printing the raw id. Falls back to the id.
