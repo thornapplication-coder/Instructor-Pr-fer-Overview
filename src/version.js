@@ -4,12 +4,21 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.10.0'
+export const APP_VERSION = '1.10.1'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.10.1',
+    date: '2026-07-24',
+    type: 'patch',
+    changes: {
+      de: ['Dashboard-PDF passt jetzt vollständig auf eine Seite (statt auf zwei).'],
+      en: ['The dashboard PDF now fits entirely on a single page (instead of two).']
+    }
+  },
   {
     version: '1.10.0',
     date: '2026-07-24',

@@ -11,6 +11,11 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.10.1] – 2026-07-24
+
+- **Dashboard-PDF auf einer Seite**: der Screenshot des Dashboards wird jetzt so
+  skaliert, dass er komplett auf eine A4-Seite passt (vorher zwei Seiten).
+
 ## [1.10.0] – 2026-07-24
 
 - **Dashboard-PDF im echten Layout**: der Dashboard-Export übernimmt jetzt das
