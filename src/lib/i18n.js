@@ -107,6 +107,46 @@ const DICT = {
     en: 'Drag & drop tiles and charts to reorder them within their group. The order is saved.'
   },
 
+  // ---- cloud sync
+  sync_notConfigured: { de: 'Cloud-Sync nicht eingerichtet', en: 'Cloud sync not set up' },
+  sync_notConfiguredHint: {
+    de: 'Es ist kein Supabase-Projekt hinterlegt. Die App arbeitet vollständig lokal; Backup/Export in dieser Seite bleibt der Weg, Daten zu sichern.',
+    en: 'No Supabase project is configured. The app works fully locally; backup/export on this page remains the way to secure your data.'
+  },
+  sync_signedOut: { de: 'Nicht angemeldet', en: 'Not signed in' },
+  sync_offline: { de: 'Offline', en: 'Offline' },
+  sync_syncing: { de: 'Synchronisiert …', en: 'Syncing …' },
+  sync_synced: { de: 'Synchron', en: 'In sync' },
+  sync_error: { de: 'Sync-Fehler', en: 'Sync error' },
+  sync_conflict: { de: 'Konflikt', en: 'Conflict' },
+  sync_conflictHint: {
+    de: 'Dieses Gerät und die Cloud wurden beide geändert. Bitte wähle, welcher Stand gilt – der andere wird überschrieben.',
+    en: 'This device and the cloud both changed. Choose which version wins – the other one is overwritten.'
+  },
+  sync_keepLocal: { de: 'Dieses Gerät behalten', en: 'Keep this device' },
+  sync_takeRemote: { de: 'Cloud-Stand übernehmen', en: 'Take the cloud version' },
+  sync_lastSync: { de: 'Zuletzt synchronisiert', en: 'Last synced' },
+  sync_pending: { de: 'Änderungen noch nicht übertragen', en: 'changes not pushed yet' },
+  sync_now: { de: 'Jetzt synchronisieren', en: 'Sync now' },
+  sync_signIn: { de: 'Anmelden', en: 'Sign in' },
+  sync_signUp: { de: 'Registrieren', en: 'Sign up' },
+  sync_signOut: { de: 'Abmelden', en: 'Sign out' },
+  sync_password: { de: 'Passwort', en: 'Password' },
+  sync_signInHint: {
+    de: 'Mit E-Mail und Passwort anmelden, um die Daten geräteübergreifend zu synchronisieren.',
+    en: 'Sign in with email and password to sync your data across devices.'
+  },
+  sync_signInOk: { de: 'Angemeldet – Sync läuft.', en: 'Signed in – syncing.' },
+  sync_signUpOk: {
+    de: 'Registriert. Falls E-Mail-Bestätigung aktiv ist, bitte zuerst den Link in der E-Mail öffnen.',
+    en: 'Registered. If email confirmation is enabled, open the link in the email first.'
+  },
+  sync_signInErr: { de: 'Anmeldung fehlgeschlagen.', en: 'Sign-in failed.' },
+  sync_note: {
+    de: 'Die App bleibt offline-fähig: lokal gespeichert wird immer, die Cloud ist eine Kopie. Bei gleichzeitigen Änderungen auf zwei Geräten fragt die App nach, statt still zu überschreiben.',
+    en: 'The app stays offline-capable: data is always stored locally, the cloud is a copy. If two devices changed at once, the app asks instead of silently overwriting.'
+  },
+
   // ---- other pilots (company line pilots, not trainers)
   pilots_title: { de: 'Other Pilots – Piloten der Firma', en: 'Other pilots – company pilots' },
   pilots_hint: {

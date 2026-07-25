@@ -8,7 +8,7 @@ import { parseTrainersFromArrayBuffer, mergeTrainerRecords } from '../lib/import
 import { parsePilotsFromArrayBuffer, mergePilotRecords } from '../lib/importPilots.js'
 import { resolveQualId } from '../data/qualifications.js'
 import { APP_VERSION, APP_BUILD_DATE, CHANGELOG, COPYRIGHT } from '../version.js'
-import { cloudConfigured } from '../lib/supabaseSync.js'
+import SyncCard from '../components/SyncCard.jsx'
 import { persistenceStatus } from '../lib/persistence.js'
 
 // Per-page export choices (order matches the tab bar). `excel` is the Excel
@@ -283,14 +283,7 @@ export default function Settings() {
         {pilotMsg && <p className={'inline-msg ' + (pilotMsg.ok ? 'ok' : 'err')}>{pilotMsg.text}</p>}
       </section>
 
-      <section className="card">
-        <h3 className="card-title">{t('cloudSync')}</h3>
-        <p className="muted small">
-          {cloudConfigured
-            ? (lang === 'de' ? 'Cloud-Sync aktiv.' : 'Cloud sync active.')
-            : t('cloudNotConfigured')}
-        </p>
-      </section>
+      <SyncCard />
 
       <section className="card">
         <h3 className="card-title">{t('installHint')}</h3>

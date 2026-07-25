@@ -4,12 +4,33 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.14.0'
+export const APP_VERSION = '1.15.0'
 export const APP_BUILD_DATE = '2026-07-24'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.15.0',
+    date: '2026-07-24',
+    type: 'minor',
+    changes: {
+      de: [
+        'Cloud-Sync (Supabase) ist eingebaut: Anmelden in den Einstellungen, danach werden die Daten automatisch zwischen deinen Geräten abgeglichen.',
+        'Neue Sync-Anzeige oben in der Kopfzeile: „Nicht angemeldet", „Synchronisiert …", „Synchron" (mit Uhrzeit), „Offline", „Sync-Fehler" oder „Konflikt".',
+        'Ausführliche Sync-Karte in den Einstellungen: Status, letzte Synchronisierung, „Jetzt synchronisieren", An-/Abmelden und Registrieren.',
+        'Bei gleichzeitigen Änderungen auf zwei Geräten fragt die App nach („Dieses Gerät behalten" / „Cloud-Stand übernehmen"), statt still zu überschreiben.',
+        'Die App bleibt vollständig offline-fähig: lokal gespeichert wird immer, die Cloud ist eine zusätzliche Kopie.'
+      ],
+      en: [
+        'Cloud sync (Supabase) is built in: sign in from Settings and your data is kept in step across devices.',
+        'New sync indicator in the header: “Not signed in”, “Syncing …”, “In sync” (with time), “Offline”, “Sync error” or “Conflict”.',
+        'Detailed sync card in Settings: state, last sync, “Sync now”, sign in/out and sign up.',
+        'When two devices changed at once the app asks (“Keep this device” / “Take the cloud version”) instead of silently overwriting.',
+        'The app stays fully offline-capable: data is always stored locally, the cloud is an additional copy.'
+      ]
+    }
+  },
   {
     version: '1.14.0',
     date: '2026-07-24',

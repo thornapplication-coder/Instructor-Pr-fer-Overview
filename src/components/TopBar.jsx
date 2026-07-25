@@ -1,5 +1,6 @@
 import React, { useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import SyncBadge from './SyncBadge.jsx'
 
 // App brand mark (inline SVG) — matches the home-screen icon: pure burgundy
 // tile, white "737", blue "TRAINER". White ring so it reads on the header.
@@ -41,6 +42,7 @@ export default function TopBar({ tabs, active, onSelect }) {
           </div>
         </div>
         <div className="topbar-right">
+          <SyncBadge />
           <div className="asof">
             <span className="asof-label">{t('asOf')}</span>
             <span className="asof-date">{asOfStr}</span>

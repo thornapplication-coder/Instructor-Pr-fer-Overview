@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import React, { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
 import { SEED_TRAINERS } from '../data/seed.js'
 import {
   SEED_PROVIDERS,
@@ -13,6 +13,7 @@ import { DEFAULT_QUALS, normalizeQual } from '../data/qualifications.js'
 import { withPilotDefaults } from '../data/pilots.js'
 import { fteFromPartTime, normalizeAuthority } from './format.js'
 import { translate } from './i18n.js'
+import { useCloudSync } from './cloudSync.js'
 
 const STORAGE_KEY = 'ewl737:data:v1'
 const SCHEMA = 2
@@ -280,6 +281,15 @@ export function StoreProvider({ children }) {
     }
   }, [])
 
+  // A blob pulled from the cloud goes through the very same normalize path as a
+  // JSON import, so migrations and defaults apply. It is NOT a local edit, so
+  // the dirty flag stays untouched and the debounced writer just persists it.
+  const applyRemote = useCallback((blob) => {
+    if (!blob || typeof blob !== 'object' || !Array.isArray(blob.trainers)) return
+    setData(seedMissingProviders(normalize(blob)))
+  }, [])
+  const sync = useCloudSync(data, applyRemote)
+
   const lang = data.lang
   useEffect(() => {
     document.documentElement.lang = lang
@@ -457,11 +467,12 @@ export function StoreProvider({ children }) {
       data,
       lang,
       saveError,
+      sync,
       t: (key) => translate(lang, key),
       newId,
       ...api
     }),
-    [data, lang, saveError, api]
+    [data, lang, saveError, sync, api]
   )
 
   return <StoreContext.Provider value={value}>{children}</StoreContext.Provider>

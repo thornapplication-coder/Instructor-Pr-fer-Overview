@@ -1,58 +1,102 @@
-// Cloud sync layer (Supabase). Intentionally INERT until a Supabase project is
-// available (the account's free-tier project slot was full at build time).
+// Cloud sync layer (Supabase). The whole app state is stored as ONE jsonb row
+// per user in `app_state`, which suits a single planner working from a few
+// devices. The app stays fully offline-first: localStorage remains the source
+// of truth, and everything here is best-effort on top of it.
 //
-// To switch it on later:
-//   1. Create a Supabase project (EU/Frankfurt) and a table `app_state`:
-//        create table app_state (
-//          user_id uuid primary key references auth.users(id),
-//          data jsonb not null,
-//          updated_at timestamptz not null default now()
-//        );
-//        alter table app_state enable row level security;
-//        create policy "own row" on app_state
-//          for all using (auth.uid() = user_id) with check (auth.uid() = user_id);
-//   2. Put the URL + anon key into .env as VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY.
-//   3. This module then provides sign-in and last-write-wins push/pull of the whole
-//      data blob (fine for a single user using one device at a time).
+// Configuration (build time, Vite):
+//   VITE_SUPABASE_URL       – https://<ref>.supabase.co
+//   VITE_SUPABASE_ANON_KEY  – the publishable / anon key
+// Without them `cloudConfigured` is false and the app behaves exactly as before.
 //
-// The rest of the app already works fully offline (localStorage) and supports
-// manual Export/Import, so nothing here is required for day-to-day use.
+// The matching schema lives in supabase/migrations/0001_app_state.sql.
 
 const URL = import.meta.env.VITE_SUPABASE_URL
 const ANON = import.meta.env.VITE_SUPABASE_ANON_KEY
 
 export const cloudConfigured = Boolean(URL && ANON)
 
+const TABLE = 'app_state'
+
 let client = null
-async function getClient() {
+export async function getClient() {
   if (!cloudConfigured) return null
   if (client) return client
   const { createClient } = await import('@supabase/supabase-js')
-  client = createClient(URL, ANON)
+  client = createClient(URL, ANON, {
+    auth: { persistSession: true, autoRefreshToken: true }
+  })
   return client
+}
+
+export async function getUser() {
+  const c = await getClient()
+  if (!c) return null
+  const { data } = await c.auth.getUser()
+  return data?.user || null
 }
 
 export async function signIn(email, password) {
   const c = await getClient()
   if (!c) throw new Error('cloud not configured')
-  return c.auth.signInWithPassword({ email, password })
+  const { data, error } = await c.auth.signInWithPassword({ email, password })
+  if (error) throw error
+  return data.user
 }
 
+export async function signUp(email, password) {
+  const c = await getClient()
+  if (!c) throw new Error('cloud not configured')
+  const { data, error } = await c.auth.signUp({ email, password })
+  if (error) throw error
+  return data.user
+}
+
+export async function signOut() {
+  const c = await getClient()
+  if (!c) return
+  await c.auth.signOut()
+}
+
+// Notifies on sign-in / sign-out / token refresh. Returns an unsubscribe fn.
+export async function onAuthChange(cb) {
+  const c = await getClient()
+  if (!c) return () => {}
+  const { data } = c.auth.onAuthStateChange((_evt, session) => cb(session?.user || null))
+  return () => data?.subscription?.unsubscribe?.()
+}
+
+// Read the remote row. Returns { blob, remoteAt } or null when nothing is
+// stored yet. `remoteAt` is the server-side updated_at, used to detect whether
+// another device wrote since our last sync.
 export async function pull() {
   const c = await getClient()
   if (!c) return null
-  const { data: sess } = await c.auth.getUser()
-  if (!sess?.user) return null
-  const { data } = await c.from('app_state').select('data').eq('user_id', sess.user.id).single()
-  return data?.data ?? null
+  const user = await getUser()
+  if (!user) return null
+  const { data, error } = await c
+    .from(TABLE)
+    .select('data, updated_at')
+    .eq('user_id', user.id)
+    .maybeSingle()
+  if (error) throw error
+  if (!data) return null
+  return { blob: data.data, remoteAt: data.updated_at }
 }
 
+// Write the blob. Returns the new server updated_at so the caller can track it.
 export async function push(blob) {
   const c = await getClient()
-  if (!c) return
-  const { data: sess } = await c.auth.getUser()
-  if (!sess?.user) return
-  await c
-    .from('app_state')
-    .upsert({ user_id: sess.user.id, data: blob, updated_at: new Date().toISOString() })
+  if (!c) throw new Error('cloud not configured')
+  const user = await getUser()
+  if (!user) throw new Error('not signed in')
+  const { data, error } = await c
+    .from(TABLE)
+    .upsert(
+      { user_id: user.id, data: blob, updated_at: new Date().toISOString() },
+      { onConflict: 'user_id' }
+    )
+    .select('updated_at')
+    .single()
+  if (error) throw error
+  return data.updated_at
 }

@@ -11,6 +11,29 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.15.0] – 2026-07-24
+
+- **Cloud-Sync (Supabase) eingebaut.** In den Einstellungen anmelden – danach
+  gleicht die App die Daten automatisch zwischen deinen Geräten ab (der
+  komplette Datenstand als eine jsonb-Zeile je Benutzer, abgesichert per Row
+  Level Security).
+- **Sync-Status oben in der Kopfzeile**: „Nicht angemeldet", „Synchronisiert …",
+  „Synchron" (mit Uhrzeit der letzten Übertragung), „Offline", „Sync-Fehler"
+  oder „Konflikt" – farbig und auf dem Handy platzsparend nur als Symbol.
+- **Sync-Karte in den Einstellungen**: aktueller Status inkl. E-Mail, Zeitpunkt
+  der letzten Synchronisierung, Hinweis auf noch nicht übertragene Änderungen,
+  „Jetzt synchronisieren", An-/Abmelden und Registrieren.
+- **Konflikte werden nicht still überschrieben.** Wenn dieses Gerät *und* die
+  Cloud sich seit dem letzten Abgleich geändert haben, hält die App an und
+  fragt: „Dieses Gerät behalten" oder „Cloud-Stand übernehmen".
+- **Offline-first bleibt bestehen**: lokal gespeichert wird immer, die Cloud ist
+  eine zusätzliche Kopie. Ohne konfiguriertes Projekt verhält sich die App
+  exakt wie bisher und sagt das in den Einstellungen auch klar.
+- Schema als Migration im Repo (`supabase/migrations/0001_app_state.sql`),
+  Konfiguration über `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`
+  (siehe `.env.example`); der Deploy-Workflow reicht sie als GitHub-Secrets
+  durch.
+
 ## [1.14.0] – 2026-07-24
 
 - **Neuer Reiter „Other Pilots"** (direkt vor den Einstellungen): Linienpiloten

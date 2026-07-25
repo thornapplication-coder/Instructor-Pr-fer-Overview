@@ -29,7 +29,13 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      # Cloud sync is optional: without these repo secrets the build simply ships
+      # the offline-only app (the Settings card then says "not set up").
+      # Add them under Settings → Secrets and variables → Actions.
       - run: npm run build
+        env:
+          VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}
+          VITE_SUPABASE_ANON_KEY: ${{ secrets.VITE_SUPABASE_ANON_KEY }}
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist
