@@ -7,7 +7,7 @@ import { exportPagePdf } from '../lib/pdfExport.js'
 import { parseTrainersFromArrayBuffer, mergeTrainerRecords } from '../lib/importExcel.js'
 import { parsePilotsFromArrayBuffer, mergePilotRecords } from '../lib/importPilots.js'
 import { resolveQualId } from '../data/qualifications.js'
-import { APP_VERSION, APP_BUILD_DATE, CHANGELOG, COPYRIGHT } from '../version.js'
+import { APP_VERSION, APP_BUILD_DATE, CHANGELOG } from '../version.js'
 import SyncCard from '../components/SyncCard.jsx'
 import { persistenceStatus } from '../lib/persistence.js'
 
@@ -83,7 +83,8 @@ export default function Settings() {
   const doExport = () => {
     const stamp = new Date().toISOString().slice(0, 10)
     const payload = {
-      _meta: { copyright: COPYRIGHT, version: APP_VERSION, exportedAt: new Date().toISOString() },
+      // Version and timestamp only – no byline on a file that gets handed on.
+      _meta: { version: APP_VERSION, exportedAt: new Date().toISOString() },
       ...exportData()
     }
     downloadJson(`737trainer-backup-${stamp}.json`, payload)

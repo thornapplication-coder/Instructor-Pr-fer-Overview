@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.23.0'
+export const APP_VERSION = '1.23.1'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.23.1',
+    date: '2026-07-25',
+    type: 'patch',
+    changes: {
+      de: [
+        'Aus allen Exporten ist der Copyright-Hinweis entfernt: PDF-Fußzeile, Excel-Fußzeile und die JSON-Sicherung. In der Fußzeile steht jetzt nur noch die Version – auf einem ausgedruckten Blatt ist das die einzige Möglichkeit zu erkennen, aus welchem Stand die Zahlen stammen.',
+        'Der Excel-Import erkennt die neue Fußzeile und wirft sie beim Wiedereinlesen weg – sonst wäre daraus ein Trainer namens „v1.23.1" geworden. Ältere Dateien mit der alten Copyright-Fußzeile werden weiterhin erkannt.',
+        'In der App selbst (Fußzeile unten am Bildschirm) steht der Hinweis weiterhin – dort war er nicht gemeint.'
+      ],
+      en: [
+        'The copyright notice is gone from every export: PDF footer, Excel footer and the JSON backup. The footer now carries the version only – on a printed page that is the only way to tell which build the numbers came from.',
+        'The Excel import recognises the new footer and drops it on re-import – otherwise it would have become a trainer named "v1.23.1". Older files with the previous copyright footer are still recognised.',
+        'In the app itself (the footer at the bottom of the screen) the notice stays – that was not what was meant.'
+      ]
+    }
+  },
   {
     version: '1.23.0',
     date: '2026-07-25',

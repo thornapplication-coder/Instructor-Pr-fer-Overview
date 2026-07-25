@@ -23,9 +23,12 @@ export default async function run(browser, baseUrl, shots) {
     const path = await dl.path()
     const { readFileSync } = await import('node:fs')
     const buf = readFileSync(path)
+    const text = buf.toString('latin1')
     // Page objects are the /Type /Page entries in the PDF body.
-    const n = (buf.toString('latin1').match(/\/Type\s*\/Page[^s]/g) || []).length
-    return { n, bytes: buf.length }
+    const n = (text.match(/\/Type\s*\/Page[^s]/g) || []).length
+    // jsPDF writes the text streams uncompressed here, which is what lets the
+    // page count above work – so the footer is readable in the raw bytes too.
+    return { n, bytes: buf.length, text }
   }
 
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
@@ -41,6 +44,24 @@ export default async function run(browser, baseUrl, shots) {
   console.log('     dashboard PDF: ' + a.n + ' page(s), ' + Math.round(a.bytes / 1024) + ' KB')
   ok(a.n >= 1 && a.n <= 2, 'the dashboard PDF renders 1-2 pages, not an endless shrink (' + a.n + ')')
   ok(a.bytes > 20000, 'the PDF has real content in it')
+  // The reports get handed on, so no personal byline may ride along. Checked on
+  // the produced bytes, not on the helper that builds the string.
+  ok(!/copyright/i.test(a.text), 'and no copyright notice anywhere in it')
+  // Matched by pattern, not against src/version.js: the running app is whatever
+  // `npm run build` last produced, so comparing to the source version would
+  // fail purely because a version bump had not been rebuilt yet.
+  ok(/v\d+\.\d+\.\d+/.test(a.text), 'but it does carry a build version (' + (/v\d+\.\d+\.\d+/.exec(a.text) || [''])[0] + ')')
+
+  // Same for the Excel export – it shares footerLine() but is written by a
+  // different code path.
+  const [xls] = await Promise.all([
+    page.waitForEvent('download', { timeout: 60000 }),
+    page.locator('.downloads-card .dl-chip.xls').first().click()
+  ])
+  const { readFileSync: readXls } = await import('node:fs')
+  const xlsText = readXls(await xls.path()).toString('utf8')
+  ok(!/copyright/i.test(xlsText), 'the Excel export carries no copyright notice either')
+  ok(/v\d+\.\d+\.\d+/.test(xlsText), 'and still names the build')
 
   // Force a very tall dashboard and confirm it spills rather than shrinking away.
   await page.evaluate((KEY) => {

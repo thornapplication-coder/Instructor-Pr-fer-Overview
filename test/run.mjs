@@ -5,8 +5,9 @@ import { results as coverage } from './sync-coverage.test.mjs'
 import { results as fte } from './fte.test.mjs'
 import { results as history } from './history.test.mjs'
 import { results as plan } from './plan.test.mjs'
+import { results as exports } from './exports.test.mjs'
 
-const fails = [...merge.fails, ...coverage.fails, ...fte.fails, ...history.fails, ...plan.fails]
+const fails = [...merge.fails, ...coverage.fails, ...fte.fails, ...history.fails, ...plan.fails, ...exports.fails]
 console.log('')
 if (fails.length) {
   console.log(`FAILED – ${fails.length} check(s):`)

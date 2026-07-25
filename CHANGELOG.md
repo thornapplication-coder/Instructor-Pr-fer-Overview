@@ -11,6 +11,28 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.23.1] – 2026-07-25
+
+- **Kein Copyright-Hinweis mehr auf den Exporten.** Entfernt aus der PDF-
+  Fußzeile (jede Seite), der Excel-Fußzeile und dem `_meta`-Block der
+  JSON-Sicherung. Die Fußzeile trägt jetzt nur noch die Version — auf einem
+  ausgedruckten Blatt ist das die einzige Möglichkeit zu erkennen, aus welchem
+  Stand die Zahlen stammen.
+- **Der Excel-Import musste mitgeändert werden.** Er erkennt die eigenen
+  Kopf- und Fußzeilen an ihrem Text, und die Fußzeile fand er bisher am „©".
+  Ohne Anpassung wäre beim Wiedereinlesen eines Exports ein Trainer namens
+  „v1.23.1" entstanden — genau der Fehler, der in 1.8.1 schon einmal behoben
+  wurde. `isExportBanner()` kennt jetzt drei Marker: den Banner, die neue
+  Versions-Fußzeile und die **alte** Copyright-Fußzeile, damit vorher
+  exportierte Dateien weiterhin sauber eingelesen werden.
+- **Auf dem Bildschirm** bleibt der Hinweis in der App-Fußzeile stehen — dort
+  war er nicht gemeint.
+- Abgesichert: `test/exports.test.mjs` prüft Fußzeile und Import gemeinsam
+  (inkl. der alten Fußzeile und der Gegenprobe, dass „Senior 737 Trainer" als
+  Bemerkung **nicht** für eine Bannerzeile gehalten wird); der Browser-Test
+  liest die erzeugte PDF- und Excel-Datei und prüft, dass dort kein
+  „Copyright" mehr vorkommt.
+
 ## [1.23.0] – 2026-07-25
 
 - **Die ORE-Stufe „Rente" ist entfernt.** Aus den Auswahlfeldern (Trainer,

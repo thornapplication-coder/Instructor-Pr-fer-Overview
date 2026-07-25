@@ -251,13 +251,18 @@ export function parseTrainersFromArrayBuffer(buf) {
   })
 }
 
-// Rows the app's own export adds (the "737 TRAINER …" banner and the "©
-// Copyright …" footer) always occupy column 0. Anchor the check there and to
-// unmistakable markers so a legitimate remark like "Senior 737 Trainer" in some
-// other column is never mistaken for a banner and dropped.
-function isExportBanner(row) {
+// Rows the app's own export adds (the "737 TRAINER …" banner and the version
+// footer) always occupy column 0. Anchor the check there and to unmistakable
+// markers so a legitimate remark like "Senior 737 Trainer" in some other column
+// is never mistaken for a banner and dropped.
+//
+// Three markers, not one: the banner, the bare "v1.23.0" footer written since
+// the copyright was dropped from exports, and the "© Copyright …" footer every
+// file exported before that still carries – re-importing an older export has to
+// keep working, or it silently gains a trainer named after the footer.
+export function isExportBanner(row) {
   const s = norm(row && row[0])
-  return s.startsWith('737 trainer') || s.includes('©')
+  return s.startsWith('737 trainer') || s.includes('©') || /^v\d+\.\d+\.\d+$/.test(s)
 }
 
 // Merge records into the existing trainer list. Match by TLC, then name.

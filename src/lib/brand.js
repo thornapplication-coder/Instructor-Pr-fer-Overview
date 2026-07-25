@@ -2,7 +2,7 @@
 // The colours come from the documented palette rather than a second copy –
 // this file used to carry its own hexes with a comment asking future readers to
 // keep them in sync by hand, which is exactly how palettes drift.
-import { APP_VERSION, COPYRIGHT } from '../version.js'
+import { APP_VERSION } from '../version.js'
 import { BRAND, OVERFLOW } from './palette.js'
 
 export const BRAND_NAME = '737 TRAINER'
@@ -19,8 +19,13 @@ export function hexToRgb(hex) {
 }
 
 // Footer line shown on every PDF page and at the bottom of every Excel sheet.
+//
+// No copyright notice: these reports are handed on, and a personal byline has
+// no place on them. The version stays – on a printed page it is the only way to
+// tell which build produced the numbers. Keep it matched by `isExportBanner()`
+// in importExcel.js, or re-importing our own export adds it as a trainer.
 export function footerLine() {
-  return `${COPYRIGHT} · v${APP_VERSION}`
+  return `v${APP_VERSION}`
 }
 
 // Local (not UTC) YYYY-MM-DD for filenames, so a file's name matches the date
