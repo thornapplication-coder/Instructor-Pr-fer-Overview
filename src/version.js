@@ -4,12 +4,25 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.15.5'
+export const APP_VERSION = '1.15.6'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.15.6',
+    date: '2026-07-25',
+    type: 'patch',
+    changes: {
+      de: [
+        'Umschulung: die Kacheln sind jetzt deutlich schmäler (Spalte höchstens 200 px statt über die ganze Breite gezogen, auf dem Handy 168 px). Innenabstände, Marken und die ‹ ›-Knöpfe wurden mit verkleinert, damit die Karten nicht höher werden – dadurch sind mehr Phasen gleichzeitig sichtbar.'
+      ],
+      en: [
+        'Conversion: the cards are noticeably narrower (column capped at 200px instead of stretching across the viewport, 168px on a phone). Padding, badges and the ‹ › buttons were tightened along with it so the cards do not grow taller – more stages fit on screen at once.'
+      ]
+    }
+  },
   {
     version: '1.15.5',
     date: '2026-07-25',

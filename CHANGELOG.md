@@ -11,6 +11,16 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.15.6] – 2026-07-25
+
+- **Umschulung: schmälere Kacheln.** Die Spalten hatten keine Obergrenze und
+  zogen sich über die volle Bildschirmbreite, wodurch jede Karte viel breiter
+  war als ihr Inhalt. Jetzt max. **200 px** (Handy 168 px), der Rest scrollt
+  seitwärts. Innenabstände, Marken und die ‹ ›-Knöpfe wurden mitverkleinert,
+  damit die Karten nicht höher werden – geprüft: keine Karte läuft über, die
+  Verschiebe-Knöpfe bleiben tippbar (26 × 23 px), und das gleiche `.mini-btn`
+  in den Listen-Editoren behält seine Originalgröße (30 × 26 px).
+
 ## [1.15.5] – 2026-07-25
 
 - **Keine stumme weiße Seite mehr.** Lädt die App nicht (z. B. weil der Browser

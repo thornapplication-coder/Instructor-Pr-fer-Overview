@@ -395,23 +395,34 @@ select.input { cursor: pointer; }
 .hscroll-top { scrollbar-width: thin; }
 
 /* ---------- Board ---------- */
-.board { display: flex; gap: 14px; overflow-x: auto; padding-bottom: 8px; }
-.board-col { flex: 1 0 200px; min-width: 200px; background: var(--panel2); border-radius: var(--radius); display: flex; flex-direction: column; }
-.board-col-head { display: flex; align-items: center; justify-content: space-between; padding: 12px 14px; border-top: 4px solid var(--burg); border-radius: var(--radius) var(--radius) 0 0; background: #fff; }
-.board-col-title { font-weight: 800; font-size: 13px; color: var(--ink); }
-.board-col-count { background: var(--panel2); color: var(--muted); border-radius: 999px; padding: 1px 9px; font-weight: 800; font-size: 12px; }
-.board-col-body { padding: 10px; display: flex; flex-direction: column; gap: 10px; min-height: 60px; }
+.board { display: flex; gap: 10px; overflow-x: auto; padding-bottom: 8px; }
+/* Capped width: without a max the columns stretched to fill the viewport, which
+   made every card far wider than its content needed. */
+.board-col { flex: 1 1 168px; min-width: 168px; max-width: 200px; background: var(--panel2); border-radius: var(--radius); display: flex; flex-direction: column; }
+.board-col-head { display: flex; align-items: center; justify-content: space-between; gap: 6px; padding: 9px 10px; border-top: 4px solid var(--burg); border-radius: var(--radius) var(--radius) 0 0; background: #fff; }
+.board-col-title { font-weight: 800; font-size: 12.5px; color: var(--ink); overflow-wrap: anywhere; }
+.board-col-count { background: var(--panel2); color: var(--muted); border-radius: 999px; padding: 1px 8px; font-weight: 800; font-size: 12px; flex: none; }
+.board-col-body { padding: 8px; display: flex; flex-direction: column; gap: 8px; min-height: 60px; }
 .board-empty { text-align: center; color: var(--muted); padding: 8px; font-size: 13px; }
-.conv-card { background: #fff; border-radius: var(--radius-sm); box-shadow: var(--shadow); padding: 10px 11px; border: 1px solid var(--hair); }
-.conv-card-top { display: flex; align-items: center; gap: 8px; }
-.conv-status-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; }
-.conv-name { border: 0; background: transparent; padding: 0; font-weight: 800; font-size: 13.5px; color: var(--ink); cursor: pointer; text-align: left; }
+/* Tight on purpose: the column is narrow, so every saved pixel of padding goes
+   into fewer wrapped lines rather than a taller card. */
+.conv-card { background: #fff; border-radius: var(--radius-sm); box-shadow: var(--shadow); padding: 8px; border: 1px solid var(--hair); }
+.conv-card-top { display: flex; align-items: flex-start; gap: 6px; }
+.conv-status-dot { width: 9px; height: 9px; border-radius: 50%; flex: none; margin-top: 4px; }
+.conv-name { border: 0; background: transparent; padding: 0; font-weight: 800; font-size: 12.5px; line-height: 1.3; color: var(--ink); cursor: pointer; text-align: left; overflow-wrap: anywhere; }
 .conv-name:hover { color: var(--burg); text-decoration: underline; }
-.conv-meta { display: flex; align-items: center; gap: 6px; margin-top: 7px; flex-wrap: wrap; }
+.conv-meta { display: flex; align-items: center; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
 .chip-sm { background: var(--panel2); color: var(--muted); border-radius: 5px; padding: 1px 6px; font-size: 11px; font-weight: 700; }
-.conv-target { margin-top: 7px; font-size: 12px; color: var(--burg-dark); font-weight: 700; }
-.conv-note { margin-top: 4px; font-size: 12px; color: var(--muted); }
-.conv-actions { display: flex; gap: 6px; margin-top: 9px; justify-content: flex-end; }
+.conv-target { margin-top: 6px; font-size: 12px; color: var(--burg-dark); font-weight: 700; }
+.conv-note { margin-top: 4px; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
+.conv-actions { display: flex; gap: 4px; margin-top: 6px; justify-content: flex-end; }
+/* Scoped to the board: .mini-btn is shared with the list editors, where the
+   larger hit area is worth keeping. */
+.conv-actions .mini-btn { width: 26px; height: 23px; font-size: 14px; }
+/* The card carries six tags; trimming their padding saves a wrapped row. */
+.conv-meta .chip-sm { font-size: 10.5px; padding: 1px 5px; }
+.conv-meta .ore-tag { min-width: 18px; padding: 1px 5px; font-size: 10.5px; }
+.conv-meta .qual-tag.sm, .conv-meta .role-tag.sm, .conv-meta .ac-tag.sm, .conv-meta .staff-tag.sm { padding: 1px 5px; }
 .mini-btn { border: 1px solid var(--hair); background: #fff; border-radius: 6px; width: 30px; height: 26px; font-size: 16px; line-height: 1; cursor: pointer; color: var(--burg); font-weight: 800; }
 .mini-btn:disabled { opacity: .3; cursor: default; }
 .mini-btn:not(:disabled):hover { background: var(--sky-lightest); }
