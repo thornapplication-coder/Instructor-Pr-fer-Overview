@@ -118,13 +118,12 @@ const DICT = {
   sync_syncing: { de: 'Synchronisiert …', en: 'Syncing …' },
   sync_synced: { de: 'Synchron', en: 'In sync' },
   sync_error: { de: 'Sync-Fehler', en: 'Sync error' },
-  sync_conflict: { de: 'Konflikt', en: 'Conflict' },
-  sync_conflictHint: {
-    de: 'Dieses Gerät und die Cloud wurden beide geändert. Bitte wähle, welcher Stand gilt – der andere wird überschrieben.',
-    en: 'This device and the cloud both changed. Choose which version wins – the other one is overwritten.'
+  sync_backupHint: {
+    de: 'Der Cloud-Stand wurde übernommen. Noch nicht übertragene Änderungen dieses Geräts von {t} wurden vorher gesichert.',
+    en: 'The cloud version was applied. Changes on this device from {t} that had not been pushed were backed up first.'
   },
-  sync_keepLocal: { de: 'Dieses Gerät behalten', en: 'Keep this device' },
-  sync_takeRemote: { de: 'Cloud-Stand übernehmen', en: 'Take the cloud version' },
+  sync_restoreBackup: { de: 'Gesicherten Stand zurückholen', en: 'Restore the backup' },
+  sync_dismissBackup: { de: 'Verwerfen', en: 'Discard' },
   sync_lastSync: { de: 'Zuletzt synchronisiert', en: 'Last synced' },
   sync_pending: { de: 'Änderungen noch nicht übertragen', en: 'changes not pushed yet' },
   sync_now: { de: 'Jetzt synchronisieren', en: 'Sync now' },
@@ -177,8 +176,8 @@ const DICT = {
   },
   sync_signInErr: { de: 'Anmeldung fehlgeschlagen.', en: 'Sign-in failed.' },
   sync_note: {
-    de: 'Die App bleibt offline-fähig: lokal gespeichert wird immer, die Cloud ist eine Kopie. Bei gleichzeitigen Änderungen auf zwei Geräten fragt die App nach, statt still zu überschreiben.',
-    en: 'The app stays offline-capable: data is always stored locally, the cloud is a copy. If two devices changed at once, the app asks instead of silently overwriting.'
+    de: 'Die App bleibt offline-fähig: lokal gespeichert wird immer, die Cloud ist eine Kopie. Abgeglichen wird automatisch alle 2 Minuten, beim Öffnen der App und ein paar Sekunden nach jeder Änderung. Weicht die Cloud ab, gilt immer der Cloud-Stand – noch nicht übertragene Änderungen dieses Geräts werden vorher gesichert.',
+    en: 'The app stays offline-capable: data is always stored locally, the cloud is a copy. It reconciles automatically every 2 minutes, when the app is opened and a few seconds after each change. If the cloud differs, the cloud version always wins – changes on this device that had not been pushed are backed up first.'
   },
 
   // ---- other pilots (company line pilots, not trainers)

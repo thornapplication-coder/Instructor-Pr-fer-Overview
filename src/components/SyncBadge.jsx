@@ -3,7 +3,7 @@ import { useStore } from '../lib/store.jsx'
 
 // Cloud-sync indicator for the header: one dot, deliberately binary.
 //   green = signed in and in sync
-//   red   = anything else (not signed in, offline, error, conflict)
+//   red   = anything else (not signed in, offline, sync error)
 // The precise state stays available as tooltip / screen-reader text, so nothing
 // is lost by dropping the label. Hidden entirely when no Supabase project is
 // configured, so the purely-local build looks exactly as before.
@@ -12,8 +12,7 @@ const KEYS = {
   offline: 'sync_offline',
   syncing: 'sync_syncing',
   synced: 'sync_synced',
-  error: 'sync_error',
-  conflict: 'sync_conflict'
+  error: 'sync_error'
 }
 
 export default function SyncBadge() {

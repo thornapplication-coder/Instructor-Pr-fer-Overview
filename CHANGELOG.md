@@ -11,6 +11,23 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.16.0] – 2026-07-25
+
+- **Automatischer Sync alle 2 Minuten.** Zusätzlich beim Start, beim
+  Zurückwechseln zur App (Handy/Tablet frieren Timer im Hintergrund ein) und
+  rund 2 Sekunden nach jeder Änderung.
+- **Die Cloud gewinnt immer.** Weicht der Server-Stand ab, wird er übernommen –
+  ohne Rückfrage. Der Zustand „Konflikt" und die Auswahl „Dieses Gerät behalten /
+  Cloud-Stand übernehmen" entfallen.
+- **Sicherung statt Datenverlust.** Waren auf diesem Gerät noch nicht
+  übertragene Änderungen offen, wird der lokale Stand vor dem Überschreiben
+  weggeschrieben. Die Sync-Karte in den Einstellungen zeigt dann
+  „Gesicherten Stand zurückholen" (mit Zeitpunkt); der Klick stellt ihn wieder
+  her und schiebt ihn als neuen Stand in die Cloud.
+- Hinweis zur Mehrgeräte-Nutzung: der Datensatz wird als Ganzes ersetzt, nicht
+  je Datensatz zusammengeführt. Wer offline auf zwei Geräten arbeitet, sollte
+  vor dem Bearbeiten den grünen Punkt abwarten.
+
 ## [1.15.6] – 2026-07-25
 
 - **Umschulung: schmälere Kacheln.** Die Spalten hatten keine Obergrenze und

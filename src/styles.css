@@ -480,7 +480,7 @@ select.input { cursor: pointer; }
 .sync-line.warn .sync-dot { background: var(--amber); }
 .sync-line.err .sync-dot { background: var(--red); }
 .sync-auth { margin-top: 10px; }
-.sync-conflict { margin: 8px 0; }
+.sync-recover { margin: 8px 0; }
 
 /* "valid" rating whose date already passed. */
 .overdue-date { color: var(--red); }
@@ -551,6 +551,9 @@ textarea.input { resize: vertical; }
 .inline-msg { margin-top: 10px; font-weight: 700; font-size: 13px; }
 .inline-msg.ok { color: var(--green); }
 .inline-msg.err { color: var(--red); }
+/* Not an error – the sync worked, it just took local edits with it. */
+.inline-msg.warn { color: #9a6100; }
+:root[data-theme='dark'] .inline-msg.warn { color: var(--amber); }
 .changelog { display: flex; flex-direction: column; gap: 16px; margin-top: 8px; }
 .changelog-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
 .ver-tag { color: #fff; border-radius: 6px; padding: 2px 9px; font-size: 12px; font-weight: 900; background: var(--burg); }

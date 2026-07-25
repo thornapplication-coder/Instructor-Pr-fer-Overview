@@ -2,8 +2,9 @@ import React, { useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { signIn, signUp } from '../lib/supabaseSync.js'
 
-// Full cloud-sync panel for Settings: connection state, sign in / out, manual
-// sync and – when both sides moved – an explicit conflict resolution.
+// Full cloud-sync panel for Settings: connection state, sign in / out, a manual
+// sync, and – after the cloud overwrote unpushed local edits – a one-click way
+// to bring those edits back.
 export default function SyncCard() {
   const { sync, t, lang } = useStore()
   const [email, setEmail] = useState('')
@@ -27,9 +28,13 @@ export default function SyncCard() {
     )
   }
 
-  const { state, user, error, lastSyncedAt, pendingChanges } = sync
-  const when = lastSyncedAt ? new Date(lastSyncedAt) : null
-  const whenStr = when && !isNaN(when) ? when.toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB') : '–'
+  const { state, user, error, lastSyncedAt, pendingChanges, backupAt } = sync
+  const loc = lang === 'de' ? 'de-DE' : 'en-GB'
+  const stamp = (v) => {
+    const d = v ? new Date(v) : null
+    return d && !isNaN(d) ? d.toLocaleString(loc) : '–'
+  }
+  const whenStr = stamp(lastSyncedAt)
 
   // Supabase reports raw English API errors; translate the ones a user can
   // actually act on, and say WHAT to do rather than what went wrong.
@@ -72,11 +77,10 @@ export default function SyncCard() {
     offline: 'sync_offline',
     syncing: 'sync_syncing',
     synced: 'sync_synced',
-    error: 'sync_error',
-    conflict: 'sync_conflict'
+    error: 'sync_error'
   }
   const STATE_CLS = {
-    signedOut: 'off', offline: 'warn', syncing: 'busy', synced: 'ok', error: 'err', conflict: 'warn'
+    signedOut: 'off', offline: 'warn', syncing: 'busy', synced: 'ok', error: 'err'
   }
 
   return (
@@ -96,16 +100,17 @@ export default function SyncCard() {
       )}
       {state === 'error' && error && <p className="inline-msg err">{error}</p>}
 
-      {/* Both sides changed since the last agreement – the user picks a side. */}
-      {state === 'conflict' && (
-        <div className="sync-conflict">
-          <p className="inline-msg err">⚠ {t('sync_conflictHint')}</p>
+      {/* The cloud won and took unpushed local edits with it. Never blocks the
+          sync – it is an offer, shown until acted upon. */}
+      {backupAt && (
+        <div className="sync-recover">
+          <p className="inline-msg warn">⚠ {t('sync_backupHint').replace('{t}', stamp(backupAt))}</p>
           <div className="btn-row">
-            <button className="btn btn-primary" disabled={busy} onClick={() => sync.keepLocal()}>
-              {t('sync_keepLocal')}
+            <button className="btn btn-primary" disabled={busy || state === 'syncing'} onClick={() => sync.restoreBackup()}>
+              {t('sync_restoreBackup')}
             </button>
-            <button className="btn btn-ghost" disabled={busy} onClick={() => sync.takeRemote()}>
-              {t('sync_takeRemote')}
+            <button className="btn btn-ghost" disabled={busy} onClick={() => sync.dismissBackup()}>
+              {t('sync_dismissBackup')}
             </button>
           </div>
         </div>

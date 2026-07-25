@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.15.6'
+export const APP_VERSION = '1.16.0'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.16.0',
+    date: '2026-07-25',
+    type: 'minor',
+    changes: {
+      de: [
+        'Der Sync läuft jetzt automatisch alle 2 Minuten – zusätzlich beim Öffnen der App, beim Zurückwechseln zur App und rund 2 Sekunden nach jeder Änderung.',
+        'Weicht die Cloud ab, gilt immer der Cloud-Stand. Die Rückfrage „Dieses Gerät behalten / Cloud-Stand übernehmen" entfällt damit ersatzlos.',
+        'Damit dabei nichts verloren geht: waren auf diesem Gerät noch nicht übertragene Änderungen offen, werden sie vorher gesichert. In den Einstellungen erscheint dann „Gesicherten Stand zurückholen" – ein Klick stellt sie wieder her und macht sie zum neuen Cloud-Stand.'
+      ],
+      en: [
+        'Sync now runs automatically every 2 minutes – plus on app start, when returning to the app, and about 2 seconds after each change.',
+        'If the cloud differs, the cloud version always wins. The “Keep this device / Take the cloud version” prompt is gone for good.',
+        'So nothing is lost in the process: if this device still had unpushed changes, they are backed up first. Settings then offers “Restore the backup” – one click brings them back and makes them the new cloud version.'
+      ]
+    }
+  },
   {
     version: '1.15.6',
     date: '2026-07-25',
