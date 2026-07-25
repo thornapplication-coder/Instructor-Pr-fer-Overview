@@ -4,12 +4,39 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.19.0'
+export const APP_VERSION = '1.19.1'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.19.1',
+    date: '2026-07-25',
+    type: 'patch',
+    changes: {
+      de: [
+        'Das Zahnrad zeigt jetzt tatsächlich an, wenn man in den Einstellungen ist – das war in 1.19.0 versprochen, aber nicht umgesetzt.',
+        '„Köpfe vs. FTE je Aircraft" hatte irreführende Farben: die Balken trugen genau die Farben, die auf demselben Dashboard A320 und B737 bedeuten. Jetzt ein eigenes Farbpaar (ein Ton, zwei Stufen), weil Köpfe und FTE dieselbe Größe zweimal gezählt sind.',
+        'Die B737-Zeile zeigte bei 0 einen kleinen farbigen Strich, als wäre etwas vorhanden. Eine Null zeichnet jetzt gar keinen Balken.',
+        'Beide Base-Diagramme listen die Bases wieder in derselben Reihenfolge – vorher standen sie nebeneinander und man verglich versehentlich verschiedene Bases.',
+        'FTE-Zahlen werden im Dashboard und in der Kapazität gleich geschrieben (vorher „42,9" gegen „42.9").',
+        'Lange Anmerkungen machen die Trainer-Tabelle nicht mehr breit – sie brechen um. Die Spalte „Ausstellende Behörde" wird nicht mehr abgeschnitten.',
+        'Ein fehlgeschlagenes Speichern ist jetzt am roten Knopf erkennbar; vorher sah es aus wie ein erfolgreiches.',
+        'Auf sehr schmalen Handys rutscht kein Symbol der Kopfzeile mehr über den Rand.'
+      ],
+      en: [
+        'The gear now actually shows when you are in Settings – promised in 1.19.0 but not implemented.',
+        '"Heads vs. FTE per aircraft" had misleading colours: the bars carried exactly the colours that mean A320 and B737 on the same dashboard. It now uses its own pair (one hue, two steps), because heads and FTE are one measure counted twice.',
+        'The B737 row drew a small coloured stub at zero, suggesting something was there. A zero now draws no bar at all.',
+        'Both base charts list the bases in the same order again – side by side, the old ordering invited comparing the wrong ones.',
+        'FTE figures are written the same way on the dashboard and on the Capacity tab (previously "42,9" vs "42.9").',
+        'Long remarks no longer widen the trainer table – they wrap. The issuing-authority column is no longer truncated.',
+        'A failed save is now visible on the button; it used to look exactly like a successful one.',
+        'On very narrow phones no header icon is pushed off the edge any more.'
+      ]
+    }
+  },
   {
     version: '1.19.0',
     date: '2026-07-25',

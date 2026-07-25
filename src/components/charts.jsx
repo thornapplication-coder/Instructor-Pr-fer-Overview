@@ -15,6 +15,22 @@ export function useChartColor() {
 
 export { slotColor as colorAt }
 
+// One legend for every chart here. It used to be four verbatim copies, so any
+// change (a11y, dark mode, truncation) had to be made four times and drifted.
+function ChartLegend({ items, wrap, className }) {
+  return (
+    <ul className={'legend' + (wrap ? ' legend-wrap' : '') + (className ? ' ' + className : '')}>
+      {items.map((it) => (
+        <li key={it.key}>
+          <span className="dot" style={{ background: it.color }} />
+          <span className="legend-key">{it.label}</span>
+          <span className="legend-val">{it.value}</span>
+        </li>
+      ))}
+    </ul>
+  )
+}
+
 // ---- Donut chart ----------------------------------------------------------
 export function Donut({ data, size = 168, thickness = 26, centerTop, centerBottom }) {
   const pick = useChartColor()
@@ -59,15 +75,7 @@ export function Donut({ data, size = 168, thickness = 26, centerTop, centerBotto
           </text>
         )}
       </svg>
-      <ul className="legend">
-        {data.map((d, i) => (
-          <li key={d.key}>
-            <span className="dot" style={{ background: pick(d.color, i) }} />
-            <span className="legend-key">{d.label || d.key}</span>
-            <span className="legend-val">{d.count}</span>
-          </li>
-        ))}
-      </ul>
+      <ChartLegend items={data.map((d, i) => ({ key: d.key, color: pick(d.color, i), label: d.label || d.key, value: d.count }))} />
     </div>
   )
 }
@@ -131,15 +139,16 @@ export function StackedBars({ data, series }) {
           <div className="hbar-val">{rowTotal(d)}</div>
         </div>
       ))}
-      <ul className="legend legend-wrap stacked-legend">
-        {series.map((ser) => (
-          <li key={ser.key}>
-            <span className="dot" style={{ background: pick(ser.color, 0) }} />
-            <span className="legend-key">{ser.label}</span>
-            <span className="legend-val">{data.reduce((s, d) => s + (d[ser.key] || 0), 0)}</span>
-          </li>
-        ))}
-      </ul>
+      <ChartLegend
+        wrap
+        className="stacked-legend"
+        items={series.map((ser) => ({
+          key: ser.key,
+          color: pick(ser.color, 0),
+          label: ser.label,
+          value: data.reduce((s, d) => s + (d[ser.key] || 0), 0)
+        }))}
+      />
     </div>
   )
 }
@@ -159,30 +168,38 @@ export function GroupedBars({ data, series, format }) {
         <div className="gbar-row" key={d.key}>
           <div className="hbar-label" title={d.label || d.key}>{d.label || d.key}</div>
           <div className="gbar-group">
-            {series.map((ser, i) => (
-              <div className="gbar-line" key={ser.key}>
-                <div className="gbar-track">
-                  <div
-                    className="gbar-fill"
-                    style={{ width: `${((d[ser.key] || 0) / max) * 100}%`, background: pick(ser.color, i) }}
-                    title={`${ser.label}: ${fmt(d[ser.key] || 0)}`}
-                  />
+            {series.map((ser, i) => {
+              const v = d[ser.key] || 0
+              return (
+                <div className="gbar-line" key={ser.key}>
+                  <div className="gbar-track">
+                    {/* No mark for a zero: .gbar-fill has a 3px minimum, so an
+                        empty B737 row would otherwise show a coloured stub and
+                        read as "a little capacity exists". */}
+                    {v > 0 && (
+                      <div
+                        className="gbar-fill"
+                        style={{ width: `${(v / max) * 100}%`, background: pick(ser.color, i) }}
+                        title={`${ser.label}: ${fmt(v)}`}
+                      />
+                    )}
+                  </div>
+                  <span className="gbar-val">{fmt(v)}</span>
                 </div>
-                <span className="gbar-val">{fmt(d[ser.key] || 0)}</span>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       ))}
-      <ul className="legend legend-wrap">
-        {series.map((ser, i) => (
-          <li key={ser.key}>
-            <span className="dot" style={{ background: pick(ser.color, i) }} />
-            <span className="legend-key">{ser.label}</span>
-            <span className="legend-val">{fmt(data.reduce((s2, d) => s2 + (d[ser.key] || 0), 0))}</span>
-          </li>
-        ))}
-      </ul>
+      <ChartLegend
+        wrap
+        items={series.map((ser, i) => ({
+          key: ser.key,
+          color: pick(ser.color, i),
+          label: ser.label,
+          value: fmt(data.reduce((s2, d) => s2 + (d[ser.key] || 0), 0))
+        }))}
+      />
     </div>
   )
 }
@@ -239,15 +256,10 @@ export function PipelineBar({ stages }) {
           ) : null
         )}
       </div>
-      <ul className="legend legend-wrap">
-        {stages.map((s) => (
-          <li key={s.id}>
-            <span className="dot" style={{ background: pick(s.color, 0) }} />
-            <span className="legend-key">{s.label}</span>
-            <span className="legend-val">{s.count}</span>
-          </li>
-        ))}
-      </ul>
+      <ChartLegend
+        wrap
+        items={stages.map((s) => ({ key: s.id, color: pick(s.color, 0), label: s.label, value: s.count }))}
+      />
     </div>
   )
 }

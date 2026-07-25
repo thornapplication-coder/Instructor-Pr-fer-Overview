@@ -17,13 +17,22 @@ function BrandMark() {
   )
 }
 
-// Settings is reached by the gear in the header rather than by a tab: it is a
-// destination you visit occasionally, not one of the working views, and it kept
-// the tab row from fitting on a phone.
-const ICON_TAB = 'settings'
+// A tab marked `icon` in App's TABS is reached from the header instead of the
+// tab row – an occasional destination rather than one of the working views.
+// The id is never hardcoded here: renaming it in App must not leave this
+// component pointing at a view that no longer exists.
+const GEAR = (
+  <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
+    strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+    <circle cx="12" cy="12" r="3.2" />
+    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+  </svg>
+)
 
 export default function TopBar({ tabs, active, onSelect }) {
   const { t, lang, setLang, data, setTheme, saveNow, saveError } = useStore()
+  const iconTabs = tabs.filter((tab) => tab.icon)
+  const navTabs = tabs.filter((tab) => !tab.icon)
   const [saved, setSaved] = useState(false)
   const theme = data.theme || 'light'
   // Only flash the "saved" check when the write actually succeeded; a failed
@@ -63,19 +72,18 @@ export default function TopBar({ tabs, active, onSelect }) {
               </button>
             ))}
           </div>
-          <button
-            className={'icon-round' + (active === ICON_TAB ? ' active' : '')}
-            onClick={() => onSelect(ICON_TAB)}
-            title={t('tab_settings')}
-            aria-label={t('tab_settings')}
-            aria-current={active === ICON_TAB ? 'page' : undefined}
-          >
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
-              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <circle cx="12" cy="12" r="3.2" />
-              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
-            </svg>
-          </button>
+          {iconTabs.map((tab) => (
+            <button
+              key={tab.id}
+              className={'icon-round' + (active === tab.id ? ' active' : '')}
+              onClick={() => onSelect(tab.id)}
+              title={t(tab.labelKey)}
+              aria-label={t(tab.labelKey)}
+              aria-current={active === tab.id ? 'page' : undefined}
+            >
+              {GEAR}
+            </button>
+          ))}
           <button
             className="icon-round"
             onClick={() => window.location.reload()}
@@ -130,7 +138,7 @@ export default function TopBar({ tabs, active, onSelect }) {
         </div>
       </div>
       <nav className="tabs" aria-label="sections">
-        {tabs.filter((tab) => tab.id !== ICON_TAB).map((tab) => (
+        {navTabs.map((tab) => (
           <button
             key={tab.id}
             className={'tab' + (active === tab.id ? ' active' : '')}

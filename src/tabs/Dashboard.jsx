@@ -1,4 +1,4 @@
-import React, { useState } from 'react'
+import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import KpiTile from '../components/KpiTile.jsx'
 import { Donut, GroupedBars, HBars, ProgressRing, PipelineBar, StackedBars, colorAt } from '../components/charts.jsx'
@@ -20,7 +20,8 @@ import {
 import { conversionProgress, STAFF_TYPE } from '../data/pipeline.js'
 import { qualLabel, conversionTrainers } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
-import { CATEGORICAL, OVERFLOW, STATUS, BRAND, stageRamp } from '../lib/palette.js'
+import { CATEGORICAL, MEASURE_PAIR, OVERFLOW, STATUS, BRAND, stageRamp } from '../lib/palette.js'
+import { formatFte1 } from '../lib/format.js'
 
 // ORE is a priority tier (A before B before C), so it reads as an ordinal ramp –
 // darker means more urgent – with retirement dropping out to the neutral.
@@ -134,14 +135,23 @@ export default function Dashboard() {
   // Heads against FTE: the same people counted two ways, so one axis and two
   // grouped bars. The gap between them is the part-time share, which is the
   // point of showing them together. Retirees are already excluded by capacityBy.
+  // One hue in two steps, not two categorical slots: burgundy and sky already
+  // mean A320 and B737 on this very dashboard, so using them here would let the
+  // series colour be mistaken for the row identity.
   const headFte = [
-    { key: 'heads', label: t('metric_heads'), color: CATEGORICAL[0] },
-    { key: 'fte', label: t('metric_fte'), color: CATEGORICAL[1] }
+    { key: 'heads', label: t('metric_heads'), color: MEASURE_PAIR[0] },
+    { key: 'fte', label: t('metric_fte'), color: MEASURE_PAIR[1] }
   ]
   const toHeadFte = (r) => ({ key: r.key, label: r.key, heads: r.headcount, fte: r.total })
-  const capBase = capacityByBase(trainers, AIRCRAFT, stages).rows.map(toHeadFte)
-  const capAc = capacityByAircraft(trainers, AIRCRAFT, stages).rows.map(toHeadFte)
-  const fte1 = (v) => (Math.round(v * 10) / 10).toString().replace('.', lang === 'de' ? ',' : '.')
+  const capBase = useMemo(
+    () => capacityByBase(trainers, AIRCRAFT, stages).rows.map(toHeadFte),
+    [trainers, stages]
+  )
+  const capAc = useMemo(
+    () => capacityByAircraft(trainers, AIRCRAFT, stages).rows.map(toHeadFte),
+    [trainers, stages]
+  )
+  const fte1 = (v) => formatFte1(v, lang)
 
   const pipe = pipelineDistribution(convPool, stages)
   const relevant = convPool.filter((tr) => tr.ore !== 'Rente')

@@ -21,7 +21,10 @@ const TABS = [
   { id: 'planning', labelKey: 'tab_planning', Comp: Planning },
   { id: 'providers', labelKey: 'tab_providers', Comp: Providers },
   { id: 'pilots', labelKey: 'tab_pilots', Comp: Pilots },
-  { id: 'settings', labelKey: 'tab_settings', Comp: Settings }
+  // `icon` keeps this one out of the tab row and puts it in the header
+  // instead. The nav derives that from the record, so nothing has to know the
+  // id 'settings' by name.
+  { id: 'settings', labelKey: 'tab_settings', icon: 'gear', Comp: Settings }
 ]
 
 export default function App() {

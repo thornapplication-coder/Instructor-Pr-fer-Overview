@@ -67,6 +67,16 @@ export function stageRamp(n, dark = false) {
   return Array.from({ length: n }, (_, i) => src[Math.round((i * (src.length - 1)) / (n - 1))])
 }
 
+// A pair for ONE measure counted two ways – headcount against FTE. Those are
+// not two identities, so they take one hue in two steps rather than two
+// categorical slots. Violet deliberately: burgundy and sky already mean A320
+// and B737 on the same dashboard, and blue already means First Officer, so
+// reusing them would let the series colour be read as a row identity.
+// Light on white: dL 0.25, 8.30:1 / 2.86:1 (the lighter step of an ordinal
+// ramp only has to clear 2:1). Dark on #171c22: dL 0.24, 3.98:1 / 10.18:1.
+export const MEASURE_PAIR = ['#6928B0', '#B17FFE']
+export const MEASURE_PAIR_DARK = ['#955BE3', '#D3BDFE']
+
 // --------------------------------------------------------------- status ----
 // Reserved meanings, never used for identity. These are the CHIP fills: they
 // carry white text, so they are stepped for that (≥ 5.3:1) and stay the same in
@@ -93,6 +103,7 @@ export const STATUS_DARK = {
 const DARK_OF = new Map()
 CATEGORICAL.forEach((hex, i) => DARK_OF.set(hex.toLowerCase(), CATEGORICAL_DARK[i]))
 STAGE_RAMP.forEach((hex, i) => DARK_OF.set(hex.toLowerCase(), STAGE_RAMP_DARK[i]))
+MEASURE_PAIR.forEach((hex, i) => DARK_OF.set(hex.toLowerCase(), MEASURE_PAIR_DARK[i]))
 Object.keys(STATUS).forEach((k) => DARK_OF.set(STATUS[k].toLowerCase(), STATUS_DARK[k]))
 DARK_OF.set(OVERFLOW.toLowerCase(), OVERFLOW_DARK)
 

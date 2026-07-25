@@ -21,7 +21,7 @@ function stageResolver(stages) {
 }
 
 const QUAL_ORDER = ['SEN', 'TRE', 'TRI', 'LTC', 'SFI', 'TKI']
-const BASE_ORDER = ['PMI', 'VIE', 'SZG', 'PRG', 'ARN']
+export const BASE_ORDER = ['PMI', 'VIE', 'SZG', 'PRG', 'ARN']
 const ORE_ORDER = ['A', 'B', 'C', 'Rente']
 
 function tally(items, keyFn) {
@@ -200,8 +200,11 @@ function capacityBy(trainers, keyFn, aircraftList, order, stages, seedKeys) {
   return { rows, totals, aircraft: acs }
 }
 
+// Same base order as byBase(): the dashboard shows both next to each other, and
+// two cards listing the bases in different orders invite reading row 1 against
+// row 1 and comparing the wrong two.
 export function capacityByBase(trainers, aircraftList, stages) {
-  return capacityBy(trainers, (t) => t.base || '—', aircraftList, null, stages)
+  return capacityBy(trainers, (t) => t.base || '—', aircraftList, BASE_ORDER, stages)
 }
 
 // FTE capacity grouped by the trainer's CURRENT aircraft. Every known aircraft

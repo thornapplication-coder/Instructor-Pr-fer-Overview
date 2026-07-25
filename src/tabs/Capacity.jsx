@@ -6,11 +6,13 @@ import { useSort, Th } from '../components/sortable.jsx'
 import { CONV_STATUS, stageLabel, firstStageId, releasedStageId } from '../data/pipeline.js'
 import { qualLabel, conversionTrainers } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
-import { formatDate } from '../lib/format.js'
+import { formatDate, formatFte1 } from '../lib/format.js'
 
 // One sortable capacity table (per base or per qualification). Qualification
 // rows default to the canonical rank (SEN → TRE → TRI → LTC → SFI → TKI).
 function CapTable({ title, firstCol, cap, keyKind, labelFor }) {
+  const { lang } = useStore()
+  const fte1 = (v) => formatFte1(v, lang)
   const { t } = useStore()
   const accessors = useMemo(() => {
     const a = {
@@ -47,22 +49,22 @@ function CapTable({ title, firstCol, cap, keyKind, labelFor }) {
               <tr key={r.key}>
                 <td className="strong">{labelFor ? labelFor(r.key) : r.key}</td>
                 <td className="num">{r.headcount}</td>
-                <td className="num">{r.total}</td>
-                <td className="num">{r.inConversion}</td>
-                <td className="num strong avail">{r.available}</td>
+                <td className="num">{fte1(r.total)}</td>
+                <td className="num">{fte1(r.inConversion)}</td>
+                <td className="num strong avail">{fte1(r.available)}</td>
                 {cap.aircraft.map((a) => (
-                  <td key={a} className="num">{r.ac[a]}</td>
+                  <td key={a} className="num">{fte1(r.ac[a])}</td>
                 ))}
               </tr>
             ))}
             <tr className="total-row">
               <td className="strong">{t('total')}</td>
               <td className="num">{cap.totals.headcount}</td>
-              <td className="num">{cap.totals.total}</td>
-              <td className="num">{cap.totals.inConversion}</td>
-              <td className="num strong avail">{cap.totals.available}</td>
+              <td className="num">{fte1(cap.totals.total)}</td>
+              <td className="num">{fte1(cap.totals.inConversion)}</td>
+              <td className="num strong avail">{fte1(cap.totals.available)}</td>
               {cap.aircraft.map((a) => (
-                <td key={a} className="num">{cap.totals.ac[a]}</td>
+                <td key={a} className="num">{fte1(cap.totals.ac[a])}</td>
               ))}
             </tr>
           </tbody>
@@ -176,6 +178,7 @@ function ConversionEditor({ trainers, stages, quals }) {
 
 export default function Capacity() {
   const { data, t, lang } = useStore()
+  const fte1 = (v) => formatFte1(v, lang)
   const { trainers, stages, quals } = data
   // Conversion-specific views (editor, timeline, FTE pills) only cover the
   // qualifications that actually convert; the capacity tables cover everyone.
@@ -194,9 +197,9 @@ export default function Capacity() {
       <p className="planning-note">{t('capacity_hint')}</p>
 
       <div className="fte-summary">
-        <span className="fte-pill fte-in">{t('fteInConversionShort')}: <b>{fteS.inConversion}</b></span>
-        <span className="fte-pill fte-av">{t('fteAvailableShort')}: <b>{fteS.available}</b></span>
-        <span className="fte-pill fte-total">FTE {t('total')}: <b>{fteS.total}</b></span>
+        <span className="fte-pill fte-in">{t('fteInConversionShort')}: <b>{fte1(fteS.inConversion)}</b></span>
+        <span className="fte-pill fte-av">{t('fteAvailableShort')}: <b>{fte1(fteS.available)}</b></span>
+        <span className="fte-pill fte-total">FTE {t('total')}: <b>{fte1(fteS.total)}</b></span>
       </div>
 
       <CapTable title={t('capacity_byQual')} firstCol={t('f_qual')} cap={capQual} keyKind="qual" labelFor={(k) => qualLabel(quals, k)} />

@@ -89,9 +89,8 @@ button { font-family: inherit; }
 .brandmark { display: flex; align-items: center; }
 .brandmark svg { display: block; border-radius: 12px; box-shadow: 0 2px 6px rgba(0,0,0,.18); }
 .brand-text h1 { color: #fff; font-size: 19px; line-height: 1.15; letter-spacing: .2px; }
-.brand-text p { margin: 2px 0 0; color: rgba(255,255,255,.82); font-size: 12.5px; font-weight: 600; }
 
-.topbar-right { display: flex; align-items: center; gap: 14px; }
+.topbar-right { display: flex; align-items: center; justify-content: flex-end; flex-wrap: wrap; gap: 10px 14px; }
 .asof { text-align: right; line-height: 1.1; }
 .asof-label { display: block; font-size: 10px; text-transform: uppercase; letter-spacing: .8px; color: rgba(255,255,255,.7); }
 .asof-date { font-size: 14px; font-weight: 700; }
@@ -126,7 +125,15 @@ button { font-family: inherit; }
 }
 .icon-round:hover { background: rgba(255,255,255,.3); }
 .icon-round svg { display: block; }
+/* An icon button that IS the current view – same treatment as the active
+   language chip, so "where am I" reads the same way everywhere. */
+.icon-round.active { background: #fff; color: var(--burg); }
+.icon-round.active:hover { background: #fff; }
 .save-btn.saved { background: var(--green); color: #fff; }
+/* A failed save must not look like an idle one: without this the button kept
+   its normal look and only the tooltip changed, so an unnoticed failure read
+   as success. */
+.save-btn.save-error { background: var(--red); color: #fff; }
 
 /* ---------- Tabs ---------- */
 .tabs { display: flex; gap: 2px; padding: 0 14px; overflow-x: auto; background: rgba(0,0,0,.12); }
@@ -192,8 +199,14 @@ button { font-family: inherit; }
 .hbar-val { text-align: right; font-weight: 800; font-size: 13px; color: var(--ink); }
 
 /* Stacked variant: segments sit side by side inside one track. */
-/* Two thin bars per row rather than one thick one: the pair is read together,
-   so they sit close and share the row's label and scale. */
+.hbars.stacked .hbar-track { display: flex; }
+.hbar-seg { height: 100%; min-width: 3px; transition: width .3s ease; }
+.hbars.stacked .hbar-seg:first-child { border-radius: 999px 0 0 999px; }
+.hbars.stacked .hbar-seg:last-child { border-radius: 0 999px 999px 0; }
+.hbars.stacked .hbar-seg:only-child { border-radius: 999px; }
+
+/* Grouped bars: two thin bars per row, each in its own track (NOT the stacked
+   variant above – these are two measures, not segments of one). */
 .gbars { display: flex; flex-direction: column; gap: 12px; }
 .gbar-row { display: grid; grid-template-columns: 90px 1fr; align-items: center; gap: 10px; }
 .gbar-group { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
@@ -201,12 +214,6 @@ button { font-family: inherit; }
 .gbar-track { background: var(--panel2); border-radius: 999px; height: 9px; overflow: hidden; }
 .gbar-fill { height: 100%; border-radius: 999px; min-width: 3px; transition: width .3s ease; }
 .gbar-val { text-align: right; font-weight: 800; font-size: 12px; color: var(--ink); }
-
-.hbars.stacked .hbar-track { display: flex; }
-.hbar-seg { height: 100%; min-width: 3px; transition: width .3s ease; }
-.hbars.stacked .hbar-seg:first-child { border-radius: 999px 0 0 999px; }
-.hbars.stacked .hbar-seg:last-child { border-radius: 0 999px 999px 0; }
-.hbars.stacked .hbar-seg:only-child { border-radius: 999px; }
 .stacked-legend { margin-top: 4px; }
 
 /* ---------- Dashboard sections & arrange mode ---------- */
@@ -390,9 +397,13 @@ select.input { cursor: pointer; }
    "Austria" – because th is nowrap by default. Letting them wrap costs two
    lines of header height and buys back roughly 200px of table width. */
 .data-table.compact th { padding: 8px 8px; font-size: 10px; letter-spacing: .4px; white-space: normal; }
-.data-table.compact .th-inner { display: flex; align-items: flex-start; }
 .data-table.compact td { padding: 7px 8px; }
-.data-table.compact td.muted { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+/* The remark is free text and would otherwise set the table's width on its own.
+   Note it WRAPS rather than being cut: a width ceiling does not hold on a table
+   cell in the default auto layout, so "nowrap + ellipsis" made the column grow
+   to the full string instead of clipping it. Wrapping costs row height, which
+   the table can afford, and keeps the text readable. */
+.cell-clamp { display: block; max-width: 150px; overflow-wrap: anywhere; }
 .data-table tr.clickable:hover td { background: var(--sky-lightest); }
 .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .data-table .mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 12.5px; }
@@ -803,7 +814,6 @@ textarea.input { resize: vertical; }
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .kpi-value { font-size: 26px; }
   .brand-text h1 { font-size: 16px; }
-  .brand-text p { display: none; }
   .form-grid { grid-template-columns: 1fr; }
   .assign-grid { grid-template-columns: 1fr; }
   .topbar-right { gap: 10px; }

@@ -80,3 +80,12 @@ export function downloadJson(filename, obj) {
   document.body.removeChild(a)
   URL.revokeObjectURL(url)
 }
+
+// FTE with one decimal, in the reader's notation. Lives here rather than in a
+// tab so the dashboard and the capacity tab cannot print the same figure two
+// different ways ("4,6" vs "4.6"), which is exactly what happened once.
+export function formatFte1(value, lang) {
+  const n = typeof value === 'number' ? value : Number(value) || 0
+  const s = (Math.round(n * 10) / 10).toString()
+  return lang === 'de' ? s.replace('.', ',') : s
+}

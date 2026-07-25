@@ -235,7 +235,7 @@ export default function Trainers() {
                 <td className="mono">{x.tlc}</td>
                 <td className="strong">{x.name}</td>
                 <td><RoleTag role={roleOf(x)} t={t} /></td>
-                <td className="muted">{x.remark || '–'}</td>
+                <td className="muted"><span className="cell-clamp" title={x.remark || ''}>{x.remark || '–'}</span></td>
                 <td className="num">{formatPartTime(x.partTime, lang)}</td>
                 <td className="num">{formatFte(x.fte)}</td>
                 <td><span className="ac-tag">{x.aircraft || '–'}</span></td>

@@ -11,6 +11,52 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.19.1] – 2026-07-25
+
+Ergebnis zweier Code-Reviews von 1.19.0. Drei Punkte davon waren Behauptungen im
+Changelog, die so nicht stimmten:
+
+- **Das Zahnrad hatte keinen sichtbaren Aktiv-Zustand.** Die Klasse wurde
+  gesetzt, aber es gab keine passende CSS-Regel – 1.19.0 behauptete das
+  Gegenteil. Jetzt dieselbe weiße Behandlung wie beim aktiven Sprach-Chip.
+  Gleiches Loch beim Speichern-Knopf: `save-error` war nie gestylt, ein
+  fehlgeschlagenes Speichern sah aus wie ein erfolgreiches.
+- **Die Kürzung der Anmerkungs-Spalte funktionierte nicht** – schlimmer, sie
+  wirkte verkehrt herum. Eine Breitenbegrenzung greift auf einer Tabellenzelle
+  im automatischen Layout nicht, `nowrap` dagegen schon, also *verbreiterte* ein
+  langer Text die Spalte statt abgeschnitten zu werden. Jetzt bricht die
+  Anmerkung um. Nebenbei traf die Regel auch „Ausstellende Behörde" – ohne
+  Tooltip, also unlesbar; diese Spalte ist jetzt ausgenommen.
+- **Zahlengleichheit war behauptet, aber nicht gegeben.** Das Dashboard schrieb
+  „42,9", die Kapazität „42.9". Der Formatierer liegt jetzt in `format.js` und
+  wird von beiden benutzt.
+
+Weitere Befunde:
+
+- **Irreführende Farben** bei „Köpfe vs. FTE je Aircraft": die Reihen trugen
+  `CATEGORICAL[0]`/`[1]`, also genau die Farben, die auf demselben Dashboard
+  A320 und B737 bedeuten – in einem Diagramm, dessen Zeilen A320 und B737 sind.
+  Köpfe und FTE sind ohnehin **eine** Größe, zweimal gezählt, also jetzt ein
+  ordinales Paar (ein Ton, zwei Stufen, Violett – auf diesem Dashboard frei).
+- **Eine Null zeichnete einen Balken.** `.gbar-fill` hat 3 px Mindestbreite, die
+  bewusst mitgeführte B737-Zeile stand also mit farbigem Strich bei 0 da.
+- **Zwei Base-Diagramme, zwei Reihenfolgen.** `byBase` sortiert nach
+  `BASE_ORDER`, `capacityByBase` alphabetisch – nebeneinander verglich man
+  Zeile 1 gegen Zeile 1 und damit verschiedene Bases.
+- **Rechtsbündige Zahlen-Überschriften** verrutschten, weil `.th-inner` von
+  `inline-flex` auf `flex` gesetzt worden war.
+- `capacityBy*` läuft im Dashboard jetzt memoisiert (wie im Reiter Kapazität).
+- Die Kopfzeile darf umbrechen; mit vier Symbolen wäre auf einem 320-px-Gerät
+  sonst eines über den Rand gerutscht.
+- Aufräumen: der Reiter-Nav leitet das Symbol aus dem Tab-Datensatz ab statt die
+  Id `'settings'` fest zu kennen; eine Legende statt vier Kopien; tote Regeln
+  des entfernten Untertitels entfernt; der `.gbars`-Block stand unter dem
+  Kommentar, der die *gestapelten* Balken beschreibt.
+
+Nicht geändert: das Dashboard-PDF skaliert weiterhin alles auf **eine** Seite,
+zwei Kacheln mehr machen den Ausdruck also etwas kleiner. Das ist die bewusste
+Entscheidung aus 1.10.1.
+
 ## [1.19.0] – 2026-07-25
 
 - **Dashboard: Köpfe vs. FTE**, je Base und je Aircraft. Zwei Balken je Zeile auf
