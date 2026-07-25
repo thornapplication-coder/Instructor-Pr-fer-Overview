@@ -18,10 +18,17 @@ import {
 import { conversionProgress, STAFF_TYPE } from '../data/pipeline.js'
 import { qualLabel, conversionTrainers } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
+import { CATEGORICAL, OVERFLOW, STATUS, BRAND, stageRamp } from '../lib/palette.js'
 
-const ORE_COLORS = { A: '#AF1E65', B: '#00A6CF', C: '#6BCCE0', Rente: '#BDBABA' }
-const AC_COLORS = { A320: '#AF1E65', B737: '#2196F3' }
-const ROLE_COLORS = { captain: '#AF1E65', fo: '#00688F' }
+// ORE is a priority tier (A before B before C), so it reads as an ordinal ramp –
+// darker means more urgent – with retirement dropping out to the neutral.
+// Everything else here is identity and takes documented categorical slots.
+const ORE_RAMP = stageRamp(3)
+const ORE_COLORS = { A: ORE_RAMP[2], B: ORE_RAMP[1], C: ORE_RAMP[0], Rente: OVERFLOW }
+const AC_COLORS = { A320: CATEGORICAL[0], B737: CATEGORICAL[1] }
+// Slot 4 rather than slot 2: the role tag sits right next to the aircraft tag on
+// a conversion card, and two identical blues there would read as one thing.
+const ROLE_COLORS = { captain: CATEGORICAL[0], fo: CATEGORICAL[3] }
 
 function Card({ title, total, children }) {
   const { t } = useStore()
@@ -104,7 +111,6 @@ export default function Dashboard() {
   const order = (data.dashboard && data.dashboard.order) || {}
   const total = trainers.length
 
-  const qualColor = (key) => (qualDefs.find((q) => q.id === key) || {}).color || '#787878'
   const qualOrder = qualDefs.map((q) => q.id)
   const hc = headcount(trainers)
   // The conversion only applies to SEN / TRE / TRI / LTC (not SFI / TKI).
@@ -131,16 +137,16 @@ export default function Dashboard() {
   // ---- Overview (Instruktoren & Prüfer) — KPI tiles in SEN·TRE·TRI·LTC·SFI·TKI order
   const ovKpi = [
     { id: 'total', node: <KpiTile value={hc.total} label={t('kpi_totalTrainers')} sub={`FTE ≈ ${hc.fte}`} /> },
-    { id: 'examiners', node: <KpiTile value={hc.examiners} label={t('kpi_examiners')} accent="#701745" /> },
-    { id: 'tri', node: <KpiTile value={hc.tri} label={t('kpi_tri')} accent="#00A6CF" /> },
-    { id: 'ltc', node: <KpiTile value={hc.ltc} label={t('kpi_ltc')} accent="#871C54" /> },
-    { id: 'sfitki', node: <KpiTile value={hc.sfiTki} label={t('kpi_sfiTki')} accent="#2FA36B" /> },
+    { id: 'examiners', node: <KpiTile value={hc.examiners} label={t('kpi_examiners')} accent={BRAND.burgundy} /> },
+    { id: 'tri', node: <KpiTile value={hc.tri} label={t('kpi_tri')} accent={BRAND.burgundy} /> },
+    { id: 'ltc', node: <KpiTile value={hc.ltc} label={t('kpi_ltc')} accent={BRAND.burgundy} /> },
+    { id: 'sfitki', node: <KpiTile value={hc.sfiTki} label={t('kpi_sfiTki')} accent={BRAND.burgundy} /> },
     { id: 'captain', node: <KpiTile value={hc.captains} label={t('kpi_captain')} accent={ROLE_COLORS.captain} /> },
     { id: 'fo', node: <KpiTile value={hc.firstOfficers} label={t('kpi_fo')} accent={ROLE_COLORS.fo} /> },
     { id: 'active', node: <KpiTile value={hc.active} label={t('kpi_active')} /> }
   ]
   const ovChart = [
-    { id: 'qual', node: <Card title={t('stat_qual')} total={total}><HBars data={qualData} colorFn={(d) => qualColor(d.key)} /></Card> },
+    { id: 'qual', node: <Card title={t('stat_qual')} total={total}><HBars data={qualData} /></Card> },
     { id: 'qualAc', node: <Card title={t('chart_qualByAircraft')} total={total}><StackedBars data={qualAc} series={acSeries} /></Card> },
     {
       id: 'role',
@@ -166,8 +172,8 @@ export default function Dashboard() {
         <Card title={t('stat_function')} total={total}>
           <Donut
             data={[
-              { key: t('withFunction'), count: fn.withFunction, color: '#AF1E65' },
-              { key: t('withoutFunction'), count: fn.withoutFunction, color: '#6BCCE0' }
+              { key: t('withFunction'), count: fn.withFunction, color: CATEGORICAL[0] },
+              { key: t('withoutFunction'), count: fn.withoutFunction, color: CATEGORICAL[1] }
             ]}
           />
         </Card>
@@ -190,11 +196,11 @@ export default function Dashboard() {
 
   // ---- B737 Umschulung
   const cvKpi = [
-    { id: 'released', node: <KpiTile value={cs.released} label={t('kpi_released')} accent="#2FA36B" /> },
-    { id: 'inProgress', node: <KpiTile value={cs.inProgress} label={t('kpi_inProgress')} accent="#E8A33D" /> },
-    { id: 'notStarted', node: <KpiTile value={cs.notStarted} label={t('kpi_notStarted')} accent="#871C54" /> },
-    { id: 'fteInConv', node: <KpiTile value={fteS.inConversion} label={t('kpi_fteInConversion')} accent="#E8A33D" sub={`/ ${fteS.total} FTE`} /> },
-    { id: 'fteAvail', node: <KpiTile value={fteS.available} label={t('kpi_fteAvailable')} accent="#2FA36B" sub={`/ ${fteS.total} FTE`} /> }
+    { id: 'released', node: <KpiTile value={cs.released} label={t('kpi_released')} accent={STATUS.good} /> },
+    { id: 'inProgress', node: <KpiTile value={cs.inProgress} label={t('kpi_inProgress')} accent={BRAND.burgundy} /> },
+    { id: 'notStarted', node: <KpiTile value={cs.notStarted} label={t('kpi_notStarted')} accent={STATUS.neutral} /> },
+    { id: 'fteInConv', node: <KpiTile value={fteS.inConversion} label={t('kpi_fteInConversion')} accent={BRAND.burgundy} sub={`/ ${fteS.total} FTE`} /> },
+    { id: 'fteAvail', node: <KpiTile value={fteS.available} label={t('kpi_fteAvailable')} accent={STATUS.good} sub={`/ ${fteS.total} FTE`} /> }
   ]
   const cvChart = [
     {

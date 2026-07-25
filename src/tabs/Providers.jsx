@@ -1,3 +1,5 @@
+import { STATUS } from '../lib/palette.js'
+import { useThemed } from '../lib/useThemed.js'
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
@@ -21,6 +23,7 @@ function UtilBar({ value }) {
 }
 
 export default function Providers() {
+  const tint = useThemed()
   const { data, t, upsertProvider, deleteProvider, newId } = useStore()
   const { providers, providerCourses, providerStatus, simVersions, trainers, assignmentSteps } = data
   const util = useMemo(
@@ -108,7 +111,7 @@ export default function Providers() {
             </thead>
             <tbody>
               {main.sorted.map((p) => {
-                const st = providerStatus.find((s) => s.id === p.status) || { label: p.status || '–', color: '#787878' }
+                const st = providerStatus.find((s) => s.id === p.status) || { label: p.status || '–', color: STATUS.neutral }
                 return (
                   <tr
                     key={p.id}
@@ -152,7 +155,7 @@ export default function Providers() {
                       {p.email && <div className="muted small">{p.email}</div>}
                     </td>
                     <td className="muted small">{p.capacity || '–'}</td>
-                    <td><span className="status-tag" style={{ background: st.color }}>{st.label}</span></td>
+                    <td><span className="status-tag" style={{ '--tag': tint(st.color) }}>{st.label}</span></td>
                   </tr>
                 )
               })}

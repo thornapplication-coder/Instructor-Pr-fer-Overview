@@ -4,6 +4,7 @@ import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import HScroll from '../components/HScroll.jsx'
 import { CONV_STATUS, stageIndex, stageLabel, STAFF_TYPE, firstStageId } from '../data/pipeline.js'
+import { useThemed } from '../lib/useThemed.js'
 import { qualLabel, isConversionQual, conversionTrainers, CONVERSION_QUALS } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { conversionFteSummary } from '../lib/stats.js'
@@ -18,6 +19,7 @@ function assignTarget(providers, a) {
 }
 
 export default function Conversion() {
+  const tint = useThemed()
   const { data, t, lang, setConversion, setStages } = useStore()
   const { trainers, stages, providers, quals, assignmentSteps } = data
   const [q, setQ] = useState('')
@@ -124,7 +126,7 @@ export default function Conversion() {
               }}
               onDrop={() => drop(s.id)}
             >
-              <div className="board-col-head" style={{ borderTopColor: s.color }}>
+              <div className="board-col-head" style={{ borderTopColor: tint(s.color) }}>
                 <span className="board-col-title">{stageLabel(s)}</span>
                 <span className="board-col-count">{cards.length}</span>
               </div>
@@ -148,7 +150,7 @@ export default function Conversion() {
                       onDragEnd={() => { setDragId(null); setOverStage(null) }}
                     >
                       <div className="conv-card-top">
-                        <span className="conv-status-dot" style={{ background: st.color }} title={lang === 'de' ? st.de : st.en} />
+                        <span className="conv-status-dot" style={{ background: tint(st.color) }} title={lang === 'de' ? st.de : st.en} />
                         <button className="conv-name" onClick={() => setDetail({ ...x })}>{x.name}</button>
                       </div>
                       <div className="conv-meta">
@@ -162,7 +164,7 @@ export default function Conversion() {
                         <span className="chip-sm">{x.base}</span>
                         {x.aircraft && <span className="ac-tag sm">{x.aircraft}</span>}
                         <span className={'ore-tag ore-' + (x.ore || 'none')}>{x.ore || '–'}</span>
-                        <span className="staff-tag sm" style={{ background: STAFF_TYPE[x.staffType || 'internal'].color }}>
+                        <span className="staff-tag sm" style={{ '--tag': tint(STAFF_TYPE[x.staffType || 'internal'].color) }}>
                           {t('staff_' + (x.staffType || 'internal'))}
                         </span>
                       </div>

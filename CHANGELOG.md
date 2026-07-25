@@ -11,6 +11,35 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.18.0] – 2026-07-25
+
+Die Farbgebung war gewachsen, nicht entworfen. Gemessen (OKLab-ΔE, WCAG) statt
+geschätzt – die alte Palette fiel durch, und zwar sichtbar:
+
+- **Vier Burgunder-Töne machten Kategorie-Arbeit.** `#701745` und `#871C54`
+  trennten sich um ΔE 5,6 bei voller Farbsicht, `#D41370` und `#AF1E65` um 7,5 –
+  und die beiden lagen im Umschulungs-Board direkt nebeneinander. Ab 15 gilt ein
+  Paar als unterscheidbar.
+- **Statusfarben liefen zugleich als Serienfarben.** Grün war „TKI", „im Plan",
+  „freigegeben", „Provider in use" und „Rating gültig"; Amber war „gefährdet"
+  und „extern". Jetzt sind Grün/Amber/Rot reserviert.
+- **Weiße Schrift auf hellen Füllungen.** Amber trug weiße 11-px-Schrift bei
+  **2,16:1** (nötig: 4,5:1). Marken sind jetzt getönte Flächen mit farbiger
+  Schrift – das trägt für jeden Farbton, auch selbst gewählte.
+- **Neue Palette**, hell und dunkel getrennt gestuft und beide bestanden:
+  kategorial 8 Plätze (hell ΔE 12,6 / 22,2 · dunkel 9,8 / 17,9, alle ≥ 3:1),
+  Phasen als Ein-Ton-Rampe (monoton, jede Stufe ≥ 0,06 L).
+- **Phasen sind ordinal**, keine sechs Namen: eine Farbe von hell nach dunkel,
+  der Fortschritt ist damit ablesbar.
+- **Einreihige Balken einfarbig** (Base, Behörde, Part-Time, Qualifikation) –
+  die Länge trägt den Vergleich, die Farbe hätte ihn nur verdoppelt.
+- **Kachel-Akzente nach Bedeutung**: Übersichtszahlen einheitlich Burgunder,
+  Umschulungs-Zustände in Statusfarben, Captain/FO in ihren Serienfarben.
+- Farben kommen jetzt aus **einer** Quelle (`src/lib/palette.js`); `brand.js`
+  hielt eine zweite Kopie mit der Bitte, sie „von Hand synchron zu halten".
+- Einmalige Umstellung bestehender Daten: nur Einträge, die noch ihre alte
+  Standardfarbe tragen, werden umgestellt – selbst gewählte bleiben.
+
 ## [1.17.0] – 2026-07-25
 
 - **Abgleich je Datensatz statt „ganzer Bestand gewinnt".** Bisher ersetzte der

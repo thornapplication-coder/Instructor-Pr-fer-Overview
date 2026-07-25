@@ -1,13 +1,20 @@
+import { CATEGORICAL, STAGE_RAMP, STATUS } from '../lib/palette.js'
+
 // Milestone pipeline for the A320 -> 737 MAX instructor/examiner conversion.
 // Fully user-editable: rename / recolor / add / delete / reorder (Umschulung tab).
 // Each stage: { id, label, color }. `label` is language-neutral (user-defined).
+//
+// The colours are ONE hue getting darker, not six different hues: the stages are
+// a progression, so the reader should be able to see how far along a column is
+// without reading its name. Six unrelated hues also put "SIM / Type Rating"
+// (#D41370) next to "TR-Theorie" (#AF1E65) at ΔE 7.5 – near-identical.
 export const DEFAULT_STAGES = [
-  { id: 'nominated',    label: 'Nominierung',       color: '#871C54' },
-  { id: 'groundschool', label: 'TR-Theorie',        color: '#AF1E65' },
-  { id: 'simulator',    label: 'SIM / Type Rating', color: '#D41370' },
-  { id: 'baselifus',    label: 'Base / LIFUS',      color: '#00A6CF' },
-  { id: 'linecheck',    label: 'Linecheck',         color: '#6BCCE0' },
-  { id: 'released',     label: '737 freigegeben',   color: '#2FA36B' }
+  { id: 'nominated',    label: 'Nominierung',       color: STAGE_RAMP[0] },
+  { id: 'groundschool', label: 'TR-Theorie',        color: STAGE_RAMP[1] },
+  { id: 'simulator',    label: 'SIM / Type Rating', color: STAGE_RAMP[2] },
+  { id: 'baselifus',    label: 'Base / LIFUS',      color: STAGE_RAMP[3] },
+  { id: 'linecheck',    label: 'Linecheck',         color: STAGE_RAMP[4] },
+  { id: 'released',     label: '737 freigegeben',   color: STAGE_RAMP[5] }
 ]
 
 export function stageLabel(stage) {
@@ -15,11 +22,12 @@ export function stageLabel(stage) {
   return stage.label ?? stage.de ?? stage.id
 }
 
+// Real status: reserved colours, never reused for identity.
 export const CONV_STATUS = {
-  on_track: { de: 'im Plan',    en: 'on track', color: '#2FA36B' },
-  at_risk:  { de: 'gefährdet',  en: 'at risk',  color: '#E8A33D' },
-  blocked:  { de: 'blockiert',  en: 'blocked',  color: '#C8102E' },
-  done:     { de: 'erledigt',   en: 'done',     color: '#787878' }
+  on_track: { de: 'im Plan',    en: 'on track', color: STATUS.good },
+  at_risk:  { de: 'gefährdet',  en: 'at risk',  color: STATUS.warn },
+  blocked:  { de: 'blockiert',  en: 'blocked',  color: STATUS.critical },
+  done:     { de: 'erledigt',   en: 'done',     color: STATUS.neutral }
 }
 
 // Steps that are performed at an external provider / a location. Each trainer
@@ -27,24 +35,29 @@ export const CONV_STATUS = {
 // the "Planung" monitoring (deciding where each person does each step).
 // Planning columns. User-editable (rename / recolor / add / delete / reorder).
 // `providerType` (optional) filters which providers appear for that column.
+// Planning columns are identities, not a progression -> categorical slots.
 export const ASSIGNMENT_STEPS = [
-  { id: 'tr',    label: 'Type Rating',      color: '#D41370', providerType: 'TR' },
-  { id: 'tri',   label: 'TRI-Kurs',         color: '#AF1E65', providerType: 'TRI' },
-  { id: 'lifus', label: 'LIFUS',            color: '#00A6CF', providerType: null },
-  { id: 'tre',   label: 'Examiner-Prüfung', color: '#871C54', providerType: 'TRE' }
+  { id: 'tr',    label: 'Type Rating',      color: CATEGORICAL[0], providerType: 'TR' },
+  { id: 'tri',   label: 'TRI-Kurs',         color: CATEGORICAL[1], providerType: 'TRI' },
+  { id: 'lifus', label: 'LIFUS',            color: CATEGORICAL[2], providerType: null },
+  { id: 'tre',   label: 'Examiner-Prüfung', color: CATEGORICAL[3], providerType: 'TRE' }
 ]
 
+// How far a booking has got. "booked" is not a good/bad claim, so it wears the
+// brand's sky rather than pretending to be a status step.
 export const ASSIGNMENT_STATUS = {
-  open:    { de: 'offen',      en: 'open',       color: '#B0B4B8' },
-  planned: { de: 'geplant',    en: 'planned',    color: '#E8A33D' },
-  booked:  { de: 'gebucht',    en: 'booked',     color: '#00A6CF' },
-  done:    { de: 'absolviert', en: 'completed',  color: '#2FA36B' },
-  na:      { de: 'n/a',        en: 'n/a',        color: '#787878' }
+  open:    { de: 'offen',      en: 'open',       color: STATUS.neutral },
+  planned: { de: 'geplant',    en: 'planned',    color: STATUS.warn },
+  booked:  { de: 'gebucht',    en: 'booked',     color: CATEGORICAL[1] },
+  done:    { de: 'absolviert', en: 'completed',  color: STATUS.good },
+  na:      { de: 'n/a',        en: 'n/a',        color: STATUS.neutral }
 }
 
+// intern/extern is an IDENTITY, not a state – "extern" is not a warning. It used
+// to wear the at-risk amber, which is exactly the confusion this pass removes.
 export const STAFF_TYPE = {
-  internal: { de: 'intern', en: 'internal', color: '#00A6CF' },
-  external: { de: 'extern', en: 'external', color: '#E8A33D' }
+  internal: { de: 'intern', en: 'internal', color: CATEGORICAL[1] },
+  external: { de: 'extern', en: 'external', color: CATEGORICAL[2] }
 }
 
 export function emptyAssignments() {

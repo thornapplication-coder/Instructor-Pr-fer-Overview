@@ -1,17 +1,23 @@
 import React from 'react'
+import { useStore } from '../lib/store.jsx'
+import { BRAND, colorAt as slotColor, themed } from '../lib/palette.js'
 
-// Eurowings on-brand categorical palette (burgundy-dominant, skyblue accent).
-export const EW_PALETTE = [
-  '#AF1E65', '#00A6CF', '#871C54', '#6BCCE0',
-  '#D41370', '#701745', '#E8A33D', '#2FA36B', '#787878'
-]
-
-export function colorAt(i) {
-  return EW_PALETTE[i % EW_PALETTE.length]
+// Charts read their colours from the documented system (src/lib/palette.js);
+// nothing is chosen here. The stored hex of a user-editable category is mapped
+// to its dark-mode step at render time – a persisted hex cannot re-step itself.
+export function useChartColor() {
+  const { data } = useStore()
+  const dark = (data?.theme || 'light') === 'dark'
+  // `i` is the slot; past slot 8 it returns the neutral overflow rather than
+  // cycling, which used to hand two categories the identical colour.
+  return (color, i) => themed(color, dark) || slotColor(i, dark)
 }
+
+export { slotColor as colorAt }
 
 // ---- Donut chart ----------------------------------------------------------
 export function Donut({ data, size = 168, thickness = 26, centerTop, centerBottom }) {
+  const pick = useChartColor()
   const total = data.reduce((s, d) => s + d.count, 0)
   const r = (size - thickness) / 2
   const cx = size / 2
@@ -33,7 +39,7 @@ export function Donut({ data, size = 168, thickness = 26, centerTop, centerBotto
                 cy={cy}
                 r={r}
                 fill="none"
-                stroke={d.color || colorAt(i)}
+                stroke={pick(d.color, i)}
                 strokeWidth={thickness}
                 strokeDasharray={`${len} ${C - len}`}
                 strokeDashoffset={-offset}
@@ -56,7 +62,7 @@ export function Donut({ data, size = 168, thickness = 26, centerTop, centerBotto
       <ul className="legend">
         {data.map((d, i) => (
           <li key={d.key}>
-            <span className="dot" style={{ background: d.color || colorAt(i) }} />
+            <span className="dot" style={{ background: pick(d.color, i) }} />
             <span className="legend-key">{d.label || d.key}</span>
             <span className="legend-val">{d.count}</span>
           </li>
@@ -67,7 +73,13 @@ export function Donut({ data, size = 168, thickness = 26, centerTop, centerBotto
 }
 
 // ---- Horizontal bar list --------------------------------------------------
+// ONE series, so one colour: base, authority and part-time are plain names, and
+// the bar length already carries the comparison. Painting each bar a different
+// hue spends the identity channel on information the chart is showing twice and
+// makes the card read as five unrelated things. `colorFn` stays for the rare
+// case where the colour genuinely means something.
 export function HBars({ data, colorFn }) {
+  const pick = useChartColor()
   const max = Math.max(1, ...data.map((d) => d.count))
   return (
     <div className="hbars">
@@ -81,7 +93,7 @@ export function HBars({ data, colorFn }) {
               className="hbar-fill"
               style={{
                 width: `${(d.count / max) * 100}%`,
-                background: colorFn ? colorFn(d, i) : colorAt(i)
+                background: colorFn ? pick(colorFn(d, i), i) : pick(null, 0)
               }}
             />
           </div>
@@ -95,6 +107,7 @@ export function HBars({ data, colorFn }) {
 // ---- Stacked horizontal bars (one bar per row, split into series) ---------
 // data rows: { key, label?, [series.key]: number }. series: [{ key, label, color }].
 export function StackedBars({ data, series }) {
+  const pick = useChartColor()
   const rowTotal = (d) => series.reduce((s, ser) => s + (d[ser.key] || 0), 0)
   const max = Math.max(1, ...data.map(rowTotal))
   return (
@@ -109,7 +122,7 @@ export function StackedBars({ data, series }) {
                 <div
                   key={ser.key}
                   className="hbar-seg"
-                  style={{ width: `${(v / max) * 100}%`, background: ser.color }}
+                  style={{ width: `${(v / max) * 100}%`, background: pick(ser.color, 0) }}
                   title={`${ser.label}: ${v}`}
                 />
               ) : null
@@ -121,7 +134,7 @@ export function StackedBars({ data, series }) {
       <ul className="legend legend-wrap stacked-legend">
         {series.map((ser) => (
           <li key={ser.key}>
-            <span className="dot" style={{ background: ser.color }} />
+            <span className="dot" style={{ background: pick(ser.color, 0) }} />
             <span className="legend-key">{ser.label}</span>
             <span className="legend-val">{data.reduce((s, d) => s + (d[ser.key] || 0), 0)}</span>
           </li>
@@ -133,6 +146,7 @@ export function StackedBars({ data, series }) {
 
 // ---- Overall progress ring ------------------------------------------------
 export function ProgressRing({ value, size = 128, thickness = 14, label }) {
+  const pick = useChartColor()
   const r = (size - thickness) / 2
   const cx = size / 2
   const C = 2 * Math.PI * r
@@ -146,7 +160,7 @@ export function ProgressRing({ value, size = 128, thickness = 14, label }) {
           cy={cx}
           r={r}
           fill="none"
-          stroke="#AF1E65"
+          stroke={pick(BRAND.burgundy, 0)}
           strokeWidth={thickness}
           strokeDasharray={`${pct * C} ${C}`}
           strokeLinecap="round"
@@ -163,6 +177,7 @@ export function ProgressRing({ value, size = 128, thickness = 14, label }) {
 
 // ---- Pipeline stacked bar -------------------------------------------------
 export function PipelineBar({ stages }) {
+  const pick = useChartColor()
   const total = stages.reduce((s, d) => s + d.count, 0)
   return (
     <div className="pipeline-bar-wrap">
@@ -173,7 +188,7 @@ export function PipelineBar({ stages }) {
             <div
               key={s.id}
               className="pipeline-seg"
-              style={{ flexGrow: s.count, background: s.color }}
+              style={{ flexGrow: s.count, background: pick(s.color, 0) }}
               title={`${s.label}: ${s.count}`}
             >
               {s.count}
@@ -184,7 +199,7 @@ export function PipelineBar({ stages }) {
       <ul className="legend legend-wrap">
         {stages.map((s) => (
           <li key={s.id}>
-            <span className="dot" style={{ background: s.color }} />
+            <span className="dot" style={{ background: pick(s.color, 0) }} />
             <span className="legend-key">{s.label}</span>
             <span className="legend-val">{s.count}</span>
           </li>

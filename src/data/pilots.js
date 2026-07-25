@@ -1,3 +1,4 @@
+import { STATUS } from '../lib/palette.js'
 // "Other pilots": company line pilots who are NOT trainers/examiners, tracked
 // only for their relationship to the B737. Deliberately a separate collection
 // from `trainers`, so they never leak into the trainer KPIs or the conversion.
@@ -5,9 +6,9 @@
 // B737 standing. `valid`/`expired` describe a type rating, `experience` covers
 // pilots who flew Boeing before but hold no current rating.
 export const PILOT_STATUS = {
-  valid: { de: 'B737 gültig', en: 'B737 valid', color: '#2FA36B' },
-  expired: { de: 'B737 abgelaufen', en: 'B737 expired', color: '#C8102E' },
-  experience: { de: 'Boeing-Erfahrung', en: 'Boeing experience', color: '#E8A33D' }
+  valid: { de: 'B737 gültig', en: 'B737 valid', color: STATUS.good },
+  expired: { de: 'B737 abgelaufen', en: 'B737 expired', color: STATUS.critical },
+  experience: { de: 'Boeing-Erfahrung', en: 'Boeing experience', color: STATUS.warn }
 }
 
 export const PILOT_STATUS_IDS = ['valid', 'expired', 'experience']
@@ -19,7 +20,7 @@ export function pilotStatusLabel(status, lang) {
 }
 
 export function pilotStatusColor(status) {
-  return (PILOT_STATUS[status] || {}).color || '#787878'
+  return (PILOT_STATUS[status] || {}).color || STATUS.neutral
 }
 
 // Cockpit position, same vocabulary as the trainers' `role`.

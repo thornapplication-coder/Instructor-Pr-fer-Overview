@@ -4,12 +4,17 @@
   --burg-dark: #871c54;
   --burg-darker: #701745;
   --burg-light: #d41370;
-  --sky: #00a6cf;
+  /* Sky, stepped so a chart mark and white text both clear their thresholds
+     (the marketing #00A6CF only reached 2.8:1 on white). */
+  --sky: #0d8fb4;
+  --sky-dark: #0a7391;
   --sky-light: #6bcce0;
   --sky-lightest: #e6f5f9;
-  --green: #2fa36b;
-  --amber: #e8a33d;
-  --red: #c8102e;
+  /* Status tokens – see src/lib/palette.js. One step each serves as fill AND as
+     text: the old --amber was 2.2:1 as text on white, i.e. not readable. */
+  --green: #1f7a4d;
+  --amber: #8a5a00;
+  --red: #b3122c;
 
   --ink: #212529;
   --text: #333333;
@@ -18,6 +23,13 @@
   --panel: #f8f9fa;
   --panel2: #f1f3f5;
   --white: #ffffff;
+
+  /* Status shown ON the burgundy topbar. The page-level --green/--red are
+     stepped against a white surface; on a saturated magenta bar the red would
+     sit almost on top of the bar's own hue. These two are stepped for the bar,
+     and the white ring around the dot carries the rest of the separation. */
+  --on-brand-ok: #3ddc84;
+  --on-brand-bad: #ff5a4e;
 
   --chart-track: #eef0f2;
   --radius: 12px;
@@ -55,7 +67,7 @@ button { font-family: inherit; }
   animation: toastUp .3s ease;
 }
 @keyframes toastUp { from { opacity: 0; transform: translate(-50%, 20px); } to { opacity: 1; transform: translate(-50%, 0); } }
-.update-banner-soft { background: var(--sky); }
+.update-banner-soft { background: var(--sky-dark); }
 .update-dot { width: 9px; height: 9px; border-radius: 50%; background: #fff; animation: pulse 1.4s infinite; }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: .4; } }
 .update-text { flex: 0 1 auto; font-weight: 600; }
@@ -225,8 +237,9 @@ button { font-family: inherit; }
   font-size: 11.5px; font-weight: 800; color: #fff; letter-spacing: .3px;
 }
 .role-captain { background: #AF1E65; }
-/* Darker than the sky accent so white 11px text clears AA (#00A6CF was 2.9:1). */
-.role-fo { background: #00688F; }
+/* Slot 4 of the categorical scale: white 11px text clears AA at 7.6:1, and it
+   stays distinct from the aircraft tag sitting next to it on a card. */
+.role-fo { background: #0250AE; }
 .role-tag.sm { font-size: 10.5px; padding: 1px 6px; }
 
 /* Controls that must never appear in the rasterized PDF capture. */
@@ -463,8 +476,8 @@ select.input { cursor: pointer; }
   width: 12px; height: 12px; border-radius: 50%;
   box-shadow: 0 0 0 2px rgba(255,255,255,.6);
 }
-.sync-dot-badge.ok { background: #2fa36b; }
-.sync-dot-badge.bad { background: #ff3b30; }
+.sync-dot-badge.ok { background: var(--on-brand-ok); }
+.sync-dot-badge.bad { background: var(--on-brand-bad); }
 .sync-dot-badge.busy { animation: syncPulse 1.2s ease-in-out infinite; }
 @keyframes syncPulse { 50% { opacity: .3; } }
 
@@ -505,7 +518,20 @@ textarea.input { resize: vertical; }
 .sim-tag .chip-x:hover { color: #fff; }
 .chip-x { border: 0; background: transparent; color: var(--muted); cursor: pointer; font-size: 11px; padding: 0; line-height: 1; }
 .chip-x:hover { color: var(--red); }
-.status-tag { color: #fff; border-radius: 6px; padding: 2px 9px; font-size: 11.5px; font-weight: 800; }
+/* Tinted chip: the colour is the INK on a wash of itself, not a solid fill with
+   white text. White on a mid-tone fill only reached 2.2:1 for the old amber and
+   3.8:1 for the sky – both illegible at 11px – and this version stays legible
+   for any hue the user picks in the category manager, in either theme.
+   `--tag` is supplied inline (already resolved for the active theme). */
+.status-tag, .staff-tag {
+  --tag: var(--muted);
+  display: inline-block; white-space: nowrap;
+  background: color-mix(in srgb, var(--tag) 13%, transparent);
+  color: var(--tag);
+  border: 1px solid color-mix(in srgb, var(--tag) 32%, transparent);
+  border-radius: 6px; font-weight: 800;
+}
+.status-tag { padding: 1px 8px; font-size: 11.5px; }
 
 /* ---------- Data safety ---------- */
 .safety-card { border-left: 4px solid var(--amber); }
@@ -641,8 +667,8 @@ textarea.input { resize: vertical; }
 .conv-card.dragging { opacity: .5; }
 
 /* ---------- Staff type + Planning ---------- */
-.staff-tag { display: inline-block; color: #fff; border-radius: 6px; padding: 2px 8px; font-size: 11px; font-weight: 800; white-space: nowrap; }
-.staff-tag.sm { font-size: 10px; padding: 1px 6px; }
+.staff-tag { padding: 1px 7px; font-size: 11px; }
+.staff-tag.sm { font-size: 10px; padding: 0 5px; }
 .nowrap { white-space: nowrap; }
 .link-btn { border: 0; background: transparent; padding: 0; font: inherit; font-weight: 800; color: var(--ink); cursor: pointer; text-align: left; }
 .link-btn:hover { color: var(--burg); text-decoration: underline; }
@@ -681,7 +707,12 @@ textarea.input { resize: vertical; }
   --panel: #0f1216;
   --panel2: #1b2128;
   --white: #171c22;
-  --green: #38b981;
+  /* Status on a dark surface needs its own steps, not a reused light one. */
+  --green: #4fbe85;
+  --amber: #d39a2e;
+  --red: #ee5a6f;
+  --sky: #0da4cf;
+  --sky-dark: #0d8fb4;
   --chart-track: #2a323a;
   --shadow: 0 1px 3px rgba(0,0,0,.55), 0 1px 2px rgba(0,0,0,.4);
   --shadow-lg: 0 14px 34px rgba(0,0,0,.7);

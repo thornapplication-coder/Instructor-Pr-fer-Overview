@@ -4,12 +4,37 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.17.0'
+export const APP_VERSION = '1.18.0'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.18.0',
+    date: '2026-07-25',
+    type: 'minor',
+    changes: {
+      de: [
+        'Farben komplett überarbeitet – Eurowings-Burgunder führt, Sky als zweite Stimme, und jede Farbe hat jetzt genau eine Aufgabe. Vorher hieß Grün gleichzeitig „TKI", „im Plan", „freigegeben", „in use" und „Rating gültig".',
+        'Statusfarben sind reserviert: Grün/Amber/Rot bedeuten nur noch einen Zustand und werden nie mehr als Kategoriefarbe vergeben. „extern" trug bisher das Warn-Amber, obwohl extern keine Warnung ist.',
+        'Umschulungs-Phasen laufen jetzt als eine Farbe von hell nach dunkel – man sieht den Fortschritt an der Farbe. Bisher lagen „TR-Theorie" und „SIM / Type Rating" farblich fast übereinander.',
+        'Balken-Diagramme mit nur einer Reihe (Base, Behörde, Part-Time, Qualifikation) sind einfarbig. Die Balkenlänge sagt es bereits; fünf Farben machten daraus fünf scheinbar zusammenhanglose Dinge.',
+        'Dashboard-Kacheln: die Zahlen tragen die Aussage, nicht acht verschiedene Farben. Farbe bleibt dort, wo sie etwas bedeutet – Captain/FO und die Umschulungs-Zustände.',
+        'Lesbarkeit: weiße Schrift auf hellen Marken war teils bei 2,2:1 statt 4,5:1. Marken haben jetzt eine getönte Fläche mit farbiger Schrift und sind in jedem Farbton lesbar.',
+        'Der Dunkelmodus hat eigene Farbstufen statt umgedrehter heller Werte.'
+      ],
+      en: [
+        'Colour system rebuilt – Eurowings burgundy leads, sky is the second voice, and every colour now does exactly one job. Green used to mean "TKI", "on track", "released", "in use" and "rating valid" at the same time.',
+        'Status colours are reserved: green/amber/red only ever mean a state and are never handed out as a category colour. "external" wore the at-risk amber, although external is not a warning.',
+        'Conversion stages now run as one hue from light to dark, so progress is visible in the colour. "TR theory" and "SIM / type rating" used to be nearly the same colour.',
+        'Single-series bar charts (base, authority, part-time, qualification) use one colour. The bar length already carries the comparison; five hues made one card look like five unrelated things.',
+        'Dashboard tiles: the numbers carry the message, not eight different colours. Colour stays where it means something – captain/FO and the conversion states.',
+        'Legibility: white text on light badges was as low as 2.2:1 instead of 4.5:1. Badges now use a tinted surface with coloured text and stay readable for any hue.',
+        'Dark mode has its own colour steps instead of flipped light values.'
+      ]
+    }
+  },
   {
     version: '1.17.0',
     date: '2026-07-25',

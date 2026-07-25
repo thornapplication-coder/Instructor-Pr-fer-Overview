@@ -1,14 +1,16 @@
-// Single source of truth for the export branding (PDF + Excel), so the two
-// report formats never drift apart. The CSS keeps its own --burg/--burg-dark
-// variables in styles.css; keep those hex values in sync with BRAND_HEX below.
+// Export branding (PDF + Excel), so the two report formats never drift apart.
+// The colours come from the documented palette rather than a second copy –
+// this file used to carry its own hexes with a comment asking future readers to
+// keep them in sync by hand, which is exactly how palettes drift.
 import { APP_VERSION, COPYRIGHT } from '../version.js'
+import { BRAND, OVERFLOW } from './palette.js'
 
 export const BRAND_NAME = '737 TRAINER'
 
 export const BRAND_HEX = {
-  burg: '#AF1E65',
-  burgDark: '#871C54',
-  grey: '#787878'
+  burg: BRAND.burgundy,
+  burgDark: BRAND.burgundyDark,
+  grey: OVERFLOW
 }
 
 export function hexToRgb(hex) {

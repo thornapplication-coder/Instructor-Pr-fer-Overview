@@ -1,6 +1,7 @@
 import React, { useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import SyncBadge from './SyncBadge.jsx'
+import { BRAND } from '../lib/palette.js'
 
 // App brand mark (inline SVG) — matches the home-screen icon: pure burgundy
 // tile, white "737", blue "TRAINER". White ring so it reads on the header.
@@ -8,9 +9,9 @@ function BrandMark() {
   return (
     <div className="brandmark" aria-label="737 TRAINER">
       <svg viewBox="0 0 120 120" width="46" height="46" role="img">
-        <rect x="4" y="4" width="112" height="112" rx="26" fill="#AF1E65" stroke="#fff" strokeWidth="3" />
+        <rect x="4" y="4" width="112" height="112" rx="26" fill={BRAND.burgundy} stroke="#fff" strokeWidth="3" />
         <text x="60" y="70" textAnchor="middle" fontSize="46" fontWeight="800" fill="#fff" fontFamily="Mulish, sans-serif">737</text>
-        <text x="61" y="93" textAnchor="middle" fontSize="20" fontWeight="800" fill="#2196F3" fontFamily="Mulish, sans-serif" letterSpacing="1">TRAINER</text>
+        <text x="61" y="93" textAnchor="middle" fontSize="20" fontWeight="800" fill={BRAND.sky} fontFamily="Mulish, sans-serif" letterSpacing="1">TRAINER</text>
       </svg>
     </div>
   )

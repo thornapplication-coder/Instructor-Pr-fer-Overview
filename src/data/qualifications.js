@@ -1,14 +1,15 @@
+import { CATEGORICAL } from '../lib/palette.js'
 // Trainer qualifications ("Berechtigungen"). User-editable list (rename / recolor
 // / add / delete / reorder). The ORDER of this list defines the sort order used
 // everywhere in the app. Default order per spec: SEN, TRE, TRI, LTC, SFI, TKI.
 // `id` is what is stored on each trainer (trainer.qual); `label` is what is shown.
 export const DEFAULT_QUALS = [
-  { id: 'SEN',     label: 'SEN',     color: '#701745' },
-  { id: 'TRE',     label: 'TRE',     color: '#AF1E65' },
-  { id: 'TRI',     label: 'TRI',     color: '#00A6CF' },
-  { id: 'LTC',     label: 'LTC',     color: '#871C54' },
-  { id: 'SFI',     label: 'SFI',     color: '#D41370' },
-  { id: 'TKI',     label: 'TKI',     color: '#2FA36B' }
+  { id: 'SEN',     label: 'SEN',     color: CATEGORICAL[0] },
+  { id: 'TRE',     label: 'TRE',     color: CATEGORICAL[1] },
+  { id: 'TRI',     label: 'TRI',     color: CATEGORICAL[2] },
+  { id: 'LTC',     label: 'LTC',     color: CATEGORICAL[3] },
+  { id: 'SFI',     label: 'SFI',     color: CATEGORICAL[4] },
+  { id: 'TKI',     label: 'TKI',     color: CATEGORICAL[5] }
 ]
 
 // Map legacy / imported qualification strings onto the canonical ids.

@@ -15,6 +15,7 @@ import { fteFromPartTime, normalizeAuthority } from './format.js'
 import { translate } from './i18n.js'
 import { useCloudSync } from './cloudSync.js'
 import { backfillStamps, stampChanges } from './merge.js'
+import { BRAND, migrateColors } from './palette.js'
 
 const STORAGE_KEY = 'ewl737:data:v1'
 const SCHEMA = 2
@@ -62,7 +63,7 @@ function withConvDefaults(trainer, firstStage) {
 
 // Older stage shape was { id, de, en, color }; new shape is { id, label, color }.
 function migrateStage(s) {
-  return { id: s.id, label: s.label ?? s.de ?? s.en ?? s.id, color: s.color || '#AF1E65' }
+  return { id: s.id, label: s.label ?? s.de ?? s.en ?? s.id, color: s.color || BRAND.burgundy }
 }
 
 // Provider forward-compat: single `location` -> `locations[]`; ensure `courses[]`.
@@ -100,6 +101,7 @@ function freshData(lang = 'de') {
     dashboard: { order: {} },
     // Deletions, per merged list: { list: { id: iso } }. See merge.js.
     _tomb: {},
+    _palette3: true,
     _provSeeded: true,
     _courseSeed2: true,
     _provStatus2: true,
@@ -173,6 +175,7 @@ function normalize(obj) {
         : base.dashboard,
     theme: obj.theme === 'dark' ? 'dark' : 'light',
     _tomb: obj._tomb && typeof obj._tomb === 'object' && !Array.isArray(obj._tomb) ? obj._tomb : {},
+    _palette3: obj._palette3 === true,
     _provSeeded: obj._provSeeded === true,
     _courseSeed2: obj._courseSeed2 === true,
     _provStatus2: obj._provStatus2 === true,
@@ -212,6 +215,16 @@ function normalize(obj) {
       FO.has((t.tlc || '').toLowerCase()) || FO.has((t.id || '').toLowerCase()) ? { ...t, role: 'fo' } : t
     )
     result._roleSeed = true
+  }
+  // One-time: move the stored category colours onto the documented palette.
+  // Only entries still carrying their OLD shipped default are touched, so a
+  // colour picked in the category manager survives.
+  if (!result._palette3) {
+    result.stages = migrateColors(result.stages, 'stages', DEFAULT_STAGES)
+    result.quals = migrateColors(result.quals, 'quals', DEFAULT_QUALS)
+    result.assignmentSteps = migrateColors(result.assignmentSteps, 'assignmentSteps', ASSIGNMENT_STEPS)
+    result.providerStatus = migrateColors(result.providerStatus, 'providerStatus', DEFAULT_PROVIDER_STATUS)
+    result._palette3 = true
   }
   // Records from before the record-level merge, or from an Excel/JSON import,
   // carry no stamp – give them the blob's own timestamp.

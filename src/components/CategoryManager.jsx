@@ -1,10 +1,11 @@
+import { BRAND } from '../lib/palette.js'
 import React, { useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 
 // Reusable editor for an ordered list of categories: { id, label, color? }.
 // Supports rename, recolor, add, delete and reorder (drag & drop + arrows).
 // The list order is meaningful (used for sorting elsewhere).
-export default function CategoryManager({ items, onChange, hasColor = true, defaultColor = '#AF1E65' }) {
+export default function CategoryManager({ items, onChange, hasColor = true, defaultColor = BRAND.burgundy }) {
   const { t, newId } = useStore()
   const [drag, setDrag] = useState(null)
 

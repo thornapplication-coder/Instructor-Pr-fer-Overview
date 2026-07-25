@@ -1,3 +1,4 @@
+import { STATUS } from '../lib/palette.js'
 // External provider directory (courses providers offer, at one or more airport
 // locations given as ICAO codes). Courses and statuses are user-editable.
 
@@ -13,8 +14,8 @@ export const DEFAULT_PROVIDER_COURSES = [
 ]
 
 export const DEFAULT_PROVIDER_STATUS = [
-  { id: 'in use', label: 'in use', color: '#2FA36B' },
-  { id: 'no agreement', label: 'no agreement', color: '#C8102E' }
+  { id: 'in use', label: 'in use', color: STATUS.good },
+  { id: 'no agreement', label: 'no agreement', color: STATUS.critical }
 ]
 
 // Simulator versions a provider can offer (multi-select). User-editable.

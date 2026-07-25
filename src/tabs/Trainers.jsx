@@ -5,6 +5,8 @@ import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
 import { formatPartTime, formatDate, classNames, fteFromPartTime, formatFte } from '../lib/format.js'
 import { CONV_STATUS, STAFF_TYPE, stageLabel, stageIndex } from '../data/pipeline.js'
+import { OVERFLOW } from '../lib/palette.js'
+import { useThemed } from '../lib/useThemed.js'
 import { qualIndex, qualLabel } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 
@@ -44,20 +46,22 @@ function ptFromInput(v) {
 }
 
 function StageBadge({ trainer, stages }) {
+  const tint = useThemed()
   const stage = stages.find((s) => s.id === trainer.conv?.stage) || stages[0]
   const st = CONV_STATUS[trainer.conv?.status] || CONV_STATUS.on_track
   return (
     <span className="stage-badge" style={{ borderColor: stage?.color }}>
-      <span className="stage-dot" style={{ background: st.color }} />
+      <span className="stage-dot" style={{ background: tint(st.color) }} />
       {stageLabel(stage)}
     </span>
   )
 }
 
 export default function Trainers() {
+  const tint = useThemed()
   const { data, t, lang, upsertTrainer, deleteTrainer, newId, setQuals } = useStore()
   const { trainers, stages, quals } = data
-  const qualColor = (id) => (quals.find((qq) => qq.id === id) || {}).color || '#787878'
+  const qualColor = (id) => (quals.find((qq) => qq.id === id) || {}).color || OVERFLOW
   const [q, setQ] = useState('')
   const [fBase, setFBase] = useState('')
   const [fQual, setFQual] = useState('')
@@ -241,7 +245,7 @@ export default function Trainers() {
                   </span>
                 </td>
                 <td>
-                  <span className="staff-tag" style={{ background: (STAFF_TYPE[x.staffType || 'internal']).color }}>
+                  <span className="staff-tag" style={{ '--tag': tint((STAFF_TYPE[x.staffType || 'internal']).color) }}>
                     {t('staff_' + (x.staffType || 'internal'))}
                   </span>
                 </td>

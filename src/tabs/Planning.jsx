@@ -6,6 +6,7 @@ import { useSort, Th } from '../components/sortable.jsx'
 import CourseCalendar from '../components/CourseCalendar.jsx'
 import { formatDate } from '../lib/format.js'
 import { ASSIGNMENT_STATUS, STAFF_TYPE } from '../data/pipeline.js'
+import { useThemed } from '../lib/useThemed.js'
 import { qualLabel } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 
@@ -45,6 +46,7 @@ function cellLabel(providers, a) {
 }
 
 export default function Planning() {
+  const tint = useThemed()
   const { data, t, lang, setAssignmentSteps } = useStore()
   const { trainers, providers, assignmentSteps, quals } = data
   const [q, setQ] = useState('')
@@ -172,7 +174,7 @@ export default function Planning() {
                     <div className="muted small">{x.base} · {qualLabel(quals, x.qual)}{x.aircraft ? ' · ' + x.aircraft : ''}</div>
                   </td>
                   <td>
-                    <span className="staff-tag" style={{ background: staff.color }}>
+                    <span className="staff-tag" style={{ '--tag': tint(staff.color) }}>
                       {t('staff_' + (x.staffType || 'internal'))}
                     </span>
                   </td>
@@ -185,7 +187,7 @@ export default function Planning() {
                         <button className="cell-assign" onClick={() => setEditing(x.id)}>
                           {label ? (
                             <>
-                              <span className="assign-dot" style={{ background: st.color }} />
+                              <span className="assign-dot" style={{ background: tint(st.color) }} />
                               <span className="assign-label">{label}</span>
                               {a?.date && <span className="assign-date">{formatDate(a.date, lang)}</span>}
                             </>
@@ -277,7 +279,7 @@ function PlanningModal({ trainer, providers, steps, onClose }) {
           const opts =
             assigned && !stepOpts.some((p) => p.id === assigned.id) ? [...stepOpts, assigned] : stepOpts
           return (
-            <div className="assign-block" key={s.id} style={{ borderLeft: `4px solid ${s.color}` }}>
+            <div className="assign-block" key={s.id} style={{ borderLeft: `4px solid ${tint(s.color)}` }}>
               <div className="assign-block-title">{s.label}</div>
               <div className="assign-grid">
                 <label className="field">
