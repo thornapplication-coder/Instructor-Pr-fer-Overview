@@ -576,13 +576,30 @@ textarea.input { resize: vertical; }
 .inline-msg { margin-top: 10px; font-weight: 700; font-size: 13px; }
 .inline-msg.ok { color: var(--green); }
 .inline-msg.err { color: var(--red); }
-.changelog { display: flex; flex-direction: column; gap: 16px; margin-top: 8px; }
-.changelog-head { display: flex; align-items: center; gap: 10px; margin-bottom: 6px; }
+.changelog { display: flex; flex-direction: column; gap: 6px; margin-top: 8px; }
+/* One row per version, collapsed: only the number and the date show. */
+.changelog-entry { border: 1px solid var(--hair); border-radius: var(--radius-sm); background: var(--panel); }
+.changelog-head {
+  display: flex; align-items: center; gap: 10px;
+  padding: 9px 12px; cursor: pointer; list-style: none; border-radius: var(--radius-sm);
+}
+.changelog-head::-webkit-details-marker { display: none; }
+/* Own disclosure triangle, because the native one is hidden above. */
+.changelog-head::after {
+  content: '›'; margin-left: auto; color: var(--muted);
+  font-size: 17px; font-weight: 800; line-height: 1;
+  transition: transform .15s ease;
+}
+.changelog-entry[open] > .changelog-head::after { transform: rotate(90deg); }
+.changelog-head:hover { background: var(--panel2); }
+.changelog-head:focus-visible { outline: 2px solid var(--burg); outline-offset: -2px; }
+.changelog-entry[open] { background: var(--white); }
+.changelog-entry > ul { padding: 0 14px 12px 32px; }
 .ver-tag { color: #fff; border-radius: 6px; padding: 2px 9px; font-size: 12px; font-weight: 900; background: var(--burg); }
 .ver-major { background: var(--burg); }
 .ver-minor { background: var(--sky); }
 .ver-patch { background: var(--muted); }
-.changelog ul { margin: 0; padding-left: 18px; color: var(--text); font-size: 13.5px; display: flex; flex-direction: column; gap: 4px; }
+.changelog ul { margin: 0; color: var(--text); font-size: 13.5px; display: flex; flex-direction: column; gap: 4px; }
 
 /* ---------- Capacity & timeline ---------- */
 .cap-table .avail { color: var(--green); }

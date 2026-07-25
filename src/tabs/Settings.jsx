@@ -295,19 +295,24 @@ export default function Settings() {
         <p className="muted small">
           {t('currentVersion')}: <strong>v{APP_VERSION}</strong> · {APP_BUILD_DATE}
         </p>
+        {/* Collapsed to version + date. Native <details> rather than a state
+            hook: it is keyboard-operable, announced correctly by screen
+            readers and searchable by the browser's find-in-page for free.
+            The newest entry opens by default – that is the one being looked
+            for after an update. */}
         <div className="changelog">
-          {CHANGELOG.map((entry) => (
-            <div className="changelog-entry" key={entry.version}>
-              <div className="changelog-head">
+          {CHANGELOG.map((entry, idx) => (
+            <details className="changelog-entry" key={entry.version} open={idx === 0}>
+              <summary className="changelog-head">
                 <span className={'ver-tag ver-' + entry.type}>v{entry.version}</span>
                 <span className="muted small">{entry.date}</span>
-              </div>
+              </summary>
               <ul>
                 {(entry.changes[lang] || entry.changes.de).map((c, i) => (
                   <li key={i}>{c}</li>
                 ))}
               </ul>
-            </div>
+            </details>
           ))}
         </div>
       </section>

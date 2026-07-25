@@ -4,7 +4,7 @@ export const LANGS = ['de', 'en']
 
 const DICT = {
   // ---- generic / chrome
-  appTitle: { de: '737 Trainer & Prüfer Monitoring', en: '737 Trainer & Examiner Monitoring' },
+  appTitle: { de: 'Trainer & Prüfer Monitoring', en: 'Trainer & Examiner Monitoring' },
   appSubtitle: { de: 'Boeing 737 MAX Phase-In · Instruktoren & Prüfer', en: 'Boeing 737 MAX Phase-In · Instructors & Examiners' },
   asOf: { de: 'Stand', en: 'as of' },
   update: { de: 'Update', en: 'Update' },
@@ -118,6 +118,10 @@ const DICT = {
   sync_syncing: { de: 'Synchronisiert …', en: 'Syncing …' },
   sync_synced: { de: 'Synchron', en: 'In sync' },
   sync_error: { de: 'Sync-Fehler', en: 'Sync error' },
+  sync_errBusy: {
+    de: 'Ein anderes Gerät hat gleichzeitig geschrieben. Es wurde nichts übertragen – der nächste Abgleich holt es nach.',
+    en: 'Another device wrote at the same time. Nothing was sent – the next sync will catch up.'
+  },
   sync_lastSync: { de: 'Zuletzt synchronisiert', en: 'Last synced' },
   sync_pending: { de: 'Änderungen noch nicht übertragen', en: 'changes not pushed yet' },
   sync_now: { de: 'Jetzt synchronisieren', en: 'Sync now' },

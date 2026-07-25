@@ -4,12 +4,37 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.18.1'
+export const APP_VERSION = '1.18.2'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.18.2',
+    date: '2026-07-25',
+    type: 'patch',
+    changes: {
+      de: [
+        'Überschrift oben ohne „737": nur noch „Trainer & Prüfer Monitoring". Das Logo behält seines.',
+        'Version & Changelog: jede Version ist jetzt eine Zeile mit Nummer und Datum und lässt sich aufklappen. Die neueste ist offen.',
+        'Sync-Nachbesserung: ein Fehler aus 1.18.1 behoben, bei dem eine Änderung, die während des Ladens vom Server gemacht wurde, aus dem Abgleich fiel und danach überschrieben wurde.',
+        'Schlagen beide Übertragungsversuche fehl, meldet die App das jetzt, statt fälschlich „Synchron" anzuzeigen.',
+        'Beim Schließen wird nicht mehr geschrieben, während gerade ein Abgleich läuft, und derselbe Stand wird nicht bei jedem Wegschalten erneut hochgeladen.',
+        'Die Größenprüfung beim Schließen zählt jetzt Bytes statt Zeichen – bei deutschen Texten (Umlaute, ß) wurde die Grenze sonst überschritten und die Übertragung stillschweigend verworfen.',
+        'Der allererste Eintrag in der Cloud wird jetzt angelegt statt überschrieben: melden sich zwei Geräte gleichzeitig an, verliert keines mehr seine Daten.'
+      ],
+      en: [
+        'The heading no longer carries "737": just "Trainer & Examiner Monitoring". The logo keeps its own.',
+        'Version & changelog: each version is now a single row with number and date that expands on click. The newest one is open.',
+        'Sync follow-up: fixed a defect from 1.18.1 where an edit made while the app was loading from the server was left out of the merge and then overwritten.',
+        'If both send attempts lose the race, the app now says so instead of wrongly showing "in sync".',
+        'The write on close no longer fires while a sync is running, and the same state is not re-uploaded on every switch away.',
+        'The size check on close counts bytes rather than characters – with German text (umlauts, ß) the limit was exceeded and the write silently discarded.',
+        'The very first cloud entry is now created rather than overwritten: if two devices sign in at the same moment, neither loses its data.'
+      ]
+    }
+  },
   {
     version: '1.18.1',
     date: '2026-07-25',

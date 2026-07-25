@@ -11,6 +11,59 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.18.2] – 2026-07-25
+
+Ergebnis eines Code-Reviews des 1.18.1-Patches. Der erste Punkt ist ein Fehler,
+den **1.18.1 selbst eingeschleppt** hat:
+
+- **Regression aus 1.18.1:** `sync()` las den lokalen Stand *vor* `await pull()`.
+  Eine Änderung während des Ladens (auf dem Handy leicht eine knappe Sekunde)
+  fiel damit aus der Zusammenführung und wurde anschließend von
+  `applyRemote(merged)` überschrieben – und galt danach als übertragen, ging
+  also endgültig verloren. Jetzt wird der Store **nach** dem Laden gelesen; ein
+  verlorener Versuch trägt sein Zwischenergebnis in die Wiederholung, statt es
+  als Ausgangsstand zu ersetzen.
+- **Falsches „Synchron".** Verloren beide Versuche das Wettrennen, fiel die
+  Schleife durch und meldete trotzdem Erfolg samt frischer Uhrzeit, obwohl kein
+  Byte den Server erreicht hatte. Jetzt eine klare Meldung.
+- **Schließen-Schreibvorgang gegen laufenden Abgleich.** `flush()` prüfte den
+  `busy`-Riegel nicht, konnte also mitten in einen Abgleich schreiben, dessen
+  Compare-and-Swap entwerten und die einzige Wiederholung verbrauchen.
+- **Wiederholtes Hochladen bei jedem Wegschalten.** Ohne jede Buchführung wurde
+  bei jedem Tab-Wechsel der komplette Bestand erneut gesendet – nach dem ersten
+  erfolgreichen Schreibvorgang zwangsläufig abgelehnt. Jetzt wird der versuchte
+  Stand vermerkt (ausdrücklich **kein** Erfolgsnachweis).
+- **`keepalive`-Grenze in Bytes statt Zeichen.** `body.length` zählt UTF-16-
+  Einheiten, die 64-KiB-Grenze gilt für Bytes. Bei deutschen Texten (Umlaute, ß)
+  wurde eine zu große Anfrage als zulässig markiert, vom Browser abgelehnt und
+  vom `.catch` verschluckt. Jetzt `TextEncoder`.
+- **Erster Eintrag: `insert` statt `upsert`.** Melden sich zwei Geräte
+  gleichzeitig an, überschrieb das zweite die Zeile des ersten komplett. Jetzt
+  gewinnt der Ersteller, der Verlierer erhält 23505 und geht den normalen
+  Zusammenführungsweg.
+- **`push()` aufgeteilt** in `pushCas()` (Vergleichswert **zwingend**) und
+  `createRow()`. Vorher hätte ein leerer Wert stillschweigend auf das
+  bedingungslose Überschreiben zurückgeschaltet – genau das, was der Patch
+  beseitigen sollte. Eine getroffene Zeile ohne Zeitstempel zählt jetzt als
+  Fehlschlag statt als Erfolg mit `undefined`.
+- Beide Schreibwege benennen die Vergleichsspalte über **eine** Konstante,
+  damit die postgrest-Variante und die handgebaute Abfrage nicht auseinander
+  driften; `stable()` wird je Runde einmal weniger über den Gesamtbestand
+  gerechnet.
+- **Der in 1.18.1 behauptete Test existierte nicht.** Er lag außerhalb des
+  Repositories – die Behauptung im Changelog war damit falsch. Jetzt liegt er
+  hier: `npm test` (ohne Abhängigkeiten) prüft die Zusammenführung in 30 Fällen
+  und stellt sicher, dass **jede** Liste im Datenbestand in `MERGE_LISTS` steht.
+  Gegengeprüft: entfernt man eine Liste, schlägt der Test fehl.
+
+Außerdem:
+
+- **Überschrift ohne „737"** – nur noch „Trainer & Prüfer Monitoring". Das Logo
+  behält seines.
+- **Changelog aufklappbar**: eine Zeile je Version mit Nummer und Datum,
+  Details auf Klick. Umgesetzt mit `<details>`/`<summary>`, also auch per
+  Tastatur und Screenreader bedienbar und von der Seitensuche auffindbar.
+
 ## [1.18.1] – 2026-07-25
 
 **Datenverlust zwischen Geräten behoben.** Gemeldet als „auf einem anderen Gerät

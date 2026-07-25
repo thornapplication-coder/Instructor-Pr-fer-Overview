@@ -1,11 +1,12 @@
 import { useCallback, useEffect, useRef, useState } from 'react'
 import {
   cloudConfigured,
+  createRow,
   getSession,
   getUser,
   onAuthChange,
   pull,
-  push,
+  pushCas,
   pushOnUnload,
   signOut
 } from './supabaseSync.js'
@@ -53,6 +54,12 @@ export function useCloudSync(data, applyRemote) {
   // Kept current so the unload handler, which cannot await anything, still has
   // a user id and a bearer token to write with.
   const authRef = useRef({ userId: null, token: null })
+  // The (local edit, expected server timestamp) pair the unload write last
+  // tried. It is NOT proof of success – nothing here can be awaited – it only
+  // stops every tab-hide from re-uploading the whole blob for a write we
+  // already dispatched, which after the first one lands would be rejected by
+  // the compare-and-swap anyway.
+  const unloadTried = useRef({ localAt: null, expected: null })
 
   const setRemoteAt = (v) => { remoteAt.current = v; write(LS_REMOTE_AT, v) }
   const setPushedAt = (v) => { pushedLocalAt.current = v; write(LS_PUSHED_AT, v) }
@@ -109,39 +116,60 @@ export function useCloudSync(data, applyRemote) {
       // Two attempts: the compare-and-swap below refuses to overwrite a row
       // that moved between our read and our write, and the answer to that is
       // simply to read again and merge again – not to force our copy through.
-      let mine = dataRef.current
-      for (let attempt = 0; attempt < 2; attempt++) {
+      let carried = null // what a lost attempt already merged, kept for the retry
+      let done = false
+
+      for (let attempt = 0; attempt < 2 && !done; attempt++) {
         const remote = await pull(u)
 
+        // Read the store AFTER the pull, never before. A pull takes a moment on
+        // mobile, and an edit made during it would otherwise be left out of the
+        // merge and then wiped out by applying that merge over it.
+        const localNow = dataRef.current
+        const mine = carried ? mergeBlobs(localNow, carried) : localNow
+        const fMine = stable(mine)
+
         if (!remote) {
-          // Nothing stored yet – our copy starts the row.
-          const at = await push(mine, u)
+          // No row yet – create it. If another device created it first this
+          // returns null and the retry takes the normal merge path.
+          const at = await createRow(mine, u)
+          if (at === null) { carried = mine; continue }
           setRemoteAt(at)
           setPushedAt(mine?.updatedAt || null)
+          done = true
           break
         }
 
         const merged = mergeBlobs(mine, remote.blob)
         const fMerged = stable(merged)
-        if (fMerged !== stable(mine)) applyRef.current(merged)
+        if (fMerged !== fMine) applyRef.current(merged)
 
         if (fMerged === stable(remote.blob)) {
           // The server already holds everything we know.
           setRemoteAt(remote.remoteAt)
           setPushedAt(merged?.updatedAt || null)
+          done = true
           break
         }
 
-        const at = await push(merged, u, remote.remoteAt)
+        const at = await pushCas(merged, u, remote.remoteAt)
         if (at === null) {
           // Someone wrote while we were merging. Carry what we have into the
           // next round so their write and ours both survive.
-          mine = merged
+          carried = merged
           continue
         }
         setRemoteAt(at)
         setPushedAt(merged?.updatedAt || null)
-        break
+        done = true
+      }
+
+      if (!done) {
+        // Every attempt lost the race, so nothing reached the server. Saying
+        // "in sync" here would be a lie the user cannot see through.
+        setError('sync_errBusy')
+        setState('error')
+        return
       }
       setLastSyncedAt(new Date().toISOString())
       setState('synced')
@@ -186,18 +214,28 @@ export function useCloudSync(data, applyRemote) {
   useEffect(() => {
     if (!cloudConfigured || !user) return
     const flush = () => {
+      // A sync is mid-flight: it holds a compare-and-swap on the timestamp we
+      // would use here, so writing now would invalidate it and burn its only
+      // retry. That sync is already sending this data anyway.
+      if (busy.current) return
       if (!hasLocalEdits()) return
+      const localAt = dataRef.current?.updatedAt || null
+      const expected = remoteAt.current
+      if (!expected) return
+      const tried = unloadTried.current
+      if (tried.localAt === localAt && tried.expected === expected) return
+
       const { userId, token } = authRef.current
       // Conditional on the row still being where we last saw it, so this can
       // never overwrite another device's newer work (see pushOnUnload).
       //
-      // Deliberately NOT marked as pushed afterwards: nothing here can be
-      // awaited, so we do not know whether the write landed – and the
-      // compare-and-swap may have skipped it on purpose. Claiming success
-      // would make the next sync believe there is nothing left to send and
-      // strand these edits for good. A redundant push next time costs
-      // nothing; the merge is idempotent.
-      pushOnUnload(dataRef.current, userId, token, remoteAt.current)
+      // Deliberately NOT marked as pushed: nothing here can be awaited, so we
+      // do not know whether the write landed – and the compare-and-swap may
+      // have skipped it on purpose. Claiming success would make the next sync
+      // believe there is nothing left to send and strand these edits for good.
+      if (pushOnUnload(dataRef.current, userId, token, expected)) {
+        unloadTried.current = { localAt, expected }
+      }
     }
     const onVisibility = () => {
       if (document.visibilityState === 'visible') {

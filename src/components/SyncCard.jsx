@@ -94,7 +94,11 @@ export default function SyncCard() {
           {pendingChanges ? ' · ' + t('sync_pending') : ''}
         </p>
       )}
-      {state === 'error' && error && <p className="inline-msg err">{error}</p>}
+      {/* The engine reports some failures as a translation key rather than a
+          raw API string, because they are expected states, not faults. */}
+      {state === 'error' && error && (
+        <p className="inline-msg err">{/^sync_/.test(error) ? t(error) : error}</p>
+      )}
 
       {!user ? (
         <div className="sync-auth">
