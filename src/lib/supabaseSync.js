@@ -3,15 +3,13 @@
 // devices. The app stays fully offline-first: localStorage remains the source
 // of truth, and everything here is best-effort on top of it.
 //
-// Configuration (build time, Vite):
-//   VITE_SUPABASE_URL       – https://<ref>.supabase.co
-//   VITE_SUPABASE_ANON_KEY  – the publishable / anon key
-// Without them `cloudConfigured` is false and the app behaves exactly as before.
-//
-// The matching schema lives in supabase/migrations/0001_app_state.sql.
+// The project URL and the publishable anon key live in cloudConfig.js (see the
+// note there on why baking them in is safe). The matching schema is in
+// supabase/migrations/0001_app_state.sql.
+import { SUPABASE_URL, SUPABASE_ANON_KEY } from './cloudConfig.js'
 
-const URL = import.meta.env.VITE_SUPABASE_URL
-const ANON = import.meta.env.VITE_SUPABASE_ANON_KEY
+const URL = SUPABASE_URL
+const ANON = SUPABASE_ANON_KEY
 
 export const cloudConfigured = Boolean(URL && ANON)
 

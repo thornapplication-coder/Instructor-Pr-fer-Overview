@@ -4,12 +4,25 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.15.0'
-export const APP_BUILD_DATE = '2026-07-24'
+export const APP_VERSION = '1.15.1'
+export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.15.1',
+    date: '2026-07-25',
+    type: 'patch',
+    changes: {
+      de: [
+        'Cloud-Sync ist jetzt scharf geschaltet: das Supabase-Projekt ist fest hinterlegt, der Sync läuft nach dem Anmelden in den Einstellungen.'
+      ],
+      en: [
+        'Cloud sync is now live: the Supabase project is wired in, syncing starts once you sign in from Settings.'
+      ]
+    }
+  },
   {
     version: '1.15.0',
     date: '2026-07-24',

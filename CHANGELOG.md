@@ -11,6 +11,17 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.15.1] – 2026-07-25
+
+- **Cloud-Sync scharf geschaltet**: Projekt-URL und der (öffentliche) anon-Key
+  liegen jetzt in `src/lib/cloudConfig.js`, damit der deployte Build ohne
+  CI-Secrets funktioniert. Geschützt werden die Daten durch Row Level Security
+  auf `app_state`, nicht durch das Verstecken des Keys – der steht ohnehin in
+  jedem ausgelieferten Bundle. `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY`
+  überschreiben die Werte weiterhin, falls jemand ein eigenes Projekt nutzt.
+- Die Projekt-URL wird beim Einlesen normalisiert: ein angehängtes `/rest/v1/`
+  (so zeigt Supabase die API-URL an) wird abgeschnitten.
+
 ## [1.15.0] – 2026-07-24
 
 - **Cloud-Sync (Supabase) eingebaut.** In den Einstellungen anmelden – danach
