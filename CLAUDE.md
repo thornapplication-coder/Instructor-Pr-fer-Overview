@@ -20,20 +20,31 @@ Commit-Nachrichten auf Englisch.
 | `src/data/*.js` | Startdaten und Kategorien (Phasen, Berechtigungen, Provider, Piloten). |
 | `src/tabs/*.jsx` | Je Reiter eine Datei. |
 | `src/version.js` | Version **und** Changelog (wird in den Einstellungen angezeigt). |
-| `test/` | `npm test` – ohne Abhängigkeiten, reines Node. |
+| `test/` | `npm test` – Zusammenführung + Abdeckungs-Wächter, reines Node. |
+| `test/browser/` | `npm run test:browser` – Playwright gegen den echten Build. |
 
 ## Befehle
 
 ```bash
 npm run dev            # Entwicklung
-npm test               # Zusammenführung + Abdeckungs-Wächter (schnell, immer laufen lassen)
+npm test               # Logik: Zusammenführung + Abdeckungs-Wächter (Sekunden)
 npm run build          # muss vor jedem Commit durchlaufen
+npm run test:browser   # nach dem Build: echter Browser, dauert einige Minuten
 npm run preview -- --port 4329
 ```
 
-Browser-Tests laufen mit Playwright aus `/opt/node22/lib/node_modules/playwright`
-(CommonJS: `import pw from '...'; const { chromium } = pw`). Aufräumen mit
-`fuser -k <port>/tcp` — **nie** `pkill` in einer verketteten Zeile.
+`npm run test:browser` startet die Vorschau selbst und fährt sie wieder herunter.
+Es prüft die Dinge, die es erst gerendert gibt: Kopfzeile und Zahnrad, Breite der
+Trainer-Tabelle, die Kacheln, Stempel und Grabsteine im Speicher, Farben im
+Dunkelmodus, Kartenbreiten im Board und die Seitenzahl des Dashboard-PDF.
+
+Playwright ist **keine** Abhängigkeit des Projekts — fehlt es, meldet der Lauf
+das und endet mit Erfolg, statt einen sonst gesunden Checkout rot zu färben. In
+dieser Sandbox liegt es unter `/opt/node22/lib/node_modules/playwright`.
+
+Der Lauf braucht mehrere Minuten (zwei PDF-Exporte, viele Neuladungen) — im
+Zweifel im Hintergrund starten. Aufräumen mit `fuser -k <port>/tcp`; **nie**
+`pkill` in einer verketteten Zeile, das trifft auch den eigenen Prozess.
 
 ## Regeln, die schon einmal wehgetan haben
 
