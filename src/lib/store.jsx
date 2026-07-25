@@ -52,6 +52,9 @@ function withConvDefaults(trainer, firstStage) {
     qual: normalizeQual(trainer.qual),
     // Only the country is shown, not the "EASA -" prefix.
     authority: normalizeAuthority(trainer.authority),
+    // Free-text notes. Nothing derives from this – unlike `remark`, which the
+    // "Funktion" chart counts – so it can hold whatever the planner needs.
+    note: typeof trainer.note === 'string' ? trainer.note : '',
     conv: {
       stage: stage0,
       status: 'on_track',

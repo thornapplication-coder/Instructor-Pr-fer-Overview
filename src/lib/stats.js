@@ -55,8 +55,12 @@ export function byQual(trainers, order) {
 export function byBase(trainers) {
   return ordered(tally(trainers, (t) => t.base), BASE_ORDER)
 }
+// Only the real priority tiers. Somebody without an ORE is not a fourth
+// category – the card is titled "A–C" and that is exactly what it counts, so
+// its total is the people who actually carry a tier, not the whole pool.
 export function byOre(trainers) {
-  return ordered(tally(trainers, (t) => t.ore || '—'), ORE_ORDER)
+  const rated = (trainers || []).filter((t) => ORE_ORDER.includes(t.ore))
+  return ordered(tally(rated, (t) => t.ore), ORE_ORDER)
 }
 export function byAuthority(trainers) {
   return bySize(tally(trainers, (t) => t.authority || '—'))

@@ -4,12 +4,37 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.23.1'
+export const APP_VERSION = '1.24.0'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.24.0',
+    date: '2026-07-25',
+    type: 'minor',
+    changes: {
+      de: [
+        'PDF: die Fußzeile entfällt ganz – weder Version noch Seitenzahl. Die Ränder sind von 40 auf 24 Punkt geschrumpft, dadurch nutzt die Tabelle das Blatt deutlich besser aus.',
+        'Trainer-Tabelle: „Funktion / Anmerkung" heißt jetzt nur noch „Funktion" und steht am Ende der Tabelle, hinter der Umschulungs-Phase.',
+        'Neue Spalte „Anmerkungen" ganz rechts: freier Text, rein zur Information. Sie fließt in keine Statistik und in keine Auswertung ein – im Gegensatz zu „Funktion", die weiterhin die Dashboard-Kachel „Funktion" speist. Bearbeitet wird sie im Trainer-Dialog; sie steht auch im Excel- und PDF-Export.',
+        'Damit die Tabelle mit der 14. Spalte weiterhin ohne Querscrollen auf den Bildschirm passt, ist der seitliche Zellenabstand von 8 auf 6 Punkt geschrumpft.',
+        'Beim Excel-Import gehen die Spaltenüberschriften „Anmerkung(en)", „Bemerkung(en)", „Kommentar" jetzt in die neue Spalte; die alte kombinierte Überschrift „Funktion / Anmerkung" bleibt bei „Funktion".',
+        'B737-Umschulung: alle fünf Kacheln schreiben jetzt dazu, wen sie zählen – „von 50 im Umschulungs-Pool (SEN/TRE/TRI/LTC)". Ohne den Zusatz las sich „50 noch nicht gestartet" wie eine Aussage über alle.',
+        'ORE-Priorität: das Diagramm zählt nur noch A, B und C. Personen ohne Stufe waren bisher als vierte Kategorie „—" dabei, wodurch die Gesamtzahl in der Überschrift nicht mehr zu den Segmenten passte.'
+      ],
+      en: [
+        'PDF: the footer is gone entirely – neither version nor page number. Margins shrank from 40 to 24 points, so the table uses much more of the sheet.',
+        'Trainer table: "Function / remark" is now just "Function" and sits at the end of the table, after the conversion stage.',
+        'New "Notes" column on the far right: free text, purely informational. It feeds no statistic and no evaluation – unlike "Function", which still drives the dashboard\'s "Function" card. Edited in the trainer dialog; included in the Excel and PDF exports.',
+        'So the table still fits on screen without sideways scrolling with a 14th column, horizontal cell padding went from 8 to 6 points.',
+        'On Excel import the headers "Anmerkung(en)", "Bemerkung(en)" and "Kommentar" now go to the new column; the old combined header "Funktion / Anmerkung" still maps to "Function".',
+        'B737 conversion: all five tiles now state whom they count – "of 50 in the conversion pool (SEN/TRE/TRI/LTC)". Without it, "50 not started yet" read as a statement about everybody.',
+        'ORE priority: the chart counts A, B and C only. People without a tier used to appear as a fourth "—" category, which made the total in the heading disagree with the segments.'
+      ]
+    }
+  },
   {
     version: '1.23.1',
     date: '2026-07-25',

@@ -24,7 +24,6 @@ export function exportTrainersExcel(data, t, lang) {
       { label: t('f_tlc'), value: (x) => x.tlc },
       { label: t('f_name'), value: (x) => x.name },
       { label: t('f_role'), value: (x) => t(x.role === 'fo' ? 'role_fo' : 'role_captain') },
-      { label: t('f_remark'), value: (x) => x.remark },
       { label: t('f_partTime'), value: (x) => formatPartTime(x.partTime, lang) },
       { label: t('f_fte'), value: (x) => formatFte(x.fte) },
       { label: t('f_aircraft'), value: (x) => x.aircraft },
@@ -34,7 +33,10 @@ export function exportTrainersExcel(data, t, lang) {
       { label: t('f_ltc'), value: (x) => x.ltcDate },
       { label: t('f_tri'), value: (x) => x.triDate },
       { label: t('f_tre'), value: (x) => x.treDate },
-      { label: t('f_conversion'), value: (x) => stageLabel(stages.find((s) => s.id === x.conv?.stage)) }
+      { label: t('f_conversion'), value: (x) => stageLabel(stages.find((s) => s.id === x.conv?.stage)) },
+      // Free text last, matching the screen and the PDF.
+      { label: t('f_remark'), value: (x) => x.remark },
+      { label: t('f_note'), value: (x) => x.note || '' }
     ],
     rows,
     t('trainers_title'),

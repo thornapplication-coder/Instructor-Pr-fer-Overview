@@ -452,14 +452,24 @@ select.input { cursor: pointer; }
    what actually set the column widths – 181px of heading above a cell reading
    "Austria" – because th is nowrap by default. Letting them wrap costs two
    lines of header height and buys back roughly 200px of table width. */
-.data-table.compact th { padding: 8px 8px; font-size: 10px; letter-spacing: .4px; white-space: normal; }
-.data-table.compact td { padding: 7px 8px; }
+/* Horizontal padding is 6px, not 8: the column widths in this table are set by
+   the HEADER words (ANMERKUNGEN, ZUGEHÖRIGKEIT, UMSCHULUNG …), which cannot
+   wrap, so the only way to fit 14 columns without sideways scrolling is to take
+   it off the padding. 2px × 2 sides × 14 columns is the ~56px that were
+   missing. Measured, not guessed – see the trainer-table check in
+   test/browser/dashboard.test.mjs. */
+.data-table.compact th { padding: 8px 6px; font-size: 10px; letter-spacing: .4px; white-space: normal; }
+.data-table.compact td { padding: 7px 6px; }
 /* The remark is free text and would otherwise set the table's width on its own.
    Note it WRAPS rather than being cut: a width ceiling does not hold on a table
    cell in the default auto layout, so "nowrap + ellipsis" made the column grow
    to the full string instead of clipping it. Wrapping costs row height, which
    the table can afford, and keeps the text readable. */
-.cell-clamp { display: block; max-width: 150px; overflow-wrap: anywhere; }
+/* Free-text cells wrap inside a ceiling instead of stretching the column. The
+   trainer table now carries TWO of them (Funktion and Anmerkungen) and still
+   has to fit its container without sideways scrolling, so the ceiling is
+   narrower than when there was only one. */
+.cell-clamp { display: block; max-width: 105px; overflow-wrap: anywhere; }
 .data-table tr.clickable:hover td { background: var(--sky-lightest); }
 .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .data-table .mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 12.5px; }

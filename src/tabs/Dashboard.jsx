@@ -22,7 +22,7 @@ import {
   capacityByAircraft
 } from '../lib/stats.js'
 import { conversionProgress, STAFF_TYPE } from '../data/pipeline.js'
-import { qualLabel, conversionTrainers } from '../data/qualifications.js'
+import { qualLabel, conversionTrainers, CONVERSION_QUALS } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { CATEGORICAL, MEASURE_WHOLE, MEASURE_PART, STATUS, BRAND, stageRamp } from '../lib/palette.js'
 import { formatFte1 } from '../lib/format.js'
@@ -271,14 +271,21 @@ export default function Dashboard() {
   ]
 
   // ---- B737 Umschulung
+  //
+  // EVERY tile in this section counts the conversion pool only – SEN/TRE/TRI/
+  // LTC, not SFI or TKI – so every tile says so. Without it "50 noch nicht
+  // gestartet" reads as "50 of everyone", and the reader has no way to tell
+  // that the population differs from the one in the section above.
+  const convScope = t('convPoolOf')
+    .replace('{n}', String(convPool.length))
+    .replace('{q}', CONVERSION_QUALS.join('/'))
   const cvKpi = [
-    { id: 'released', node: <KpiTile value={cs.released} label={t('kpi_released')} accent={STATUS.good} /> },
-    { id: 'inProgress', node: <KpiTile value={cs.inProgress} label={t('kpi_inProgress')} accent={BRAND.burgundy} /> },
-    { id: 'notStarted', node: <KpiTile value={cs.notStarted} label={t('kpi_notStarted')} accent={STATUS.neutral} /> },
-    // These two count the conversion pool only (SEN/TRE/TRI/LTC), so their
-    // denominator is smaller than the total tile above. Say so on the tile –
-    // an unlabelled second "FTE" total reads as a contradiction, not a scope.
-    // And format through fte1 like every other figure: raw numbers printed
+    { id: 'released', node: <KpiTile value={cs.released} label={t('kpi_released')} accent={STATUS.good} sub={convScope} /> },
+    { id: 'inProgress', node: <KpiTile value={cs.inProgress} label={t('kpi_inProgress')} accent={BRAND.burgundy} sub={convScope} /> },
+    { id: 'notStarted', node: <KpiTile value={cs.notStarted} label={t('kpi_notStarted')} accent={STATUS.neutral} sub={convScope} /> },
+    // The FTE pair carries its denominator as well as the scope: an unlabelled
+    // second "FTE" total reads as a contradiction, not as a different group.
+    // Formatted through fte1 like every other figure – raw numbers printed
     // "38.9" next to the formatter's "38,9".
     {
       id: 'fteInConv',
@@ -287,7 +294,7 @@ export default function Dashboard() {
           value={fte1(fteS.inConversion)}
           label={t('kpi_fteInConversion')}
           accent={BRAND.burgundy}
-          sub={`/ ${fte1(fteS.total)} FTE ${t('fteConvScope')}`}
+          sub={`/ ${fte1(fteS.total)} FTE · ${convScope}`}
         />
       )
     },
@@ -298,7 +305,7 @@ export default function Dashboard() {
           value={fte1(fteS.available)}
           label={t('kpi_fteAvailable')}
           accent={STATUS.good}
-          sub={`/ ${fte1(fteS.total)} FTE ${t('fteConvScope')}`}
+          sub={`/ ${fte1(fteS.total)} FTE · ${convScope}`}
         />
       )
     }
@@ -316,7 +323,17 @@ export default function Dashboard() {
         </section>
       )
     },
-    { id: 'ore', node: <Card title={t('chart_byOre')} total={convPool.length}><Donut data={ore} centerBottom="ORE" /></Card> },
+    {
+      id: 'ore',
+      // Total = the people with a tier, not the whole pool: the chart only
+      // counts A–C, and a header saying 50 above four slices adding to 48 is
+      // the kind of mismatch that makes a reader distrust the rest of the page.
+      node: (
+        <Card title={t('chart_byOre')} total={ore.reduce((n, r) => n + r.count, 0)}>
+          <Donut data={ore} centerBottom="ORE" />
+        </Card>
+      )
+    },
     {
       id: 'trend',
       node: (

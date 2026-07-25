@@ -2,7 +2,7 @@
 // No window.print(), no DOM scraping: this guarantees the correct page and the
 // current data on every platform (desktop, iPhone, iPad – the file downloads /
 // opens in the share sheet). jsPDF + autotable are lazy-loaded (heavy).
-import { BRAND_NAME, BRAND_HEX, hexToRgb, footerLine, fileStamp, reportDate } from './brand.js'
+import { BRAND_NAME, BRAND_HEX, hexToRgb, fileStamp, reportDate } from './brand.js'
 import { formatPartTime, formatFte, formatFte1, formatDate } from './format.js'
 import { stageLabel, CONV_STATUS, ASSIGNMENT_STATUS, firstStageId } from '../data/pipeline.js'
 import { qualLabel } from '../data/qualifications.js'
@@ -31,7 +31,6 @@ import { courseEntries, courseMonths, monthTitle } from './courseCalendar.js'
 
 const BURG = hexToRgb(BRAND_HEX.burg)
 const BURG_DARK = hexToRgb(BRAND_HEX.burgDark)
-const GREY = hexToRgb(BRAND_HEX.grey)
 
 let _pdf = null
 async function loadPdf() {
@@ -42,25 +41,26 @@ async function loadPdf() {
 }
 
 
-// Branded header + footer, drawn on every page via autotable's didDrawPage.
+// Page margin for the table reports, in points. 24pt ≈ 8.5 mm – narrow enough
+// to use the sheet, wide enough that no printer clips the outer column.
+const PAGE_MARGIN = 24
+
+// Branded header, drawn on every page via autotable's didDrawPage. No footer:
+// neither the version nor the page number earns the strip of paper it costs,
+// and without it the table may run to the bottom edge.
 function decorate(doc, title, lang, dateStr) {
   const W = doc.internal.pageSize.getWidth()
-  const H = doc.internal.pageSize.getHeight()
   doc.setFillColor(...BURG)
   doc.rect(0, 0, W, 50, 'F')
   doc.setTextColor(255, 255, 255)
   doc.setFont('helvetica', 'bold')
   doc.setFontSize(15)
-  doc.text(BRAND_NAME, 40, 23)
+  doc.text(BRAND_NAME, PAGE_MARGIN, 23)
   doc.setFont('helvetica', 'normal')
   doc.setFontSize(11)
-  doc.text(title, 40, 40)
+  doc.text(title, PAGE_MARGIN, 40)
   doc.setFontSize(9)
-  doc.text(dateStr, W - 40, 23, { align: 'right' })
-  doc.setTextColor(...GREY)
-  doc.setFontSize(8)
-  doc.text(footerLine(), 40, H - 16)
-  doc.text(String(doc.internal.getCurrentPageInfo().pageNumber), W - 40, H - 16, { align: 'right' })
+  doc.text(dateStr, W - PAGE_MARGIN, 23, { align: 'right' })
 }
 
 function makeCtx(doc, autoTable, title, lang) {
@@ -83,7 +83,9 @@ function table(ctx, { section, head, body, foot, columnStyles }) {
     head: headRows,
     body,
     foot,
-    margin: { top: 60, bottom: 30, left: 40, right: 40 },
+    // top clears the branded header band; bottom is just breathing room now
+    // that nothing is printed down there.
+    margin: { top: 60, bottom: PAGE_MARGIN, left: PAGE_MARGIN, right: PAGE_MARGIN },
     styles: { fontSize: 8, cellPadding: 3, overflow: 'linebreak', valign: 'middle' },
     headStyles: { fillColor: BURG, textColor: 255, fontStyle: 'bold', fontSize: 8 },
     footStyles: { fillColor: [241, 243, 245], textColor: BURG_DARK, fontStyle: 'bold' },
@@ -109,9 +111,9 @@ const MIN_LEGIBLE = 0.75
 function addCanvasPages(doc, canvas, title, lang) {
   const pageW = doc.internal.pageSize.getWidth()
   const pageH = doc.internal.pageSize.getHeight()
-  const margin = 24
+  const margin = PAGE_MARGIN
   const top = 58 // below the header bar
-  const bottom = 24
+  const bottom = PAGE_MARGIN
   const availW = pageW - margin * 2
   const availH = pageH - top - bottom
   if (!canvas.width || !canvas.height) return false
@@ -203,15 +205,17 @@ async function exportTrainersPdf(data, t, lang, opts) {
   const ctx = makeCtx(doc, autoTable, t('trainers_title'), lang)
   const rows = [...data.trainers].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
   table(ctx, {
-    head: [t('f_qual'), t('f_base'), t('f_tlc'), t('f_name'), t('f_role'), t('f_remark'), t('f_partTime'), t('f_fte'), t('f_aircraft'), t('f_ore'), t('f_staffType'), t('f_authority'), t('f_conversion')],
+    // Same column order as the on-screen table: the two free-text columns last.
+    head: [t('f_qual'), t('f_base'), t('f_tlc'), t('f_name'), t('f_role'), t('f_partTime'), t('f_fte'), t('f_aircraft'), t('f_ore'), t('f_staffType'), t('f_authority'), t('f_conversion'), t('f_remark'), t('f_note')],
     body: rows.map((x) => [
       qualLabel(data.quals, x.qual), x.base || '', x.tlc || '', x.name || '',
-      t(x.role === 'fo' ? 'role_foShort' : 'role_captainShort'), x.remark || '',
+      t(x.role === 'fo' ? 'role_foShort' : 'role_captainShort'),
       formatPartTime(x.partTime, lang), formatFte(x.fte), x.aircraft || '', x.ore || '',
       t('staff_' + (x.staffType || 'internal')), x.authority || '',
-      stageLabel(data.stages.find((s) => s.id === x.conv?.stage))
+      stageLabel(data.stages.find((s) => s.id === x.conv?.stage)),
+      x.remark || '', x.note || ''
     ]),
-    columnStyles: { 3: { cellWidth: 110 }, 5: { cellWidth: 80 } }
+    columnStyles: { 3: { cellWidth: 110 }, 12: { cellWidth: 80 }, 13: { cellWidth: 80 } }
   })
   return finalize(doc, 'trainer', opts)
 }

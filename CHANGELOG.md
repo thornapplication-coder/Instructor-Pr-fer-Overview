@@ -11,6 +11,38 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.24.0] – 2026-07-25
+
+- **PDF ohne Fußzeile, mit schmalen Rändern.** Version und Seitenzahl sind weg;
+  die Ränder gingen von 40 auf **24 Punkt** (≈ 8,5 mm) — schmal genug, um das
+  Blatt zu nutzen, breit genug, dass kein Drucker die äußere Spalte abschneidet.
+  Da unten nichts mehr steht, darf die Tabelle bis zur Blattkante laufen.
+- **Trainer: „Funktion / Anmerkung" → „Funktion"**, verschoben ans Ende der
+  Tabelle hinter die Umschulungs-Phase. Freitext liest man, man sortiert nicht
+  danach — deshalb hinter die Spalten, nach denen gefiltert wird.
+- **Neue Spalte „Anmerkungen"** ganz rechts. Rein informativ: sie speist keine
+  Statistik und keine Auswertung. Die Unterscheidung ist bewusst — „Funktion"
+  zählt weiterhin die Dashboard-Kachel „Funktion" (mit/ohne), „Anmerkungen"
+  zählt nichts. Bearbeitbar im Trainer-Dialog, enthalten in Excel- und
+  PDF-Export, durchsuchbar.
+- Damit die Tabelle mit 14 Spalten weiterhin **ohne Querscrollen** auf den
+  Bildschirm passt, ist der seitliche Zellenabstand von 8 auf 6 Punkt gegangen.
+  Gemessen statt geraten: die Spaltenbreiten werden von den *Überschriften*
+  bestimmt (ANMERKUNGEN, ZUGEHÖRIGKEIT, UMSCHULUNG — die lassen sich nicht
+  umbrechen), nicht vom Inhalt. Die fehlenden 45 px kamen genau von dort.
+- Der **Excel-Import** wurde mitgezogen: „Anmerkung(en)", „Bemerkung(en)" und
+  „Kommentar" landen jetzt in der neuen Spalte. Die alte kombinierte
+  Überschrift „Funktion / Anmerkung" bleibt bei „Funktion" — das ist, was sie
+  immer enthielt, und alte Dateien müssen sich unverändert einlesen lassen.
+- **B737-Umschulung: alle fünf Kacheln nennen ihre Grundgesamtheit** („von 50
+  im Umschulungs-Pool (SEN/TRE/TRI/LTC)"). Vorher trugen nur die beiden
+  FTE-Kacheln einen Hinweis, und „50 noch nicht gestartet" las sich wie eine
+  Aussage über alle — die Umschulung betrifft aber SFI und TKI nicht.
+- **ORE-Priorität zählt nur A, B und C.** Personen ohne Stufe erschienen als
+  vierte Kategorie „—". Das machte aus einem fehlenden Wert eine Kategorie und
+  ließ die Gesamtzahl in der Überschrift (der ganze Pool) nicht mehr zu den
+  Segmenten passen. Die Überschrift zeigt jetzt die Summe der Segmente.
+
 ## [1.23.1] – 2026-07-25
 
 - **Kein Copyright-Hinweis mehr auf den Exporten.** Entfernt aus der PDF-

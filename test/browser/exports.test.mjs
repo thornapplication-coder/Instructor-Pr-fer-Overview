@@ -47,13 +47,12 @@ export default async function run(browser, baseUrl, shots) {
   // The reports get handed on, so no personal byline may ride along. Checked on
   // the produced bytes, not on the helper that builds the string.
   ok(!/copyright/i.test(a.text), 'and no copyright notice anywhere in it')
-  // Matched by pattern, not against src/version.js: the running app is whatever
-  // `npm run build` last produced, so comparing to the source version would
-  // fail purely because a version bump had not been rebuilt yet.
-  ok(/v\d+\.\d+\.\d+/.test(a.text), 'but it does carry a build version (' + (/v\d+\.\d+\.\d+/.exec(a.text) || [''])[0] + ')')
+  // The PDF has no footer at all now – no version, no page number – so the
+  // table can run to the bottom of the sheet.
+  ok(!/v\d+\.\d+\.\d+/.test(a.text), 'and no version footer either')
 
-  // Same for the Excel export – it shares footerLine() but is written by a
-  // different code path.
+  // The Excel export keeps its version footer; only the PDF loses it. It is a
+  // different code path, so check the file rather than assume.
   const [xls] = await Promise.all([
     page.waitForEvent('download', { timeout: 60000 }),
     page.locator('.downloads-card .dl-chip.xls').first().click()

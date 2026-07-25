@@ -91,7 +91,7 @@ export default function Trainers() {
       .filter((x) =>
         needle
           ? [
-              x.name, x.tlc, x.remark, x.base, x.authority, x.aircraft,
+              x.name, x.tlc, x.remark, x.note, x.base, x.authority, x.aircraft,
               qualLabel(quals, x.qual),
               t(roleOf(x) === 'fo' ? 'role_fo' : 'role_captain')
             ]
@@ -110,6 +110,7 @@ export default function Trainers() {
       name: (x) => x.name,
       role: (x) => (roleOf(x) === 'captain' ? 0 : 1), // Captains first
       remark: (x) => x.remark || '',
+      note: (x) => x.note || '',
       fte: (x) => (typeof x.fte === 'number' ? x.fte : 1),
       aircraft: (x) => x.aircraft || '',
       ore: (x) => (x.ore in ORE_RANK ? ORE_RANK[x.ore] : 9),
@@ -130,6 +131,7 @@ export default function Trainers() {
       name: '',
       role: 'captain',
       remark: '',
+      note: '',
       partTime: 'VZ',
       fte: 1,
       aircraft: 'A320',
@@ -208,7 +210,6 @@ export default function Trainers() {
               <Th label={t('f_tlc')} k="tlc" {...p} />
               <Th label={t('f_name')} k="name" {...p} />
               <Th label={t('f_role')} k="role" {...p} />
-              <Th label={t('f_remark')} k="remark" {...p} />
               <Th label={t('f_partTime')} k="fte" className="num" {...p} />
               <Th label={t('f_fte')} k="fte" className="num" {...p} />
               <Th label={t('f_aircraft')} k="aircraft" {...p} />
@@ -216,6 +217,10 @@ export default function Trainers() {
               <Th label={t('f_staffType')} k="staff" {...p} />
               <Th label={t('f_authority')} k="authority" {...p} />
               <Th label={t('f_conversion')} k="stage" {...p} />
+              {/* Free text last: both are read, not scanned, so they belong
+                  after the columns you sort and filter by. */}
+              <Th label={t('f_remark')} k="remark" {...p} />
+              <Th label={t('f_note')} k="note" {...p} />
               </>) })()}
             </tr>
           </thead>
@@ -236,7 +241,6 @@ export default function Trainers() {
                 <td className="mono">{x.tlc}</td>
                 <td className="strong">{x.name}</td>
                 <td><RoleTag role={roleOf(x)} t={t} /></td>
-                <td className="muted"><span className="cell-clamp" title={x.remark || ''}>{x.remark || '–'}</span></td>
                 <td className="num">{formatPartTime(x.partTime, lang)}</td>
                 <td className="num">{formatFte(x.fte)}</td>
                 <td><span className="ac-tag">{x.aircraft || '–'}</span></td>
@@ -252,11 +256,13 @@ export default function Trainers() {
                 </td>
                 <td className="muted small">{x.authority || '–'}</td>
                 <td><StageBadge trainer={x} stages={stages} /></td>
+                <td className="muted"><span className="cell-clamp" title={x.remark || ''}>{x.remark || '–'}</span></td>
+                <td className="muted"><span className="cell-clamp" title={x.note || ''}>{x.note || '–'}</span></td>
               </tr>
             ))}
             {rows.length === 0 && (
               <tr>
-                <td colSpan={13} className="empty-row">{t('noTrainers')}</td>
+                <td colSpan={14} className="empty-row">{t('noTrainers')}</td>
               </tr>
             )}
           </tbody>
@@ -384,6 +390,9 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
         </Field>
         <Field label={t('f_remark')} span2>
           <input className="input" value={f.remark} onChange={(e) => set('remark', e.target.value)} />
+        </Field>
+        <Field label={t('f_note')} span2>
+          <input className="input" value={f.note || ''} onChange={(e) => set('note', e.target.value)} />
         </Field>
         <Field label={t('f_aircraft')}>
           <select className="input" value={f.aircraft || 'A320'} onChange={(e) => set('aircraft', e.target.value)}>

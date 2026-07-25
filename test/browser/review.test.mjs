@@ -35,7 +35,9 @@ export default async function run(browser, baseUrl, shots) {
   const box = await page.locator('.table-wrap').evaluate((e) => ({ c: e.clientWidth, s: e.scrollWidth }))
   ok(box.s <= box.c, 'a very long remark does not widen the table (' + box.s + ' <= ' + box.c + ')')
   const clampW = await page.locator('.cell-clamp').first().evaluate((e) => Math.round(e.getBoundingClientRect().width))
-  ok(clampW <= 152, 'the remark column is held to its ceiling (' + clampW + 'px)')
+  // Tightened when "Anmerkungen" was added: two clamped columns have to fit
+  // the same container the single one used to.
+  ok(clampW <= 107, 'the free-text column is held to its ceiling (' + clampW + 'px)')
   // The long remark is on whichever row sorting put it – find it by its text.
   const longCell = page.locator('.cell-clamp').filter({ hasText: 'Deputy Postholder' }).first()
   const lines = await longCell.evaluate((e) => Math.round(e.getBoundingClientRect().height))

@@ -15,7 +15,11 @@ const FIELD_ALIASES = {
   base: ['base', 'standort'],
   tlc: ['tlc', 'kürzel', 'kuerzel', 'kz'],
   name: ['name'],
-  remark: ['funktion / anmerkung', 'funktion/anmerkung', 'funktion', 'anmerkung', 'bemerkung', 'function / remark', 'function/remark', 'function', 'remark'],
+  // "Funktion" and "Anmerkungen" are two columns now. The combined legacy
+  // header "Funktion / Anmerkung" still maps to `remark`, because that is what
+  // it always held; the standalone note words moved to `note`.
+  remark: ['funktion / anmerkung', 'funktion/anmerkung', 'funktion', 'function / remark', 'function/remark', 'function', 'remark'],
+  note: ['anmerkungen', 'anmerkung', 'bemerkungen', 'bemerkung', 'notes', 'note', 'kommentar'],
   role: ['rolle (cockpit)', 'rolle', 'role (cockpit)', 'role', 'funktion cockpit', 'cockpit'],
   partTime: ['part-time', 'part time', 'parttime', 'teilzeit', 'pt'],
   fte: ['fte', 'fte (1 = 100%)', 'fte 1 = 100%', 'vollzeitäquivalent', 'vollzeitaequivalent', 'vze'],
@@ -104,6 +108,7 @@ function pickFields(rec) {
   if (str(rec.qual)) out.qual = str(rec.qual)
   if (str(rec.base)) out.base = str(rec.base)
   if (rec.remark != null && str(rec.remark) !== '') out.remark = str(rec.remark)
+  if (rec.note != null && str(rec.note) !== '') out.note = str(rec.note)
   if (str(rec.ore)) out.ore = str(rec.ore)
   const role = toRole(rec.role)
   if (role) out.role = role

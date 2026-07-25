@@ -83,6 +83,12 @@ const DICT = {
   // Names the population behind the conversion FTE tiles, whose total is
   // smaller than the overall one because it covers the conversion quals only.
   fteConvScope: { de: '(Umschulungs-Pool)', en: '(conversion pool)' },
+  // Named on every conversion tile, so none of them can be read as "of all 50".
+  // {n} = size of the pool, {q} = the qualifications it covers.
+  convPoolOf: {
+    de: 'von {n} im Umschulungs-Pool ({q})',
+    en: 'of {n} in the conversion pool ({q})'
+  },
   fteInConversionShort: { de: 'FTE in Umschulung', en: 'FTE in conversion' },
   fteAvailableShort: { de: 'FTE verfügbar', en: 'FTE available' },
   chart_byQual: { de: 'Nach Qualifikation', en: 'By qualification' },
@@ -281,7 +287,10 @@ const DICT = {
   f_base: { de: 'Base', en: 'Base' },
   f_tlc: { de: 'TLC', en: 'TLC' },
   f_name: { de: 'Name', en: 'Name' },
-  f_remark: { de: 'Funktion / Anmerkung', en: 'Function / remark' },
+  f_remark: { de: 'Funktion', en: 'Function' },
+  // Purely informational free text. Separate from "Funktion", which still feeds
+  // the "mit/ohne Funktion" chart – this one feeds nothing.
+  f_note: { de: 'Anmerkungen', en: 'Notes' },
   f_partTime: { de: 'Part-Time', en: 'Part-time' },
   f_sim: { de: 'SIM-Sessions', en: 'SIM sessions' },
   f_lifus: { de: 'LIFUS-Legs', en: 'LIFUS legs' },
@@ -338,7 +347,7 @@ const DICT = {
   stat_ore: { de: 'ORE A–C (Priorität)', en: 'ORE A–C (priority)' },
   stat_authority: { de: 'Ausstellende Behörde', en: 'Issuing authority' },
   stat_partTime: { de: 'Part-Time', en: 'Part-time' },
-  stat_function: { de: 'Funktion (Remark)', en: 'Function (remark)' },
+  stat_function: { de: 'Funktion', en: 'Function' },
   stat_hint: {
     de: 'Live berechnet aus den Trainerdaten (entspricht dem Excel-Tab „Statistik_Daten").',
     en: 'Computed live from trainer data (matches the Excel tab “Statistik_Daten”).'

@@ -44,7 +44,10 @@ export default async function run(browser, baseUrl, shots) {
   const pad = await page.locator('.data-table td').first().evaluate((e) => getComputedStyle(e).paddingLeft)
   console.log('     container ' + box.c + 'px, content ' + box.s + 'px, cell padding ' + pad)
   ok(await page.locator('.data-table.compact').count() === 1, 'the trainer table uses the compact variant')
-  ok(pad === '8px', 'cell padding tightened to 8px (was 12px)')
+  // 12px originally, 8px when the table was first narrowed, 6px since the
+  // "Anmerkungen" column arrived – the header words set the column widths, so
+  // padding is the only room left to give.
+  ok(pad === '6px', 'cell padding tightened to 6px (' + pad + ')')
   ok(box.s <= box.c, 'the table fits without sideways scrolling (' + box.s + ' <= ' + box.c + ')')
   // It has to stay usable on a phone: there the wrapper is expected to scroll.
   await page.setViewportSize({ width: 390, height: 844 })
