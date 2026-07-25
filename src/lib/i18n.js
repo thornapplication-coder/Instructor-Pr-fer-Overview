@@ -104,6 +104,38 @@ const DICT = {
   },
   overallProgress: { de: 'Gesamtfortschritt', en: 'Overall progress' },
   chart_trend: { de: 'Fortschritt je Monat', en: 'Progress per month' },
+  // ---- plan vs. actual
+  plan_title: { de: 'Umschulungs-Ziele (Soll)', en: 'Conversion milestones (plan)' },
+  plan_hint: {
+    de: 'Ein Ziel je Monat: wie viele bis Ende dieses Monats auf der 737 freigegeben sein sollen. Das Dashboard vergleicht es mit dem Ist-Stand. Der Umschulungs-Pool umfasst derzeit {n} Personen.',
+    en: 'One milestone per month: how many should be released on the 737 by the end of it. The dashboard compares that with reality. The conversion pool currently holds {n} people.'
+  },
+  plan_month: { de: 'Monat', en: 'Month' },
+  plan_released: { de: 'Freigegeben (Soll)', en: 'Released (plan)' },
+  plan_add: { de: 'Ziel setzen', en: 'Set milestone' },
+  plan_remove: { de: 'Ziel löschen', en: 'Remove milestone' },
+  chart_planVsActual: { de: 'Soll gegen Ist', en: 'Plan vs. actual' },
+  plan_none: {
+    de: 'Noch kein Ziel gesetzt. Unter „Kapazität" lässt sich je Monat festlegen, wie viele bis dahin freigegeben sein sollen – dann steht hier, ob ihr auf Kurs seid.',
+    en: 'No milestone set yet. On the "Capacity" tab you can define per month how many should be released by then – this card will then say whether you are on course.'
+  },
+  plan_onTrack: { de: 'Im Plan', en: 'On track' },
+  plan_atRisk: { de: 'Knapp hinterher', en: 'Slightly behind' },
+  plan_behind: { de: 'Hinterher', en: 'Behind' },
+  plan_targetDue: { de: 'Soll ({m})', en: 'Plan ({m})' },
+  plan_actual: { de: 'Ist (freigegeben)', en: 'Actual (released)' },
+  plan_gap: { de: 'Rückstand', en: 'Shortfall' },
+  plan_ahead: { de: 'Vorsprung', en: 'Ahead by' },
+  plan_next: { de: 'Nächstes Ziel: {n} bis {m}', en: 'Next milestone: {n} by {m}' },
+  plan_slack: {
+    de: 'Gelb heißt: bis zu einem Zehntel des Ziels hinterher (mindestens eine Person). Darüber wird es rot.',
+    en: 'Amber means: behind by up to a tenth of the milestone (at least one person). Beyond that it turns red.'
+  },
+  plan_line: { de: 'Soll', en: 'Plan' },
+  trend_markHint: {
+    de: 'die gestrichelte Linie je Monat – dort sollte die dunkle Fläche stehen.',
+    en: 'the dashed line per month – that is where the dark block should reach.'
+  },
   trend_hint: {
     de: 'Je Säule ein Monat, von unten nach oben: freigegeben, in Umschulung, noch nicht gestartet. Der Verlauf wird ab sofort mitgeschrieben – jeder Monat hält den zuletzt bekannten Stand fest.',
     en: 'One column per month, bottom to top: released, in conversion, not started yet. The history is recorded from now on – each month keeps the last state known in it.'

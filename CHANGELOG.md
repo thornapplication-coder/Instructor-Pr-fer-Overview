@@ -11,6 +11,34 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.22.0] – 2026-07-25
+
+- **Neu: Umschulungs-Ziele (Soll).** Unter *Kapazität* lässt sich je Monat
+  festlegen, wie viele bis Ende dieses Monats auf der 737 freigegeben sein
+  sollen. Bewusst eine schlichte Liste statt eines Plans je Person: die Frage,
+  die sie beantwortet, ist die nach dem *Tempo* – und ein Ziel, das sich nicht
+  in einer Zahl sagen lässt, ist keins.
+- **Neu im Dashboard: „Soll gegen Ist" mit Ampel.** Grün = Ziel erreicht,
+  Gelb = bis zu einem Zehntel des Ziels hinterher, Rot = darüber. Der Spielraum
+  ist **nicht** eine feste Personenzahl: eine Person Rückstand auf ein Ziel von
+  3 ist etwas völlig anderes als eine auf 40. Deshalb ein Zehntel, aber nie
+  weniger als eine Person – sonst würde ein Ziel von 5 schon rot, wenn ein
+  Checkflug um eine Woche rutscht.
+- **Gemessen wird gegen das zuletzt *fällige* Ziel**, nicht gegen das
+  nächstgelegene. Sonst verschwände ein verpasstes Oktober-Ziel im November aus
+  dem Blick – genau dann, wenn es am meisten zählt.
+- Die Kachel nennt außerdem das nächste Ziel und beschriftet einen Vorsprung
+  als Vorsprung (ein „Rückstand −2" wäre ein Rätsel).
+- **Soll-Linie im Verlaufsdiagramm.** Je Monat eine gestrichelte Linie auf der
+  Höhe des damals geltenden Ziels: sie bleibt zwischen zwei Zielen flach und
+  springt beim nächsten hoch. Vor dem ersten Ziel wird **keine** Linie gezogen –
+  eine Linie auf 0 läse sich als „das Ziel war null".
+- Eine Linie, keine vierte Reihe im Stapel: das Soll ist nicht Teil der
+  Population, sondern die Höhe, die der dunkle Block erreichen soll.
+- **In `MERGE_LISTS` eingetragen.** Ziele werden von Hand getippt, also ist der
+  Normalfall, dass zwei Geräte *verschiedene* Monate planen – beide müssen
+  überleben. Derselbe Monat zweimal bearbeitet: der neuere gewinnt.
+
 ## [1.21.0] – 2026-07-25
 
 - **Neu: „Fortschritt je Monat" im Dashboard.** Bisher zeigte die App nur den

@@ -28,7 +28,11 @@ export const MERGE_LISTS = [
   // One record per calendar month, id 'YYYY-MM'. Merged per record like the
   // rest: two devices writing the same month is the normal case, and the newer
   // write wins – both compute it from the same merged trainer list anyway.
-  'history'
+  'history',
+  // The conversion milestones ("by 2026-10, 15 released"), same month-as-id
+  // shape. Unlike history these are typed by hand, so two devices editing
+  // DIFFERENT months must both survive – which is exactly what this gives.
+  'plan'
 ]
 
 // A tombstone older than this is dropped. It has to outlive any plausible

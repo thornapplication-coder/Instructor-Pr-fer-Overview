@@ -162,7 +162,10 @@ export function StackedBars({ data, series }) {
 // The series are a PROGRESSION, so they take one hue getting darker (released
 // darkest, at the bottom where it grows from). Status green/amber/red stays
 // reserved and is never a series colour here.
-export function TrendColumns({ data, series, height = 180, labelOf }) {
+// `markOf` (optional) returns the planned value for a column, drawn as a thin
+// rule across it. A line rather than a fourth series: the plan is not part of
+// the population, it is the height the dark block is supposed to reach.
+export function TrendColumns({ data, series, height = 180, labelOf, markOf, markLabel }) {
   const pick = useChartColor()
   const max = Math.max(1, ...data.map((d) => d.total || 0))
   // Only every nth label once the axis gets crowded, so months never overlap.
@@ -172,6 +175,18 @@ export function TrendColumns({ data, series, height = 180, labelOf }) {
       <div className="trend-plot" style={{ height: height + 'px' }}>
         {data.map((d, i) => (
           <div className="trend-col" key={d.key} title={`${labelOf ? labelOf(d.key) : d.key}: ${d.total}`}>
+            {(() => {
+              const m = markOf ? markOf(d.key) : null
+              // Clamped: a milestone bigger than the pool would otherwise draw
+              // its line above the plot and look like a rendering fault.
+              return m == null ? null : (
+                <div
+                  className="trend-mark"
+                  style={{ bottom: `${Math.min(m, max) / max * 100}%` }}
+                  title={`${markLabel || 'Plan'}: ${m}`}
+                />
+              )
+            })()}
             <div className="trend-stack">
               {/* Bottom-up: the stack is drawn in reverse so the first series
                   sits at the base of the column. */}

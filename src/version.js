@@ -4,12 +4,33 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.21.0'
+export const APP_VERSION = '1.22.0'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.22.0',
+    date: '2026-07-25',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neu: Umschulungs-Ziele. Unter „Kapazität" lässt sich je Monat festlegen, wie viele bis dahin auf der 737 freigegeben sein sollen – ein Ziel je Monat, mehr braucht es nicht.',
+        'Neu im Dashboard: die Kachel „Soll gegen Ist" mit Ampel. Grün heißt Ziel erreicht, Gelb bis zu einem Zehntel des Ziels hinterher (mindestens eine Person), Rot darüber. Dazu Soll, Ist und der Rückstand in Personen sowie das nächste Ziel.',
+        'Gemessen wird immer gegen das zuletzt fällige Ziel, nicht gegen das nächstgelegene: ein verpasstes Oktober-Ziel verschwindet im November nicht aus dem Blick – dann zählt es erst recht.',
+        'Im Verlaufsdiagramm zeigt eine gestrichelte Linie je Monat das Soll. Dort sollte die dunkle Fläche stehen.',
+        'Auch die Ziele werden je Datensatz zusammengeführt: zwei Geräte können unterschiedliche Monate planen, ohne sich gegenseitig zu überschreiben.'
+      ],
+      en: [
+        'New: conversion milestones. On the "Capacity" tab you can set per month how many should be released on the 737 by then – one milestone per month, nothing more is needed.',
+        'New on the dashboard: the "Plan vs. actual" card with a traffic light. Green means the milestone is met, amber up to a tenth of it behind (at least one person), red beyond that. Plus plan, actual, the shortfall in people and the next milestone.',
+        'It always measures against the last milestone that fell due, not the nearest one: a missed October target does not drop out of sight in November – that is exactly when it counts.',
+        'On the progress chart a dashed line marks the plan for each month. That is where the dark block should reach.',
+        'Milestones are merged per record too: two devices can plan different months without overwriting each other.'
+      ]
+    }
+  },
   {
     version: '1.21.0',
     date: '2026-07-25',

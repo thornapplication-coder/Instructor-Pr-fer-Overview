@@ -17,6 +17,7 @@ Commit-Nachrichten auf Englisch.
 | `src/lib/supabaseSync.js` | Supabase-Aufrufe (`pull`, `pushCas`, `createRow`, `pushOnUnload`). |
 | `src/lib/palette.js` | **Alle** Farben. Nirgends sonst ein Hex-Wert für Daten. |
 | `src/lib/history.js` | Monats-Verlauf: `monthKey`, `progressSnapshot`, `upsertMonth`, `historySeries`. |
+| `src/lib/plan.js` | Soll gegen Ist: Meilensteine, Ampel-Schwelle (`slackFor`), `planStatus`, `planFor`. |
 | `src/lib/i18n.js` | DE/EN, ein flaches Wörterbuch. |
 | `src/data/*.js` | Startdaten und Kategorien (Phasen, Berechtigungen, Provider, Piloten). |
 | `src/tabs/*.jsx` | Je Reiter eine Datei. |
@@ -85,6 +86,13 @@ dafür bewusst dieselbe Array-Referenz zurück, wenn nichts neu ist.
 eine Phase erreicht hat — nur wo er heute steht. Vergangene Monate lassen sich
 deshalb nicht rekonstruieren; die Kachel „Fortschritt je Monat" sagt das, statt
 eine einzelne Säule wie ein fertiges Diagramm aussehen zu lassen.
+
+**Die Ampel misst gegen das zuletzt *fällige* Ziel**, nicht gegen das
+nächstgelegene (`planStatus` in `plan.js`). Sonst fiele ein verpasster Oktober
+im November aus der Anzeige. Der gelbe Spielraum ist ein Zehntel des Ziels,
+mindestens eine Person — keine feste Zahl, die bei kleinen und großen Zielen
+gleichermaßen falsch wäre. Statusfarben sind hier korrekt: es *ist* ein Status,
+verboten sind sie nur als Serien-/Kategoriefarbe.
 
 **FTE wird in Hundertsteln gerechnet, gerundet wird genau einmal.** Der Bestand
 ergibt exakt 42,85 und liegt damit auf der Rundungsgrenze: Person für Person

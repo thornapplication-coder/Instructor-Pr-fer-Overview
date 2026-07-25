@@ -177,7 +177,18 @@ button { font-family: inherit; }
   display: flex; align-items: flex-end; gap: 8px;
   border-bottom: 1px solid var(--hair);
 }
-.trend-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
+.trend-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; position: relative; }
+/* The plan line. Dashed and dark so it reads as a reference, not as data –
+   it sits ON the column rather than being part of the stack. */
+.trend-mark {
+  position: absolute; left: 0; right: 0; z-index: 1;
+  border-top: 2px dashed var(--ink); opacity: .85; pointer-events: none;
+  /* The line crosses both the pale "not started" band and the dark released
+     block, so a plain dark rule disappears on the very part it is meant to be
+     compared against. The halo is card-coloured and therefore flips with the
+     theme. */
+  filter: drop-shadow(0 1px 0 var(--white)) drop-shadow(0 -1px 0 var(--white));
+}
 /* The stack fills the column from the bottom; column-reverse would fight the
    reversed series order, so the segments are simply laid out top-down. */
 .trend-stack { display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
@@ -191,6 +202,16 @@ button { font-family: inherit; }
 }
 .trend .legend { margin-top: 12px; }
 .trend-empty { color: var(--muted); font-size: 13px; margin: 0; }
+
+/* ---------- Plan vs. actual ---------- */
+.plan-status { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
+.plan-dot { width: 16px; height: 16px; border-radius: 50%; flex: none; }
+.plan-verdict { font-size: 17px; font-weight: 800; color: var(--ink); }
+.plan-numbers { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 14px; }
+.plan-num .kpi-value { font-size: 26px; }
+.plan-next { margin-top: 12px; }
+.plan-add { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
+.plan-add .input { max-width: 190px; }
 
 /* ---------- Cards & grids ---------- */
 .card {

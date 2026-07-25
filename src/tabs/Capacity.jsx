@@ -7,6 +7,7 @@ import { CONV_STATUS, stageLabel, firstStageId, releasedStageId } from '../data/
 import { qualLabel, conversionTrainers } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { formatDate, formatFte1 } from '../lib/format.js'
+import { planSeries } from '../lib/plan.js'
 
 // One sortable capacity table (per base or per qualification). Qualification
 // rows default to the canonical rank (SEN → TRE → TRI → LTC → SFI → TKI).
@@ -176,6 +177,85 @@ function ConversionEditor({ trainers, stages, quals }) {
   )
 }
 
+// Conversion milestones: "by the end of this month, N released". Deliberately
+// a plain list rather than a per-person plan – the question it answers is about
+// pace, and a target nobody can state in one number is not a target.
+function PlanEditor() {
+  const { data, t, lang, setMilestone, deleteMilestone } = useStore()
+  const rows = useMemo(() => planSeries(data.plan), [data.plan])
+  const [month, setMonth] = useState('')
+  const [count, setCount] = useState('')
+  const pool = useMemo(() => conversionTrainers(data.trainers).filter((x) => x.ore !== 'Rente').length, [data.trainers])
+
+  const add = () => {
+    const n = Number(count)
+    if (!/^\d{4}-\d{2}$/.test(month) || !Number.isFinite(n) || n <= 0) return
+    setMilestone(month, n)
+    setMonth('')
+    setCount('')
+  }
+
+  return (
+    <section className="card">
+      <h3 className="card-title">{t('plan_title')}</h3>
+      <p className="planning-note">{t('plan_hint').replace('{n}', String(pool))}</p>
+      {rows.length > 0 && (
+        <div className="table-wrap">
+          <table className="data-table compact">
+            <thead>
+              <tr>
+                <th>{t('plan_month')}</th>
+                <th className="num">{t('plan_released')}</th>
+                <th />
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((p) => (
+                <tr key={p.id}>
+                  <td className="strong">{monthLabel(p.id, lang)}</td>
+                  <td className="num">{p.released}</td>
+                  <td className="num">
+                    <button
+                      className="mini-btn danger"
+                      onClick={() => deleteMilestone(p.id)}
+                      aria-label={t('plan_remove') + ' ' + monthLabel(p.id, lang)}
+                      title={t('plan_remove')}
+                    >
+                      ✕
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      <div className="plan-add">
+        {/* type=month gives a native picker and hands back exactly 'YYYY-MM',
+            which is the id these records are keyed by. */}
+        <input
+          className="input"
+          type="month"
+          value={month}
+          onChange={(e) => setMonth(e.target.value)}
+          aria-label={t('plan_month')}
+        />
+        <input
+          className="input"
+          type="number"
+          min="1"
+          max={pool}
+          value={count}
+          placeholder={t('plan_released')}
+          onChange={(e) => setCount(e.target.value)}
+          aria-label={t('plan_released')}
+        />
+        <button className="btn btn-primary" onClick={add}>{t('plan_add')}</button>
+      </div>
+    </section>
+  )
+}
+
 export default function Capacity() {
   const { data, t, lang } = useStore()
   const fte1 = (v) => formatFte1(v, lang)
@@ -206,6 +286,8 @@ export default function Capacity() {
       <CapTable title={t('capacity_byAircraft')} firstCol={t('f_aircraft')} cap={capAircraft} keyKind="aircraft" />
       <CapTable title={t('capacity_byBase')} firstCol={t('f_base')} cap={capBase} keyKind="base" />
 
+
+      <PlanEditor />
 
       <ConversionEditor trainers={convPool} stages={stages} quals={quals} />
 

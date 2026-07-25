@@ -2,7 +2,10 @@ import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import KpiTile from '../components/KpiTile.jsx'
 import { Donut, NestedBars, HBars, ProgressRing, PipelineBar, StackedBars, TrendColumns, colorAt } from '../components/charts.jsx'
-import { historySeries, monthLabelShort } from '../lib/history.js'
+import { historySeries, monthKey, monthLabelShort } from '../lib/history.js'
+import { planStatus, planFor } from '../lib/plan.js'
+import { monthLabel } from '../lib/alerts.js'
+import { useThemed } from '../lib/useThemed.js'
 import {
   headcount,
   conversionSummary,
@@ -110,6 +113,7 @@ function ReorderZone({ zone, items, className, editing, onReorder, t }) {
 
 export default function Dashboard() {
   const { data, t, lang, setDashboardOrder } = useStore()
+  const tint = useThemed()
   const { trainers, stages, quals: qualDefs } = data
   const [editing, setEditing] = useState(false)
   const order = (data.dashboard && data.dashboard.order) || {}
@@ -165,6 +169,17 @@ export default function Dashboard() {
     { key: 'inProgress', label: t('kpi_inProgress'), color: TREND_RAMP[1] },
     { key: 'notStarted', label: t('kpi_notStarted'), color: TREND_RAMP[0] }
   ]
+
+  // Plan vs. actual. Measured against TODAY's released count rather than the
+  // recorded month, so the card reacts the moment somebody is released instead
+  // of waiting for the recorder.
+  const thisMonth = monthKey(new Date())
+  const plan = useMemo(() => planStatus(data.plan, cs.released, thisMonth), [data.plan, cs.released, thisMonth])
+  const PLAN_LEVEL = {
+    on_track: { color: STATUS.good, label: 'plan_onTrack' },
+    at_risk: { color: STATUS.warn, label: 'plan_atRisk' },
+    behind: { color: STATUS.critical, label: 'plan_behind' }
+  }
 
   const pipe = pipelineDistribution(convPool, stages)
   const relevant = convPool.filter((tr) => tr.ore !== 'Rente')
@@ -318,8 +333,65 @@ export default function Dashboard() {
             <p className="trend-empty">{t('trend_empty')}</p>
           ) : (
             <>
-              <TrendColumns data={trend} series={trendSeries} labelOf={(k) => monthLabelShort(k, lang)} />
-              <p className="stat-hint">{t('trend_hint')}</p>
+              <TrendColumns
+                data={trend}
+                series={trendSeries}
+                labelOf={(k) => monthLabelShort(k, lang)}
+                markOf={(k) => planFor(plan.series, k)}
+                markLabel={t('plan_line')}
+              />
+              <p className="stat-hint">
+                {t('trend_hint')}
+                {plan.series.length > 0 && ' ' + t('plan_line') + ': ' + t('trend_markHint')}
+              </p>
+            </>
+          )}
+        </Card>
+      )
+    },
+    {
+      id: 'planVsActual',
+      node: (
+        <Card title={t('chart_planVsActual')}>
+          {plan.level === 'none' ? (
+            <>
+              <p className="trend-empty">{t('plan_none')}</p>
+              {plan.next && (
+                <p className="stat-hint plan-next">
+                  {t('plan_next').replace('{n}', String(plan.next.released)).replace('{m}', monthLabel(plan.next.id, lang))}
+                </p>
+              )}
+            </>
+          ) : (
+            <>
+              <div className="plan-status">
+                <span className="plan-dot" style={{ background: tint(PLAN_LEVEL[plan.level].color) }} />
+                <span className="plan-verdict">{t(PLAN_LEVEL[plan.level].label)}</span>
+              </div>
+              <div className="plan-numbers">
+                <div className="plan-num">
+                  <div className="kpi-value">{plan.target}</div>
+                  <div className="kpi-label">{t('plan_targetDue').replace('{m}', monthLabel(plan.due.id, lang))}</div>
+                </div>
+                <div className="plan-num">
+                  <div className="kpi-value">{plan.actual}</div>
+                  <div className="kpi-label">{t('plan_actual')}</div>
+                </div>
+                <div className="plan-num">
+                  {/* One number, named for its sign: "Rückstand -2" would be a
+                      riddle, so being ahead is labelled as being ahead. */}
+                  <div className="kpi-value" style={{ color: tint(PLAN_LEVEL[plan.level].color) }}>
+                    {plan.gap > 0 ? plan.gap : plan.actual - plan.target}
+                  </div>
+                  <div className="kpi-label">{plan.gap > 0 ? t('plan_gap') : t('plan_ahead')}</div>
+                </div>
+              </div>
+              {plan.next && (
+                <p className="stat-hint plan-next">
+                  {t('plan_next').replace('{n}', String(plan.next.released)).replace('{m}', monthLabel(plan.next.id, lang))}
+                </p>
+              )}
+              <p className="stat-hint">{t('plan_slack')}</p>
             </>
           )}
         </Card>

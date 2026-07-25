@@ -16,6 +16,7 @@ import { translate } from './i18n.js'
 import { useCloudSync } from './cloudSync.js'
 import { backfillStamps, stampChanges } from './merge.js'
 import { monthKey, progressSnapshot, upsertMonth } from './history.js'
+import { upsertMilestone } from './plan.js'
 import { BRAND, migrateColors } from './palette.js'
 
 const STORAGE_KEY = 'ewl737:data:v1'
@@ -100,6 +101,9 @@ function freshData(lang = 'de') {
     // Monthly progress snapshots, written by the recorder below. Empty on a
     // fresh install: the past cannot be reconstructed, the curve starts now.
     history: [],
+    // Conversion milestones, entered by hand on the Capacity tab. No default:
+    // a made-up plan would be measured against as if someone had agreed it.
+    plan: [],
     conversionFrom: 'A320',
     conversionTo: 'B737',
     dashboard: { order: {} },
@@ -176,6 +180,9 @@ function normalize(obj) {
     history: Array.isArray(obj.history)
       ? obj.history.filter((h) => h && typeof h.id === 'string' && /^\d{4}-\d{2}$/.test(h.id)).map((h) => ({ ...h }))
       : base.history,
+    plan: Array.isArray(obj.plan)
+      ? obj.plan.filter((p) => p && typeof p.id === 'string' && /^\d{4}-\d{2}$/.test(p.id)).map((p) => ({ ...p }))
+      : base.plan,
     conversionFrom: obj.conversionFrom || 'A320',
     conversionTo: obj.conversionTo || 'B737',
     dashboard:
@@ -494,6 +501,16 @@ export function StoreProvider({ children }) {
         dirtyRef.current = true
         setData(freshData(data.lang))
       },
+
+      // Set a conversion milestone; 0 removes it. Guarded like the recorder:
+      // upsertMilestone returns the same array when the number is unchanged,
+      // and patching anyway would stamp a record for a no-op edit.
+      setMilestone: (month, released) => {
+        const d = dataRef.current
+        if (upsertMilestone(d.plan, month, released) === d.plan) return
+        patch((cur) => ({ ...cur, plan: upsertMilestone(cur.plan, month, released) }))
+      },
+      deleteMilestone: (month) => patch((d) => ({ ...d, plan: d.plan.filter((p) => p.id !== month) })),
 
       // Write (or refresh) this month's progress entry. The check runs BEFORE
       // patch(), not inside it: patch() marks the tab dirty and bumps
