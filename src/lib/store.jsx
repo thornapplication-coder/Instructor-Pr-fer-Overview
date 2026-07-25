@@ -15,6 +15,7 @@ import { fteFromPartTime, normalizeAuthority } from './format.js'
 import { translate } from './i18n.js'
 import { useCloudSync } from './cloudSync.js'
 import { backfillStamps, stampChanges } from './merge.js'
+import { monthKey, progressSnapshot, upsertMonth } from './history.js'
 import { BRAND, migrateColors } from './palette.js'
 
 const STORAGE_KEY = 'ewl737:data:v1'
@@ -96,6 +97,9 @@ function freshData(lang = 'de') {
     providerStatus: DEFAULT_PROVIDER_STATUS.map((x) => ({ ...x })),
     simVersions: DEFAULT_SIM_VERSIONS.map((x) => ({ ...x })),
     otherPilots: [],
+    // Monthly progress snapshots, written by the recorder below. Empty on a
+    // fresh install: the past cannot be reconstructed, the curve starts now.
+    history: [],
     conversionFrom: 'A320',
     conversionTo: 'B737',
     dashboard: { order: {} },
@@ -167,6 +171,11 @@ function normalize(obj) {
       ? obj.simVersions.map((x) => ({ ...x }))
       : base.simVersions,
     otherPilots: Array.isArray(obj.otherPilots) ? obj.otherPilots.map(withPilotDefaults) : base.otherPilots,
+    // Keep only well-formed month records: a malformed one would draw a column
+    // with no month on the axis and silently skew the curve.
+    history: Array.isArray(obj.history)
+      ? obj.history.filter((h) => h && typeof h.id === 'string' && /^\d{4}-\d{2}$/.test(h.id)).map((h) => ({ ...h }))
+      : base.history,
     conversionFrom: obj.conversionFrom || 'A320',
     conversionTo: obj.conversionTo || 'B737',
     dashboard:
@@ -484,9 +493,37 @@ export function StoreProvider({ children }) {
       resetData: () => {
         dirtyRef.current = true
         setData(freshData(data.lang))
+      },
+
+      // Write (or refresh) this month's progress entry. The check runs BEFORE
+      // patch(), not inside it: patch() marks the tab dirty and bumps
+      // updatedAt unconditionally, so calling it on an unchanged month would
+      // have every app start claim an edit and push it to the cloud.
+      recordProgress: () => {
+        const d = dataRef.current
+        const month = monthKey(new Date())
+        if (upsertMonth(d.history, month, progressSnapshot(d.trainers, d.stages)) === d.history) return
+        // Recompute inside the updater so this is correct against the freshest
+        // state rather than the snapshot the guard happened to read.
+        patch((cur) => ({
+          ...cur,
+          history: upsertMonth(cur.history, month, progressSnapshot(cur.trainers, cur.stages))
+        }))
       }
     }
   }, [data])
+
+  // Keep the current month's entry in step with the roster. It deliberately
+  // hangs off a ref rather than `api`: `api` is rebuilt on every data change,
+  // so depending on it would re-run this for a theme or language switch too.
+  // Runs after a cloud pull has been applied (applyRemote goes through
+  // setData, so the effect sees the merged list), which is what stops a device
+  // from writing a pre-merge number and winning the month with it.
+  const recordRef = useRef(api.recordProgress)
+  recordRef.current = api.recordProgress
+  useEffect(() => {
+    recordRef.current()
+  }, [data.trainers, data.stages])
 
   const value = useMemo(
     () => ({

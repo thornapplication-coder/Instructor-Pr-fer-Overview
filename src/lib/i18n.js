@@ -76,6 +76,7 @@ const DICT = {
 
   // ---- overview / KPIs
   kpi_totalTrainers: { de: 'Trainer & Prüfer', en: 'Trainers & Examiners' },
+  kpi_active: { de: 'Aktiv (ohne Rente)', en: 'Active (excl. retirees)' },
   kpi_released: { de: 'Auf 737 freigegeben', en: 'Released on 737' },
   kpi_inProgress: { de: 'In Umschulung', en: 'In conversion' },
   kpi_notStarted: { de: 'Noch nicht gestartet', en: 'Not started yet' },
@@ -102,6 +103,15 @@ const DICT = {
     en: 'The light bar is the headcount, the solid one the FTE within it. The light remainder is the part-time share.'
   },
   overallProgress: { de: 'Gesamtfortschritt', en: 'Overall progress' },
+  chart_trend: { de: 'Fortschritt je Monat', en: 'Progress per month' },
+  trend_hint: {
+    de: 'Je Säule ein Monat, von unten nach oben: freigegeben, in Umschulung, noch nicht gestartet. Der Verlauf wird ab sofort mitgeschrieben – jeder Monat hält den zuletzt bekannten Stand fest.',
+    en: 'One column per month, bottom to top: released, in conversion, not started yet. The history is recorded from now on – each month keeps the last state known in it.'
+  },
+  trend_empty: {
+    de: 'Der Verlauf beginnt mit diesem Monat. Sobald ein zweiter Monat dazukommt, zeigt die Kachel die Entwicklung – rückwirkend lässt sie sich nicht rekonstruieren, weil bisher nur der jeweils aktuelle Stand gespeichert war.',
+    en: 'The history starts with this month. As soon as a second month is added, this card shows the development – it cannot be reconstructed retroactively, because only the current state was ever stored.'
+  },
 
   // ---- dashboard sections + arrange mode
   section_overview: { de: 'Instruktoren & Prüfer Overview', en: 'Instructors & Examiners overview' },

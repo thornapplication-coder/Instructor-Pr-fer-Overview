@@ -4,12 +4,33 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.20.0'
+export const APP_VERSION = '1.21.0'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.21.0',
+    date: '2026-07-25',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neu im Dashboard: „Fortschritt je Monat". Je Säule ein Monat, von unten nach oben freigegeben / in Umschulung / noch nicht gestartet – damit ist auf einen Blick zu sehen, ob das Tempo reicht.',
+        'Der Verlauf schreibt sich selbst mit: die App hält bei jedem Start den Stand des laufenden Monats fest und aktualisiert ihn, bis der Monat vorbei ist. Zurückliegende Monate lassen sich nicht rekonstruieren – gespeichert war bisher nur der jeweils aktuelle Stand. Solange erst ein Monat vorliegt, sagt die Kachel das, statt eine einzelne Säule wie ein fertiges Diagramm aussehen zu lassen.',
+        'Der Verlauf wird wie alle anderen Listen je Datensatz zusammengeführt: zwei Geräte im selben Monat vertragen sich, und ein Monat, den nur ein Gerät gesehen hat, geht nicht verloren.',
+        '„Aktiv (ohne Rente)" ist zurück – als dritte Zahl im Übersichts-Band, wo sie neben Köpfen und FTE hingehört.',
+        'Der Deploy führt jetzt vor dem Bauen die Tests aus. Eine kaputte Rechen- oder Sync-Logik kommt damit gar nicht mehr auf die Seite.'
+      ],
+      en: [
+        'New on the dashboard: "Progress per month". One column per month, bottom to top released / in conversion / not started yet – so you can see at a glance whether the pace is enough.',
+        'The history records itself: on every start the app captures the state of the current month and keeps it up to date until the month is over. Past months cannot be reconstructed – only the current state was ever stored. While there is just one month, the card says so instead of letting a single column look like a finished chart.',
+        'History is merged per record like every other list: two devices in the same month get along, and a month only one device saw is not lost.',
+        '"Active (excl. retirees)" is back – as the third figure in the summary band, next to heads and FTE where it belongs.',
+        'The deploy now runs the tests before building. Broken arithmetic or sync logic no longer reaches the live site at all.'
+      ]
+    }
+  },
   {
     version: '1.20.0',
     date: '2026-07-25',

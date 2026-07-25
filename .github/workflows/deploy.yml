@@ -29,6 +29,10 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
+      # Gate the deploy on the logic tests: merge, sync coverage and the FTE
+      # arithmetic. They need no browser and run in seconds, so there is no
+      # reason for a red checkout to reach the live site.
+      - run: npm test
       # A Supabase project is baked into src/lib/cloudConfig.js, so these secrets
       # are optional: set them only to point this deploy at a different project.
       # They are read as a pair – setting one ignores both baked-in defaults.

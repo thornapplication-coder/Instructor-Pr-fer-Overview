@@ -16,11 +16,12 @@ Commit-Nachrichten auf Englisch.
 | `src/lib/cloudSync.js` | Sync-Ablauf: wann abgeglichen wird, Wiederholungen, Zustände. |
 | `src/lib/supabaseSync.js` | Supabase-Aufrufe (`pull`, `pushCas`, `createRow`, `pushOnUnload`). |
 | `src/lib/palette.js` | **Alle** Farben. Nirgends sonst ein Hex-Wert für Daten. |
+| `src/lib/history.js` | Monats-Verlauf: `monthKey`, `progressSnapshot`, `upsertMonth`, `historySeries`. |
 | `src/lib/i18n.js` | DE/EN, ein flaches Wörterbuch. |
 | `src/data/*.js` | Startdaten und Kategorien (Phasen, Berechtigungen, Provider, Piloten). |
 | `src/tabs/*.jsx` | Je Reiter eine Datei. |
 | `src/version.js` | Version **und** Changelog (wird in den Einstellungen angezeigt). |
-| `test/` | `npm test` – Zusammenführung + Abdeckungs-Wächter, reines Node. |
+| `test/` | `npm test` – Zusammenführung, Abdeckungs-Wächter, FTE, Verlauf. Reines Node. |
 | `test/browser/` | `npm run test:browser` – Playwright gegen den echten Build. |
 
 ## Befehle
@@ -74,6 +75,17 @@ still auf „ganzer Bestand, neuerer gewinnt" zurück. `npm test` fängt das ab.
 **Stempel entstehen nur in `patch()`** (`stampChanges` vergleicht vorher/nachher).
 Kein Aufrufer setzt `_at` selbst.
 
+**`patch()` ist nie „umsonst".** Es setzt `dirtyRef`, hebt `updatedAt` und löst
+einen Cloud-Push aus — auch wenn die Mutation dasselbe zurückgibt. Wer aus
+einem Effekt heraus patcht (wie der Monats-Recorder in `store.jsx`), muss
+**vor** dem Aufruf prüfen, ob sich wirklich etwas ändert. `upsertMonth()` gibt
+dafür bewusst dieselbe Array-Referenz zurück, wenn nichts neu ist.
+
+**Der Verlauf kann nur nach vorn.** Im Bestand steht nirgends, *wann* jemand
+eine Phase erreicht hat — nur wo er heute steht. Vergangene Monate lassen sich
+deshalb nicht rekonstruieren; die Kachel „Fortschritt je Monat" sagt das, statt
+eine einzelne Säule wie ein fertiges Diagramm aussehen zu lassen.
+
 **FTE wird in Hundertsteln gerechnet, gerundet wird genau einmal.** Der Bestand
 ergibt exakt 42,85 und liegt damit auf der Rundungsgrenze: Person für Person
 addiert kommt Fließkomma auf 42,8499…, Base für Base auf 42,85 — 42,8 gegen
@@ -108,6 +120,10 @@ GitHub Pages, automatisch bei jedem Push auf
 `claude/737-instructor-monitoring-dashboard-2ox5gd` (das ist auch der
 Standard-Branch). Adresse:
 <https://thornapplication-coder.github.io/Instructor-Pr-fer-Overview/>
+
+Der Workflow lässt vor dem Bauen `npm test` laufen — ist der rot, wird nicht
+veröffentlicht. Die Browser-Tests laufen dort **nicht** (Playwright ist keine
+Abhängigkeit); die bleiben Handarbeit vor dem Push.
 
 Das Repository heißt `Instructor-Pr-fer-Overview`; der lokale Ordner und die
 Git-Remote sagen noch `TESTREPO`. Beides ist korrekt, GitHub leitet um.

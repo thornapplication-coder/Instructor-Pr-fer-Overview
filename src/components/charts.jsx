@@ -153,6 +153,60 @@ export function StackedBars({ data, series }) {
   )
 }
 
+// ---- Trend columns (one stacked column per month) -------------------------
+// Progress over time: each column is a month, split into the conversion stages.
+// Columns rather than lines because the three series always add up to the same
+// population – the reader is meant to see the dark "released" block growing
+// from the bottom, not three curves crossing.
+//
+// The series are a PROGRESSION, so they take one hue getting darker (released
+// darkest, at the bottom where it grows from). Status green/amber/red stays
+// reserved and is never a series colour here.
+export function TrendColumns({ data, series, height = 180, labelOf }) {
+  const pick = useChartColor()
+  const max = Math.max(1, ...data.map((d) => d.total || 0))
+  // Only every nth label once the axis gets crowded, so months never overlap.
+  const step = Math.ceil(data.length / 12)
+  return (
+    <div className="trend">
+      <div className="trend-plot" style={{ height: height + 'px' }}>
+        {data.map((d, i) => (
+          <div className="trend-col" key={d.key} title={`${labelOf ? labelOf(d.key) : d.key}: ${d.total}`}>
+            <div className="trend-stack">
+              {/* Bottom-up: the stack is drawn in reverse so the first series
+                  sits at the base of the column. */}
+              {[...series].reverse().map((ser) => {
+                const v = d[ser.key] || 0
+                return v ? (
+                  <div
+                    key={ser.key}
+                    className="trend-seg"
+                    style={{ height: `${(v / max) * 100}%`, background: pick(ser.color, 0) }}
+                    title={`${ser.label}: ${v}`}
+                  />
+                ) : null
+              })}
+            </div>
+            <div className="trend-tick">{i % step === 0 ? (labelOf ? labelOf(d.key) : d.key) : ''}</div>
+          </div>
+        ))}
+      </div>
+      <ChartLegend
+        wrap
+        className="stacked-legend"
+        items={series.map((ser) => ({
+          key: ser.key,
+          color: pick(ser.color, 0),
+          label: ser.label,
+          // The LATEST month, not a sum: adding a headcount across months would
+          // count the same people once per month and mean nothing.
+          value: data.length ? data[data.length - 1][ser.key] || 0 : 0
+        }))}
+      />
+    </div>
+  )
+}
+
 // ---- Nested bars (a part inside its whole) --------------------------------
 // For a measure and a subset of it – headcount and the FTE those heads add up
 // to. Nested rather than side by side because that is the actual relationship:

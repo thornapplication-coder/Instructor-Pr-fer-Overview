@@ -11,6 +11,36 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.21.0] – 2026-07-25
+
+- **Neu: „Fortschritt je Monat" im Dashboard.** Bisher zeigte die App nur den
+  Ist-Stand – wie viele freigegeben, wie viele in Umschulung. Das beantwortet
+  „wo stehen wir", nie „sind wir schnell genug". Die neue Kachel stellt je
+  Monat eine gestapelte Säule: unten freigegeben, darüber in Umschulung, oben
+  noch nicht gestartet.
+- **Der Verlauf schreibt sich selbst mit.** Beim Start hält die App den Stand
+  des laufenden Monats fest und aktualisiert ihn, bis der Monat vorbei ist.
+  Geschrieben wird nur, wenn sich eine Zahl geändert hat – sonst würde jeder
+  Start einen Datensatz stempeln und in die Cloud schieben.
+- **Rückwirkend geht das nicht**, und die Kachel behauptet es auch nicht: im
+  Datenbestand steht nirgends, *wann* jemand eine Phase erreicht hat, nur wo er
+  heute steht. Solange erst ein Monat vorliegt, erklärt die Kachel das, statt
+  eine einzelne Säule wie ein fertiges Diagramm aussehen zu lassen.
+- **In `MERGE_LISTS` eingetragen.** Der Verlauf wird je Datensatz zusammen­
+  geführt: zwei Geräte, die denselben Monat schreiben, vertragen sich (der
+  neuere gewinnt, beide rechnen ohnehin aus derselben zusammengeführten
+  Trainer-Liste), und ein Monat, den nur ein Gerät gesehen hat, überlebt.
+- **Farben:** die drei Reihen sind eine *Progression*, keine Identitäten, also
+  eine Farbe hell → dunkel (freigegeben am dunkelsten, unten in der Säule, wo
+  sie wächst). Statusfarben bleiben reserviert und tauchen hier nicht auf.
+- **„Aktiv (ohne Rente)" ist zurück** – als dritte Zahl im Übersichts-Band, wo
+  sie neben Köpfen und FTE hingehört. Sie war mit den Kacheln in 1.20.0
+  entfallen.
+- **Der Deploy testet jetzt vor dem Bauen.** Der Workflow baute und
+  veröffentlichte bei jedem Push, ohne `npm test` auszuführen – eine kaputte
+  Zusammenführungs- oder FTE-Logik wäre live gegangen. Die Logik-Tests laufen
+  in Sekunden und stehen jetzt vor dem Build.
+
 ## [1.20.0] – 2026-07-25
 
 - **Dashboard-Übersicht entrümpelt.** Sieben der acht KPI-Kacheln sagten nur,

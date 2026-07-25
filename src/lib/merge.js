@@ -24,7 +24,11 @@ export const MERGE_LISTS = [
   'assignmentSteps',
   'providerCourses',
   'providerStatus',
-  'simVersions'
+  'simVersions',
+  // One record per calendar month, id 'YYYY-MM'. Merged per record like the
+  // rest: two devices writing the same month is the normal case, and the newer
+  // write wins – both compute it from the same merged trainer list anyway.
+  'history'
 ]
 
 // A tombstone older than this is dropped. It has to outlive any plausible

@@ -1,7 +1,8 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import KpiTile from '../components/KpiTile.jsx'
-import { Donut, NestedBars, HBars, ProgressRing, PipelineBar, StackedBars, colorAt } from '../components/charts.jsx'
+import { Donut, NestedBars, HBars, ProgressRing, PipelineBar, StackedBars, TrendColumns, colorAt } from '../components/charts.jsx'
+import { historySeries, monthLabelShort } from '../lib/history.js'
 import {
   headcount,
   conversionSummary,
@@ -154,6 +155,17 @@ export default function Dashboard() {
   )
   const fte1 = (v) => formatFte1(v, lang)
 
+  // Progress over time. The three series are stages of one journey, so they
+  // take one hue getting darker – released is the darkest and sits at the base
+  // of each column, where the reader watches it grow.
+  const trend = useMemo(() => historySeries(data.history), [data.history])
+  const TREND_RAMP = stageRamp(3)
+  const trendSeries = [
+    { key: 'released', label: t('kpi_released'), color: TREND_RAMP[2] },
+    { key: 'inProgress', label: t('kpi_inProgress'), color: TREND_RAMP[1] },
+    { key: 'notStarted', label: t('kpi_notStarted'), color: TREND_RAMP[0] }
+  ]
+
   const pipe = pipelineDistribution(convPool, stages)
   const relevant = convPool.filter((tr) => tr.ore !== 'Rente')
   const overall =
@@ -171,6 +183,10 @@ export default function Dashboard() {
       <div className="kpi-hero-metric">
         <div className="kpi-value">{hc.total}</div>
         <div className="kpi-label">{t('kpi_totalTrainers')}</div>
+      </div>
+      <div className="kpi-hero-metric">
+        <div className="kpi-value">{hc.active}</div>
+        <div className="kpi-label">{t('kpi_active')}</div>
       </div>
       <div className="kpi-hero-metric kpi-hero-fte">
         <div className="kpi-value">{fte1(hc.fteActive)}</div>
@@ -291,7 +307,24 @@ export default function Dashboard() {
         </section>
       )
     },
-    { id: 'ore', node: <Card title={t('chart_byOre')} total={convPool.length}><Donut data={ore} centerBottom="ORE" /></Card> }
+    { id: 'ore', node: <Card title={t('chart_byOre')} total={convPool.length}><Donut data={ore} centerBottom="ORE" /></Card> },
+    {
+      id: 'trend',
+      node: (
+        <Card title={t('chart_trend')} total={trend.length ? trend[trend.length - 1].total : null}>
+          {/* One month is a dot, not a development – say so instead of drawing
+              a single column that looks like a finished chart. */}
+          {trend.length < 2 ? (
+            <p className="trend-empty">{t('trend_empty')}</p>
+          ) : (
+            <>
+              <TrendColumns data={trend} series={trendSeries} labelOf={(k) => monthLabelShort(k, lang)} />
+              <p className="stat-hint">{t('trend_hint')}</p>
+            </>
+          )}
+        </Card>
+      )
+    }
   ]
 
   return (
