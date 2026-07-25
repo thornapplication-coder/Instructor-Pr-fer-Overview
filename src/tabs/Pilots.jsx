@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
 import { formatDate } from '../lib/format.js'
@@ -254,7 +255,7 @@ function PilotForm({ pilot, bases, onClose, onSave, onDelete }) {
           </select>
         </Field>
         <Field label={dateLabel} span2>
-          <input className="input" type="date" value={p.b737Until || ''} onChange={(e) => set('b737Until', e.target.value)} />
+          <DateInput value={p.b737Until || ''} onChange={(v) => set('b737Until', v)} />
         </Field>
         <Field label={t('f_comment')} span2>
           <input className="input" value={p.remark || ''} onChange={(e) => set('remark', e.target.value)} />

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import HScroll from '../components/HScroll.jsx'
@@ -250,7 +251,7 @@ function ConvDetail({ trainer, stages, onClose, onSave }) {
           </select>
         </Field>
         <Field label={t('targetDate')} span2>
-          <input className="input" type="date" value={c.target} onChange={(e) => set('target', e.target.value)} />
+          <DateInput value={c.target} onChange={(v) => set('target', v)} />
         </Field>
         <Field label={t('note')} span2>
           <textarea className="input" rows={3} value={c.note} onChange={(e) => set('note', e.target.value)} />

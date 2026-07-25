@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
@@ -410,13 +411,13 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
 
         <div className="form-sep span2">{t('f_trainerSince')}</div>
         <Field label={t('f_ltc')}>
-          <input className="input" type="date" value={f.ltcDate} onChange={(e) => set('ltcDate', e.target.value)} />
+          <DateInput value={f.ltcDate} onChange={(v) => set('ltcDate', v)} />
         </Field>
         <Field label={t('f_tri')}>
-          <input className="input" type="date" value={f.triDate} onChange={(e) => set('triDate', e.target.value)} />
+          <DateInput value={f.triDate} onChange={(v) => set('triDate', v)} />
         </Field>
         <Field label={t('f_tre')}>
-          <input className="input" type="date" value={f.treDate} onChange={(e) => set('treDate', e.target.value)} />
+          <DateInput value={f.treDate} onChange={(v) => set('treDate', v)} />
         </Field>
 
         <div className="form-sep span2">{t('f_conversion')}</div>
@@ -447,11 +448,9 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
           </select>
         </Field>
         <Field label={t('targetDate')}>
-          <input
-            className="input"
-            type="date"
+          <DateInput
             value={f.conv.target}
-            onChange={(e) => set('conv', { ...f.conv, target: e.target.value })}
+            onChange={(v) => set('conv', { ...f.conv, target: v })}
           />
         </Field>
         <Field label={t('note')} span2>

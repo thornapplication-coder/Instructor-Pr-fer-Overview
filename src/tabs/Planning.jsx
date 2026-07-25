@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
@@ -307,7 +308,7 @@ function PlanningModal({ trainer, providers, steps, onClose }) {
                 </label>
                 <label className="field">
                   <span className="field-label">{t('targetDate')}</span>
-                  <input className="input" type="date" value={a.date || ''} onChange={(e) => setStep(s.id, { date: e.target.value })} />
+                  <DateInput value={a.date || ''} onChange={(v) => setStep(s.id, { date: v })} />
                 </label>
                 <label className="field span2">
                   <span className="field-label">{t('note')}</span>

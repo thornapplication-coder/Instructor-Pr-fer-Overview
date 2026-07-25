@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import DateInput from '../components/DateInput.jsx'
 import { capacityByBase, capacityByQual, capacityByAircraft, conversionFteSummary, qualRankIndex } from '../lib/stats.js'
 import { targetsByMonth, monthLabel, stageName } from '../lib/alerts.js'
 import { useSort, Th } from '../components/sortable.jsx'
@@ -158,11 +159,9 @@ function ConversionEditor({ trainers, stages, quals }) {
                   </select>
                 </td>
                 <td>
-                  <input
-                    className="input"
-                    type="date"
+                  <DateInput
                     value={x.conv?.target || ''}
-                    onChange={(e) => setConversion(x.id, { target: e.target.value })}
+                    onChange={(v) => setConversion(x.id, { target: v })}
                   />
                 </td>
               </tr>

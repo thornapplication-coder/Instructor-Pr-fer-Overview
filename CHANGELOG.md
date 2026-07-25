@@ -11,6 +11,24 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.22.1] – 2026-07-25
+
+- **Termine lassen sich wieder löschen.** Ein einmal gesetzter Zieltermin war
+  auf dem iPad nicht mehr wegzubekommen: `<input type="date">` bietet in Safari
+  auf iOS/iPadOS keinerlei Weg, sich zu leeren – der native Picker hat keinen
+  Löschen-Knopf und der Text ist nicht markierbar. Übersehen wurde das, weil
+  Chrome am Rechner von sich aus ein kleines ✕ zeichnet.
+- **Ein eigenes Feld für alle Datumsangaben** (`DateInput`) mit Löschen-Knopf,
+  der nur erscheint, wenn auch etwas zu löschen ist. Alle acht Datumsfelder der
+  App laufen jetzt darüber: Zieltermin in Umschulung, Kapazität und
+  Trainer-Dialog, die Termine je Planungsschritt, LTC-/TRI-/TRE-Datum und
+  „737 bis" bei den Other Pilots.
+- Der Knopf ist `type="button"` — als impliziter Submit hätte er im Dialog das
+  Fenster geschlossen, statt das Feld zu leeren.
+- Abgesichert in `test/browser/dates.test.mjs`: Datum setzen, löschen, prüfen
+  dass es auch nach dem Neuladen leer bleibt, und dass **kein** blankes
+  Datumsfeld mehr irgendwo in der App steht.
+
 ## [1.22.0] – 2026-07-25
 
 - **Neu: Umschulungs-Ziele (Soll).** Unter *Kapazität* lässt sich je Monat

@@ -400,6 +400,11 @@ button { font-family: inherit; }
   outline: none; transition: border-color .15s, box-shadow .15s; width: 100%;
 }
 .input:focus { border-color: var(--burg); box-shadow: 0 0 0 3px rgba(175,30,101,.12); }
+/* Date + its clear button. min-width:0 so the input may shrink inside a table
+   cell instead of pushing the column wider. */
+.date-field { display: flex; align-items: center; gap: 6px; width: 100%; }
+.date-field .input { flex: 1 1 auto; min-width: 0; }
+.date-clear { flex: none; }
 select.input { cursor: pointer; }
 .search { max-width: 260px; }
 .toolbar .input { width: auto; }

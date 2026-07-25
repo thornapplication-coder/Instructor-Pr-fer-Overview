@@ -4,12 +4,27 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.22.0'
+export const APP_VERSION = '1.22.1'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.22.1',
+    date: '2026-07-25',
+    type: 'patch',
+    changes: {
+      de: [
+        'Termine lassen sich wieder löschen. Ein gesetzter Zieltermin ließ sich auf dem iPad nicht mehr entfernen – das Datumsfeld von Safari bietet dafür schlicht keine Möglichkeit, und am Rechner half nur das kleine ✕, das Chrome von sich aus zeichnet.',
+        'Jedes Datumsfeld hat jetzt einen eigenen Löschen-Knopf, der erscheint, sobald ein Datum drinsteht. Das betrifft alle acht Felder: Zieltermin (Umschulung, Kapazität, Trainer-Dialog), die Termine der Planung, LTC-/TRI-/TRE-Datum und „737 bis" bei den Other Pilots.'
+      ],
+      en: [
+        'Dates can be removed again. A target date, once set, could not be taken back on the iPad – Safari\'s date field offers no way to do it, and on the desktop only the small ✕ that Chrome draws by itself helped.',
+        'Every date field now carries its own clear button, which appears as soon as there is a date in it. That covers all eight: target date (conversion, capacity, trainer dialog), the planning dates, LTC/TRI/TRE dates and "737 until" for other pilots.'
+      ]
+    }
+  },
   {
     version: '1.22.0',
     date: '2026-07-25',

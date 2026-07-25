@@ -320,6 +320,7 @@ const DICT = {
   stage: { de: 'Phase', en: 'Stage' },
   status: { de: 'Status', en: 'Status' },
   targetDate: { de: 'Zieltermin', en: 'Target date' },
+  clearDate: { de: 'Datum löschen', en: 'Clear date' },
   note: { de: 'Notiz', en: 'Note' },
   moveNext: { de: 'Nächste Phase', en: 'Next stage' },
   movePrev: { de: 'Zurück', en: 'Previous' },
