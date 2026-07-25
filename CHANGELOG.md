@@ -11,6 +11,25 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.24.1] – 2026-07-25
+
+- **Weiße Seite beim Zuweisen behoben.** In der Planung riss ein Klick auf
+  „+ zuweisen" die gesamte Oberfläche ab — ohne Fehlermeldung, einfach weiß.
+  Ursache: `PlanningModal` ist eine **Schwester**-Komponente von `Planning()`,
+  keine darin verschachtelte. Die dort definierte Farbfunktion `tint` war im
+  Dialog schlicht nicht sichtbar, der Zugriff warf einen `ReferenceError` beim
+  ersten Rendern — und darauf hängt React den kompletten Baum ab. Der Dialog
+  holt sich seinen Themen-Resolver jetzt selbst.
+- Zur Sicherheit den ganzen Quelltext nach demselben Muster durchsucht
+  (Komponente benutzt `tint`, ruft aber kein `useThemed()`): es war die einzige
+  Stelle.
+- **Die Planung hatte keinen einzigen Browser-Test** — deshalb konnte ein
+  Absturz auf dem wichtigsten Knopf des Reiters unbemerkt ausgeliefert werden.
+  Neu: `test/browser/planning.test.mjs` öffnet den Dialog, prüft *zuerst*, dass
+  die App überhaupt noch steht (weiße Seite und fehlender Dialog sind zwei
+  verschiedene Fehler), setzt Provider und Datum, kontrolliert dass beides im
+  Speicher ankommt, schließt und öffnet erneut.
+
 ## [1.24.0] – 2026-07-25
 
 - **PDF ohne Fußzeile, mit schmalen Rändern.** Version und Seitenzahl sind weg;

@@ -236,6 +236,10 @@ export default function Planning() {
 }
 
 function PlanningModal({ trainer, providers, steps, onClose }) {
+  // Its own themed resolver: this is a sibling of Planning(), not a nested
+  // function, so the `tint` defined there is simply not in scope here. Reading
+  // it threw on the first render of the dialog and blanked the whole app.
+  const tint = useThemed()
   const { data, t, lang, setAssignment, upsertTrainer } = useStore()
   const setStep = (stepId, changes) => setAssignment(trainer.id, stepId, changes)
   const setStaff = (v) => upsertTrainer({ ...trainer, staffType: v })

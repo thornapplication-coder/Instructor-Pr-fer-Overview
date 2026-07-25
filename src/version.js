@@ -4,12 +4,27 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.24.0'
+export const APP_VERSION = '1.24.1'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.24.1',
+    date: '2026-07-25',
+    type: 'patch',
+    changes: {
+      de: [
+        'Behoben: In der Planung führte ein Klick auf „+ zuweisen" zu einer weißen Seite ohne Fehlermeldung. Der Dialog griff auf eine Farbfunktion zu, die es in seinem Gültigkeitsbereich nicht gab – das reißt in React die ganze Oberfläche ab, deshalb weiß und stumm.',
+        'Die Planung hatte bisher keinen einzigen Browser-Test, weshalb ein Absturz beim wichtigsten Knopf des Reiters unbemerkt durchging. Neu: ein Test, der den Dialog öffnet, einen Provider und ein Datum setzt, speichert, schließt und wieder öffnet.'
+      ],
+      en: [
+        'Fixed: in Planning, clicking "+ assign" produced a white page with no error message. The dialog reached for a colour helper that was not in its scope – in React that tears down the entire interface, hence blank and silent.',
+        'Planning had no browser test at all, which is how a crash on the tab\'s main button slipped through. New: a test that opens the dialog, sets a provider and a date, saves, closes and reopens.'
+      ]
+    }
+  },
   {
     version: '1.24.0',
     date: '2026-07-25',
