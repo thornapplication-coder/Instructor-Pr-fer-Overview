@@ -104,9 +104,41 @@ export function conversionSummary(trainers, stages) {
 // FTE tied up in an active conversion vs. still available.
 // "in conversion" = stage is neither the first (nominated / not started) nor
 // the final (released). Those trainers are occupied by their own training.
-function round1(x) {
-  return Math.round(x * 10) / 10
+// ---------------------------------------------------------------- FTE ------
+//
+// WHAT AN FTE IS HERE: the sum of the per-person FTE field. That field defaults
+// to the part-time workload – full time 1.0, 90 % 0.9, 80 % 0.8, 75 % 0.75,
+// 60 % 0.6 … – and can be overridden per person in the trainer dialog. 48
+// people at various part-time levels are therefore "42.85 FTE", not 48.
+//
+// WHY IT IS COUNTED IN HUNDREDTHS: adding those values as floating point does
+// not commute. The current data sums to exactly 42.85; added base by base it
+// comes out as 42.85, added person by person as 42.849999999999994 – which then
+// round to 42.9 and 42.8. The app did both in different places, so the same
+// people showed two different totals. Whole hundredths remove the question.
+export const fteOf = (t) => (typeof t?.fte === 'number' ? t.fte : 1)
+const cents = (t) => Math.round(fteOf(t) * 100)
+
+/** Exact FTE total of a list of trainers (see the note above). */
+export function sumFte(list) {
+  let c = 0
+  for (const t of list) c += cents(t)
+  return c / 100
 }
+
+// Round to one decimal from a hundredths integer, so the rounding decision is
+// never made on a float that is a hair below the .x5 boundary.
+const round1c = (c) => Math.round(c / 10) / 10
+
+// "verfügbar" is derived from the two numbers next to it, not rounded on its
+// own: rounding total and inConversion separately and rounding their difference
+// separately disagree by 0.1 whenever the discarded hundredths fall either side
+// of the .x5 boundary (e.g. 4.35 - 0.04 shows as "4,4 - 0,0 = 4,3"). A column
+// that visibly fails its own subtraction is exactly what this release is about,
+// so the displayed row is made to add up; the cost is at most 0.05 on this one
+// cell, which the one-decimal display cannot show anyway.
+const availOf = (totalC, convC) => Math.round((round1c(totalC) - round1c(convC)) * 100) / 100
+
 export function conversionFteSummary(trainers, stages) {
   const { firstId, releasedId, stageOf } = stageResolver(stages)
   let total = 0
@@ -115,7 +147,7 @@ export function conversionFteSummary(trainers, stages) {
   let notStarted = 0
   for (const t of trainers) {
     if ((t.ore || '') === 'Rente') continue // retirees are not deployable capacity
-    const f = typeof t.fte === 'number' ? t.fte : 1
+    const f = cents(t)
     total += f
     const stage = stageOf(t)
     if (stage === releasedId) released += f
@@ -123,11 +155,11 @@ export function conversionFteSummary(trainers, stages) {
     else inConversion += f
   }
   return {
-    total: round1(total),
-    inConversion: round1(inConversion),
-    available: round1(total - inConversion),
-    released: round1(released),
-    notStarted: round1(notStarted)
+    total: round1c(total),
+    inConversion: round1c(inConversion),
+    available: availOf(total, inConversion),
+    released: round1c(released),
+    notStarted: round1c(notStarted)
   }
 }
 
@@ -157,7 +189,7 @@ function capacityBy(trainers, keyFn, aircraftList, order, stages, seedKeys) {
   for (const k of seedKeys || []) get(k)
   for (const t of trainers) {
     if ((t.ore || '') === 'Rente') continue // retirees are not deployable capacity
-    const fte = typeof t.fte === 'number' ? t.fte : 1
+    const fte = cents(t)
     const row = get(keyFn(t))
     row.total += fte
     row.headcount += 1
@@ -168,15 +200,16 @@ function capacityBy(trainers, keyFn, aircraftList, order, stages, seedKeys) {
     if (isConversionQual(t.qual) && stage !== firstId && stage !== releasedId) row.inConversion += fte
     if (t.aircraft && row.ac[t.aircraft] != null) row.ac[t.aircraft] += fte
   }
-  const rows = [...map.values()].map((r) => {
+  const raw = [...map.values()]
+  const rows = raw.map((r) => {
     const ac = {}
-    for (const a of acs) ac[a] = round1(r.ac[a])
+    for (const a of acs) ac[a] = round1c(r.ac[a])
     return {
       key: r.key,
       headcount: r.headcount,
-      total: round1(r.total),
-      inConversion: round1(r.inConversion),
-      available: round1(r.total - r.inConversion),
+      total: round1c(r.total),
+      inConversion: round1c(r.inConversion),
+      available: availOf(r.total, r.inConversion),
       ac
     }
   })
@@ -189,13 +222,18 @@ function capacityBy(trainers, keyFn, aircraftList, order, stages, seedKeys) {
   } else {
     rows.sort((a, b) => a.key.localeCompare(b.key))
   }
+  // Totals come from the RAW sums, never from the already-rounded rows: five
+  // rows each rounded by up to 0.05 could otherwise put the total a quarter of
+  // an FTE away from the truth, and make the total row disagree with its own
+  // columns (total - inConversion != available).
+  const totalCents = (pick) => raw.reduce((s, r) => s + pick(r), 0)
   const totals = {
     key: '',
-    headcount: rows.reduce((s, r) => s + r.headcount, 0),
-    total: round1(rows.reduce((s, r) => s + r.total, 0)),
-    inConversion: round1(rows.reduce((s, r) => s + r.inConversion, 0)),
-    available: round1(rows.reduce((s, r) => s + r.available, 0)),
-    ac: Object.fromEntries(acs.map((a) => [a, round1(rows.reduce((s, r) => s + r.ac[a], 0))]))
+    headcount: raw.reduce((s, r) => s + r.headcount, 0),
+    total: round1c(totalCents((r) => r.total)),
+    inConversion: round1c(totalCents((r) => r.inConversion)),
+    available: availOf(totalCents((r) => r.total), totalCents((r) => r.inConversion)),
+    ac: Object.fromEntries(acs.map((a) => [a, round1c(totalCents((r) => r.ac[a]))]))
   }
   return { rows, totals, aircraft: acs }
 }
@@ -283,8 +321,9 @@ export function headcount(trainers) {
   let captains = 0
   let firstOfficers = 0
   let fte = 0
+  let fteActive = 0
   for (const t of trainers) {
-    if (t.ore !== 'Rente') active++
+    if (t.ore !== 'Rente') { active++; fteActive += cents(t) }
     if (EXAMINER.has(t.qual) || String(t.qual).startsWith('TRE')) examiners++
     else if (t.qual === 'TRI') tri++
     else if (t.qual === 'LTC') ltc++
@@ -292,7 +331,7 @@ export function headcount(trainers) {
     if (t.role === 'fo') firstOfficers++
     else captains++
     // Weighted FTE from the per-person editable FTE field (default 1.0).
-    fte += typeof t.fte === 'number' ? t.fte : 1
+    fte += cents(t)
   }
   return {
     total: trainers.length,
@@ -303,7 +342,8 @@ export function headcount(trainers) {
     sfiTki,
     captains,
     firstOfficers,
-    fte: Math.round(fte * 10) / 10
+    fte: round1c(fte),
+    fteActive: round1c(fteActive)
   }
 }
 

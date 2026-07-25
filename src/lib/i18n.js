@@ -63,6 +63,13 @@ const DICT = {
     en: 'No target dates yet. As soon as you set conversion target dates, they show up here on the timeline.'
   },
   cap_head: { de: 'Köpfe', en: 'Head' },
+  fteExclRetired: { de: 'ohne Rente', en: 'excl. retirees' },
+  // Shown wherever an FTE figure appears, because "FTE" alone was ambiguous:
+  // three places used it for three different groups of people.
+  fteDefinition: {
+    de: 'FTE = Summe der Personen-FTE (Vollzeit 1,0 · 90 % 0,9 · 80 % 0,8 · 75 % 0,75 …), je Person im Trainer-Dialog überschreibbar. Alle FTE-Zahlen lassen die Rente außen vor. „In Umschulung" zählt zusätzlich nur SEN, TRE, TRI und LTC.',
+    en: 'FTE = the sum of the per-person FTE (full time 1.0 · 90% 0.9 · 80% 0.8 · 75% 0.75 …), overridable per person in the trainer dialog. Every FTE figure excludes retirees. "In conversion" additionally counts SEN, TRE, TRI and LTC only.'
+  },
   cap_total: { de: 'FTE gesamt', en: 'FTE total' },
   cap_inConv: { de: 'in Umschulung', en: 'in conversion' },
   cap_avail: { de: 'verfügbar', en: 'available' },
@@ -83,6 +90,9 @@ const DICT = {
   kpi_retiring: { de: 'Rente', en: 'Retiring' },
   kpi_fteInConversion: { de: 'FTE in Umschulung', en: 'FTE in conversion' },
   kpi_fteAvailable: { de: 'FTE verfügbar', en: 'FTE available' },
+  // Names the population behind the conversion FTE tiles, whose total is
+  // smaller than the overall one because it covers the conversion quals only.
+  fteConvScope: { de: '(Umschulungs-Pool)', en: '(conversion pool)' },
   fteInConversionShort: { de: 'FTE in Umschulung', en: 'FTE in conversion' },
   fteAvailableShort: { de: 'FTE verfügbar', en: 'FTE available' },
   chart_byQual: { de: 'Nach Qualifikation', en: 'By qualification' },
@@ -97,8 +107,8 @@ const DICT = {
   metric_heads: { de: 'Köpfe', en: 'Heads' },
   metric_fte: { de: 'FTE', en: 'FTE' },
   headFteHint: {
-    de: 'Der helle Balken sind die Köpfe, der dunkle die FTE darin. Der helle Rest ist der Teilzeit-Anteil. Ohne Rente.',
-    en: 'The light bar is the headcount, the solid one the FTE within it. The light remainder is the part-time share. Excludes retirees.'
+    de: 'Der helle Balken sind die Köpfe, der dunkle die FTE darin. Der helle Rest ist der Teilzeit-Anteil.',
+    en: 'The light bar is the headcount, the solid one the FTE within it. The light remainder is the part-time share.'
   },
   overallProgress: { de: 'Gesamtfortschritt', en: 'Overall progress' },
 

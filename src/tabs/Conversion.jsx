@@ -9,7 +9,7 @@ import { qualLabel, isConversionQual, conversionTrainers, CONVERSION_QUALS } fro
 import { AIRCRAFT } from '../data/aircraft.js'
 import { conversionFteSummary } from '../lib/stats.js'
 import { trainerAlerts } from '../lib/alerts.js'
-import { formatDate } from '../lib/format.js'
+import { formatDate, formatFte1 } from '../lib/format.js'
 
 function assignTarget(providers, a) {
   if (!a) return null
@@ -22,6 +22,7 @@ export default function Conversion() {
   const tint = useThemed()
   const { data, t, lang, setConversion, setStages } = useStore()
   const { trainers, stages, providers, quals, assignmentSteps } = data
+  const fte1 = (v) => formatFte1(v, lang)
   const [q, setQ] = useState('')
   const [fBase, setFBase] = useState('')
   const [fOre, setFOre] = useState('')
@@ -104,9 +105,9 @@ export default function Conversion() {
         </button>
       </div>
       <div className="fte-summary">
-        <span className="fte-pill fte-in">{t('fteInConversionShort')}: <b>{fteS.inConversion}</b></span>
-        <span className="fte-pill fte-av">{t('fteAvailableShort')}: <b>{fteS.available}</b></span>
-        <span className="fte-pill fte-total">FTE gesamt: <b>{fteS.total}</b></span>
+        <span className="fte-pill fte-in">{t('fteInConversionShort')}: <b>{fte1(fteS.inConversion)}</b></span>
+        <span className="fte-pill fte-av">{t('fteAvailableShort')}: <b>{fte1(fteS.available)}</b></span>
+        <span className="fte-pill fte-total">FTE {t('total')}: <b>{fte1(fteS.total)}</b></span>
         <span className="board-hint">{t('boardHint')} · {t('convScopeHint').replace('{q}', CONVERSION_QUALS.join(' · '))}</span>
       </div>
 

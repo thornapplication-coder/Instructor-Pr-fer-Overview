@@ -46,18 +46,29 @@ export function startPreview(port = 4330) {
   return new Promise((resolve, reject) => {
     // No --strictPort on purpose: vite moves to the next free port if this one
     // is taken, and the URL is read from what it actually printed.
+    // Its own process group: `npm run preview` spawns a shell which spawns vite,
+    // and a SIGTERM to npm alone leaves vite behind holding the port. Runs that
+    // leaked this way piled up until every later run landed on a different port.
     const proc = spawn('npm', ['run', 'preview', '--', '--port', String(port)], {
       cwd: ROOT,
-      stdio: ['ignore', 'pipe', 'pipe']
+      stdio: ['ignore', 'pipe', 'pipe'],
+      detached: true
     })
+    const stop = () => {
+      try {
+        process.kill(-proc.pid, 'SIGTERM')
+      } catch (_) {
+        proc.kill('SIGTERM') // already gone, or no group to signal
+      }
+    }
     let out = ''
-    const done = setTimeout(() => reject(new Error('preview did not start:\n' + out)), 30000)
+    const done = setTimeout(() => { stop(); reject(new Error('preview did not start:\n' + out)) }, 30000)
     proc.stdout.on('data', (b) => {
       out += b.toString()
       const m = out.match(/(http:\/\/localhost:\d+\/\S*)/)
       if (m) {
         clearTimeout(done)
-        resolve({ url: m[1].replace(/\/?$/, '/'), stop: () => proc.kill('SIGTERM') })
+        resolve({ url: m[1].replace(/\/?$/, '/'), stop })
       }
     })
     proc.stderr.on('data', (b) => { out += b.toString() })

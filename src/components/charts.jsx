@@ -159,7 +159,11 @@ export function StackedBars({ data, series }) {
 // FTE can never exceed heads, and the empty remainder IS the part-time share,
 // which is the thing worth seeing. One coloured mark per row, so the series
 // colour can never be read as a row identity.
-export function NestedBars({ data, series, format }) {
+// `totals` is optional but should be passed whenever the rows carry rounded
+// values: adding up five rows that were each rounded to one decimal is not the
+// same number as rounding the exact sum once. That is how the base card came to
+// claim 43 FTE while every other card said 42,9 for the identical people.
+export function NestedBars({ data, series, format, totals }) {
   const pick = useChartColor()
   const [whole, part] = series
   const max = Math.max(1, ...data.map((d) => d[whole.key] || 0))
@@ -205,7 +209,11 @@ export function NestedBars({ data, series, format }) {
           key: ser.key,
           color: pick(ser.color, 0),
           label: ser.label,
-          value: fmt(data.reduce((s2, d) => s2 + (d[ser.key] || 0), 0))
+          value: fmt(
+            totals && totals[ser.key] != null
+              ? totals[ser.key]
+              : data.reduce((s2, d) => s2 + (d[ser.key] || 0), 0)
+          )
         }))}
       />
     </div>

@@ -11,6 +11,48 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.19.4] – 2026-07-25
+
+- **FTE-Summen stimmen wieder überall überein.** Dieselben Personen erschienen
+  je nach Kachel als 42,8, 42,9 oder 43. Dahinter steckten vier unabhängige
+  Ursachen, alle vier sind behoben.
+- **Reihenfolge der Addition.** Der Bestand ergibt exakt **42,85** und liegt
+  damit genau auf der Rundungsgrenze. Person für Person addiert kommt ein
+  Computer auf `42,849999999999994`, Base für Base auf `42,85` – das eine rundet
+  auf 42,8 ab, das andere auf 42,9 auf. Die App hat an verschiedenen Stellen
+  beides gemacht. Gerechnet wird jetzt durchgehend in ganzen Hundertsteln, und
+  die Rundung auf eine Nachkommastelle passiert genau einmal am Schluss.
+- **Drei Personenkreise, ein Wort.** „FTE" stand für alle 50 Personen (44,7),
+  für alle ohne Rente (42,9) und für den Umschulungs-Pool. Das sind drei
+  richtige Zahlen, aber nebeneinander ohne Beschriftung liest sich das als
+  Widerspruch. Jede FTE-Zahl trägt jetzt ihren Bezug; die Kachel oben zeigt
+  bewusst den Stand **ohne Rente**, weil jede andere FTE-Zahl der App das auch
+  tut.
+- **Legende addierte gerundete Zeilen.** Die Kachel „Köpfe vs. FTE je Base"
+  hat für ihre Gesamtsumme die schon auf eine Stelle gerundeten Zeilen noch
+  einmal zusammengezählt – fünf Zeilen mal bis zu 0,05 Abweichung ergaben 43
+  statt 42,9. `NestedBars` nimmt jetzt die echte Gesamtsumme entgegen, statt sie
+  aus der Anzeige zurückzurechnen.
+- **Eine Zeile, die ihre eigene Subtraktion nicht bestand.** In der
+  Kapazitäts-Tabelle wurde jede Spalte für sich gerundet, dadurch konnte
+  „verfügbar" um 0,1 neben „FTE gesamt minus in Umschulung" liegen (0,05 gesamt
+  und 0,04 in Umschulung erschienen als `0,1 − 0,0 = 0,0`). Die Spalte entsteht
+  jetzt aus den *angezeigten* Zahlen; der Preis sind höchstens 0,05 auf dieser
+  einen Zelle, die eine Nachkommastelle ohnehin nicht darstellt.
+- **PDF und Umschulungs-Board.** Im PDF stand unter „FTE Gesamt" die Summe
+  *inklusive* Rente, also eine größere Zahl als auf demselben Dashboard. Dort
+  und im Board wurden Zahlen außerdem roh ausgegeben (`38.9` statt `38,9`),
+  während alle anderen durch den Formatierer liefen.
+- **Erklärt statt nur korrigiert.** Unter den FTE-Kacheln, auf dem Kapazitäts-
+  Reiter und im PDF steht jetzt, wie eine FTE zustande kommt: Summe der
+  Personen-FTE, Vollzeit 1,0 · 90 % 0,9 · 80 % 0,8 · 75 % 0,75 …, je Person im
+  Trainer-Dialog überschreibbar.
+- **Abgesichert.** `test/fte.test.mjs` prüft, dass Gruppierung nach Base,
+  Aircraft und Qualifikation dieselbe Summe ergibt, dass eine Gesamtzeile zu
+  ihren eigenen Spalten passt und dass die Summe nicht von der Reihenfolge
+  abhängt. `test/browser/fte.test.mjs` prüft dasselbe an der gerenderten App
+  über Dashboard, Kapazität und Board hinweg.
+
 ## [1.19.3] – 2026-07-25
 
 - **„Köpfe vs. FTE" im Eurowings-Stil.** Das Violett aus 1.19.1 war die einzige

@@ -194,7 +194,7 @@ export default function Capacity() {
       <div className="toolbar no-print">
         <h2 className="pane-title">{t('capacity_title')}</h2>
       </div>
-      <p className="planning-note">{t('capacity_hint')}</p>
+      <p className="planning-note">{t('capacity_hint')} {t('fteDefinition')}</p>
 
       <div className="fte-summary">
         <span className="fte-pill fte-in">{t('fteInConversionShort')}: <b>{fte1(fteS.inConversion)}</b></span>

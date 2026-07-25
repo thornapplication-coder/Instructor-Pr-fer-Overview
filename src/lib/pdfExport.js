@@ -3,7 +3,7 @@
 // current data on every platform (desktop, iPhone, iPad – the file downloads /
 // opens in the share sheet). jsPDF + autotable are lazy-loaded (heavy).
 import { BRAND_NAME, BRAND_HEX, hexToRgb, footerLine, fileStamp, reportDate } from './brand.js'
-import { formatPartTime, formatFte, formatDate } from './format.js'
+import { formatPartTime, formatFte, formatFte1, formatDate } from './format.js'
 import { stageLabel, CONV_STATUS, ASSIGNMENT_STATUS, firstStageId } from '../data/pipeline.js'
 import { qualLabel } from '../data/qualifications.js'
 import { courseLabel, simVersionLabel } from '../data/providers.js'
@@ -308,12 +308,17 @@ async function exportProvidersPdf(data, t, lang, opts) {
 }
 
 // ---------------------------------------------------------------- Capacity ---
-function capBody(cap, labelFor) {
-  return cap.rows.map((r) => [labelFor ? labelFor(r.key) : r.key, String(r.headcount), String(r.total), String(r.inConversion), String(r.available), String(r.ac[cap.aircraft[0]] ?? 0), String(r.ac[cap.aircraft[1]] ?? 0)])
+// FTE cells go through the same formatter the screen uses – printing them raw
+// gave the PDF "42.9" where the tab said "42,9" for the identical figure.
+function capCells(r, cap, lang) {
+  const f = (v) => formatFte1(v, lang)
+  return [String(r.headcount), f(r.total), f(r.inConversion), f(r.available), f(r.ac[cap.aircraft[0]] ?? 0), f(r.ac[cap.aircraft[1]] ?? 0)]
 }
-function capFoot(cap, totalLabel) {
-  const tt = cap.totals
-  return [[totalLabel, String(tt.headcount), String(tt.total), String(tt.inConversion), String(tt.available), String(tt.ac[cap.aircraft[0]] ?? 0), String(tt.ac[cap.aircraft[1]] ?? 0)]]
+function capBody(cap, lang, labelFor) {
+  return cap.rows.map((r) => [labelFor ? labelFor(r.key) : r.key, ...capCells(r, cap, lang)])
+}
+function capFoot(cap, lang, totalLabel) {
+  return [[totalLabel, ...capCells(cap.totals, cap, lang)]]
 }
 async function exportCapacityPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
@@ -324,9 +329,9 @@ async function exportCapacityPdf(data, t, lang, opts) {
   const capB = capacityByBase(data.trainers, AIRCRAFT, data.stages)
   const numCols = { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' }, 5: { halign: 'right' }, 6: { halign: 'right' } }
   const headRow = (first) => [first, t('cap_head'), t('cap_total'), t('cap_inConv'), t('cap_avail'), AIRCRAFT[0], AIRCRAFT[1]]
-  table(ctx, { section: t('capacity_byQual'), head: headRow(t('f_qual')), body: capBody(capQ, (k) => qualLabel(data.quals, k)), foot: capFoot(capQ, t('total')), columnStyles: numCols })
-  table(ctx, { section: t('capacity_byAircraft'), head: headRow(t('f_aircraft')), body: capBody(capA), foot: capFoot(capA, t('total')), columnStyles: numCols })
-  table(ctx, { section: t('capacity_byBase'), head: headRow(t('f_base')), body: capBody(capB), foot: capFoot(capB, t('total')), columnStyles: numCols })
+  table(ctx, { section: t('capacity_byQual'), head: headRow(t('f_qual')), body: capBody(capQ, lang, (k) => qualLabel(data.quals, k)), foot: capFoot(capQ, lang, t('total')), columnStyles: numCols })
+  table(ctx, { section: t('capacity_byAircraft'), head: headRow(t('f_aircraft')), body: capBody(capA, lang), foot: capFoot(capA, lang, t('total')), columnStyles: numCols })
+  table(ctx, { section: t('capacity_byBase'), head: headRow(t('f_base')), body: capBody(capB, lang), foot: capFoot(capB, lang, t('total')), columnStyles: numCols })
   const months = targetsByMonth(conversionTrainers(data.trainers), null, data.stages)
   const tl = []
   for (const m of months) for (const it of m.items) tl.push([monthLabel(m.month, lang), it.trainer.name || '', it.trainer.base || '', stageName(data.stages, it.trainer.conv?.stage), formatDate(it.trainer.conv?.target, lang)])
@@ -374,7 +379,9 @@ async function exportDashboardPdf(data, t, lang, opts) {
       [t('kpi_captain'), String(hc.captains)],
       [t('kpi_fo'), String(hc.firstOfficers)],
       [t('kpi_active'), String(hc.active)],
-      ['FTE ' + t('total'), String(hc.fte)]
+      // fteActive, and labelled: hc.fte counts the retirees too, so this row
+      // used to print a bigger total than the very same tile on screen.
+      ['FTE ' + t('total') + ' (' + t('fteExclRetired') + ')', formatFte1(hc.fteActive, lang)]
     ],
     columnStyles: { 1: { halign: 'right', cellWidth: 80 } }
   })
@@ -404,9 +411,9 @@ async function exportDashboardPdf(data, t, lang, opts) {
       [t('kpi_released'), String(cs.released)],
       [t('kpi_inProgress'), String(cs.inProgress)],
       [t('kpi_notStarted'), String(cs.notStarted)],
-      [t('kpi_fteInConversion'), String(fte.inConversion)],
-      [t('kpi_fteAvailable'), String(fte.available)],
-      ['FTE ' + t('total'), String(fte.total)]
+      [t('kpi_fteInConversion'), formatFte1(fte.inConversion, lang)],
+      [t('kpi_fteAvailable'), formatFte1(fte.available, lang)],
+      ['FTE ' + t('total') + ' ' + t('fteConvScope'), formatFte1(fte.total, lang)]
     ],
     columnStyles: { 1: { halign: 'right', cellWidth: 80 } }
   })
@@ -430,9 +437,9 @@ async function exportConversionPdf(data, t, lang, opts) {
     section: t('conversion_title'),
     head: [t('category'), t('count')],
     body: [
-      [t('fteInConversionShort'), String(fte.inConversion)],
-      [t('fteAvailableShort'), String(fte.available)],
-      ['FTE ' + t('total'), String(fte.total)]
+      [t('fteInConversionShort'), formatFte1(fte.inConversion, lang)],
+      [t('fteAvailableShort'), formatFte1(fte.available, lang)],
+      ['FTE ' + t('total') + ' ' + t('fteConvScope'), formatFte1(fte.total, lang)]
     ],
     columnStyles: { 1: { halign: 'right', cellWidth: 80 } }
   })

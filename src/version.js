@@ -4,12 +4,37 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.19.3'
+export const APP_VERSION = '1.19.4'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.19.4',
+    date: '2026-07-25',
+    type: 'patch',
+    changes: {
+      de: [
+        'FTE-Summen stimmen jetzt überall überein. Dieselben Personen wurden je nach Kachel als 42,8, 42,9 oder 43 angezeigt.',
+        'Ursache 1 – die Reihenfolge der Addition: die Daten ergeben exakt 42,85 und liegen damit genau auf der Rundungsgrenze. Person für Person addiert kam der Computer auf 42,8499…, Base für Base auf 42,85 – das eine rundet ab, das andere auf. Gerechnet wird jetzt durchgehend in Hundertsteln, damit gibt es nur noch ein Ergebnis.',
+        'Ursache 2 – drei verschiedene Personenkreise hießen alle nur „FTE": alle 50 Personen (44,7), alle ohne Rente (42,9) und der Umschulungs-Pool. Jede Zahl trägt jetzt dazu, wen sie zählt.',
+        'Ursache 3 – die Legende der Kachel „Köpfe vs. FTE je Base" hat die bereits gerundeten Zeilen noch einmal zusammengezählt und kam so auf 43 statt 42,9. Sie zeigt jetzt die echte Gesamtsumme.',
+        'Ursache 4 – in der Kapazitäts-Tabelle konnte „verfügbar" um 0,1 neben „FTE gesamt minus in Umschulung" liegen, weil jede Spalte für sich gerundet wurde. Die Spalte wird jetzt aus den angezeigten Zahlen gebildet, die Zeile geht also immer auf.',
+        'Im PDF stand unter „FTE Gesamt" die Summe inklusive Rente, also eine größere Zahl als auf demselben Dashboard. Außerdem standen dort und im Umschulungs-Board Zahlen mit Punkt statt Komma. Beides korrigiert.',
+        'Neu unter jeder FTE-Zahl: eine Erklärung, wie sie zustande kommt (Vollzeit 1,0 · 90 % 0,9 · 80 % 0,8 · 75 % 0,75 …, je Person im Trainer-Dialog überschreibbar).'
+      ],
+      en: [
+        'FTE totals now agree everywhere. The same people were shown as 42.8, 42.9 or 43 depending on which card you read.',
+        'Cause 1 – the order of addition: the data adds up to exactly 42.85, right on the rounding boundary. Added person by person the computer got 42.8499…, added base by base 42.85 – one rounds down, the other up. Everything is now counted in hundredths, so there is only one result.',
+        'Cause 2 – three different groups of people were all just called "FTE": all 50 people (44.7), everyone except the retirees (42.9), and the conversion pool. Every figure now says which group it counts.',
+        'Cause 3 – the legend of the "Heads vs. FTE per base" card added the already-rounded rows back up and arrived at 43 instead of 42.9. It now shows the real total.',
+        'Cause 4 – in the capacity table "available" could sit 0.1 away from "FTE total minus in conversion", because each column was rounded on its own. That column is now derived from the displayed numbers, so the row always adds up.',
+        'In the PDF, "FTE total" printed the sum including retirees – a bigger number than the same dashboard showed. It and the conversion board also printed numbers with a dot instead of a comma. Both fixed.',
+        'New underneath every FTE figure: an explanation of how it is arrived at (full time 1.0 · 90% 0.9 · 80% 0.8 · 75% 0.75 …, overridable per person in the trainer dialog).'
+      ]
+    }
+  },
   {
     version: '1.19.3',
     date: '2026-07-25',

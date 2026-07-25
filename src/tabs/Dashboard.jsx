@@ -141,12 +141,15 @@ export default function Dashboard() {
     { key: 'fte', label: t('metric_fte'), color: MEASURE_PART }
   ]
   const toHeadFte = (r) => ({ key: r.key, label: r.key, heads: r.headcount, fte: r.total })
+  // Keep the authoritative totals alongside the rows – the legend must not add
+  // the rounded rows back up (see NestedBars).
+  const toHeadFteCap = (cap) => ({ rows: cap.rows.map(toHeadFte), totals: toHeadFte(cap.totals) })
   const capBase = useMemo(
-    () => capacityByBase(trainers, AIRCRAFT, stages).rows.map(toHeadFte),
+    () => toHeadFteCap(capacityByBase(trainers, AIRCRAFT, stages)),
     [trainers, stages]
   )
   const capAc = useMemo(
-    () => capacityByAircraft(trainers, AIRCRAFT, stages).rows.map(toHeadFte),
+    () => toHeadFteCap(capacityByAircraft(trainers, AIRCRAFT, stages)),
     [trainers, stages]
   )
   const fte1 = (v) => formatFte1(v, lang)
@@ -158,7 +161,19 @@ export default function Dashboard() {
 
   // ---- Overview (Instruktoren & Prüfer) — KPI tiles in SEN·TRE·TRI·LTC·SFI·TKI order
   const ovKpi = [
-    { id: 'total', node: <KpiTile value={hc.total} label={t('kpi_totalTrainers')} sub={`FTE ≈ ${hc.fte}`} /> },
+    // fteActive, not fte: every other FTE figure in the app leaves the retirees
+    // out, and a tile that quietly included them was the reason the same people
+    // appeared as 44.6 here and 42.9 two cards further down.
+    {
+      id: 'total',
+      node: (
+        <KpiTile
+          value={hc.total}
+          label={t('kpi_totalTrainers')}
+          sub={`FTE ${fte1(hc.fteActive)} (${t('fteExclRetired')})`}
+        />
+      )
+    },
     { id: 'examiners', node: <KpiTile value={hc.examiners} label={t('kpi_examiners')} accent={BRAND.burgundy} /> },
     { id: 'tri', node: <KpiTile value={hc.tri} label={t('kpi_tri')} accent={BRAND.burgundy} /> },
     { id: 'ltc', node: <KpiTile value={hc.ltc} label={t('kpi_ltc')} accent={BRAND.burgundy} /> },
@@ -188,18 +203,18 @@ export default function Dashboard() {
     {
       id: 'capBase',
       node: (
-        <Card title={t('chart_headFteBase')} total={capBase.reduce((n, r) => n + r.heads, 0)}>
-          <NestedBars data={capBase} series={headFte} format={fte1} />
-          <p className="stat-hint">{t('headFteHint')}</p>
+        <Card title={t('chart_headFteBase')} total={capBase.totals.heads}>
+          <NestedBars data={capBase.rows} series={headFte} format={fte1} totals={capBase.totals} />
+          <p className="stat-hint">{t('headFteHint')} {t('fteDefinition')}</p>
         </Card>
       )
     },
     {
       id: 'capAircraft',
       node: (
-        <Card title={t('chart_headFteAircraft')} total={capAc.reduce((n, r) => n + r.heads, 0)}>
-          <NestedBars data={capAc} series={headFte} format={fte1} />
-          <p className="stat-hint">{t('headFteHint')}</p>
+        <Card title={t('chart_headFteAircraft')} total={capAc.totals.heads}>
+          <NestedBars data={capAc.rows} series={headFte} format={fte1} totals={capAc.totals} />
+          <p className="stat-hint">{t('headFteHint')} {t('fteDefinition')}</p>
         </Card>
       )
     },
@@ -239,8 +254,33 @@ export default function Dashboard() {
     { id: 'released', node: <KpiTile value={cs.released} label={t('kpi_released')} accent={STATUS.good} /> },
     { id: 'inProgress', node: <KpiTile value={cs.inProgress} label={t('kpi_inProgress')} accent={BRAND.burgundy} /> },
     { id: 'notStarted', node: <KpiTile value={cs.notStarted} label={t('kpi_notStarted')} accent={STATUS.neutral} /> },
-    { id: 'fteInConv', node: <KpiTile value={fteS.inConversion} label={t('kpi_fteInConversion')} accent={BRAND.burgundy} sub={`/ ${fteS.total} FTE`} /> },
-    { id: 'fteAvail', node: <KpiTile value={fteS.available} label={t('kpi_fteAvailable')} accent={STATUS.good} sub={`/ ${fteS.total} FTE`} /> }
+    // These two count the conversion pool only (SEN/TRE/TRI/LTC), so their
+    // denominator is smaller than the total tile above. Say so on the tile –
+    // an unlabelled second "FTE" total reads as a contradiction, not a scope.
+    // And format through fte1 like every other figure: raw numbers printed
+    // "38.9" next to the formatter's "38,9".
+    {
+      id: 'fteInConv',
+      node: (
+        <KpiTile
+          value={fte1(fteS.inConversion)}
+          label={t('kpi_fteInConversion')}
+          accent={BRAND.burgundy}
+          sub={`/ ${fte1(fteS.total)} FTE ${t('fteConvScope')}`}
+        />
+      )
+    },
+    {
+      id: 'fteAvail',
+      node: (
+        <KpiTile
+          value={fte1(fteS.available)}
+          label={t('kpi_fteAvailable')}
+          accent={STATUS.good}
+          sub={`/ ${fte1(fteS.total)} FTE ${t('fteConvScope')}`}
+        />
+      )
+    }
   ]
   const cvChart = [
     {

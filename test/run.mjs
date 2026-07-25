@@ -2,8 +2,9 @@
 //   npm test
 import { results as merge } from './merge.test.mjs'
 import { results as coverage } from './sync-coverage.test.mjs'
+import { results as fte } from './fte.test.mjs'
 
-const fails = [...merge.fails, ...coverage.fails]
+const fails = [...merge.fails, ...coverage.fails, ...fte.fails]
 console.log('')
 if (fails.length) {
   console.log(`FAILED – ${fails.length} check(s):`)
