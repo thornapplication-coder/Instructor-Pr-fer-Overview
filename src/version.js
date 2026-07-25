@@ -4,12 +4,25 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.15.4'
+export const APP_VERSION = '1.15.5'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.15.5',
+    date: '2026-07-25',
+    type: 'patch',
+    changes: {
+      de: [
+        'Keine stumme weiße Seite mehr: wenn die App nach ein paar Sekunden nicht startet (typischerweise eine veraltete Seite im Browser-Cache), erscheint jetzt ein Hinweis mit der Anleitung zum Neuladen statt eines leeren Fensters.'
+      ],
+      en: [
+        'No more silent white page: if the app has not started after a few seconds (typically a stale page in the browser cache), a hint with reload instructions is shown instead of an empty window.'
+      ]
+    }
+  },
   {
     version: '1.15.4',
     date: '2026-07-25',

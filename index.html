@@ -18,9 +18,46 @@
       rel="stylesheet"
     />
     <title>EWL 737 Trainer &amp; Examiner Monitoring</title>
+    <!-- Inline on purpose: this styles the fallback below, which is shown
+         precisely when the external stylesheet did not load either. -->
+    <style>
+      .boot-note {
+        opacity: 0;
+        animation: bootIn 0s linear 6s forwards;
+        font-family: system-ui, -apple-system, 'Segoe UI', Arial, sans-serif;
+        max-width: 32rem;
+        margin: 16vh auto 0;
+        padding: 0 24px;
+        text-align: center;
+        line-height: 1.55;
+      }
+      .boot-note b { display: block; font-size: 20px; letter-spacing: 1px; color: #af1e65; }
+      .boot-note p { font-size: 15px; color: #333; }
+      .boot-note code { background: #f1f1f1; padding: 1px 5px; border-radius: 4px; }
+      @keyframes bootIn { to { opacity: 1; } }
+    </style>
   </head>
   <body>
-    <div id="root"></div>
+    <!--
+      The fallback inside #root only becomes visible if the app has NOT mounted
+      after 6 seconds – React replaces these nodes as soon as it renders. Without
+      it a failed asset load (e.g. an index.html still cached from an older
+      deployment, pointing at files that no longer exist) leaves a silent white
+      page with no hint at all about what to do.
+    -->
+    <div id="root">
+      <div class="boot-note">
+        <b>737 TRAINER</b>
+        <p>
+          Die App konnte nicht geladen werden – meist eine veraltete Seite im Browser-Cache.<br />
+          Bitte neu laden und dabei den Cache umgehen: <code>Strg/Cmd + Shift + R</code>.
+        </p>
+        <p lang="en">
+          The app failed to load – usually a stale page in the browser cache.<br />
+          Please reload bypassing the cache: <code>Ctrl/Cmd + Shift + R</code>.
+        </p>
+      </div>
+    </div>
     <script type="module" src="/src/main.jsx"></script>
   </body>
 </html>

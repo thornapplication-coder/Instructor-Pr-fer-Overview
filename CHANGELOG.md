@@ -11,6 +11,16 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.15.5] – 2026-07-25
+
+- **Keine stumme weiße Seite mehr.** Lädt die App nicht (z. B. weil der Browser
+  noch eine `index.html` aus einem älteren Deployment im Cache hat, die auf
+  inzwischen gelöschte Dateien zeigt), erschien bisher ein leeres weißes
+  Fenster ohne jeden Hinweis. Jetzt blendet sich nach 6 Sekunden ein Hinweis
+  mit der Neulade-Anleitung ein — bewusst mit eingebettetem CSS, damit er auch
+  dann erscheint, wenn ebenfalls das Stylesheet nicht geladen wurde. Startet
+  die App normal, ist der Hinweis nie zu sehen.
+
 ## [1.15.4] – 2026-07-25
 
 - **App war online nicht erreichbar.** Das Repository wurde von `TESTREPO` auf
