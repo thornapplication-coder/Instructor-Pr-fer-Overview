@@ -370,14 +370,12 @@ async function exportDashboardPdf(data, t, lang, opts) {
   table(ctx, {
     section: t('section_overview'),
     head: [t('category'), t('count')],
-    // Mirrors the on-screen summary band: heads and FTE only. The per-qual,
-    // Captain/FO and active rows that used to sit here repeat in the tables
-    // right below (byQual, chart_role), same as the tiles they came from.
-    // fteActive, and labelled: hc.fte counts the retirees too, so this row
-    // used to print a bigger total than the very same band on screen.
+    // Mirrors the on-screen summary band: heads and FTE only. The per-qual and
+    // Captain/FO rows that used to sit here repeat in the tables right below
+    // (byQual, chart_role), same as the tiles they came from.
     body: [
       [t('kpi_totalTrainers'), String(hc.total)],
-      ['FTE ' + t('total') + ' (' + t('fteExclRetired') + ')', formatFte1(hc.fteActive, lang)]
+      ['FTE ' + t('total'), formatFte1(hc.fte, lang)]
     ],
     columnStyles: { 1: { halign: 'right', cellWidth: 80 } }
   })
@@ -427,7 +425,7 @@ async function exportConversionPdf(data, t, lang, opts) {
   const firstId = firstStageId(stages)
   // Conversion covers SEN / TRE / TRI / LTC only (no SFI / TKI).
   const convPool = conversionTrainers(data.trainers)
-  const visible = convPool.filter((x) => x.ore !== 'Rente')
+  const visible = convPool
   const fte = conversionFteSummary(convPool, stages)
   table(ctx, {
     section: t('conversion_title'),

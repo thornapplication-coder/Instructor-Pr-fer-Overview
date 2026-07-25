@@ -108,7 +108,7 @@ export default function Planning() {
         </select>
         <select className="input" value={fOre} onChange={(e) => setFOre(e.target.value)}>
           <option value="">{t('filterOre')}: {t('all')}</option>
-          {['A', 'B', 'C', 'Rente'].map((o) => <option key={o} value={o}>{o}</option>)}
+          {['A', 'B', 'C'].map((o) => <option key={o} value={o}>{o}</option>)}
         </select>
         <span className="count-pill">{rows.length} / {trainers.length} {t('showing')}</span>
         {anyFilter && (

@@ -115,6 +115,7 @@ function freshData(lang = 'de') {
     _provStatus2: true,
     _qualMerge: true,
     _roleSeed: true,
+    _oreNoRente: true,
     updatedAt: at
   }, at)
 }
@@ -197,6 +198,7 @@ function normalize(obj) {
     _provStatus2: obj._provStatus2 === true,
     _qualMerge: obj._qualMerge === true,
     _roleSeed: obj._roleSeed === true,
+    _oreNoRente: obj._oreNoRente === true,
     updatedAt: obj.updatedAt || nowIso()
   }
   // One-time: merge newly shipped default courses (e.g. "SIM only") into stored
@@ -231,6 +233,14 @@ function normalize(obj) {
       FO.has((t.tlc || '').toLowerCase()) || FO.has((t.id || '').toLowerCase()) ? { ...t, role: 'fo' } : t
     )
     result._roleSeed = true
+  }
+  // One-time: the "Rente" ORE tier is gone. Anyone still carrying it keeps
+  // their record and simply loses the marker – deleting the people would throw
+  // away a roster entry nobody asked to remove. Their FTE now counts towards
+  // capacity like everyone else's, which is the whole point of dropping it.
+  if (!result._oreNoRente) {
+    result.trainers = result.trainers.map((t) => ((t.ore || '') === 'Rente' ? { ...t, ore: '' } : t))
+    result._oreNoRente = true
   }
   // One-time: move the stored category colours onto the documented palette.
   // Only entries still carrying their OLD shipped default are touched, so a

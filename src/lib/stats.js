@@ -22,7 +22,7 @@ function stageResolver(stages) {
 
 const QUAL_ORDER = ['SEN', 'TRE', 'TRI', 'LTC', 'SFI', 'TKI']
 export const BASE_ORDER = ['PMI', 'VIE', 'SZG', 'PRG', 'ARN']
-const ORE_ORDER = ['A', 'B', 'C', 'Rente']
+const ORE_ORDER = ['A', 'B', 'C']
 
 function tally(items, keyFn) {
   const m = new Map()
@@ -108,14 +108,16 @@ export function conversionSummary(trainers, stages) {
 //
 // WHAT AN FTE IS HERE: the sum of the per-person FTE field. That field defaults
 // to the part-time workload – full time 1.0, 90 % 0.9, 80 % 0.8, 75 % 0.75,
-// 60 % 0.6 … – and can be overridden per person in the trainer dialog. 48
-// people at various part-time levels are therefore "42.85 FTE", not 48.
+// 60 % 0.6 … – and can be overridden per person in the trainer dialog. 50
+// people at various part-time levels are therefore "44.65 FTE", not 50.
+//
+// There is exactly ONE population now: everybody on the list. The "Rente" ORE
+// tier that used to be excluded from every capacity figure no longer exists.
 //
 // WHY IT IS COUNTED IN HUNDREDTHS: adding those values as floating point does
-// not commute. The current data sums to exactly 42.85; added base by base it
-// comes out as 42.85, added person by person as 42.849999999999994 – which then
-// round to 42.9 and 42.8. The app did both in different places, so the same
-// people showed two different totals. Whole hundredths remove the question.
+// not commute. Added group by group the data can come out a hair below a .x5
+// boundary and round the other way, so the same people showed two different
+// totals depending on which card you read. Whole hundredths remove the question.
 export const fteOf = (t) => (typeof t?.fte === 'number' ? t.fte : 1)
 const cents = (t) => Math.round(fteOf(t) * 100)
 
@@ -146,7 +148,6 @@ export function conversionFteSummary(trainers, stages) {
   let released = 0
   let notStarted = 0
   for (const t of trainers) {
-    if ((t.ore || '') === 'Rente') continue // retirees are not deployable capacity
     const f = cents(t)
     total += f
     const stage = stageOf(t)
@@ -188,7 +189,6 @@ function capacityBy(trainers, keyFn, aircraftList, order, stages, seedKeys) {
   }
   for (const k of seedKeys || []) get(k)
   for (const t of trainers) {
-    if ((t.ore || '') === 'Rente') continue // retirees are not deployable capacity
     const fte = cents(t)
     const row = get(keyFn(t))
     row.total += fte
@@ -311,9 +311,12 @@ export function providerUtilization(trainers, providers, steps) {
 
 // Head-count style KPIs. Qualification tiles follow the canonical rank
 // SEN · TRE · TRI · LTC · SFI · TKI; each person counts once (no double-count).
+// There is no `active` / `fteActive` counterpart any more: they existed only to
+// leave the "Rente" tier out, and with that tier gone they were the identical
+// number under a second name – which is precisely the ambiguity this file has
+// spent two releases removing.
 export function headcount(trainers) {
   const EXAMINER = new Set(['SEN', 'TRE'])
-  let active = 0
   let examiners = 0
   let tri = 0
   let ltc = 0
@@ -321,9 +324,7 @@ export function headcount(trainers) {
   let captains = 0
   let firstOfficers = 0
   let fte = 0
-  let fteActive = 0
   for (const t of trainers) {
-    if (t.ore !== 'Rente') { active++; fteActive += cents(t) }
     if (EXAMINER.has(t.qual) || String(t.qual).startsWith('TRE')) examiners++
     else if (t.qual === 'TRI') tri++
     else if (t.qual === 'LTC') ltc++
@@ -335,15 +336,13 @@ export function headcount(trainers) {
   }
   return {
     total: trainers.length,
-    active,
     examiners,
     tri,
     ltc,
     sfiTki,
     captains,
     firstOfficers,
-    fte: round1c(fte),
-    fteActive: round1c(fteActive)
+    fte: round1c(fte)
   }
 }
 

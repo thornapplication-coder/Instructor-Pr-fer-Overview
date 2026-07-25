@@ -11,6 +11,32 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.23.0] – 2026-07-25
+
+- **Die ORE-Stufe „Rente" ist entfernt.** Aus den Auswahlfeldern (Trainer,
+  Planung), aus der Sortierreihenfolge, aus dem ORE-Ring auf dem Dashboard und
+  aus jeder Stelle, die vorher danach gefiltert hat: Kapazitäts-Tabellen,
+  FTE-Summen, Umschulungs-Board, Zeitachse, Warnungen und PDF-Export.
+- **Niemand wird gelöscht.** Eine Migration (`_oreNoRente`) nimmt Personen, die
+  die Stufe noch tragen, nur die Markierung ab — der Datensatz bleibt. Einen
+  Roster-Eintrag zu entfernen hat niemand verlangt, und „die Stufe gibt es
+  nicht mehr" heißt nicht „die Person ist weg".
+- **Die FTE-Gesamtzahl steigt von 42,9 auf 44,7.** Das ist kein Rechenfehler:
+  es sind exakt die zwei Personen, deren Kapazität vorher überall
+  herausgerechnet wurde. Wo bisher 48 Köpfe zählten, sind es jetzt 50.
+- **Alle „ohne Rente"-Zusätze sind weg**, weil es nichts mehr auszuklammern
+  gibt. Damit verschwindet auch `headcount().active` / `.fteActive`: ohne die
+  Stufe wären das dieselben Zahlen wie `total` / `fte` unter zweitem Namen —
+  genau die Doppeldeutigkeit, die 1.19.4 mühsam beseitigt hat. Der Test prüft
+  jetzt ausdrücklich, dass es diese zweite Population **nicht** mehr gibt,
+  damit ein übersehener Aufrufer nicht still `undefined` anzeigt.
+- Das Übersichts-Band trägt wieder zwei Zahlen: **Köpfe** und **FTE**.
+
+**Nicht angefasst:** freie Notizen wie „Rente 2027" im Bemerkungsfeld. Das ist
+selbst geschriebener Text mit echter Information (wann jemand ausscheidet) —
+den löscht die App nicht ungefragt. Bei Bedarf lässt er sich je Person im
+Trainer-Dialog entfernen.
+
 ## [1.22.1] – 2026-07-25
 
 - **Termine lassen sich wieder löschen.** Ein einmal gesetzter Zieltermin war

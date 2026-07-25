@@ -26,7 +26,9 @@ const trainers = SEED_TRAINERS.map((t) => ({
   qual: normalizeQual(t.qual),
   fte: typeof t.fte === 'number' ? t.fte : fteFromPartTime(t.partTime)
 }))
-const active = trainers.filter((t) => (t.ore || '') !== 'Rente')
+// One population: the whole roster. The "Rente" ORE tier that every capacity
+// figure used to exclude no longer exists, so there is nothing to filter out.
+const active = trainers
 
 // The app shows one decimal. Rounding it has to happen on whole hundredths,
 // never on a float that may sit a hair below the .x5 boundary.
@@ -43,10 +45,10 @@ console.log('\nFTE – one population, one number')
   ok(base.totals.total === want, `grouped by base equals the direct sum (${base.totals.total} vs ${want})`)
   ok(ac.totals.total === want, `grouped by aircraft equals it too (${ac.totals.total})`)
   ok(qual.totals.total === want, `grouped by qualification equals it too (${qual.totals.total})`)
-  ok(headcount(trainers).fteActive === want, `the dashboard tile equals it too (${headcount(trainers).fteActive})`)
+  ok(headcount(trainers).fte === want, `the dashboard tile equals it too (${headcount(trainers).fte})`)
 
   // The exact sum must be a whole number of hundredths – that is what makes the
-  // rounding decision reproducible. 42.849999999999994 is not.
+  // rounding decision reproducible. 44.649999999999999 is not.
   ok(Math.abs(direct * 100 - Math.round(direct * 100)) < 1e-9,
     `the exact sum is whole hundredths (${direct})`)
 }
@@ -105,14 +107,18 @@ console.log('\nFTE – the scopes are what they claim to be')
 {
   const hc = headcount(trainers)
   const all = sumFte(trainers)
-  ok(hc.fte === shown(all), `"all people" includes the retirees (${hc.fte})`)
-  ok(hc.fteActive < hc.fte, `"excluding retirees" is genuinely smaller (${hc.fteActive} < ${hc.fte})`)
+  ok(hc.fte === shown(all), `the headline FTE is the whole roster (${hc.fte})`)
+  // The old "excluding retirees" variant is gone with the tier itself. Assert
+  // it is really gone rather than silently equal, or a stale caller reading
+  // hc.fteActive would get undefined and print "NaN" on a card.
+  ok(hc.fteActive === undefined && hc.active === undefined,
+    'there is no second "active" population hiding behind another name')
 
   // The conversion figures cover SEN/TRE/TRI/LTC only, so they can never exceed
   // the overall total – that difference is a scope, not a discrepancy. (With
   // today's data every trainer holds a conversion qual, so the two are equal.)
   const conv = conversionFteSummary(conversionTrainers(active), stages)
-  ok(conv.total <= hc.fteActive, `the conversion scope is a subset (${conv.total} <= ${hc.fteActive})`)
+  ok(conv.total <= hc.fte, `the conversion scope is a subset (${conv.total} <= ${hc.fte})`)
   ok(Math.round((conv.inConversion + conv.available) * 100) / 100 === conv.total,
     `in conversion + available = total (${conv.inConversion} + ${conv.available} = ${conv.total})`)
 }

@@ -11,10 +11,10 @@ import { useThemed } from '../lib/useThemed.js'
 import { qualIndex, qualLabel } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 
-const ORE_RANK = { A: 0, B: 1, C: 2, Rente: 3 }
+const ORE_RANK = { A: 0, B: 1, C: 2 }
 const alpha = (arr) => [...arr].sort((a, b) => String(a).localeCompare(String(b)))
 
-const ORES = ['A', 'B', 'C', 'Rente', '']
+const ORES = ['A', 'B', 'C', '']
 
 // Cockpit role: everyone is a Captain unless explicitly marked First Officer.
 const roleOf = (x) => (x.role === 'fo' ? 'fo' : 'captain')
@@ -172,7 +172,7 @@ export default function Trainers() {
         </select>
         <select className="input" value={fOre} onChange={(e) => setFOre(e.target.value)}>
           <option value="">{t('filterOre')}: {t('all')}</option>
-          {['A', 'B', 'C', 'Rente'].map((o) => (
+          {['A', 'B', 'C'].map((o) => (
             <option key={o} value={o}>{o}</option>
           ))}
         </select>
@@ -394,7 +394,7 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
         <Field label={t('f_ore')}>
           <select className="input" value={f.ore} onChange={(e) => set('ore', e.target.value)}>
             <option value=""></option>
-            {['A', 'B', 'C', 'Rente'].map((o) => <option key={o} value={o}>{o}</option>)}
+            {['A', 'B', 'C'].map((o) => <option key={o} value={o}>{o}</option>)}
           </select>
         </Field>
         <Field label={t('f_staffType')}>

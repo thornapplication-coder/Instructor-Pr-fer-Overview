@@ -94,25 +94,31 @@ mindestens eine Person — keine feste Zahl, die bei kleinen und großen Zielen
 gleichermaßen falsch wäre. Statusfarben sind hier korrekt: es *ist* ein Status,
 verboten sind sie nur als Serien-/Kategoriefarbe.
 
-**FTE wird in Hundertsteln gerechnet, gerundet wird genau einmal.** Der Bestand
-ergibt exakt 42,85 und liegt damit auf der Rundungsgrenze: Person für Person
-addiert kommt Fließkomma auf 42,8499…, Base für Base auf 42,85 — 42,8 gegen
-42,9. Deshalb `sumFte()`/`cents()`/`round1c()` in `stats.js`, und Gesamtsummen
-**immer** aus den Rohwerten, nie durch Aufaddieren schon gerundeter Zeilen (das
-war die 43 in der Legende von „Köpfe vs. FTE je Base"; `NestedBars` nimmt jetzt
-`totals` entgegen). Jede FTE-Zahl auf dem Bildschirm läuft durch
-`formatFte1(v, lang)` — roh ausgegeben stand im PDF „38.9" neben „38,9".
+**FTE wird in Hundertsteln gerechnet, gerundet wird genau einmal.** Gruppenweise
+addiert kann Fließkomma knapp unter einer .x5-Grenze landen und andersherum
+runden als Person für Person — dieselben Leute standen dadurch auf zwei Kacheln
+mit verschiedenen Summen. Deshalb `sumFte()`/`cents()`/`round1c()` in
+`stats.js`, und Gesamtsummen **immer** aus den Rohwerten, nie durch Aufaddieren
+schon gerundeter Zeilen (das war die 43 in der Legende von „Köpfe vs. FTE je
+Base"; `NestedBars` nimmt jetzt `totals` entgegen). Jede FTE-Zahl auf dem
+Bildschirm läuft durch `formatFte1(v, lang)` — roh ausgegeben stand im PDF
+„38.9" neben „38,9".
 
-**„FTE" ist ohne Bezugsgruppe mehrdeutig.** Drei Kreise: alle Personen
-(`headcount().fte`), alle ohne Rente (`headcount().fteActive` — das ist der
-Normalfall, alle Kapazitätszahlen lassen die Rente außen vor) und der
-Umschulungs-Pool (`conversionTrainers()`, SEN/TRE/TRI/LTC). Jede angezeigte
-Zahl muss dazuschreiben, welchen Kreis sie meint (`fteExclRetired`,
-`fteConvScope`), sonst liest sich der Größenunterschied als Fehler.
+**„FTE" ist ohne Bezugsgruppe mehrdeutig.** Noch zwei Kreise: alle Personen
+(`headcount().fte`) und der Umschulungs-Pool (`conversionTrainers()`,
+SEN/TRE/TRI/LTC, `fteConvScope`). Die dritte Gruppe („ohne Rente") ist mit der
+ORE-Stufe entfallen — **kein** `active`/`fteActive` wieder einführen, das wären
+dieselben Zahlen unter zweitem Namen.
+
+**Die ORE-Stufe „Rente" gibt es nicht mehr** (1.23.0). Nichts filtert mehr
+danach; wer sie noch trug, hat sie per `_oreNoRente` verloren, ohne dass der
+Datensatz angefasst wurde. Freitext-Bemerkungen wie „Rente 2027" bleiben
+bewusst stehen — das ist selbst geschriebene Information.
 
 **Migrationen sind durch ein Flag abgesichert** (`_provSeeded`, `_courseSeed2`,
-`_provStatus2`, `_qualMerge`, `_roleSeed`, `_palette3`) und fassen nur an, was
-noch den alten Standardwert trägt — selbst gewählte Werte bleiben.
+`_provStatus2`, `_qualMerge`, `_roleSeed`, `_palette3`, `_oreNoRente`) und
+fassen nur an, was noch den alten Standardwert trägt — selbst gewählte Werte
+bleiben.
 
 **`vite.config.js` leitet den Basispfad aus `GITHUB_REPOSITORY` ab.** Nicht
 wieder fest verdrahten: eine Umbenennung des Repositories hat die App schon

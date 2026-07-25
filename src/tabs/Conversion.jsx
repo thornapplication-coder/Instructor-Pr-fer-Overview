@@ -45,7 +45,6 @@ export default function Conversion() {
   const needle = q.trim().toLowerCase()
   const visible = convPool.filter(
     (x) =>
-      x.ore !== 'Rente' &&
       (fBase ? x.base === fBase : true) &&
       (fOre ? x.ore === fOre : true) &&
       (fQual ? x.qual === fQual : true) &&

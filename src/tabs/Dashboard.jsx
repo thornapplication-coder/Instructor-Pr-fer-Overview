@@ -24,14 +24,14 @@ import {
 import { conversionProgress, STAFF_TYPE } from '../data/pipeline.js'
 import { qualLabel, conversionTrainers } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
-import { CATEGORICAL, MEASURE_WHOLE, MEASURE_PART, OVERFLOW, STATUS, BRAND, stageRamp } from '../lib/palette.js'
+import { CATEGORICAL, MEASURE_WHOLE, MEASURE_PART, STATUS, BRAND, stageRamp } from '../lib/palette.js'
 import { formatFte1 } from '../lib/format.js'
 
 // ORE is a priority tier (A before B before C), so it reads as an ordinal ramp –
-// darker means more urgent – with retirement dropping out to the neutral.
+// darker means more urgent.
 // Everything else here is identity and takes documented categorical slots.
 const ORE_RAMP = stageRamp(3)
-const ORE_COLORS = { A: ORE_RAMP[2], B: ORE_RAMP[1], C: ORE_RAMP[0], Rente: OVERFLOW }
+const ORE_COLORS = { A: ORE_RAMP[2], B: ORE_RAMP[1], C: ORE_RAMP[0] }
 const AC_COLORS = { A320: CATEGORICAL[0], B737: CATEGORICAL[1] }
 // Slot 4 rather than slot 2: the role tag sits right next to the aircraft tag on
 // a conversion card, and two identical blues there would read as one thing.
@@ -182,30 +182,24 @@ export default function Dashboard() {
   }
 
   const pipe = pipelineDistribution(convPool, stages)
-  const relevant = convPool.filter((tr) => tr.ore !== 'Rente')
   const overall =
-    relevant.length === 0 ? 0 : relevant.reduce((s, tr) => s + conversionProgress(stages, tr.conv), 0) / relevant.length
+    convPool.length === 0 ? 0 : convPool.reduce((s, tr) => s + conversionProgress(stages, tr.conv), 0) / convPool.length
 
   // ---- Overview (Instruktoren & Prüfer) — one summary band instead of a tile
-  // per number. The per-qualification, Captain/FO and active counts all repeat
-  // in the charts right below, so the tiles said everything twice; only these
-  // two figures exist nowhere else on the page.
-  // fteActive, not fte: every other FTE figure in the app leaves the retirees
-  // out, and a band that quietly included them was the reason the same people
-  // appeared as 44.6 here and 42.9 two cards further down.
+  // per number. The per-qualification and Captain/FO counts all repeat in the
+  // charts right below, so the tiles said everything twice; only these two
+  // figures exist nowhere else on the page.
+  // There is no "excluding X" variant any more: with the Rente tier gone, the
+  // roster is one population and FTE is one number.
   const ovHero = (
     <div className="kpi kpi-hero">
       <div className="kpi-hero-metric">
         <div className="kpi-value">{hc.total}</div>
         <div className="kpi-label">{t('kpi_totalTrainers')}</div>
       </div>
-      <div className="kpi-hero-metric">
-        <div className="kpi-value">{hc.active}</div>
-        <div className="kpi-label">{t('kpi_active')}</div>
-      </div>
       <div className="kpi-hero-metric kpi-hero-fte">
-        <div className="kpi-value">{fte1(hc.fteActive)}</div>
-        <div className="kpi-label">FTE ({t('fteExclRetired')})</div>
+        <div className="kpi-value">{fte1(hc.fte)}</div>
+        <div className="kpi-label">FTE</div>
       </div>
     </div>
   )

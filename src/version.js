@@ -4,12 +4,31 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.22.1'
+export const APP_VERSION = '1.23.0'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.23.0',
+    date: '2026-07-25',
+    type: 'minor',
+    changes: {
+      de: [
+        '„Rente" ist als ORE-Stufe komplett entfernt – aus den Auswahlfeldern in Trainer und Planung, aus der Sortierung, aus dem ORE-Diagramm und aus jeder Filterung.',
+        'Niemand wird gelöscht: wer die Stufe noch trug, behält seinen Datensatz und verliert nur die Markierung. Beim ersten Start passiert das automatisch, auf jedem Gerät.',
+        'Damit zählen alle 50 Personen zur Kapazität. Die FTE-Gesamtzahl steigt von 42,9 auf 44,7 – das ist kein Rechenfehler, sondern genau die Kapazität, die vorher ausgeklammert war. Auch Umschulungs-Board, Zeitachse, Warnungen und PDF lassen jetzt niemanden mehr aus.',
+        'Alle Zusätze „ohne Rente" sind weg, weil es nichts mehr auszuklammern gibt. Im Übersichts-Band stehen wieder zwei Zahlen: Köpfe und FTE – die dritte („Aktiv ohne Rente") wäre jetzt dieselbe Zahl unter anderem Namen.'
+      ],
+      en: [
+        '"Rente" (retirement) is gone as an ORE tier – from the dropdowns in Trainers and Planning, from sorting, from the ORE chart and from every filter.',
+        'Nobody is deleted: anyone still carrying the tier keeps their record and simply loses the marker. This happens automatically on first start, on every device.',
+        'All 50 people therefore count towards capacity. The total FTE rises from 42.9 to 44.7 – not an arithmetic error but exactly the capacity that used to be left out. The conversion board, timeline, alerts and PDF no longer skip anybody either.',
+        'Every "excl. retirees" qualifier is gone, because there is nothing left to exclude. The summary band is back to two figures, heads and FTE – the third ("Active excl. retirees") would now be the same number under a different name.'
+      ]
+    }
+  },
   {
     version: '1.22.1',
     date: '2026-07-25',

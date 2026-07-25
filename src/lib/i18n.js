@@ -63,12 +63,11 @@ const DICT = {
     en: 'No target dates yet. As soon as you set conversion target dates, they show up here on the timeline.'
   },
   cap_head: { de: 'Köpfe', en: 'Head' },
-  fteExclRetired: { de: 'ohne Rente', en: 'excl. retirees' },
   // Shown wherever an FTE figure appears, because "FTE" alone was ambiguous:
-  // three places used it for three different groups of people.
+  // two places still use it for two different groups of people.
   fteDefinition: {
-    de: 'FTE = Summe der Personen-FTE (Vollzeit 1,0 · 90 % 0,9 · 80 % 0,8 · 75 % 0,75 …), je Person im Trainer-Dialog überschreibbar. Alle FTE-Zahlen lassen die Rente außen vor. „In Umschulung" zählt zusätzlich nur SEN, TRE, TRI und LTC.',
-    en: 'FTE = the sum of the per-person FTE (full time 1.0 · 90% 0.9 · 80% 0.8 · 75% 0.75 …), overridable per person in the trainer dialog. Every FTE figure excludes retirees. "In conversion" additionally counts SEN, TRE, TRI and LTC only.'
+    de: 'FTE = Summe der Personen-FTE (Vollzeit 1,0 · 90 % 0,9 · 80 % 0,8 · 75 % 0,75 …), je Person im Trainer-Dialog überschreibbar. „In Umschulung" zählt nur SEN, TRE, TRI und LTC.',
+    en: 'FTE = the sum of the per-person FTE (full time 1.0 · 90% 0.9 · 80% 0.8 · 75% 0.75 …), overridable per person in the trainer dialog. "In conversion" counts SEN, TRE, TRI and LTC only.'
   },
   cap_total: { de: 'FTE gesamt', en: 'FTE total' },
   cap_inConv: { de: 'in Umschulung', en: 'in conversion' },
@@ -76,7 +75,6 @@ const DICT = {
 
   // ---- overview / KPIs
   kpi_totalTrainers: { de: 'Trainer & Prüfer', en: 'Trainers & Examiners' },
-  kpi_active: { de: 'Aktiv (ohne Rente)', en: 'Active (excl. retirees)' },
   kpi_released: { de: 'Auf 737 freigegeben', en: 'Released on 737' },
   kpi_inProgress: { de: 'In Umschulung', en: 'In conversion' },
   kpi_notStarted: { de: 'Noch nicht gestartet', en: 'Not started yet' },

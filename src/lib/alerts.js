@@ -23,11 +23,10 @@ function startOfDay(d) {
 // Returns { level: 'overdue' | 'risk' | null, reasons: string[], days: number|null }
 // - overdue (red): blocked, or a target date already in the past (not released)
 // - risk (amber): at risk, or a target coming up within SOON_DAYS
-// Retiring people and already-released people never raise a flag.
+// Already-released people never raise a flag.
 export function trainerAlerts(trainer, today, stages) {
   const now = startOfDay(today || new Date())
   const empty = { level: null, reasons: [], days: null }
-  if ((trainer.ore || '') === 'Rente') return empty
   const stage = trainer.conv?.stage || firstStageId(stages)
   if (stage === releasedStageId(stages)) return empty
 
@@ -73,7 +72,6 @@ export function targetsByMonth(trainers, today, stages) {
   const firstId = firstStageId(stages)
   const map = new Map()
   for (const t of trainers) {
-    if ((t.ore || '') === 'Rente') continue // retirees never appear on the timeline
     const stage = t.conv?.stage || firstId
     if (stage === releasedId) continue
     const d = parseISO(t.conv?.target)

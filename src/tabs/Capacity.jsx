@@ -90,7 +90,6 @@ function ConversionEditor({ trainers, stages, quals }) {
   const rows = useMemo(() => {
     const n = q.trim().toLowerCase()
     return trainers
-      .filter((x) => x.ore !== 'Rente')
       .filter((x) => (fBase ? x.base === fBase : true))
       .filter((x) => (hideDone ? (x.conv?.stage || firstId) !== releasedId : true))
       .filter((x) => (n ? [x.name, x.tlc, x.base, qualLabel(quals, x.qual)].join(' ').toLowerCase().includes(n) : true))
@@ -184,7 +183,7 @@ function PlanEditor() {
   const rows = useMemo(() => planSeries(data.plan), [data.plan])
   const [month, setMonth] = useState('')
   const [count, setCount] = useState('')
-  const pool = useMemo(() => conversionTrainers(data.trainers).filter((x) => x.ore !== 'Rente').length, [data.trainers])
+  const pool = useMemo(() => conversionTrainers(data.trainers).length, [data.trainers])
 
   const add = () => {
     const n = Number(count)

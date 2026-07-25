@@ -2,13 +2,13 @@
 //
 // The complaint that started this: the same people showed up as 43.3 here and
 // something else there. Two causes, both guarded below.
-//   1. Float addition does not commute. The data sums to exactly 42.85, and
-//      adding it person by person landed on 42.849999999999994 – so one card
-//      rounded to 42.8 and the next to 42.9. `npm test` pins the arithmetic;
-//      this pins that every card on screen really shows the same result.
-//   2. Three different populations were all labelled just "FTE": everyone,
-//      everyone except the retirees, and the conversion pool. That is a scope,
-//      not an error – but only if the screen says which one it means.
+//   1. Float addition does not commute, so a group-by-group sum could land a
+//      hair below a .x5 boundary and round the other way from a person-by-person
+//      one. `npm test` pins the arithmetic; this pins that every card on screen
+//      really shows the same result.
+//   2. Different populations were all labelled just "FTE". Since the "Rente"
+//      tier was dropped, only two remain – the whole roster and the conversion
+//      pool – and the screen has to say which one it means.
 import { reporter } from './harness.mjs'
 
 // First number in the string. Not a strip-everything-else regex: "(Umschulungs-
@@ -29,13 +29,14 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForTimeout(600)
 
   // ---- 1. the overall total reads the same on every card --------------------
-  // The summary band: "53 Trainer & Prüfer | 42,9 FTE (ohne Rente)".
+  // The summary band: "50 Trainer & Prüfer | 44,7 FTE".
   const hero = page.locator('.kpi-hero').first()
   const heroText = await hero.innerText()
   const tileFte = num(await hero.locator('.kpi-hero-fte .kpi-value').innerText())
   ok(tileFte > 0, 'the summary band carries an FTE figure (' + tileFte + ')')
-  ok(/ohne Rente/i.test(heroText), 'and it names its scope, so it cannot be mistaken for another total')
   ok(/Trainer & Prüfer/.test(heroText), 'and it still shows the headcount next to it')
+  // The "Rente" tier is gone, so no figure may claim to exclude anybody.
+  ok(!/ohne Rente|excl\. retir/i.test(heroText), 'and it no longer claims to exclude a group that does not exist')
 
   // The two nested-bar cards: their legend total is the same population.
   const legendFte = async (title) => {
