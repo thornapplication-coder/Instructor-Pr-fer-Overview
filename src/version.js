@@ -4,12 +4,27 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.15.2'
+export const APP_VERSION = '1.15.3'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.15.3',
+    date: '2026-07-25',
+    type: 'patch',
+    changes: {
+      de: [
+        'Anmelden verständlicher: oben wird jetzt klar zwischen „Anmelden" und „Neu registrieren" gewählt, darunter gibt es nur noch einen Button. Vorher standen zwei ähnliche Knöpfe nebeneinander und man landete beim ersten Mal leicht im falschen.',
+        'Klartext statt Supabase-Englisch: „Invalid login credentials" heißt jetzt „Konto existiert noch nicht – bitte registrieren", und die App schaltet gleich richtig um. Ebenso für nicht bestätigte E-Mail, deaktivierte Registrierung, zu kurzes Passwort und fehlende Internetverbindung.'
+      ],
+      en: [
+        'Clearer sign-in: an explicit “Sign in” / “Create account” choice at the top and a single button below. Two similar-looking buttons made it easy to pick the wrong one on first use.',
+        'Plain language instead of raw Supabase errors: “Invalid login credentials” now reads “that account does not exist yet – please register”, and the form switches over for you. Same for unconfirmed email, disabled sign-ups, short passwords and no connection.'
+      ]
+    }
+  },
   {
     version: '1.15.2',
     date: '2026-07-25',

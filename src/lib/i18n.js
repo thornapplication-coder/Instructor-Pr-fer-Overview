@@ -129,9 +129,43 @@ const DICT = {
   sync_pending: { de: 'Änderungen noch nicht übertragen', en: 'changes not pushed yet' },
   sync_now: { de: 'Jetzt synchronisieren', en: 'Sync now' },
   sync_signIn: { de: 'Anmelden', en: 'Sign in' },
-  sync_signUp: { de: 'Registrieren', en: 'Sign up' },
   sync_signOut: { de: 'Abmelden', en: 'Sign out' },
   sync_password: { de: 'Passwort', en: 'Password' },
+  sync_mode: { de: 'Anmelden oder Konto anlegen', en: 'Sign in or create account' },
+  sync_signUp: { de: 'Neu registrieren', en: 'Create account' },
+  sync_createAccount: { de: 'Konto anlegen', en: 'Create account' },
+  sync_signUpHint: {
+    de: 'Beim ersten Mal: E-Mail und ein selbst gewähltes Passwort eintragen – das Konto wird damit neu angelegt.',
+    en: 'First time: enter an email and a password of your choice – this creates the account.'
+  },
+  sync_errNoAccount: {
+    de: 'E-Mail oder Passwort stimmen nicht – oder es gibt dieses Konto noch nicht. Ich habe oben auf „Neu registrieren" umgeschaltet: einfach nochmal auf „Konto anlegen" tippen.',
+    en: 'Wrong email/password – or the account does not exist yet. Switched to “Create account” above: just press it again.'
+  },
+  sync_errNotConfirmed: {
+    de: 'Das Konto muss noch per E-Mail bestätigt werden. Entweder den Link in der Mail öffnen – oder in Supabase unter Authentication → Sign In / Providers → Email die Option „Confirm email" ausschalten.',
+    en: 'The account still needs email confirmation. Either open the link in the email – or switch off “Confirm email” in Supabase under Authentication → Sign In / Providers → Email.'
+  },
+  sync_errSignupOff: {
+    de: 'Die Registrierung ist in Supabase deaktiviert. Unter Authentication → Sign In / Providers → Email „Allow new users to sign up" kurz einschalten, Konto anlegen, danach wieder ausschalten.',
+    en: 'Sign-ups are disabled in Supabase. Under Authentication → Sign In / Providers → Email switch “Allow new users to sign up” on, create the account, then switch it off again.'
+  },
+  sync_errExists: {
+    de: 'Dieses Konto gibt es bereits. Ich habe oben auf „Anmelden" umgeschaltet – bitte mit dem passenden Passwort anmelden.',
+    en: 'That account already exists. Switched to “Sign in” above – please sign in with the matching password.'
+  },
+  sync_errPassword: {
+    de: 'Das Passwort ist zu kurz – bitte mindestens 6 Zeichen verwenden.',
+    en: 'Password too short – please use at least 6 characters.'
+  },
+  sync_errEmail: {
+    de: 'Die E-Mail-Adresse hat kein gültiges Format.',
+    en: 'That email address is not a valid format.'
+  },
+  sync_errNetwork: {
+    de: 'Keine Verbindung zur Cloud. Internetverbindung prüfen und erneut versuchen.',
+    en: 'Could not reach the cloud. Check your connection and try again.'
+  },
   sync_signInHint: {
     de: 'Mit E-Mail und Passwort anmelden, um die Daten geräteübergreifend zu synchronisieren.',
     en: 'Sign in with email and password to sync your data across devices.'

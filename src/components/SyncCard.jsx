@@ -10,6 +10,9 @@ export default function SyncCard() {
   const [pw, setPw] = useState('')
   const [busy, setBusy] = useState(false)
   const [msg, setMsg] = useState(null)
+  // Explicit choice instead of two similar-looking buttons: on a brand-new
+  // project "sign in" can only ever fail, which reads as a broken login.
+  const [mode, setMode] = useState('in') // 'in' = sign in, 'up' = create account
 
   if (!sync) return null
 
@@ -28,7 +31,21 @@ export default function SyncCard() {
   const when = lastSyncedAt ? new Date(lastSyncedAt) : null
   const whenStr = when && !isNaN(when) ? when.toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB') : '–'
 
-  const doAuth = async (mode) => {
+  // Supabase reports raw English API errors; translate the ones a user can
+  // actually act on, and say WHAT to do rather than what went wrong.
+  const explain = (e) => {
+    const raw = String(e?.message || '')
+    if (/invalid login credentials/i.test(raw)) return t('sync_errNoAccount')
+    if (/email not confirmed/i.test(raw)) return t('sync_errNotConfirmed')
+    if (/signups? not allowed|signup is disabled/i.test(raw)) return t('sync_errSignupOff')
+    if (/already registered|already exists/i.test(raw)) return t('sync_errExists')
+    if (/password/i.test(raw) && /6|short|least/i.test(raw)) return t('sync_errPassword')
+    if (/unable to validate email|invalid format/i.test(raw)) return t('sync_errEmail')
+    if (/failed to fetch|networkerror|load failed/i.test(raw)) return t('sync_errNetwork')
+    return raw || t('sync_signInErr')
+  }
+
+  const doAuth = async () => {
     setBusy(true)
     setMsg(null)
     try {
@@ -41,7 +58,10 @@ export default function SyncCard() {
       }
       setPw('')
     } catch (e) {
-      setMsg({ ok: false, text: e?.message || t('sync_signInErr') })
+      setMsg({ ok: false, text: explain(e) })
+      // Wrong door: offer the other one straight away.
+      if (mode === 'in' && /invalid login credentials/i.test(String(e?.message || ''))) setMode('up')
+      if (mode === 'up' && /already registered|already exists/i.test(String(e?.message || ''))) setMode('in')
     } finally {
       setBusy(false)
     }
@@ -93,7 +113,23 @@ export default function SyncCard() {
 
       {!user ? (
         <div className="sync-auth">
-          <p className="muted small">{t('sync_signInHint')}</p>
+          <div className="seg-toggle" role="group" aria-label={t('sync_mode')}>
+            <button
+              className={'seg-btn' + (mode === 'in' ? ' active' : '')}
+              aria-pressed={mode === 'in'}
+              onClick={() => { setMode('in'); setMsg(null) }}
+            >
+              {t('sync_signIn')}
+            </button>
+            <button
+              className={'seg-btn' + (mode === 'up' ? ' active' : '')}
+              aria-pressed={mode === 'up'}
+              onClick={() => { setMode('up'); setMsg(null) }}
+            >
+              {t('sync_signUp')}
+            </button>
+          </div>
+          <p className="muted small">{mode === 'up' ? t('sync_signUpHint') : t('sync_signInHint')}</p>
           <div className="form-grid">
             <label className="field">
               <span className="field-label">{t('p_email')}</span>
@@ -113,16 +149,13 @@ export default function SyncCard() {
                 autoComplete="current-password"
                 value={pw}
                 onChange={(e) => setPw(e.target.value)}
-                onKeyDown={(e) => { if (e.key === 'Enter' && email && pw) doAuth('in') }}
+                onKeyDown={(e) => { if (e.key === 'Enter' && email && pw) doAuth() }}
               />
             </label>
           </div>
           <div className="btn-row">
-            <button className="btn btn-primary" disabled={busy || !email || !pw} onClick={() => doAuth('in')}>
-              {t('sync_signIn')}
-            </button>
-            <button className="btn btn-ghost" disabled={busy || !email || !pw} onClick={() => doAuth('up')}>
-              {t('sync_signUp')}
+            <button className="btn btn-primary" disabled={busy || !email || !pw} onClick={doAuth}>
+              {busy ? '…' : mode === 'up' ? t('sync_createAccount') : t('sync_signIn')}
             </button>
           </div>
         </div>

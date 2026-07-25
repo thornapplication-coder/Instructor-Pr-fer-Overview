@@ -11,6 +11,21 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.15.3] – 2026-07-25
+
+- **Anmelde-Dialog verständlicher.** Bisher standen „Anmelden" und
+  „Registrieren" als zwei ähnlich aussehende Knöpfe nebeneinander – beim ersten
+  Start führte „Anmelden" zwangsläufig zu einem Fehler, weil das Konto ja noch
+  gar nicht existierte. Jetzt wird oben explizit zwischen **Anmelden** und
+  **Neu registrieren** umgeschaltet, darunter gibt es genau einen Button.
+- **Fehlermeldungen in Klartext.** Supabase antwortet auf Englisch und wenig
+  hilfreich; die App übersetzt die relevanten Fälle und sagt, was zu tun ist:
+  - „Invalid login credentials" → Konto existiert noch nicht, es wird
+    automatisch auf „Neu registrieren" umgeschaltet
+  - „User already registered" → zurück auf „Anmelden"
+  - E-Mail nicht bestätigt, Registrierung in Supabase deaktiviert, Passwort zu
+    kurz, keine Internetverbindung
+
 ## [1.15.2] – 2026-07-25
 
 Behebungen aus dem Code-Review des Sync-Commits.
