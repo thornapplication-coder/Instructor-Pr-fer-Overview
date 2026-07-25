@@ -156,6 +156,14 @@ Abgeglichen wird beim Start, alle 2 Minuten, beim Zurückwechseln zur App, rund
 2 Sekunden nach jeder Änderung und beim Schließen. Zusammengeführt wird je
 Datensatz; Löschungen hinterlassen einen Grabstein in `_tomb` (180 Tage).
 
+**Registrierung ist zu** (Stand 25.07.2026): „Allow new users to sign up",
+„manual linking" und „anonymous sign-ins" sind in Supabase abgeschaltet,
+„Confirm email" ist an. Der anon-Key ist öffentlich, deshalb ist das die
+eigentliche Absicherung. Folge: **es lässt sich kein neues Konto mehr
+anlegen** — weitere Geräte melden sich mit dem bestehenden Konto an. Ein
+zusätzlicher Benutzer geht nur über das Supabase-Dashboard (*Authentication →
+Users → Add user*) oder indem die Option kurz wieder eingeschaltet wird.
+
 ## Umgebung
 
 Aus dieser Sandbox sind `*.supabase.co` und `*.github.io` durch den Proxy
@@ -165,6 +173,4 @@ ebenfalls gesperrt.
 
 ## Offen
 
-- In Supabase unter *Authentication → Sign In / Providers → Email* die Option
-  „Allow new users to sign up" abschalten, sobald das Konto steht. Der anon-Key
-  ist öffentlich, sonst kann sich jeder registrieren.
+Nichts.
