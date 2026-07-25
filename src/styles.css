@@ -194,8 +194,8 @@ button { font-family: inherit; }
 .hbars { display: flex; flex-direction: column; gap: 10px; }
 .hbar-row { display: grid; grid-template-columns: 90px 1fr 34px; align-items: center; gap: 10px; }
 .hbar-label { font-size: 13px; color: var(--text); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hbar-track { background: var(--panel2); border-radius: 999px; height: 16px; overflow: hidden; }
-.hbar-fill { height: 100%; border-radius: 999px; min-width: 3px; transition: width .3s ease; }
+.hbar-track, .gbar-track { background: var(--panel2); border-radius: 999px; height: 16px; overflow: hidden; }
+.hbar-fill, .gbar-fill { height: 100%; border-radius: 999px; min-width: 3px; transition: width .3s ease; }
 .hbar-val { text-align: right; font-weight: 800; font-size: 13px; color: var(--ink); }
 
 /* Stacked variant: segments sit side by side inside one track. */
@@ -211,8 +211,9 @@ button { font-family: inherit; }
 .gbar-row { display: grid; grid-template-columns: 90px 1fr; align-items: center; gap: 10px; }
 .gbar-group { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
 .gbar-line { display: grid; grid-template-columns: 1fr 42px; align-items: center; gap: 8px; }
-.gbar-track { background: var(--panel2); border-radius: 999px; height: 9px; overflow: hidden; }
-.gbar-fill { height: 100%; border-radius: 999px; min-width: 3px; transition: width .3s ease; }
+/* Same track and fill as .hbar-*, only thinner: two of them share a row, so a
+   16px bar would make the pair read as one block. */
+.gbar-track { height: 9px; }
 .gbar-val { text-align: right; font-weight: 800; font-size: 12px; color: var(--ink); }
 .stacked-legend { margin-top: 4px; }
 

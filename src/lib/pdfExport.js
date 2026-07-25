@@ -99,7 +99,14 @@ function table(ctx, { section, head, body, foot, columnStyles }) {
 // header. Returns true on success, false for a degenerate (zero-size) canvas so
 // the caller can fall back to the data-table dashboard instead of emitting a
 // blank page.
-function addCanvasOnePage(doc, canvas, title, lang) {
+// How far the capture may be shrunk to keep it on a single page, relative to
+// the size the page width alone would allow. One page is the intent (see
+// CHANGELOG 1.10.1) – but only while it stays readable. Every card added to the
+// dashboard makes the capture taller, and without a floor the whole report just
+// keeps getting smaller until the numbers cannot be read at all.
+const MIN_LEGIBLE = 0.75
+
+function addCanvasPages(doc, canvas, title, lang) {
   const pageW = doc.internal.pageSize.getWidth()
   const pageH = doc.internal.pageSize.getHeight()
   const margin = 24
@@ -108,16 +115,43 @@ function addCanvasOnePage(doc, canvas, title, lang) {
   const availW = pageW - margin * 2
   const availH = pageH - top - bottom
   if (!canvas.width || !canvas.height) return false
-  const scale = Math.min(availW / canvas.width, availH / canvas.height)
-  const w = canvas.width * scale
-  const h = canvas.height * scale
-  const x = margin + (availW - w) / 2
-  decorate(doc, title, lang, reportDate(lang))
-  doc.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', x, top, w, h)
+
+  const widthScale = availW / canvas.width
+  const onePageScale = Math.min(widthScale, availH / canvas.height)
+
   // Release the (potentially tens-of-MB) capture backing store promptly – iOS
   // Safari caps total canvas memory and GC is lazy.
-  canvas.width = 0
-  canvas.height = 0
+  const release = () => { canvas.width = 0; canvas.height = 0 }
+
+  if (onePageScale >= widthScale * MIN_LEGIBLE) {
+    const w = canvas.width * onePageScale
+    const h = canvas.height * onePageScale
+    decorate(doc, title, lang, reportDate(lang))
+    doc.addImage(canvas.toDataURL('image/jpeg', 0.95), 'JPEG', margin + (availW - w) / 2, top, w, h)
+    release()
+    return true
+  }
+
+  // Too tall to stay legible on one page: print at full width and continue on
+  // the next page. The break falls wherever the page ends – the capture is a
+  // picture, so there are no card boundaries left to break along.
+  const sliceH = Math.floor(availH / widthScale) // source pixels per page
+  const pages = Math.ceil(canvas.height / sliceH)
+  const cut = document.createElement('canvas')
+  const ctx = cut.getContext('2d')
+  for (let i = 0; i < pages; i++) {
+    const sy = i * sliceH
+    const sh = Math.min(sliceH, canvas.height - sy)
+    cut.width = canvas.width
+    cut.height = sh
+    ctx.drawImage(canvas, 0, sy, canvas.width, sh, 0, 0, canvas.width, sh)
+    if (i > 0) doc.addPage()
+    decorate(doc, title, lang, reportDate(lang))
+    doc.addImage(cut.toDataURL('image/jpeg', 0.95), 'JPEG', margin, top, availW, sh * widthScale)
+  }
+  cut.width = 0
+  cut.height = 0
+  release()
   return true
 }
 
@@ -312,7 +346,7 @@ async function exportDashboardPdf(data, t, lang, opts) {
   // capture was supplied or the capture came back degenerate (zero-size).
   if (opts && opts.canvas) {
     const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
-    if (addCanvasOnePage(doc, opts.canvas, 'Dashboard', lang)) {
+    if (addCanvasPages(doc, opts.canvas, 'Dashboard', lang)) {
       return finalize(doc, 'dashboard', opts)
     }
     // fall through to the table-based dashboard rather than saving a blank page

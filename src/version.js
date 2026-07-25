@@ -4,12 +4,27 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.19.1'
+export const APP_VERSION = '1.19.2'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.19.2',
+    date: '2026-07-25',
+    type: 'patch',
+    changes: {
+      de: [
+        'Dashboard-PDF: es bleibt auf einer Seite, solange das lesbar ist – wird das Dashboard so hoch, dass alles zu klein würde, geht es auf einer zweiten Seite weiter, statt immer weiter zu schrumpfen. Mit dem heutigen Dashboard bleibt es bei einer Seite.',
+        'Kleinere Aufräumarbeit im Stylesheet: die Balken der neuen Diagramme benutzen dieselbe Grundlage wie die übrigen Balken statt einer Kopie davon.'
+      ],
+      en: [
+        'Dashboard PDF: it stays on one page while that is readable – if the dashboard grows so tall that everything would become too small, it continues on a second page instead of shrinking indefinitely. With the current dashboard it remains a single page.',
+        'Small stylesheet cleanup: the bars of the new charts build on the same base as the other bars instead of a copy of it.'
+      ]
+    }
+  },
   {
     version: '1.19.1',
     date: '2026-07-25',

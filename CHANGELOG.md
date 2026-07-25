@@ -11,6 +11,24 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.19.2] – 2026-07-25
+
+Die beiden Punkte, die in 1.19.1 offen geblieben waren:
+
+- **Dashboard-PDF: eine Seite, solange das lesbar ist.** Bisher wurde die
+  gesamte Aufnahme ohne Untergrenze auf eine A4-Seite skaliert – jede zusätzliche
+  Kachel machte den ganzen Ausdruck kleiner, unbegrenzt. Jetzt gilt eine
+  Lesbarkeitsgrenze: Solange die Einseiten-Darstellung mindestens 75 % der
+  Größe erreicht, die die Seitenbreite allein zuließe, bleibt es bei einer Seite
+  (die Absicht aus 1.10.1). Darunter wird in voller Breite gedruckt und auf der
+  nächsten Seite fortgesetzt. Geprüft: das heutige Dashboard ergibt weiterhin
+  **eine** Seite, ein künstlich sehr hohes ergibt zwei. Der Seitenumbruch fällt
+  dorthin, wo die Seite endet – die Aufnahme ist ein Bild, Kartengrenzen sind
+  darin nicht mehr bekannt.
+- **Die Balken-Regeln der neuen Diagramme waren eine wortgleiche Kopie** der
+  vorhandenen, nur mit anderer Höhe. Sie teilen sich jetzt eine Grundlage; nur
+  die Höhe wird überschrieben.
+
 ## [1.19.1] – 2026-07-25
 
 Ergebnis zweier Code-Reviews von 1.19.0. Drei Punkte davon waren Behauptungen im
