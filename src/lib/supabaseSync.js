@@ -8,10 +8,9 @@
 // supabase/migrations/0001_app_state.sql.
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './cloudConfig.js'
 
-const URL = SUPABASE_URL
-const ANON = SUPABASE_ANON_KEY
-
-export const cloudConfigured = Boolean(URL && ANON)
+// NB: do not alias these to `URL` – that shadows the global URL constructor
+// for the whole module.
+export const cloudConfigured = Boolean(SUPABASE_URL && SUPABASE_ANON_KEY)
 
 const TABLE = 'app_state'
 
@@ -20,17 +19,20 @@ export async function getClient() {
   if (!cloudConfigured) return null
   if (client) return client
   const { createClient } = await import('@supabase/supabase-js')
-  client = createClient(URL, ANON, {
+  client = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
     auth: { persistSession: true, autoRefreshToken: true }
   })
   return client
 }
 
+// Reads the persisted session instead of calling /auth/v1/user, which is a
+// network round trip. sync() runs on mount, on every reconnect and after every
+// edit burst, so the difference is noticeable on a flaky mobile connection.
 export async function getUser() {
   const c = await getClient()
   if (!c) return null
-  const { data } = await c.auth.getUser()
-  return data?.user || null
+  const { data } = await c.auth.getSession()
+  return data?.session?.user || null
 }
 
 export async function signIn(email, password) {
@@ -66,15 +68,15 @@ export async function onAuthChange(cb) {
 // Read the remote row. Returns { blob, remoteAt } or null when nothing is
 // stored yet. `remoteAt` is the server-side updated_at, used to detect whether
 // another device wrote since our last sync.
-export async function pull() {
+export async function pull(user) {
   const c = await getClient()
   if (!c) return null
-  const user = await getUser()
-  if (!user) return null
+  const u = user || (await getUser())
+  if (!u) return null
   const { data, error } = await c
     .from(TABLE)
     .select('data, updated_at')
-    .eq('user_id', user.id)
+    .eq('user_id', u.id)
     .maybeSingle()
   if (error) throw error
   if (!data) return null
@@ -82,17 +84,16 @@ export async function pull() {
 }
 
 // Write the blob. Returns the new server updated_at so the caller can track it.
-export async function push(blob) {
+export async function push(blob, user) {
   const c = await getClient()
   if (!c) throw new Error('cloud not configured')
-  const user = await getUser()
-  if (!user) throw new Error('not signed in')
+  const u = user || (await getUser())
+  if (!u) throw new Error('not signed in')
+  // updated_at is deliberately NOT sent: a database trigger sets it, so the
+  // client cannot backdate a write and win a conflict it should have lost.
   const { data, error } = await c
     .from(TABLE)
-    .upsert(
-      { user_id: user.id, data: blob, updated_at: new Date().toISOString() },
-      { onConflict: 'user_id' }
-    )
+    .upsert({ user_id: u.id, data: blob }, { onConflict: 'user_id' })
     .select('updated_at')
     .single()
   if (error) throw error

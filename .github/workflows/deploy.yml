@@ -29,9 +29,9 @@ jobs:
           node-version: 20
           cache: npm
       - run: npm ci
-      # Cloud sync is optional: without these repo secrets the build simply ships
-      # the offline-only app (the Settings card then says "not set up").
-      # Add them under Settings → Secrets and variables → Actions.
+      # A Supabase project is baked into src/lib/cloudConfig.js, so these secrets
+      # are optional: set them only to point this deploy at a different project.
+      # They are read as a pair – setting one ignores both baked-in defaults.
       - run: npm run build
         env:
           VITE_SUPABASE_URL: ${{ secrets.VITE_SUPABASE_URL }}

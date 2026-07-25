@@ -11,6 +11,33 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.15.2] – 2026-07-25
+
+Behebungen aus dem Code-Review des Sync-Commits.
+
+- **Doppelter Abgleich beim Start behoben.** Zwei Effekte riefen `sync()` im
+  selben Render auf; die Sperre wurde erst *nach* dem ersten `await` gesetzt, so
+  dass beide durchrutschten und doppelt hochluden. Der nächste Abgleich meldete
+  das dann als „Konflikt" mit sich selbst. Sperre greift jetzt synchron, und die
+  beiden Effekte sind zu einem zusammengefasst.
+- **Konfiguration wird als Paar gelesen.** Nur eine der beiden Umgebungs-
+  variablen zu setzen kombinierte bisher die URL des einen mit dem Key des
+  anderen Projekts (jede Anfrage „Invalid API key", das Anmeldeformular sah
+  trotzdem funktionsfähig aus). Jetzt gilt: entweder beide aus der Umgebung
+  oder beide fest eingebaut. Wichtig dabei: GitHub Actions setzt ein nicht
+  angelegtes Secret als *leeren String* – das zählt als „nicht gesetzt", sonst
+  hätte der Deploy den Sync abgeschaltet.
+- **URL-Normalisierung korrigiert**: „…/rest/v1//" behielt den Suffix (führte zu
+  `/rest/v1/rest/v1/…` und 404 bei jedem Zugriff); Groß-/Kleinschreibung wird
+  jetzt ignoriert.
+- **Weniger Netzwerkverkehr**: ein Abgleich fragte die Sitzung dreimal beim
+  Server ab. Sie wird jetzt einmal lokal gelesen und durchgereicht.
+- `updated_at` wird nicht mehr mitgeschickt – ein Datenbank-Trigger setzt es
+  ohnehin, damit kein Client ein Datum zurückdatieren kann.
+- Aufräumen: Alias `URL` entfernt (überdeckte den globalen `URL`-Konstruktor);
+  README, `.env.example` und der Deploy-Workflow beschreiben den Sync jetzt als
+  aktiv statt als „noch nicht eingerichtet".
+
 ## [1.15.1] – 2026-07-25
 
 - **Cloud-Sync scharf geschaltet**: Projekt-URL und der (öffentliche) anon-Key

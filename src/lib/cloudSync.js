@@ -70,15 +70,18 @@ export function useCloudSync(data, applyRemote) {
   // `force` = 'local' keeps our copy, 'remote' takes the cloud copy.
   const sync = useCallback(
     async (force) => {
+      // Latch BEFORE any await: two effects can call sync() in the same commit,
+      // and a guard checked before an await lets both through -> double push,
+      // which then looks like a conflict with ourselves on the next sync.
       if (!cloudConfigured || busy.current) return
-      const u = await getUser()
-      if (!u) { setState('signedOut'); return }
-      if (typeof navigator !== 'undefined' && !navigator.onLine) { setState('offline'); return }
       busy.current = true
       setState('syncing')
       setError(null)
       try {
-        const remote = await pull()
+        const u = await getUser()
+        if (!u) { setState('signedOut'); return }
+        if (typeof navigator !== 'undefined' && !navigator.onLine) { setState('offline'); return }
+        const remote = await pull(u)
         const local = dataRef.current
         const localDirty = hasLocalEdits()
 
@@ -87,7 +90,7 @@ export function useCloudSync(data, applyRemote) {
           setRemoteAt(remote.remoteAt)
           setPushedAt(remote.blob?.updatedAt || null)
         } else if (force === 'local' || !remote) {
-          const at = await push(local)
+          const at = await push(local, u)
           setRemoteAt(at)
           setPushedAt(local?.updatedAt || null)
         } else {
@@ -95,7 +98,6 @@ export function useCloudSync(data, applyRemote) {
           if (movedOnServer && localDirty) {
             // Both sides changed since we last agreed – ask, do not guess.
             setState('conflict')
-            busy.current = false
             return
           }
           if (movedOnServer) {
@@ -103,7 +105,7 @@ export function useCloudSync(data, applyRemote) {
             setRemoteAt(remote.remoteAt)
             setPushedAt(remote.blob?.updatedAt || null)
           } else if (localDirty) {
-            const at = await push(local)
+            const at = await push(local, u)
             setRemoteAt(at)
             setPushedAt(local?.updatedAt || null)
           }
@@ -120,11 +122,6 @@ export function useCloudSync(data, applyRemote) {
     []
   )
 
-  // ---- initial sync once signed in ------------------------------------------
-  useEffect(() => {
-    if (cloudConfigured && user) sync()
-  }, [user, sync])
-
   // ---- debounced push after local edits --------------------------------------
   useEffect(() => {
     if (!cloudConfigured || !user || !online) return
@@ -134,7 +131,9 @@ export function useCloudSync(data, applyRemote) {
     return () => timer.current && clearTimeout(timer.current)
   }, [localAt, user, online, sync])
 
-  // ---- reflect connectivity in the badge -------------------------------------
+  // ---- initial sync once signed in, and again whenever we come back online ---
+  // (One effect, not two: both used to depend on `user` and fired sync() in the
+  // same commit.)
   useEffect(() => {
     if (!cloudConfigured || !user) return
     if (!online) setState('offline')

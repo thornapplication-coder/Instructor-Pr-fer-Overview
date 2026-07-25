@@ -57,10 +57,23 @@ einem neuen Deploy erkennt der Service Worker die neue Version und blendet einen
 - **Standard:** Daten liegen lokal im Browser (localStorage), voll offline.
   **Export/Import** aller Daten als JSON im Reiter *Einstellungen* – so lassen
   sich Geräte manuell abgleichen und Backups ziehen.
-- **Optional – automatischer Cloud-Sync (Supabase):** noch nicht aktiviert (der
-  Supabase-Free-Tier-Slot war beim Bau belegt). Zum Aktivieren siehe
-  Kommentar-Anleitung in `src/lib/supabaseSync.js` und `.env.example`. Danach
-  gleiche Daten automatisch auf allen Geräten, geschützt per Login.
+- **Automatischer Cloud-Sync (Supabase):** aktiv. In *Einstellungen →
+  Cloud-Sync* anmelden, danach gleicht die App den kompletten Datenstand
+  automatisch zwischen allen Geräten ab. Der Sync-Status steht oben in der
+  Kopfzeile. Ändern beide Seiten seit dem letzten Abgleich, fragt die App nach,
+  statt still zu überschreiben.
+  - Verbindung: `src/lib/cloudConfig.js` (Projekt-URL + öffentlicher anon-Key).
+    `VITE_SUPABASE_URL` / `VITE_SUPABASE_ANON_KEY` überschreiben beides als
+    Paar (nur eines von beiden zu setzen schaltet den Sync ab, statt die
+    Projekte zu vermischen). Für einen reinen Offline-Build `DEFAULT_URL` in
+    `cloudConfig.js` leeren.
+  - Schema: `supabase/migrations/0001_app_state.sql` (eine jsonb-Zeile je
+    Benutzer, abgesichert per Row Level Security).
+  - **Betriebshinweis:** Da der anon-Key öffentlich ist, schützt allein die RLS
+    die Daten. Nach dem Anlegen des eigenen Kontos sollte in Supabase unter
+    *Authentication → Sign In / Providers → Email* die Registrierung neuer
+    Benutzer deaktiviert werden – sonst kann sich jeder Besucher der Seite ein
+    Konto anlegen und Speicher im Projekt belegen.
 
 ## PWA-Installation
 

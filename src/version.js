@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.15.1'
+export const APP_VERSION = '1.15.2'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.15.2',
+    date: '2026-07-25',
+    type: 'patch',
+    changes: {
+      de: [
+        'Sync-Fehler behoben: beim Start konnten zwei Abgleiche gleichzeitig starten und sich gegenseitig als „Konflikt" melden.',
+        'Weniger Netzwerkverkehr beim Sync (die Sitzung wird lokal gelesen statt bei jedem Schritt neu beim Server erfragt).',
+        'Projekt-URL wird robuster erkannt (auch „…/rest/v1//" oder in Großbuchstaben).'
+      ],
+      en: [
+        'Sync fix: two syncs could start at once on load and report each other as a “conflict”.',
+        'Less network chatter during sync (the session is read locally instead of re-validated at every step).',
+        'The project URL is parsed more robustly (also “…/rest/v1//” or upper case).'
+      ]
+    }
+  },
   {
     version: '1.15.1',
     date: '2026-07-25',
