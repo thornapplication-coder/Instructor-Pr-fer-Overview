@@ -165,6 +165,13 @@ button { font-family: inherit; }
 .kpi-label { margin-top: 6px; font-size: 12.5px; color: var(--muted); font-weight: 700; }
 .kpi-sub { margin-top: 2px; font-size: 11.5px; color: var(--muted); }
 
+/* One summary band instead of a tile grid: the overview keeps only the two
+   figures that exist nowhere else on the page (heads and FTE); everything the
+   old tiles repeated lives in the charts below. */
+.kpi-hero { display: flex; align-items: center; flex-wrap: wrap; gap: 14px 36px; padding: 18px 22px; }
+.kpi-hero .kpi-value { font-size: 34px; }
+.kpi-hero-metric + .kpi-hero-metric { border-left: 1px solid var(--hair); padding-left: 36px; }
+
 /* ---------- Cards & grids ---------- */
 .card {
   background: var(--white); border-radius: var(--radius); padding: 18px;
@@ -816,10 +823,20 @@ textarea.input { resize: vertical; }
   .kpi-grid { grid-template-columns: repeat(2, 1fr); }
   .grid-2, .grid-3 { grid-template-columns: 1fr; }
   .kpi-value { font-size: 26px; }
+  .kpi-hero { gap: 12px 24px; }
+  .kpi-hero-metric + .kpi-hero-metric { padding-left: 24px; }
   .brand-text h1 { font-size: 16px; }
   .form-grid { grid-template-columns: 1fr; }
   .assign-grid { grid-template-columns: 1fr; }
   .topbar-right { gap: 10px; }
   .asof { display: none; }
   .search { max-width: 100%; flex: 1; }
+}
+@media (max-width: 480px) {
+  /* Too narrow for side-by-side: stack the band, the divider becomes a rule. */
+  .kpi-hero { flex-direction: column; align-items: stretch; }
+  .kpi-hero-metric + .kpi-hero-metric {
+    border-left: 0; padding-left: 0;
+    border-top: 1px solid var(--hair); padding-top: 12px;
+  }
 }

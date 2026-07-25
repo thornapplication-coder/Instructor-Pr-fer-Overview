@@ -159,29 +159,25 @@ export default function Dashboard() {
   const overall =
     relevant.length === 0 ? 0 : relevant.reduce((s, tr) => s + conversionProgress(stages, tr.conv), 0) / relevant.length
 
-  // ---- Overview (Instruktoren & Prüfer) — KPI tiles in SEN·TRE·TRI·LTC·SFI·TKI order
-  const ovKpi = [
-    // fteActive, not fte: every other FTE figure in the app leaves the retirees
-    // out, and a tile that quietly included them was the reason the same people
-    // appeared as 44.6 here and 42.9 two cards further down.
-    {
-      id: 'total',
-      node: (
-        <KpiTile
-          value={hc.total}
-          label={t('kpi_totalTrainers')}
-          sub={`FTE ${fte1(hc.fteActive)} (${t('fteExclRetired')})`}
-        />
-      )
-    },
-    { id: 'examiners', node: <KpiTile value={hc.examiners} label={t('kpi_examiners')} accent={BRAND.burgundy} /> },
-    { id: 'tri', node: <KpiTile value={hc.tri} label={t('kpi_tri')} accent={BRAND.burgundy} /> },
-    { id: 'ltc', node: <KpiTile value={hc.ltc} label={t('kpi_ltc')} accent={BRAND.burgundy} /> },
-    { id: 'sfitki', node: <KpiTile value={hc.sfiTki} label={t('kpi_sfiTki')} accent={BRAND.burgundy} /> },
-    { id: 'captain', node: <KpiTile value={hc.captains} label={t('kpi_captain')} accent={ROLE_COLORS.captain} /> },
-    { id: 'fo', node: <KpiTile value={hc.firstOfficers} label={t('kpi_fo')} accent={ROLE_COLORS.fo} /> },
-    { id: 'active', node: <KpiTile value={hc.active} label={t('kpi_active')} /> }
-  ]
+  // ---- Overview (Instruktoren & Prüfer) — one summary band instead of a tile
+  // per number. The per-qualification, Captain/FO and active counts all repeat
+  // in the charts right below, so the tiles said everything twice; only these
+  // two figures exist nowhere else on the page.
+  // fteActive, not fte: every other FTE figure in the app leaves the retirees
+  // out, and a band that quietly included them was the reason the same people
+  // appeared as 44.6 here and 42.9 two cards further down.
+  const ovHero = (
+    <div className="kpi kpi-hero">
+      <div className="kpi-hero-metric">
+        <div className="kpi-value">{hc.total}</div>
+        <div className="kpi-label">{t('kpi_totalTrainers')}</div>
+      </div>
+      <div className="kpi-hero-metric kpi-hero-fte">
+        <div className="kpi-value">{fte1(hc.fteActive)}</div>
+        <div className="kpi-label">FTE ({t('fteExclRetired')})</div>
+      </div>
+    </div>
+  )
   const ovChart = [
     { id: 'qual', node: <Card title={t('stat_qual')} total={total}><HBars data={qualData} /></Card> },
     { id: 'qualAc', node: <Card title={t('chart_qualByAircraft')} total={total}><StackedBars data={qualAc} series={acSeries} /></Card> },
@@ -313,7 +309,9 @@ export default function Dashboard() {
       {editing && <p className="planning-note no-capture">{t('dashArrangeHint')}</p>}
 
       <h3 className="dash-section-title">{t('section_overview')}</h3>
-      <ReorderZone zone="ovKpi" items={ordered(ovKpi, order.ovKpi)} className="kpi-grid" editing={editing} onReorder={setDashboardOrder} t={t} />
+      {/* Not a ReorderZone: a single band has nothing to arrange. Any stored
+          order.ovKpi from the old tile grid is simply ignored. */}
+      {ovHero}
       <ReorderZone zone="ovChart" items={ordered(ovChart, order.ovChart)} className="grid-3 dash-charts" editing={editing} onReorder={setDashboardOrder} t={t} />
 
       <h3 className="dash-section-title">{t('section_conversion')}</h3>

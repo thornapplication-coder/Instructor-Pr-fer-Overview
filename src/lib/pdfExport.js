@@ -370,17 +370,13 @@ async function exportDashboardPdf(data, t, lang, opts) {
   table(ctx, {
     section: t('section_overview'),
     head: [t('category'), t('count')],
+    // Mirrors the on-screen summary band: heads and FTE only. The per-qual,
+    // Captain/FO and active rows that used to sit here repeat in the tables
+    // right below (byQual, chart_role), same as the tiles they came from.
+    // fteActive, and labelled: hc.fte counts the retirees too, so this row
+    // used to print a bigger total than the very same band on screen.
     body: [
       [t('kpi_totalTrainers'), String(hc.total)],
-      [t('kpi_examiners'), String(hc.examiners)],
-      [t('kpi_tri'), String(hc.tri)],
-      [t('kpi_ltc'), String(hc.ltc)],
-      [t('kpi_sfiTki'), String(hc.sfiTki)],
-      [t('kpi_captain'), String(hc.captains)],
-      [t('kpi_fo'), String(hc.firstOfficers)],
-      [t('kpi_active'), String(hc.active)],
-      // fteActive, and labelled: hc.fte counts the retirees too, so this row
-      // used to print a bigger total than the very same tile on screen.
       ['FTE ' + t('total') + ' (' + t('fteExclRetired') + ')', formatFte1(hc.fteActive, lang)]
     ],
     columnStyles: { 1: { halign: 'right', cellWidth: 80 } }

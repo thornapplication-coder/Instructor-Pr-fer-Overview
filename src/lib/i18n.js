@@ -76,18 +76,9 @@ const DICT = {
 
   // ---- overview / KPIs
   kpi_totalTrainers: { de: 'Trainer & Prüfer', en: 'Trainers & Examiners' },
-  kpi_active: { de: 'Aktiv (ohne Rente)', en: 'Active (excl. retiring)' },
-  kpi_examiners: { de: 'Prüfer (SEN/TRE)', en: 'Examiners (SEN/TRE)' },
-  kpi_instructors: { de: 'Instruktoren (TRI/LTC)', en: 'Instructors (TRI/LTC)' },
-  kpi_tri: { de: 'Instruktoren (TRI)', en: 'Instructors (TRI)' },
-  kpi_ltc: { de: 'Instruktoren (LTC)', en: 'Instructors (LTC)' },
-  kpi_sfiTki: { de: 'Instruktoren (SFI/TKI)', en: 'Instructors (SFI/TKI)' },
-  kpi_captain: { de: 'Captain', en: 'Captain' },
-  kpi_fo: { de: 'First Officer (FO)', en: 'First Officer (FO)' },
   kpi_released: { de: 'Auf 737 freigegeben', en: 'Released on 737' },
   kpi_inProgress: { de: 'In Umschulung', en: 'In conversion' },
   kpi_notStarted: { de: 'Noch nicht gestartet', en: 'Not started yet' },
-  kpi_retiring: { de: 'Rente', en: 'Retiring' },
   kpi_fteInConversion: { de: 'FTE in Umschulung', en: 'FTE in conversion' },
   kpi_fteAvailable: { de: 'FTE verfügbar', en: 'FTE available' },
   // Names the population behind the conversion FTE tiles, whose total is

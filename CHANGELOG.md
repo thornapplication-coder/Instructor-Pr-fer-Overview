@@ -11,6 +11,25 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.20.0] – 2026-07-25
+
+- **Dashboard-Übersicht entrümpelt.** Sieben der acht KPI-Kacheln sagten nur,
+  was die Diagramme direkt darunter ohnehin zeigen: Prüfer/Instruktoren je
+  Qualifikation stehen im Balkendiagramm „Trainer-Qualifikation", Captain und
+  First Officer im Ring daneben. Die Kacheln sind weg.
+- **Ein Übersichts-Band statt der Kachel-Reihe.** Es trägt genau die beiden
+  Zahlen, die sonst nirgends auf der Seite stehen: **Köpfe gesamt** und
+  **FTE (ohne Rente)**, nebeneinander mit feiner Trennlinie, auf sehr schmalen
+  Bildschirmen gestapelt. Kein einzelnes verlorenes Kärtchen in einem leeren
+  Raster.
+- Das Band ist bewusst **keine** verschiebbare Anordnungs-Zone mehr – ein
+  einzelnes Element hat nichts zu sortieren. Eine gespeicherte Reihenfolge der
+  alten Kacheln wird schlicht ignoriert, die Diagramm-Zonen bleiben anordenbar.
+- **PDF zieht mit.** Die Übersichts-Tabelle im Dashboard-PDF nennt nur noch
+  Köpfe und FTE; Qualifikations- und Captain/FO-Tabellen im selben PDF tragen
+  die entfallenen Zeilen weiter.
+- Aufgeräumt: neun verwaiste Wörterbuch-Einträge der alten Kacheln entfernt.
+
 ## [1.19.4] – 2026-07-25
 
 - **FTE-Summen stimmen wieder überall überein.** Dieselben Personen erschienen

@@ -29,12 +29,13 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForTimeout(600)
 
   // ---- 1. the overall total reads the same on every card --------------------
-  // The KPI tile: "Trainer & Prüfer 50 / FTE 42,9 (ohne Rente)".
-  const totalTile = page.locator('.kpi').filter({ hasText: 'Trainer & Prüfer' }).first()
-  const tileSub = await totalTile.locator('.kpi-sub').innerText()
-  const tileFte = num(tileSub)
-  ok(tileFte > 0, 'the total tile carries an FTE figure (' + tileSub.trim() + ')')
-  ok(/ohne Rente/i.test(tileSub), 'and it names its scope, so it cannot be mistaken for another total')
+  // The summary band: "53 Trainer & Prüfer | 42,9 FTE (ohne Rente)".
+  const hero = page.locator('.kpi-hero').first()
+  const heroText = await hero.innerText()
+  const tileFte = num(await hero.locator('.kpi-hero-fte .kpi-value').innerText())
+  ok(tileFte > 0, 'the summary band carries an FTE figure (' + tileFte + ')')
+  ok(/ohne Rente/i.test(heroText), 'and it names its scope, so it cannot be mistaken for another total')
+  ok(/Trainer & Prüfer/.test(heroText), 'and it still shows the headcount next to it')
 
   // The two nested-bar cards: their legend total is the same population.
   const legendFte = async (title) => {

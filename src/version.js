@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.19.4'
+export const APP_VERSION = '1.20.0'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.20.0',
+    date: '2026-07-25',
+    type: 'minor',
+    changes: {
+      de: [
+        'Dashboard aufgeräumt: die sieben Kacheln „Aktiv", „Prüfer (SEN/TRE)", „Instruktoren (TRI/LTC/SFI/TKI)", „Captain" und „First Officer" sind weg – dieselben Zahlen stehen direkt darunter in den Diagrammen (Trainer-Qualifikation bzw. Captain/First-Officer-Ring).',
+        'Stattdessen ein breites Übersichts-Band mit den beiden Zahlen, die sonst nirgends auf der Seite stehen: Köpfe gesamt und FTE (ohne Rente), durch eine feine Linie getrennt. Auf schmalen Bildschirmen stapelt es sich.',
+        'Das Dashboard-PDF zieht mit: die Übersichts-Tabelle nennt nur noch Köpfe und FTE; Qualifikations- und Captain/FO-Tabellen im selben PDF tragen den Rest wie bisher.'
+      ],
+      en: [
+        'Dashboard decluttered: the seven tiles "Active", "Examiners (SEN/TRE)", "Instructors (TRI/LTC/SFI/TKI)", "Captain" and "First Officer" are gone – the same numbers sit right below in the charts (trainer qualification and the Captain/First-Officer ring).',
+        'In their place a wide summary band with the two figures that appear nowhere else on the page: total heads and FTE (excl. retirees), separated by a hairline. On narrow screens it stacks.',
+        'The dashboard PDF follows suit: its overview table lists only heads and FTE; the qualification and Captain/FO tables in the same PDF carry the rest as before.'
+      ]
+    }
+  },
   {
     version: '1.19.4',
     date: '2026-07-25',
