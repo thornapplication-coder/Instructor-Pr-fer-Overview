@@ -445,20 +445,22 @@ select.input { cursor: pointer; }
 :root[data-theme='dark'] .field-manage { color: #F58FBE; background: #232a31; }
 
 /* ---------- Cloud sync ---------- */
-.sync-badge {
-  display: inline-flex; align-items: center; gap: 6px;
-  background: rgba(255,255,255,.16); color: #fff;
-  border-radius: 999px; padding: 4px 10px; font-size: 12px; font-weight: 800;
-  white-space: nowrap;
+/* Header indicator: a single dot. The white ring keeps both colours legible on
+   the burgundy topbar and in dark mode. */
+.sync-dot-badge {
+  display: inline-block; flex: none;
+  width: 12px; height: 12px; border-radius: 50%;
+  box-shadow: 0 0 0 2px rgba(255,255,255,.6);
 }
-.sync-badge .sync-icon { line-height: 1; }
-.sync-badge .sync-time { font-weight: 700; opacity: .85; }
-.sync-badge.ok { background: rgba(47,163,107,.32); }
-.sync-badge.busy { background: rgba(255,255,255,.24); }
-.sync-badge.warn, .sync-badge.offline { background: rgba(232,163,61,.36); }
-.sync-badge.err { background: rgba(200,16,46,.42); }
-.sync-badge.busy .sync-icon { animation: spin 1.1s linear infinite; display: inline-block; }
-@keyframes spin { to { transform: rotate(360deg); } }
+.sync-dot-badge.ok { background: #2fa36b; }
+.sync-dot-badge.bad { background: #ff3b30; }
+.sync-dot-badge.busy { animation: syncPulse 1.2s ease-in-out infinite; }
+@keyframes syncPulse { 50% { opacity: .3; } }
+
+/* Respect a reduced-motion preference – the colour alone carries the state. */
+@media (prefers-reduced-motion: reduce) {
+  .sync-dot-badge.busy { animation: none; }
+}
 
 .sync-line { display: flex; align-items: center; gap: 8px; font-weight: 700; font-size: 13.5px; margin: 0 0 4px; }
 .sync-dot { width: 10px; height: 10px; border-radius: 50%; background: var(--muted); flex: none; }
@@ -468,12 +470,6 @@ select.input { cursor: pointer; }
 .sync-line.err .sync-dot { background: var(--red); }
 .sync-auth { margin-top: 10px; }
 .sync-conflict { margin: 8px 0; }
-
-/* The header badge would crowd the brand row on a phone. */
-@media (max-width: 720px) {
-  .sync-badge .sync-text { display: none; }
-  .sync-badge { padding: 6px 8px; }
-}
 
 /* "valid" rating whose date already passed. */
 .overdue-date { color: var(--red); }

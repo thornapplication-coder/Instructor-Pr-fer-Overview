@@ -40,10 +40,17 @@ Bei jedem Push auf den Entwicklungs-Branch baut und deployt der Workflow
 **Einmalige Einrichtung durch den Repo-Owner:**
 *Settings → Pages → Source: „GitHub Actions"*.
 
-Die App wird dann unter `https://thornapplication-coder.github.io/TESTREPO/`
-ausgeliefert. Der Pfad ist case-sensitiv und muss zur Repo-Schreibweise passen.
-Wird das Repository umbenannt, `base` in `vite.config.js` und die Pfade in
-`index.html` entsprechend anpassen.
+Die App wird dann unter
+`https://thornapplication-coder.github.io/Instructor-Pr-fer-Overview/`
+ausgeliefert – GitHub Pages hängt den Repo-Namen an, case-sensitiv.
+
+Der Build ermittelt diesen Pfad selbst aus `GITHUB_REPOSITORY` (setzt GitHub
+Actions automatisch), eine Umbenennung des Repositories zieht also von allein
+nach. Nur für Sonderfälle gibt es Schalter:
+
+- `VITE_BASE=/` – eigene Domain (Repo-Name entfällt im Pfad)
+- lokaler Build ohne Actions: Fallback ist der aktuelle Repo-Name in
+  `vite.config.js`
 
 ## Versionierung
 

@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.15.3'
+export const APP_VERSION = '1.15.4'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.15.4',
+    date: '2026-07-25',
+    type: 'patch',
+    changes: {
+      de: [
+        'App war online nicht mehr erreichbar: das Repository wurde umbenannt, damit ändert sich die Adresse. Die App liegt jetzt unter …github.io/Instructor-Pr-fer-Overview/ (bitte Lesezeichen und Home-Bildschirm-Symbol aktualisieren).',
+        'Der Build ermittelt die Adresse jetzt selbst aus dem Repository-Namen – eine erneute Umbenennung nimmt die App künftig ohne Anpassung mit.',
+        'Sync-Anzeige oben ist jetzt nur noch ein Punkt: grün = angemeldet und synchron, rot = nicht angemeldet (bzw. offline, Fehler, Konflikt). Der genaue Status steht weiterhin als Tooltip am Punkt und ausführlich in den Einstellungen.'
+      ],
+      en: [
+        'The app was unreachable online: the repository was renamed, which moves its address. It now lives at …github.io/Instructor-Pr-fer-Overview/ (please update bookmarks and the home-screen icon).',
+        'The build now derives that address from the repository name itself, so a future rename no longer breaks the deployment.',
+        'The header sync indicator is now just a dot: green = signed in and in sync, red = not signed in (or offline, error, conflict). The exact state remains as a tooltip on the dot and in full in Settings.'
+      ]
+    }
+  },
   {
     version: '1.15.3',
     date: '2026-07-25',

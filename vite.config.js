@@ -3,9 +3,20 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 // GitHub Pages serves this project under the repository path, case-sensitive.
-// The repo's canonical name is "TESTREPO", so the base must match exactly.
-// If the repository is renamed, update `base` (and the paths in index.html) to match.
-const BASE = '/TESTREPO/'
+// Renaming the repository therefore moves the whole site, and a hard-coded base
+// silently breaks every asset URL, the manifest scope and the service worker.
+// So derive it from the repository itself: GitHub Actions always sets
+// GITHUB_REPOSITORY ("owner/name"), which makes a future rename self-healing.
+// VITE_BASE overrides it (custom domain: set it to "/"), and the literal below
+// is only the fallback for a plain local build.
+function repoBase() {
+  const explicit = String(process.env.VITE_BASE || '').trim()
+  if (explicit) return explicit.endsWith('/') ? explicit : explicit + '/'
+  const slug = String(process.env.GITHUB_REPOSITORY || '').split('/')[1]
+  return slug ? `/${slug}/` : '/Instructor-Pr-fer-Overview/'
+}
+
+const BASE = repoBase()
 
 export default defineConfig({
   base: BASE,

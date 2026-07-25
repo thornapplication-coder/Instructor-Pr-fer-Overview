@@ -11,6 +11,25 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.15.4] – 2026-07-25
+
+- **App war online nicht erreichbar.** Das Repository wurde von `TESTREPO` auf
+  `Instructor-Pr-fer-Overview` umbenannt. GitHub Pages liefert eine Seite immer
+  unter dem Repo-Namen aus, der Build hatte den alten Namen aber fest
+  verdrahtet (`base = '/TESTREPO/'`). Dadurch zeigten sämtliche Asset-Pfade,
+  das Manifest (`scope`/`start_url`) und der Service Worker ins Leere – die
+  Seite blieb leer. Neue Adresse:
+  `https://thornapplication-coder.github.io/Instructor-Pr-fer-Overview/`
+- **Damit das nicht wieder passiert:** der Pfad wird beim Bauen aus
+  `GITHUB_REPOSITORY` abgeleitet (setzt GitHub Actions automatisch). Eine
+  Umbenennung des Repositories korrigiert sich damit von selbst. `VITE_BASE`
+  überschreibt weiterhin (z. B. `/` bei eigener Domain).
+- **Sync-Anzeige als Punkt.** Statt einer Textmarke steht oben nur noch ein
+  Punkt: **grün** = angemeldet und synchron (pulsiert kurz während des
+  Abgleichs), **rot** = nicht angemeldet, offline, Fehler oder Konflikt. Der
+  genaue Status bleibt als Tooltip am Punkt (und für Screenreader) erhalten,
+  ausführlich steht er weiterhin in den Einstellungen.
+
 ## [1.15.3] – 2026-07-25
 
 - **Anmelde-Dialog verständlicher.** Bisher standen „Anmelden" und
