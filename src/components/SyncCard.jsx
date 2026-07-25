@@ -28,13 +28,9 @@ export default function SyncCard() {
     )
   }
 
-  const { state, user, error, lastSyncedAt, pendingChanges, backupAt } = sync
-  const loc = lang === 'de' ? 'de-DE' : 'en-GB'
-  const stamp = (v) => {
-    const d = v ? new Date(v) : null
-    return d && !isNaN(d) ? d.toLocaleString(loc) : '–'
-  }
-  const whenStr = stamp(lastSyncedAt)
+  const { state, user, error, lastSyncedAt, pendingChanges } = sync
+  const when = lastSyncedAt ? new Date(lastSyncedAt) : null
+  const whenStr = when && !isNaN(when) ? when.toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB') : '–'
 
   // Supabase reports raw English API errors; translate the ones a user can
   // actually act on, and say WHAT to do rather than what went wrong.
@@ -99,22 +95,6 @@ export default function SyncCard() {
         </p>
       )}
       {state === 'error' && error && <p className="inline-msg err">{error}</p>}
-
-      {/* The cloud won and took unpushed local edits with it. Never blocks the
-          sync – it is an offer, shown until acted upon. */}
-      {backupAt && (
-        <div className="sync-recover">
-          <p className="inline-msg warn">⚠ {t('sync_backupHint').replace('{t}', stamp(backupAt))}</p>
-          <div className="btn-row">
-            <button className="btn btn-primary" disabled={busy || state === 'syncing'} onClick={() => sync.restoreBackup()}>
-              {t('sync_restoreBackup')}
-            </button>
-            <button className="btn btn-ghost" disabled={busy} onClick={() => sync.dismissBackup()}>
-              {t('sync_dismissBackup')}
-            </button>
-          </div>
-        </div>
-      )}
 
       {!user ? (
         <div className="sync-auth">

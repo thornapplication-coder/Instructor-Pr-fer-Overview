@@ -118,12 +118,6 @@ const DICT = {
   sync_syncing: { de: 'Synchronisiert …', en: 'Syncing …' },
   sync_synced: { de: 'Synchron', en: 'In sync' },
   sync_error: { de: 'Sync-Fehler', en: 'Sync error' },
-  sync_backupHint: {
-    de: 'Der Cloud-Stand wurde übernommen. Noch nicht übertragene Änderungen dieses Geräts von {t} wurden vorher gesichert.',
-    en: 'The cloud version was applied. Changes on this device from {t} that had not been pushed were backed up first.'
-  },
-  sync_restoreBackup: { de: 'Gesicherten Stand zurückholen', en: 'Restore the backup' },
-  sync_dismissBackup: { de: 'Verwerfen', en: 'Discard' },
   sync_lastSync: { de: 'Zuletzt synchronisiert', en: 'Last synced' },
   sync_pending: { de: 'Änderungen noch nicht übertragen', en: 'changes not pushed yet' },
   sync_now: { de: 'Jetzt synchronisieren', en: 'Sync now' },
@@ -176,8 +170,8 @@ const DICT = {
   },
   sync_signInErr: { de: 'Anmeldung fehlgeschlagen.', en: 'Sign-in failed.' },
   sync_note: {
-    de: 'Die App bleibt offline-fähig: lokal gespeichert wird immer, die Cloud ist eine Kopie. Abgeglichen wird automatisch alle 2 Minuten, beim Öffnen der App und ein paar Sekunden nach jeder Änderung. Weicht die Cloud ab, gilt immer der Cloud-Stand – noch nicht übertragene Änderungen dieses Geräts werden vorher gesichert.',
-    en: 'The app stays offline-capable: data is always stored locally, the cloud is a copy. It reconciles automatically every 2 minutes, when the app is opened and a few seconds after each change. If the cloud differs, the cloud version always wins – changes on this device that had not been pushed are backed up first.'
+    de: 'Läuft von allein: beim Start, alle 2 Minuten, beim Zurückwechseln zur App, ein paar Sekunden nach jeder Änderung und noch einmal beim Schließen. Abgeglichen wird je Datensatz – Änderungen an verschiedenen Personen auf verschiedenen Geräten bleiben alle erhalten; nur bei derselben Person auf beiden Geräten gilt die neuere Änderung. Gelöschtes bleibt gelöscht. Lokal gespeichert wird immer, die App bleibt offline-fähig.',
+    en: 'Runs on its own: at startup, every 2 minutes, when you return to the app, a few seconds after each change, and once more on closing. It reconciles record by record – edits to different people on different devices all survive; only for the same person on both devices does the newer edit win. Deletions stay deleted. Data is always stored locally, the app stays offline-capable.'
   },
 
   // ---- other pilots (company line pilots, not trainers)

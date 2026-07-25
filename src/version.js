@@ -4,12 +4,31 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.16.0'
+export const APP_VERSION = '1.17.0'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.17.0',
+    date: '2026-07-25',
+    type: 'minor',
+    changes: {
+      de: [
+        'Mehrere Geräte funktionieren jetzt richtig: abgeglichen wird je Datensatz statt den ganzen Datenbestand zu ersetzen. Änderst du am Laptop Person A und am iPad Person B, bleiben beide erhalten. Nur wenn dieselbe Person auf beiden Geräten geändert wurde, gilt die neuere Änderung.',
+        'Gelöschtes bleibt gelöscht – ein anderes Gerät, das den Eintrag noch hat, bringt ihn nicht zurück. Wird derselbe Eintrag danach woanders bearbeitet, gilt die Bearbeitung.',
+        'Zusätzlich wird jetzt auch beim Schließen bzw. Wegwischen der App noch einmal hochgeladen, damit die letzten Änderungen nicht bis zum nächsten Start liegen bleiben.',
+        'Die Sicherungs-/Wiederherstellen-Schaltfläche aus 1.16.0 entfällt: sie war die Notlösung dafür, dass der ganze Bestand überschrieben wurde. Das passiert nicht mehr.'
+      ],
+      en: [
+        'Multiple devices now work properly: syncing happens record by record instead of replacing the whole data set. Edit person A on the laptop and person B on the iPad and both survive. Only when the same person was changed on both devices does the newer edit win.',
+        'Deletions stay deleted – another device that still holds the record does not bring it back. If that same record is edited elsewhere afterwards, the edit wins.',
+        'The app now also pushes once more when it is closed or swiped away, so the last changes do not sit around until the next start.',
+        'The backup/restore button from 1.16.0 is gone: it was the workaround for the whole data set being overwritten, which no longer happens.'
+      ]
+    }
+  },
   {
     version: '1.16.0',
     date: '2026-07-25',

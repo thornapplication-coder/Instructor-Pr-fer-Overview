@@ -14,6 +14,7 @@ import { withPilotDefaults } from '../data/pilots.js'
 import { fteFromPartTime, normalizeAuthority } from './format.js'
 import { translate } from './i18n.js'
 import { useCloudSync } from './cloudSync.js'
+import { backfillStamps, stampChanges } from './merge.js'
 
 const STORAGE_KEY = 'ewl737:data:v1'
 const SCHEMA = 2
@@ -77,7 +78,11 @@ function normalizeProvider(p) {
 }
 
 function freshData(lang = 'de') {
-  return {
+  const at = nowIso()
+  // Stamp the seed as well: loadData() returns this directly on a fresh
+  // install, without going through normalize(), and unstamped records lose
+  // every merge against a device that has stamps.
+  return backfillStamps({
     schema: SCHEMA,
     lang,
     theme: 'light',
@@ -93,13 +98,15 @@ function freshData(lang = 'de') {
     conversionFrom: 'A320',
     conversionTo: 'B737',
     dashboard: { order: {} },
+    // Deletions, per merged list: { list: { id: iso } }. See merge.js.
+    _tomb: {},
     _provSeeded: true,
     _courseSeed2: true,
     _provStatus2: true,
     _qualMerge: true,
     _roleSeed: true,
-    updatedAt: nowIso()
-  }
+    updatedAt: at
+  }, at)
 }
 
 // One-time: ensure the standard providers exist (add missing ones by name).
@@ -165,6 +172,7 @@ function normalize(obj) {
         ? { order: obj.dashboard.order }
         : base.dashboard,
     theme: obj.theme === 'dark' ? 'dark' : 'light',
+    _tomb: obj._tomb && typeof obj._tomb === 'object' && !Array.isArray(obj._tomb) ? obj._tomb : {},
     _provSeeded: obj._provSeeded === true,
     _courseSeed2: obj._courseSeed2 === true,
     _provStatus2: obj._provStatus2 === true,
@@ -205,7 +213,9 @@ function normalize(obj) {
     )
     result._roleSeed = true
   }
-  return result
+  // Records from before the record-level merge, or from an Excel/JSON import,
+  // carry no stamp – give them the blob's own timestamp.
+  return backfillStamps(result, result.updatedAt)
 }
 
 export function StoreProvider({ children }) {
@@ -305,7 +315,10 @@ export function StoreProvider({ children }) {
       dirtyRef.current = true
       setData((d) => {
         const next = typeof mut === 'function' ? mut(d) : mut
-        return { ...next, updatedAt: nowIso() }
+        const now = nowIso()
+        // Single choke point for the per-record stamps and the delete
+        // tombstones the cloud merge runs on – no mutation has to remember it.
+        return { ...stampChanges(d, next, now), updatedAt: now }
       })
     }
 

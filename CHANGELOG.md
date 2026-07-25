@@ -11,6 +11,32 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.17.0] – 2026-07-25
+
+- **Abgleich je Datensatz statt „ganzer Bestand gewinnt".** Bisher ersetzte der
+  Sync den kompletten Datenbestand, ein Gerät verlor also immer alles, was es
+  geändert hatte, während das andere vorne lag. Jetzt trägt jeder Trainer,
+  Pilot, Provider, jede Phase, Berechtigung, Planungsspalte, jeder Kurs, Status
+  und jede SIM-Version einen eigenen Änderungszeitpunkt (`_at`), und beim
+  Abgleich wird die Vereinigung beider Seiten gebildet – je Eintrag gewinnt die
+  neuere Fassung. **Änderungen an verschiedenen Personen auf verschiedenen
+  Geräten überleben damit alle.**
+- **Löschungen mit Grabstein.** Ein gelöschter Eintrag wird in `_tomb` vermerkt,
+  damit ein Gerät, das ihn noch hat, ihn beim nächsten Abgleich nicht wieder
+  einschleppt. Wird derselbe Eintrag später woanders bearbeitet, gewinnt die
+  Bearbeitung. Grabsteine verfallen nach 180 Tagen.
+- **Push beim Schließen.** `pagehide` und `visibilitychange` schicken den Stand
+  per `fetch(keepalive)` noch raus, wenn die Seite schon geht. Über der
+  64-KiB-Grenze von `keepalive` fällt es auf eine normale Anfrage zurück.
+- Die Stempel entstehen an genau einer Stelle: der Store vergleicht in `patch()`
+  vorher/nachher und stempelt nur, was sich wirklich geändert hat – ein Speichern
+  ohne Änderung gewinnt daher keinen späteren Abgleich.
+- Bestandsdaten ohne Stempel (auch aus Excel-/JSON-Import) erben den Zeitpunkt
+  des Gesamtbestands, nicht „jetzt" – sonst würde ein veraltetes Gerät allein
+  durch spätes Öffnen jeden Abgleich gewinnen.
+- Die Sicherungs-/Wiederherstellen-Schaltfläche aus 1.16.0 entfällt ersatzlos;
+  sie war die Notlösung für das Überschreiben des Gesamtbestands.
+
 ## [1.16.0] – 2026-07-25
 
 - **Automatischer Sync alle 2 Minuten.** Zusätzlich beim Start, beim
