@@ -90,14 +90,36 @@ export async function pull(user) {
   return { blob: data.data, remoteAt: data.updated_at }
 }
 
-// Write the blob. Returns the new server updated_at so the caller can track it.
-export async function push(blob, user) {
+// Write the blob. Returns the new server updated_at.
+//
+// With `expectedUpdatedAt` this is a compare-and-swap: the update only applies
+// while the row still carries the timestamp we read a moment ago. Another
+// device writing between our pull and our push therefore cannot be silently
+// replaced by our (now stale) copy – we return null instead and the caller
+// re-reads and merges again. Without it, the small window between pull and push
+// is a data-loss window.
+//
+// updated_at is deliberately never SENT: a database trigger owns it, so a
+// client cannot backdate a write and win an exchange it should have lost.
+export async function push(blob, user, expectedUpdatedAt) {
   const c = await getClient()
   if (!c) throw new Error('cloud not configured')
   const u = user || (await getUser())
   if (!u) throw new Error('not signed in')
-  // updated_at is deliberately NOT sent: a database trigger sets it, so the
-  // client cannot backdate a write and win a conflict it should have lost.
+
+  if (expectedUpdatedAt) {
+    const { data, error } = await c
+      .from(TABLE)
+      .update({ data: blob })
+      .eq('user_id', u.id)
+      .eq('updated_at', expectedUpdatedAt)
+      .select('updated_at')
+    if (error) throw error
+    // No row matched -> the row moved on since we read it.
+    return data && data.length ? data[0].updated_at : null
+  }
+
+  // First write for this user: there is no row to compare against yet.
   const { data, error } = await c
     .from(TABLE)
     .upsert({ user_id: u.id, data: blob }, { onConflict: 'user_id' })
@@ -112,21 +134,41 @@ export async function push(blob, user) {
 // so this is a raw fetch with `keepalive`, which the browser is allowed to
 // finish afterwards. Nothing here can be awaited – by then we may not exist.
 //
+// COMPARE-AND-SWAP, not a plain upsert. There is no time to pull and merge
+// here, so the write is made conditional on the row still carrying the
+// `updated_at` we last saw: `updated_at=eq.<expected>` matches no row once
+// another device has written, and the update is skipped instead of replacing
+// that device's work with our older copy. Our edits simply stay local and are
+// merged properly on the next open.
+//
+// (This is exactly what went wrong before: an unconditional upsert here erased
+// changes another device had already pushed.)
+//
 // `keepalive` caps the body at 64 KiB. A bigger blob falls back to an ordinary
 // request: it still completes whenever the page is merely hidden (the common
 // case on iOS), and the regular 2-minute sync catches whatever was lost.
-export function pushOnUnload(blob, userId, accessToken) {
+export function pushOnUnload(blob, userId, accessToken, expectedUpdatedAt) {
   if (!cloudConfigured || !userId || !accessToken || !blob) return false
+  // Without a known server timestamp there is nothing to compare against, so a
+  // write here could only be a blind overwrite. Skip it; the row is created by
+  // the first ordinary sync anyway.
+  if (!expectedUpdatedAt) return false
   try {
-    const body = JSON.stringify({ user_id: userId, data: blob })
-    fetch(`${SUPABASE_URL}/rest/v1/${TABLE}?on_conflict=user_id`, {
-      method: 'POST',
+    const body = JSON.stringify({ data: blob })
+    // encodeURIComponent is not optional: the timestamp ends in "+00:00" and a
+    // raw "+" in a query string decodes to a space, so the filter would never
+    // match and the write would silently never happen.
+    const q =
+      `user_id=eq.${encodeURIComponent(userId)}` +
+      `&updated_at=eq.${encodeURIComponent(expectedUpdatedAt)}`
+    fetch(`${SUPABASE_URL}/rest/v1/${TABLE}?${q}`, {
+      method: 'PATCH',
       keepalive: body.length < 60000,
       headers: {
         'Content-Type': 'application/json',
         apikey: SUPABASE_ANON_KEY,
         Authorization: 'Bearer ' + accessToken,
-        Prefer: 'resolution=merge-duplicates,return=minimal'
+        Prefer: 'return=minimal'
       },
       body
     }).catch(() => {})

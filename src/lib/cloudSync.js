@@ -106,25 +106,42 @@ export function useCloudSync(data, applyRemote) {
       if (!u) { setState('signedOut'); return }
       if (typeof navigator !== 'undefined' && !navigator.onLine) { setState('offline'); return }
 
-      const remote = await pull(u)
-      const local = dataRef.current
+      // Two attempts: the compare-and-swap below refuses to overwrite a row
+      // that moved between our read and our write, and the answer to that is
+      // simply to read again and merge again – not to force our copy through.
+      let mine = dataRef.current
+      for (let attempt = 0; attempt < 2; attempt++) {
+        const remote = await pull(u)
 
-      if (!remote) {
-        // Nothing stored yet – our copy starts the row.
-        const at = await push(local, u)
-        setRemoteAt(at)
-        setPushedAt(local?.updatedAt || null)
-      } else {
-        const merged = mergeBlobs(local, remote.blob)
-        const fMerged = stable(merged)
-        if (fMerged !== stable(local)) applyRef.current(merged)
-        if (fMerged !== stable(remote.blob)) {
-          const at = await push(merged, u)
+        if (!remote) {
+          // Nothing stored yet – our copy starts the row.
+          const at = await push(mine, u)
           setRemoteAt(at)
-        } else {
-          setRemoteAt(remote.remoteAt)
+          setPushedAt(mine?.updatedAt || null)
+          break
         }
+
+        const merged = mergeBlobs(mine, remote.blob)
+        const fMerged = stable(merged)
+        if (fMerged !== stable(mine)) applyRef.current(merged)
+
+        if (fMerged === stable(remote.blob)) {
+          // The server already holds everything we know.
+          setRemoteAt(remote.remoteAt)
+          setPushedAt(merged?.updatedAt || null)
+          break
+        }
+
+        const at = await push(merged, u, remote.remoteAt)
+        if (at === null) {
+          // Someone wrote while we were merging. Carry what we have into the
+          // next round so their write and ours both survive.
+          mine = merged
+          continue
+        }
+        setRemoteAt(at)
         setPushedAt(merged?.updatedAt || null)
+        break
       }
       setLastSyncedAt(new Date().toISOString())
       setState('synced')
@@ -171,9 +188,16 @@ export function useCloudSync(data, applyRemote) {
     const flush = () => {
       if (!hasLocalEdits()) return
       const { userId, token } = authRef.current
-      if (pushOnUnload(dataRef.current, userId, token)) {
-        setPushedAt(dataRef.current?.updatedAt || null)
-      }
+      // Conditional on the row still being where we last saw it, so this can
+      // never overwrite another device's newer work (see pushOnUnload).
+      //
+      // Deliberately NOT marked as pushed afterwards: nothing here can be
+      // awaited, so we do not know whether the write landed – and the
+      // compare-and-swap may have skipped it on purpose. Claiming success
+      // would make the next sync believe there is nothing left to send and
+      // strand these edits for good. A redundant push next time costs
+      // nothing; the merge is idempotent.
+      pushOnUnload(dataRef.current, userId, token, remoteAt.current)
     }
     const onVisibility = () => {
       if (document.visibilityState === 'visible') {

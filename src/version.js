@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.18.0'
+export const APP_VERSION = '1.18.1'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.18.1',
+    date: '2026-07-25',
+    type: 'patch',
+    changes: {
+      de: [
+        'Wichtig: Änderungen von einem anderen Gerät konnten verschwinden. Beim Schließen bzw. Wegwischen der App schrieb das Gerät seinen eigenen Stand ungeprüft über die Cloud – und löschte damit, was ein anderes Gerät kurz zuvor hochgeladen hatte. Behoben.',
+        'Der Schreibvorgang prüft jetzt immer, ob die Cloud noch auf dem Stand ist, den er gerade gelesen hat. Hat inzwischen ein anderes Gerät geschrieben, wird nicht überschrieben, sondern neu gelesen und zusammengeführt.',
+        'Beim Schließen wird nur noch geschrieben, wenn die Cloud unverändert ist. Andernfalls bleiben die Änderungen lokal und werden beim nächsten Öffnen sauber zusammengeführt – nichts geht verloren.'
+      ],
+      en: [
+        'Important: changes made on another device could disappear. On close or swipe-away the app wrote its own copy over the cloud without checking, erasing what another device had just uploaded. Fixed.',
+        'Every write now checks that the cloud is still at the state it just read. If another device wrote in between, nothing is overwritten – it re-reads and merges again.',
+        'The write on close only happens while the cloud is unchanged. Otherwise the edits stay local and are merged properly on the next open – nothing is lost.'
+      ]
+    }
+  },
   {
     version: '1.18.0',
     date: '2026-07-25',

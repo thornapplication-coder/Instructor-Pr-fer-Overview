@@ -11,6 +11,38 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.18.1] – 2026-07-25
+
+**Datenverlust zwischen Geräten behoben.** Gemeldet als „auf einem anderen Gerät
+bei der Umschulung geändert, kommt hier nicht an" – und genau so war es:
+
+- `pushOnUnload` war ein **bedingungsloses Upsert**. Beim Schließen bzw.
+  Wegwischen schrieb ein Gerät seinen kompletten Stand über die Zeile, ohne zu
+  lesen oder zusammenzuführen. Hatte ein anderes Gerät kurz zuvor etwas
+  hochgeladen, war das damit weg. Die Zusammenführung je Datensatz aus 1.17.0
+  greift auf diesem Weg gar nicht, weil nie gelesen wird.
+- Jetzt ein **Compare-and-Swap**: `PATCH … &updated_at=eq.<zuletzt gesehen>`
+  trifft keine Zeile mehr, sobald ein anderes Gerät geschrieben hat – der
+  Schreibvorgang entfällt dann einfach. Die Änderungen bleiben lokal und werden
+  beim nächsten Öffnen normal zusammengeführt.
+  (`encodeURIComponent` ist dabei zwingend: der Zeitstempel endet auf `+00:00`,
+  und ein rohes `+` im Query-String wird als Leerzeichen gelesen.)
+- Ohne bekannten Server-Zeitstempel wird beim Schließen **gar nicht** mehr
+  geschrieben – ein Schreibvorgang wäre dort zwangsläufig blind.
+- Der Ausgang wird **nicht mehr als „übertragen" verbucht**. Vorher setzte der
+  Schließen-Pfad `pushedAt`, obwohl er das Ergebnis nicht abwarten kann: schlug
+  die Anfrage fehl, hielt die App die Änderungen für gesendet und schickte sie
+  nie wieder.
+- Dasselbe Loch, kleiner, im normalen Push: zwischen `pull` und `push` konnte
+  ein anderes Gerät schreiben und wurde überschrieben. Auch dieser Weg ist jetzt
+  ein Compare-and-Swap; verliert er, wird neu gelesen und erneut zusammengeführt
+  (eine Wiederholung), statt den eigenen Stand durchzudrücken.
+- Neuer Test gegen die eigentliche Frage „greift der Sync überall": jede Liste
+  im Datenbestand muss in `MERGE_LISTS` stehen. Eine künftig vergessene Liste
+  fiele sonst still auf „ganzer Bestand, neuerer gewinnt" zurück. Aktuell: 9 von
+  9 Listen erfasst, Umschulungs-Status und Planung liegen im Trainer-Datensatz
+  und reisen mit ihm.
+
 ## [1.18.0] – 2026-07-25
 
 Die Farbgebung war gewachsen, nicht entworfen. Gemessen (OKLab-ΔE, WCAG) statt
