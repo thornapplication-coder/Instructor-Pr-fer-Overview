@@ -198,7 +198,7 @@ export default function Trainers() {
       </div>
 
       <div className="table-wrap">
-        <table className="data-table">
+        <table className="data-table compact">
           <thead>
             <tr>
               {(() => { const p = { sortKey, dir, onSort: toggle }; return (<>

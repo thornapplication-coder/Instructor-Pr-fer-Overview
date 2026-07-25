@@ -192,6 +192,16 @@ button { font-family: inherit; }
 .hbar-val { text-align: right; font-weight: 800; font-size: 13px; color: var(--ink); }
 
 /* Stacked variant: segments sit side by side inside one track. */
+/* Two thin bars per row rather than one thick one: the pair is read together,
+   so they sit close and share the row's label and scale. */
+.gbars { display: flex; flex-direction: column; gap: 12px; }
+.gbar-row { display: grid; grid-template-columns: 90px 1fr; align-items: center; gap: 10px; }
+.gbar-group { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.gbar-line { display: grid; grid-template-columns: 1fr 42px; align-items: center; gap: 8px; }
+.gbar-track { background: var(--panel2); border-radius: 999px; height: 9px; overflow: hidden; }
+.gbar-fill { height: 100%; border-radius: 999px; min-width: 3px; transition: width .3s ease; }
+.gbar-val { text-align: right; font-weight: 800; font-size: 12px; color: var(--ink); }
+
 .hbars.stacked .hbar-track { display: flex; }
 .hbar-seg { height: 100%; min-width: 3px; transition: width .3s ease; }
 .hbars.stacked .hbar-seg:first-child { border-radius: 999px 0 0 999px; }
@@ -370,6 +380,19 @@ select.input { cursor: pointer; }
 .data-table th.active .sort-arrow { opacity: 1; }
 .data-table td { padding: 10px 12px; border-top: 1px solid var(--hair); vertical-align: middle; }
 .data-table tr.clickable { cursor: pointer; }
+/* Compact variant for the trainer list: 13 columns, so the padding is what
+   makes it wide. The remark is free text and would otherwise set the table's
+   width on its own – it gets a ceiling and an ellipsis (the full text is in the
+   row's dialog and in the exports). */
+.data-table.compact { font-size: 12.5px; }
+/* The long German headers ("Ausstellende Behörde", "Funktion / Anmerkung") were
+   what actually set the column widths – 181px of heading above a cell reading
+   "Austria" – because th is nowrap by default. Letting them wrap costs two
+   lines of header height and buys back roughly 200px of table width. */
+.data-table.compact th { padding: 8px 8px; font-size: 10px; letter-spacing: .4px; white-space: normal; }
+.data-table.compact .th-inner { display: flex; align-items: flex-start; }
+.data-table.compact td { padding: 7px 8px; }
+.data-table.compact td.muted { max-width: 140px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .data-table tr.clickable:hover td { background: var(--sky-lightest); }
 .data-table .num { text-align: right; font-variant-numeric: tabular-nums; }
 .data-table .mono { font-family: ui-monospace, 'SF Mono', Menlo, monospace; font-size: 12.5px; }

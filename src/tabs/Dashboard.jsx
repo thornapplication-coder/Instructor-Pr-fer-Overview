@@ -1,7 +1,7 @@
 import React, { useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import KpiTile from '../components/KpiTile.jsx'
-import { Donut, HBars, ProgressRing, PipelineBar, StackedBars, colorAt } from '../components/charts.jsx'
+import { Donut, GroupedBars, HBars, ProgressRing, PipelineBar, StackedBars, colorAt } from '../components/charts.jsx'
 import {
   headcount,
   conversionSummary,
@@ -13,7 +13,9 @@ import {
   byFunction,
   qualByAircraft,
   pipelineDistribution,
-  conversionFteSummary
+  conversionFteSummary,
+  capacityByBase,
+  capacityByAircraft
 } from '../lib/stats.js'
 import { conversionProgress, STAFF_TYPE } from '../data/pipeline.js'
 import { qualLabel, conversionTrainers } from '../data/qualifications.js'
@@ -105,7 +107,7 @@ function ReorderZone({ zone, items, className, editing, onReorder, t }) {
 }
 
 export default function Dashboard() {
-  const { data, t, setDashboardOrder } = useStore()
+  const { data, t, lang, setDashboardOrder } = useStore()
   const { trainers, stages, quals: qualDefs } = data
   const [editing, setEditing] = useState(false)
   const order = (data.dashboard && data.dashboard.order) || {}
@@ -129,6 +131,18 @@ export default function Dashboard() {
   const staffExternal = trainers.length - staffInternal
   const aircraft = AIRCRAFT.map((a) => ({ key: a, count: trainers.filter((x) => x.aircraft === a).length, color: AC_COLORS[a] }))
   const acSeries = AIRCRAFT.map((a, i) => ({ key: a, label: a, color: AC_COLORS[a] || colorAt(i) }))
+  // Heads against FTE: the same people counted two ways, so one axis and two
+  // grouped bars. The gap between them is the part-time share, which is the
+  // point of showing them together. Retirees are already excluded by capacityBy.
+  const headFte = [
+    { key: 'heads', label: t('metric_heads'), color: CATEGORICAL[0] },
+    { key: 'fte', label: t('metric_fte'), color: CATEGORICAL[1] }
+  ]
+  const toHeadFte = (r) => ({ key: r.key, label: r.key, heads: r.headcount, fte: r.total })
+  const capBase = capacityByBase(trainers, AIRCRAFT, stages).rows.map(toHeadFte)
+  const capAc = capacityByAircraft(trainers, AIRCRAFT, stages).rows.map(toHeadFte)
+  const fte1 = (v) => (Math.round(v * 10) / 10).toString().replace('.', lang === 'de' ? ',' : '.')
+
   const pipe = pipelineDistribution(convPool, stages)
   const relevant = convPool.filter((tr) => tr.ore !== 'Rente')
   const overall =
@@ -163,6 +177,24 @@ export default function Dashboard() {
       )
     },
     { id: 'base', node: <Card title={t('stat_base')} total={total}><HBars data={bases} /></Card> },
+    {
+      id: 'capBase',
+      node: (
+        <Card title={t('chart_headFteBase')}>
+          <GroupedBars data={capBase} series={headFte} format={fte1} />
+          <p className="stat-hint">{t('headFteHint')}</p>
+        </Card>
+      )
+    },
+    {
+      id: 'capAircraft',
+      node: (
+        <Card title={t('chart_headFteAircraft')}>
+          <GroupedBars data={capAc} series={headFte} format={fte1} />
+          <p className="stat-hint">{t('headFteHint')}</p>
+        </Card>
+      )
+    },
     { id: 'aircraft', node: <Card title={t('stat_aircraft')} total={total}><Donut data={aircraft} /></Card> },
     { id: 'authority', node: <Card title={t('stat_authority')} total={total}><HBars data={auth} /></Card> },
     { id: 'partTime', node: <Card title={t('stat_partTime')} total={total}><HBars data={pt} /></Card> },

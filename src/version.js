@@ -4,12 +4,31 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.18.2'
+export const APP_VERSION = '1.19.0'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.19.0',
+    date: '2026-07-25',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neu im Dashboard: „Köpfe vs. FTE je Base" und „Köpfe vs. FTE je Aircraft". Der Abstand zwischen den beiden Balken ist der Teilzeit-Anteil – man sieht auf einen Blick, wo Köpfe und tatsächlich verfügbare Kapazität auseinanderlaufen. Zahlen wie in der Kapazität, Rente ist nicht enthalten.',
+        'Die Untertitel-Zeile „Boeing 737 MAX Phase-In …" in der Kopfzeile ist entfernt.',
+        'Einstellungen sind kein Reiter mehr, sondern ein Zahnrad oben rechts – Reihenfolge: DE/EN, Zahnrad, Neu laden, Speichern, Dunkelmodus. Die Reiterleiste ist dadurch kürzer.',
+        'Trainer-Tabelle deutlich schmäler: sie passt jetzt ohne seitliches Scrollen auf den Bildschirm (vorher 1403 px breit, jetzt 1234 px). Auf dem Handy scrollt sie wie gehabt.'
+      ],
+      en: [
+        'New on the dashboard: "Heads vs. FTE per base" and "Heads vs. FTE per aircraft". The gap between the two bars is the part-time share, so it is immediately visible where headcount and actually available capacity diverge. Same numbers as the Capacity tab; retirees excluded.',
+        'The "Boeing 737 MAX Phase-In …" subtitle has been removed from the header.',
+        'Settings is no longer a tab but a gear in the header – order: DE/EN, gear, reload, save, dark mode. The tab row is shorter for it.',
+        'The trainer table is markedly narrower: it now fits on screen without sideways scrolling (1403px before, 1234px now). On a phone it scrolls as before.'
+      ]
+    }
+  },
   {
     version: '1.18.2',
     date: '2026-07-25',

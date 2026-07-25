@@ -17,6 +17,11 @@ function BrandMark() {
   )
 }
 
+// Settings is reached by the gear in the header rather than by a tab: it is a
+// destination you visit occasionally, not one of the working views, and it kept
+// the tab row from fitting on a phone.
+const ICON_TAB = 'settings'
+
 export default function TopBar({ tabs, active, onSelect }) {
   const { t, lang, setLang, data, setTheme, saveNow, saveError } = useStore()
   const [saved, setSaved] = useState(false)
@@ -39,7 +44,6 @@ export default function TopBar({ tabs, active, onSelect }) {
           <BrandMark />
           <div className="brand-text">
             <h1>{t('appTitle')}</h1>
-            <p>{t('appSubtitle')}</p>
           </div>
         </div>
         <div className="topbar-right">
@@ -59,6 +63,31 @@ export default function TopBar({ tabs, active, onSelect }) {
               </button>
             ))}
           </div>
+          <button
+            className={'icon-round' + (active === ICON_TAB ? ' active' : '')}
+            onClick={() => onSelect(ICON_TAB)}
+            title={t('tab_settings')}
+            aria-label={t('tab_settings')}
+            aria-current={active === ICON_TAB ? 'page' : undefined}
+          >
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
+              strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <circle cx="12" cy="12" r="3.2" />
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 1 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.6 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 1 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.6a1.65 1.65 0 0 0 1-1.51V3a2 2 0 1 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 1 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z" />
+            </svg>
+          </button>
+          <button
+            className="icon-round"
+            onClick={() => window.location.reload()}
+            title={t('reload')}
+            aria-label={t('reload')}
+          >
+            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
+              strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+              <path d="M21 12a9 9 0 1 1-2.64-6.36" />
+              <polyline points="21 3 21 9 15 9" />
+            </svg>
+          </button>
           <button
             className={'icon-round save-btn' + (saved ? ' saved' : '') + (saveError ? ' save-error' : '')}
             onClick={doSave}
@@ -98,22 +127,10 @@ export default function TopBar({ tabs, active, onSelect }) {
               </svg>
             )}
           </button>
-          <button
-            className="icon-round"
-            onClick={() => window.location.reload()}
-            title={t('reload')}
-            aria-label={t('reload')}
-          >
-            <svg viewBox="0 0 24 24" width="19" height="19" fill="none" stroke="currentColor"
-              strokeWidth="2.2" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-              <path d="M21 12a9 9 0 1 1-2.64-6.36" />
-              <polyline points="21 3 21 9 15 9" />
-            </svg>
-          </button>
         </div>
       </div>
       <nav className="tabs" aria-label="sections">
-        {tabs.map((tab) => (
+        {tabs.filter((tab) => tab.id !== ICON_TAB).map((tab) => (
           <button
             key={tab.id}
             className={'tab' + (active === tab.id ? ' active' : '')}

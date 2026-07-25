@@ -11,6 +11,27 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.19.0] – 2026-07-25
+
+- **Dashboard: Köpfe vs. FTE**, je Base und je Aircraft. Zwei Balken je Zeile auf
+  **einer** Achse – gruppiert, nicht gestapelt, denn „Köpfe + FTE" wäre eine
+  Summe ohne Bedeutung. Der Abstand zwischen den Balken ist der Teilzeit-Anteil.
+  Die Zahlen stammen aus derselben Quelle wie der Reiter Kapazität
+  (`capacityByBase` / `capacityByAircraft`), Rente ist ausgenommen; geprüft, dass
+  die Summe auf beiden Seiten übereinstimmt.
+- **Untertitel in der Kopfzeile entfernt** („Boeing 737 MAX Phase-In · …").
+- **Einstellungen als Zahnrad** statt als Reiter, direkt neben DE/EN; danach
+  Neu laden, Speichern, Dunkelmodus. Der Knopf zeigt den aktiven Zustand und
+  meldet ihn per `aria-current` an Screenreader.
+- **Trainer-Tabelle schmäler: 1403 px → 1234 px**, passt damit ohne seitliches
+  Scrollen in die Inhaltsspalte. Die Breite kam nicht von den Daten, sondern von
+  den Überschriften: `th` ist standardmäßig `nowrap`, also stand über einer
+  Zelle mit „Austria" eine 181 px breite Spalte „AUSSTELLENDE BEHÖRDE". Jetzt
+  dürfen die Überschriften umbrechen (zwei Zeilen Kopfhöhe statt 170 px Breite),
+  dazu engere Zellen und ein Deckel für die freie Anmerkung. Auf schmalen
+  Bildschirmen scrollt die Tabelle weiterhin, statt gequetscht zu werden – auch
+  das ist geprüft. Die anderen Tabellen sind unverändert.
+
 ## [1.18.2] – 2026-07-25
 
 Ergebnis eines Code-Reviews des 1.18.1-Patches. Der erste Punkt ist ein Fehler,

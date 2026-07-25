@@ -144,6 +144,49 @@ export function StackedBars({ data, series }) {
   )
 }
 
+// ---- Grouped bars (two measures per row, side by side) --------------------
+// For comparing two measures of the SAME unit-ish scale across categories –
+// here headcount against FTE. Deliberately grouped, not stacked: stacking would
+// draw "heads + FTE", a sum that means nothing. And deliberately one axis: two
+// scales would invent a relationship the data does not have.
+export function GroupedBars({ data, series, format }) {
+  const pick = useChartColor()
+  const max = Math.max(1, ...data.flatMap((d) => series.map((ser) => d[ser.key] || 0)))
+  const fmt = format || ((v) => v)
+  return (
+    <div className="gbars">
+      {data.map((d) => (
+        <div className="gbar-row" key={d.key}>
+          <div className="hbar-label" title={d.label || d.key}>{d.label || d.key}</div>
+          <div className="gbar-group">
+            {series.map((ser, i) => (
+              <div className="gbar-line" key={ser.key}>
+                <div className="gbar-track">
+                  <div
+                    className="gbar-fill"
+                    style={{ width: `${((d[ser.key] || 0) / max) * 100}%`, background: pick(ser.color, i) }}
+                    title={`${ser.label}: ${fmt(d[ser.key] || 0)}`}
+                  />
+                </div>
+                <span className="gbar-val">{fmt(d[ser.key] || 0)}</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      ))}
+      <ul className="legend legend-wrap">
+        {series.map((ser, i) => (
+          <li key={ser.key}>
+            <span className="dot" style={{ background: pick(ser.color, i) }} />
+            <span className="legend-key">{ser.label}</span>
+            <span className="legend-val">{fmt(data.reduce((s2, d) => s2 + (d[ser.key] || 0), 0))}</span>
+          </li>
+        ))}
+      </ul>
+    </div>
+  )
+}
+
 // ---- Overall progress ring ------------------------------------------------
 export function ProgressRing({ value, size = 128, thickness = 14, label }) {
   const pick = useChartColor()

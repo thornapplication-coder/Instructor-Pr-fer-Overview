@@ -5,7 +5,6 @@ export const LANGS = ['de', 'en']
 const DICT = {
   // ---- generic / chrome
   appTitle: { de: 'Trainer & Prüfer Monitoring', en: 'Trainer & Examiner Monitoring' },
-  appSubtitle: { de: 'Boeing 737 MAX Phase-In · Instruktoren & Prüfer', en: 'Boeing 737 MAX Phase-In · Instructors & Examiners' },
   asOf: { de: 'Stand', en: 'as of' },
   update: { de: 'Update', en: 'Update' },
   reload: { de: 'Neu laden', en: 'Reload' },
@@ -93,6 +92,14 @@ const DICT = {
   chart_convProgress: { de: 'Umschulungs-Fortschritt', en: 'Conversion progress' },
   chart_qualByAircraft: { de: 'Qualifikation je Aircraft', en: 'Qualification by aircraft' },
   chart_role: { de: 'Captain / First Officer', en: 'Captain / First Officer' },
+  chart_headFteBase: { de: 'Köpfe vs. FTE je Base', en: 'Heads vs. FTE per base' },
+  chart_headFteAircraft: { de: 'Köpfe vs. FTE je Aircraft', en: 'Heads vs. FTE per aircraft' },
+  metric_heads: { de: 'Köpfe', en: 'Heads' },
+  metric_fte: { de: 'FTE', en: 'FTE' },
+  headFteHint: {
+    de: 'Ohne Rente. Die Lücke zwischen beiden Balken ist der Teilzeit-Anteil.',
+    en: 'Excludes retirees. The gap between the two bars is the part-time share.'
+  },
   overallProgress: { de: 'Gesamtfortschritt', en: 'Overall progress' },
 
   // ---- dashboard sections + arrange mode
