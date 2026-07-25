@@ -11,6 +11,29 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.19.3] – 2026-07-25
+
+- **„Köpfe vs. FTE" im Eurowings-Stil.** Das Violett aus 1.19.1 war die einzige
+  Nicht-Marken-Farbe auf dem Dashboard und stach entsprechend heraus. Es kam
+  nur zustande, weil Burgunder und Sky auf derselben Seite schon A320 und B737
+  bedeuten und eine zweite Serienfarbe damit als Zeilen-Identität lesbar gewesen
+  wäre.
+- **Gelöst durch die Form statt durch die Farbe:** statt zweier Balken
+  nebeneinander steckt der FTE-Balken jetzt **im** Köpfe-Balken. Das ist die
+  tatsächliche Beziehung – FTE kann Köpfe nie übersteigen –, der helle Rest ist
+  unmittelbar der Teilzeit-Anteil, und je Zeile gibt es nur noch **eine**
+  farbige Marke. Damit ist keine Verwechslung mit A320/B737 mehr möglich und die
+  Kachel darf die Markenfarbe tragen.
+- Das helle Band ist bewusst schwach gesättigt: ein satteres Hell-Burgunder läge
+  ΔE 2,2 von der Phasen-Rampe entfernt, also praktisch auf derselben Farbe. So
+  sind es 6,3 (hell) bzw. 11,1 (dunkel), und es hält die 2:1, die ein helles
+  Rampenende braucht.
+- Angeglichen an die übrigen Kacheln: „Gesamt" in der Überschrift, dieselbe
+  Balkenhöhe wie die anderen Balkendiagramme, dieselbe Zahlendarstellung.
+- Der Balken wird gedeckelt, falls jemand von Hand eine FTE über 1 einträgt –
+  gezeichnet wird höchstens die volle Breite, die ausgewiesene Zahl bleibt die
+  echte.
+
 ## [1.19.2] – 2026-07-25
 
 Die beiden Punkte, die in 1.19.1 offen geblieben waren:

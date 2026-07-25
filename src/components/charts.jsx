@@ -153,49 +153,57 @@ export function StackedBars({ data, series }) {
   )
 }
 
-// ---- Grouped bars (two measures per row, side by side) --------------------
-// For comparing two measures of the SAME unit-ish scale across categories –
-// here headcount against FTE. Deliberately grouped, not stacked: stacking would
-// draw "heads + FTE", a sum that means nothing. And deliberately one axis: two
-// scales would invent a relationship the data does not have.
-export function GroupedBars({ data, series, format }) {
+// ---- Nested bars (a part inside its whole) --------------------------------
+// For a measure and a subset of it – headcount and the FTE those heads add up
+// to. Nested rather than side by side because that is the actual relationship:
+// FTE can never exceed heads, and the empty remainder IS the part-time share,
+// which is the thing worth seeing. One coloured mark per row, so the series
+// colour can never be read as a row identity.
+export function NestedBars({ data, series, format }) {
   const pick = useChartColor()
-  const max = Math.max(1, ...data.flatMap((d) => series.map((ser) => d[ser.key] || 0)))
+  const [whole, part] = series
+  const max = Math.max(1, ...data.map((d) => d[whole.key] || 0))
   const fmt = format || ((v) => v)
   return (
-    <div className="gbars">
-      {data.map((d) => (
-        <div className="gbar-row" key={d.key}>
-          <div className="hbar-label" title={d.label || d.key}>{d.label || d.key}</div>
-          <div className="gbar-group">
-            {series.map((ser, i) => {
-              const v = d[ser.key] || 0
-              return (
-                <div className="gbar-line" key={ser.key}>
-                  <div className="gbar-track">
-                    {/* No mark for a zero: .gbar-fill has a 3px minimum, so an
-                        empty B737 row would otherwise show a coloured stub and
-                        read as "a little capacity exists". */}
-                    {v > 0 && (
-                      <div
-                        className="gbar-fill"
-                        style={{ width: `${(v / max) * 100}%`, background: pick(ser.color, i) }}
-                        title={`${ser.label}: ${fmt(v)}`}
-                      />
-                    )}
-                  </div>
-                  <span className="gbar-val">{fmt(v)}</span>
+    <div className="nbars">
+      {data.map((d) => {
+        const w = d[whole.key] || 0
+        const p = d[part.key] || 0
+        // Clamped so hand-entered data (FTE above 1 per person) cannot draw the
+        // inner bar outside its band; the printed numbers stay truthful.
+        const inner = w > 0 ? Math.min(p, w) / w : 0
+        return (
+          <div className="nbar-row" key={d.key}>
+            <div className="hbar-label" title={d.label || d.key}>{d.label || d.key}</div>
+            <div className="nbar-track">
+              {w > 0 && (
+                <div
+                  className="nbar-whole"
+                  style={{ width: `${(w / max) * 100}%`, background: pick(whole.color, 0) }}
+                  title={`${whole.label}: ${fmt(w)}`}
+                >
+                  {p > 0 && (
+                    <div
+                      className="nbar-part"
+                      style={{ width: `${inner * 100}%`, background: pick(part.color, 0) }}
+                      title={`${part.label}: ${fmt(p)}`}
+                    />
+                  )}
                 </div>
-              )
-            })}
+              )}
+            </div>
+            <div className="nbar-vals">
+              <span className="nbar-val">{fmt(w)}</span>
+              <span className="nbar-val part">{fmt(p)}</span>
+            </div>
           </div>
-        </div>
-      ))}
+        )
+      })}
       <ChartLegend
         wrap
-        items={series.map((ser, i) => ({
+        items={series.map((ser) => ({
           key: ser.key,
-          color: pick(ser.color, i),
+          color: pick(ser.color, 0),
           label: ser.label,
           value: fmt(data.reduce((s2, d) => s2 + (d[ser.key] || 0), 0))
         }))}

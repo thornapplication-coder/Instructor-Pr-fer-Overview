@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import KpiTile from '../components/KpiTile.jsx'
-import { Donut, GroupedBars, HBars, ProgressRing, PipelineBar, StackedBars, colorAt } from '../components/charts.jsx'
+import { Donut, NestedBars, HBars, ProgressRing, PipelineBar, StackedBars, colorAt } from '../components/charts.jsx'
 import {
   headcount,
   conversionSummary,
@@ -20,7 +20,7 @@ import {
 import { conversionProgress, STAFF_TYPE } from '../data/pipeline.js'
 import { qualLabel, conversionTrainers } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
-import { CATEGORICAL, MEASURE_PAIR, OVERFLOW, STATUS, BRAND, stageRamp } from '../lib/palette.js'
+import { CATEGORICAL, MEASURE_WHOLE, MEASURE_PART, OVERFLOW, STATUS, BRAND, stageRamp } from '../lib/palette.js'
 import { formatFte1 } from '../lib/format.js'
 
 // ORE is a priority tier (A before B before C), so it reads as an ordinal ramp –
@@ -135,12 +135,10 @@ export default function Dashboard() {
   // Heads against FTE: the same people counted two ways, so one axis and two
   // grouped bars. The gap between them is the part-time share, which is the
   // point of showing them together. Retirees are already excluded by capacityBy.
-  // One hue in two steps, not two categorical slots: burgundy and sky already
-  // mean A320 and B737 on this very dashboard, so using them here would let the
-  // series colour be mistaken for the row identity.
+  // The whole first, then the part that sits inside it.
   const headFte = [
-    { key: 'heads', label: t('metric_heads'), color: MEASURE_PAIR[0] },
-    { key: 'fte', label: t('metric_fte'), color: MEASURE_PAIR[1] }
+    { key: 'heads', label: t('metric_heads'), color: MEASURE_WHOLE },
+    { key: 'fte', label: t('metric_fte'), color: MEASURE_PART }
   ]
   const toHeadFte = (r) => ({ key: r.key, label: r.key, heads: r.headcount, fte: r.total })
   const capBase = useMemo(
@@ -190,8 +188,8 @@ export default function Dashboard() {
     {
       id: 'capBase',
       node: (
-        <Card title={t('chart_headFteBase')}>
-          <GroupedBars data={capBase} series={headFte} format={fte1} />
+        <Card title={t('chart_headFteBase')} total={capBase.reduce((n, r) => n + r.heads, 0)}>
+          <NestedBars data={capBase} series={headFte} format={fte1} />
           <p className="stat-hint">{t('headFteHint')}</p>
         </Card>
       )
@@ -199,8 +197,8 @@ export default function Dashboard() {
     {
       id: 'capAircraft',
       node: (
-        <Card title={t('chart_headFteAircraft')}>
-          <GroupedBars data={capAc} series={headFte} format={fte1} />
+        <Card title={t('chart_headFteAircraft')} total={capAc.reduce((n, r) => n + r.heads, 0)}>
+          <NestedBars data={capAc} series={headFte} format={fte1} />
           <p className="stat-hint">{t('headFteHint')}</p>
         </Card>
       )

@@ -97,8 +97,8 @@ const DICT = {
   metric_heads: { de: 'Köpfe', en: 'Heads' },
   metric_fte: { de: 'FTE', en: 'FTE' },
   headFteHint: {
-    de: 'Ohne Rente. Die Lücke zwischen beiden Balken ist der Teilzeit-Anteil.',
-    en: 'Excludes retirees. The gap between the two bars is the part-time share.'
+    de: 'Der helle Balken sind die Köpfe, der dunkle die FTE darin. Der helle Rest ist der Teilzeit-Anteil. Ohne Rente.',
+    en: 'The light bar is the headcount, the solid one the FTE within it. The light remainder is the part-time share. Excludes retirees.'
   },
   overallProgress: { de: 'Gesamtfortschritt', en: 'Overall progress' },
 

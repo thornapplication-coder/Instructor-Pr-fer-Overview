@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.19.2'
+export const APP_VERSION = '1.19.3'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.19.3',
+    date: '2026-07-25',
+    type: 'patch',
+    changes: {
+      de: [
+        'Die beiden „Köpfe vs. FTE"-Kacheln sind jetzt im Eurowings-Stil wie der Rest des Dashboards: Burgunder statt des Violetts, das dort als einzige Fremdfarbe stand.',
+        'Statt zwei Balken nebeneinander steckt der FTE-Balken jetzt im Köpfe-Balken – das entspricht der Sache, denn FTE ist ein Teil der Köpfe. Der helle Rest am Balkenende ist der Teilzeit-Anteil.',
+        'Die Kacheln haben jetzt wie alle anderen ein „Gesamt" in der Überschrift, gleiche Balkenhöhe und gleiche Zahlendarstellung.'
+      ],
+      en: [
+        'The two "Heads vs. FTE" cards now follow the Eurowings style like the rest of the dashboard: burgundy instead of the violet that stood out as the only foreign colour there.',
+        'Instead of two bars side by side, the FTE bar now sits inside the headcount bar – which matches reality, since FTE is a part of the heads. The light remainder at the end of the bar is the part-time share.',
+        'The cards now carry a "Total" in their heading like all the others, with the same bar height and number style.'
+      ]
+    }
+  },
   {
     version: '1.19.2',
     date: '2026-07-25',

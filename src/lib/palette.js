@@ -67,15 +67,20 @@ export function stageRamp(n, dark = false) {
   return Array.from({ length: n }, (_, i) => src[Math.round((i * (src.length - 1)) / (n - 1))])
 }
 
-// A pair for ONE measure counted two ways – headcount against FTE. Those are
-// not two identities, so they take one hue in two steps rather than two
-// categorical slots. Violet deliberately: burgundy and sky already mean A320
-// and B737 on the same dashboard, and blue already means First Officer, so
-// reusing them would let the series colour be read as a row identity.
-// Light on white: dL 0.25, 8.30:1 / 2.86:1 (the lighter step of an ordinal
-// ramp only has to clear 2:1). Dark on #171c22: dL 0.24, 3.98:1 / 10.18:1.
-export const MEASURE_PAIR = ['#6928B0', '#B17FFE']
-export const MEASURE_PAIR_DARK = ['#955BE3', '#D3BDFE']
+// Headcount against FTE is not two identities – FTE is a PART of the heads, so
+// it is drawn nested inside them: a muted band for the whole, the brand
+// burgundy for the part. One hue keeps the card in the Eurowings family, and
+// one coloured mark per row means nothing here can be mistaken for the A320 /
+// B737 colours the way a second series colour was.
+//
+// The band is deliberately low-chroma: a saturated light burgundy would land
+// within dE 2.2 of the conversion stage ramp, i.e. the same colour. At this
+// chroma the distance is 6.3 (light) / 11.1 (dark), and it still clears the
+// 2:1 an ordinal light end needs (2.07:1 on white, 3.34:1 on the dark card).
+export const MEASURE_WHOLE = '#DDA5B8'
+export const MEASURE_WHOLE_DARK = '#9B5A72'
+export const MEASURE_PART = BRAND.burgundy
+export const MEASURE_PART_DARK = CATEGORICAL_DARK[0]
 
 // --------------------------------------------------------------- status ----
 // Reserved meanings, never used for identity. These are the CHIP fills: they
@@ -103,7 +108,7 @@ export const STATUS_DARK = {
 const DARK_OF = new Map()
 CATEGORICAL.forEach((hex, i) => DARK_OF.set(hex.toLowerCase(), CATEGORICAL_DARK[i]))
 STAGE_RAMP.forEach((hex, i) => DARK_OF.set(hex.toLowerCase(), STAGE_RAMP_DARK[i]))
-MEASURE_PAIR.forEach((hex, i) => DARK_OF.set(hex.toLowerCase(), MEASURE_PAIR_DARK[i]))
+DARK_OF.set(MEASURE_WHOLE.toLowerCase(), MEASURE_WHOLE_DARK)
 Object.keys(STATUS).forEach((k) => DARK_OF.set(STATUS[k].toLowerCase(), STATUS_DARK[k]))
 DARK_OF.set(OVERFLOW.toLowerCase(), OVERFLOW_DARK)
 

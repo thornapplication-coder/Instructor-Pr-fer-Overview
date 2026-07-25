@@ -194,8 +194,8 @@ button { font-family: inherit; }
 .hbars { display: flex; flex-direction: column; gap: 10px; }
 .hbar-row { display: grid; grid-template-columns: 90px 1fr 34px; align-items: center; gap: 10px; }
 .hbar-label { font-size: 13px; color: var(--text); font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.hbar-track, .gbar-track { background: var(--panel2); border-radius: 999px; height: 16px; overflow: hidden; }
-.hbar-fill, .gbar-fill { height: 100%; border-radius: 999px; min-width: 3px; transition: width .3s ease; }
+.hbar-track, .nbar-track { background: var(--panel2); border-radius: 999px; height: 16px; overflow: hidden; }
+.hbar-fill, .nbar-whole { height: 100%; border-radius: 999px; min-width: 3px; transition: width .3s ease; }
 .hbar-val { text-align: right; font-weight: 800; font-size: 13px; color: var(--ink); }
 
 /* Stacked variant: segments sit side by side inside one track. */
@@ -205,16 +205,18 @@ button { font-family: inherit; }
 .hbars.stacked .hbar-seg:last-child { border-radius: 0 999px 999px 0; }
 .hbars.stacked .hbar-seg:only-child { border-radius: 999px; }
 
-/* Grouped bars: two thin bars per row, each in its own track (NOT the stacked
-   variant above – these are two measures, not segments of one). */
-.gbars { display: flex; flex-direction: column; gap: 12px; }
-.gbar-row { display: grid; grid-template-columns: 90px 1fr; align-items: center; gap: 10px; }
-.gbar-group { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
-.gbar-line { display: grid; grid-template-columns: 1fr 42px; align-items: center; gap: 8px; }
-/* Same track and fill as .hbar-*, only thinner: two of them share a row, so a
-   16px bar would make the pair read as one block. */
-.gbar-track { height: 9px; }
-.gbar-val { text-align: right; font-weight: 800; font-size: 12px; color: var(--ink); }
+/* Nested bars: the band is the whole, the bar inside it is the part. Same track
+   and band as .hbar-* above; only the inner mark is new. */
+.nbars { display: flex; flex-direction: column; gap: 10px; }
+.nbar-row { display: grid; grid-template-columns: 90px 1fr 78px; align-items: center; gap: 10px; }
+.nbar-whole { position: relative; }
+.nbar-part {
+  position: absolute; left: 0; top: 0; bottom: 0;
+  border-radius: 999px; min-width: 3px; transition: width .3s ease;
+}
+.nbar-vals { display: flex; justify-content: flex-end; gap: 8px; }
+.nbar-val { font-weight: 800; font-size: 13px; color: var(--ink); font-variant-numeric: tabular-nums; }
+.nbar-val.part { color: var(--burg); }
 .stacked-legend { margin-top: 4px; }
 
 /* ---------- Dashboard sections & arrange mode ---------- */
