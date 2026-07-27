@@ -138,6 +138,160 @@ export function targetDays(step) {
   return Number.isFinite(n) && n > 0 ? Math.round(n) : null
 }
 
+// ---------------------------------------------------------------- duration --
+//
+// One entry per COURSE, not per attendee. A course with twelve people on it
+// happened once and took as long as it took; counted per head it would decide
+// its month twelve times over and drown out every other course that month.
+// A booking with no course of its own is its own event – that is the only
+// sensible reading of a one-off.
+//
+// A step still running (a start, no end) is left out entirely rather than
+// counted as zero days, which would drag every average down towards nothing.
+export function courseEvents(trainers, steps, runs) {
+  const seen = new Set()
+  const out = []
+  for (const tr of trainers || []) {
+    for (const s of steps || []) {
+      const a = tr.assignments?.[s.id]
+      if (!a || a.status === 'na') continue
+      if (a.courseId) {
+        const key = s.id + '|' + a.courseId
+        if (seen.has(key)) continue
+        seen.add(key)
+        // The COURSE period, deliberately not this person's deviation: how long
+        // the course ran is a property of the course.
+        const run = findRun(runs, a.courseId)
+        const days = spanDays(run && run.from, run && run.to)
+        if (days == null) continue
+        out.push({ stepId: s.id, from: run.from, days, courseId: a.courseId })
+      } else {
+        const r = resolveAssignment(a, null)
+        if (r.days == null) continue
+        out.push({ stepId: s.id, from: r.from, days: r.days, courseId: '' })
+      }
+    }
+  }
+  return out
+}
+
+// Months on the x axis, one average per course type. Keyed by the month a
+// course STARTED in, so a course running over a month boundary stays in one
+// bucket instead of being split between two.
+export function durationByMonth(trainers, steps, runs) {
+  const byMonth = new Map()
+  for (const e of courseEvents(trainers, steps, runs)) {
+    const key = monthOf(e.from)
+    if (!key) continue
+    if (!byMonth.has(key)) byMonth.set(key, new Map())
+    const row = byMonth.get(key)
+    const cur = row.get(e.stepId) || { sum: 0, n: 0 }
+    cur.sum += e.days
+    cur.n += 1
+    row.set(e.stepId, cur)
+  }
+  return [...byMonth.entries()]
+    .sort((a, b) => a[0].localeCompare(b[0]))
+    .map(([key, row]) => {
+      const values = {}
+      const counts = {}
+      for (const s of steps || []) {
+        const cur = row.get(s.id)
+        // Rounded once, at the end – never by adding up rounded rows.
+        values[s.id] = cur ? Math.round((cur.sum / cur.n) * 10) / 10 : null
+        counts[s.id] = cur ? cur.n : 0
+      }
+      return { key, values, counts }
+    })
+}
+
+// The same numbers as a share of each course type's target, so types of very
+// different length become comparable on one axis. Only types that HAVE a target
+// appear – a percentage of nothing is not a number.
+export function deviationByMonth(trainers, steps, runs) {
+  const rated = (steps || []).filter((s) => targetDays(s) != null)
+  return durationByMonth(trainers, steps, runs).map((row) => {
+    const values = {}
+    const counts = {}
+    for (const s of rated) {
+      const v = row.values[s.id]
+      values[s.id] = v == null ? null : Math.round((v / targetDays(s)) * 100)
+      counts[s.id] = row.counts[s.id]
+    }
+    return { key: row.key, values, counts }
+  })
+}
+
+// One row per course type over the whole period: how many courses, how long on
+// average, against the target.
+export function durationSummary(trainers, steps, runs) {
+  const acc = new Map()
+  for (const e of courseEvents(trainers, steps, runs)) {
+    const cur = acc.get(e.stepId) || { sum: 0, n: 0 }
+    cur.sum += e.days
+    cur.n += 1
+    acc.set(e.stepId, cur)
+  }
+  return (steps || []).map((s) => {
+    const cur = acc.get(s.id) || { sum: 0, n: 0 }
+    const avg = cur.n ? Math.round((cur.sum / cur.n) * 10) / 10 : null
+    const target = targetDays(s)
+    return {
+      id: s.id,
+      label: s.label,
+      color: s.color,
+      n: cur.n,
+      avg,
+      target,
+      pct: avg != null && target ? Math.round((avg / target) * 100) : null
+    }
+  })
+}
+
+// Steps that have started but have no end yet. The honest caption under a chart
+// that would otherwise look like the whole truth.
+export function openEnded(trainers, steps, runs) {
+  let n = 0
+  for (const tr of trainers || []) {
+    for (const s of steps || []) {
+      const a = tr.assignments?.[s.id]
+      if (!a || a.status === 'na') continue
+      const r = resolveAssignment(a, findRun(runs, a.courseId))
+      if (dayValue(r.from) != null && dayValue(r.to) == null) n += 1
+    }
+  }
+  return n
+}
+
+// ------------------------------------------------------------ target date ---
+//
+// When the last booked step ends, and how that sits against the person's target
+// date. This is what makes a target date more than a wish: it can now be
+// checked against the courses that are actually booked.
+//
+// Only steps with a known end count. A plan that is half-entered forecasts an
+// early finish, so `complete` says whether every step is accounted for and the
+// UI can hold back a verdict that would only be flattering.
+export function finishForecast(trainer, steps, runs) {
+  let last = null
+  let known = 0
+  let relevant = 0
+  for (const s of steps || []) {
+    const a = trainer?.assignments?.[s.id]
+    if (a && a.status === 'na') continue
+    relevant += 1
+    const r = resolveAssignment(a, findRun(runs, a?.courseId))
+    const v = dayValue(r.to)
+    if (v == null) continue
+    known += 1
+    if (last == null || v > last.v) last = { v, iso: r.to }
+  }
+  if (!last) return { to: '', days: null, over: null, complete: false, known: 0, of: relevant }
+  const target = dayValue(trainer?.conv?.target)
+  const over = target == null ? null : Math.round((last.v - target) / DAY)
+  return { to: last.iso, days: over, over, complete: known === relevant, known, of: relevant }
+}
+
 // Two periods overlap when neither ends before the other begins. Used to catch
 // the one thing the grid cannot show: the same person booked into two courses
 // running at the same time.

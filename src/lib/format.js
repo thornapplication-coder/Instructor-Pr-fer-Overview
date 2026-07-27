@@ -85,6 +85,13 @@ export function downloadJson(filename, obj) {
 // tab so the dashboard and the capacity tab cannot print the same figure two
 // different ways ("4,6" vs "4.6"), which is exactly what happened once.
 export function formatFte1(value, lang) {
+  return formatNum1(value, lang)
+}
+
+// The same one-decimal rule for anything that is not an FTE – course lengths,
+// axis ticks. Same reason: two notations for the same figure on one page is
+// how "38.9" once ended up next to "38,9".
+export function formatNum1(value, lang) {
   const n = typeof value === 'number' ? value : Number(value) || 0
   const s = (Math.round(n * 10) / 10).toString()
   return lang === 'de' ? s.replace('.', ',') : s

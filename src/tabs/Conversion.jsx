@@ -9,7 +9,7 @@ import { useThemed } from '../lib/useThemed.js'
 import { qualLabel, isConversionQual, conversionTrainers, CONVERSION_QUALS } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { conversionFteSummary } from '../lib/stats.js'
-import { findRun, resolveAssignment } from '../lib/courses.js'
+import { finishForecast, findRun, resolveAssignment } from '../lib/courses.js'
 import { trainerAlerts } from '../lib/alerts.js'
 import { formatDate, formatFte1 } from '../lib/format.js'
 
@@ -190,7 +190,32 @@ export default function Conversion() {
                           </div>
                         ) : null
                       })()}
-                      {x.conv?.target && <div className="conv-target">🎯 {formatDate(x.conv.target, lang)}</div>}
+                      {x.conv?.target && (
+                        <div className="conv-target">
+                          🎯 {formatDate(x.conv.target, lang)}
+                          {(() => {
+                            // The verdict the target date was missing: the last
+                            // booked course end against it. Held back while the
+                            // plan is incomplete – a half-entered plan always
+                            // forecasts an early finish, which would be a
+                            // flattering lie rather than a measurement.
+                            const f = finishForecast(x, assignmentSteps, courseRuns)
+                            if (f.over == null) return null
+                            if (!f.complete) {
+                              return <span className="target-chip partial" title={t('target_partialHint')}>
+                                {t('target_partial').replace('{n}', String(f.known)).replace('{m}', String(f.of))}
+                              </span>
+                            }
+                            return f.over > 0 ? (
+                              <span className="target-chip over" title={t('target_overHint')}>
+                                +{f.over} {t('course_daysShort')}
+                              </span>
+                            ) : (
+                              <span className="target-chip ok" title={t('target_okHint')}>✓</span>
+                            )
+                          })()}
+                        </div>
+                      )}
                       {x.conv?.note && <div className="conv-note">{x.conv.note}</div>}
                       <div className="conv-actions">
                         <button className="mini-btn" disabled={si === 0} onClick={() => move(x, -1)}>‹</button>

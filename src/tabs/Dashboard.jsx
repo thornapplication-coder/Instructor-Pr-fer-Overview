@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import KpiTile from '../components/KpiTile.jsx'
-import { Donut, NestedBars, HBars, ProgressRing, PipelineBar, StackedBars, TrendColumns, colorAt } from '../components/charts.jsx'
+import { Donut, NestedBars, HBars, ProgressRing, PipelineBar, StackedBars, TrendColumns, LineTrend, colorAt } from '../components/charts.jsx'
 import { historySeries, monthKey, monthLabelShort } from '../lib/history.js'
 import { planStatus, planFor, intakeByMonth, intakeFor, monthWindow } from '../lib/plan.js'
 import { monthLabel } from '../lib/alerts.js'
@@ -25,7 +25,8 @@ import { conversionProgress, STAFF_TYPE } from '../data/pipeline.js'
 import { qualLabel, conversionTrainers, CONVERSION_QUALS } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { CATEGORICAL, MEASURE_WHOLE, MEASURE_PART, STATUS, BRAND, ROLE_CPT, ROLE_FO, stageRamp } from '../lib/palette.js'
-import { formatFte1 } from '../lib/format.js'
+import { formatFte1, formatNum1 } from '../lib/format.js'
+import { deviationByMonth, durationByMonth, durationSummary, openEnded } from '../lib/courses.js'
 
 // ORE is a priority tier (A before B before C), so it reads as an ordinal ramp –
 // darker means more urgent.
@@ -115,7 +116,7 @@ function ReorderZone({ zone, items, className, editing, onReorder, t }) {
 export default function Dashboard() {
   const { data, t, lang, setDashboardOrder } = useStore()
   const tint = useThemed()
-  const { trainers, stages, quals: qualDefs } = data
+  const { trainers, stages, quals: qualDefs, assignmentSteps, courseRuns } = data
   const [editing, setEditing] = useState(false)
   const order = (data.dashboard && data.dashboard.order) || {}
   const total = trainers.length
@@ -199,6 +200,42 @@ export default function Dashboard() {
     { key: 'captain', label: t('role_captain'), short: t('role_captainShort'), color: ROLE_COLORS.captain },
     { key: 'fo', label: t('role_fo'), short: t('role_foShort'), color: ROLE_COLORS.fo }
   ]
+
+  // How long a course type actually takes, month by month. Measured per COURSE
+  // (see courses.js): a course with twelve people on it happened once.
+  // Two readings of the same data – days answers "how long is a TRI course",
+  // percent answers "which course type is running over" across types whose
+  // natural lengths are nothing alike.
+  const [durMode, setDurMode] = useState('days')
+  const durSummary = useMemo(
+    () => durationSummary(convPool, assignmentSteps, courseRuns),
+    [convPool, assignmentSteps, courseRuns]
+  )
+  const durDays = useMemo(
+    () => durationByMonth(convPool, assignmentSteps, courseRuns),
+    [convPool, assignmentSteps, courseRuns]
+  )
+  const durPct = useMemo(
+    () => deviationByMonth(convPool, assignmentSteps, courseRuns),
+    [convPool, assignmentSteps, courseRuns]
+  )
+  const durOpen = useMemo(
+    () => openEnded(convPool, assignmentSteps, courseRuns),
+    [convPool, assignmentSteps, courseRuns]
+  )
+  const durRated = durSummary.filter((r) => r.target != null)
+  const durData = durMode === 'days' ? durDays : durPct
+  const durRows = durMode === 'days' ? durSummary : durRated
+  // Only course types that actually have readings – an empty line in the legend
+  // reads as "zero days", which is not what "no course yet" means.
+  const durSeries = durRows
+    .filter((r) => durData.some((d) => d.values[r.id] != null))
+    .map((r) => ({
+      key: r.id,
+      label: r.label,
+      color: r.color,
+      target: durMode === 'days' ? r.target : null
+    }))
 
   const pipe = pipelineDistribution(convPool, stages)
   const overall =
@@ -476,6 +513,52 @@ export default function Dashboard() {
                 showValues
               />
               <p className="stat-hint">{t('intake_hint')}</p>
+            </>
+          )}
+        </Card>
+      )
+    },
+    {
+      id: 'duration',
+      node: (
+        <Card title={t('chart_duration')}>
+          {durSeries.length === 0 ? (
+            <p className="trend-empty">{t('dur_empty')}</p>
+          ) : (
+            <>
+              <div className="seg-toggle no-capture" role="group" aria-label={t('chart_duration')}>
+                {['days', 'pct'].map((m) => (
+                  <button
+                    key={m}
+                    className={'seg-btn' + (durMode === m ? ' active' : '')}
+                    aria-pressed={durMode === m}
+                    onClick={() => setDurMode(m)}
+                  >
+                    {t(m === 'days' ? 'dur_inDays' : 'dur_inPct')}
+                  </button>
+                ))}
+              </div>
+              <LineTrend
+                data={durData}
+                series={durSeries}
+                labelOf={(k) => monthLabelShort(k, lang)}
+                unit={durMode === 'days' ? t('course_daysShort') : '%'}
+                format={(v) => formatNum1(v, lang)}
+                refLine={durMode === 'pct' ? { value: 100 } : null}
+                legendValue={(s) => {
+                  const row = durRows.find((r) => r.id === s.key)
+                  if (!row || row.avg == null) return '–'
+                  return durMode === 'days'
+                    ? formatNum1(row.avg, lang) + ' ' + t('course_daysShort') + (row.target ? ' / ' + row.target : '')
+                    : row.pct + ' %'
+                }}
+              />
+              <p className="stat-hint">
+                {t('dur_hint')}
+                {durMode === 'pct' && ' ' + t('dur_hintPct')}
+                {durMode === 'days' && durSummary.some((r) => r.target == null) && ' ' + t('dur_hintNoTarget')}
+                {durOpen > 0 && ' ' + t('dur_open').replace('{n}', String(durOpen))}
+              </p>
             </>
           )}
         </Card>

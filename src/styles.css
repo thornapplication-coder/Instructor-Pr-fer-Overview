@@ -209,6 +209,45 @@ button { font-family: inherit; }
 .trend .legend { margin-top: 12px; }
 .trend-empty { color: var(--muted); font-size: 13px; margin: 0; }
 
+/* ---------- Multi-line trend (durations) ---------- */
+.lines-plot { display: flex; gap: 8px; }
+.lines-axis {
+  display: flex; flex-direction: column; justify-content: space-between;
+  font-size: 10.5px; color: var(--muted); text-align: right;
+  white-space: nowrap; flex: none;
+}
+/* The dots are placed in percent of this box, so it has to be the whole plot
+   area and nothing else – any padding here shifts every point. */
+.lines-area {
+  position: relative; flex: 1 1 auto; min-width: 0; height: 100%;
+  border-bottom: 1px solid var(--hair); border-left: 1px solid var(--hair);
+}
+.lines-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
+.lines-path { stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
+/* The target: same colour as its course type, but dashed and thin, so it reads
+   as a reference rather than as a second measurement. */
+.lines-target { stroke-width: 1.5; stroke-dasharray: 5 4; opacity: .55; }
+/* The neutral 100 % reference. Ink, not a status colour: being above it is not
+   automatically bad – a course that finished early sits below it. */
+.lines-ref { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; opacity: .5; }
+.lines-dot {
+  position: absolute; width: 8px; height: 8px; border-radius: 50%;
+  transform: translate(-50%, 50%); border: 2px solid var(--white);
+  box-sizing: content-box;
+}
+/* Absolutely placed, not an evenly divided flex row: the points sit at
+   i/(n-1) of the width, so a flex slot's centre is not under its own point. */
+.lines-ticks { position: absolute; top: 100%; left: 0; right: 0; height: 18px; }
+.lines-ticks span {
+  position: absolute; top: 5px; transform: translateX(-50%);
+  font-size: 10.5px; color: var(--muted); white-space: nowrap;
+}
+/* The outermost labels pull inwards so they cannot hang off the card. */
+.lines-ticks span:first-child { transform: none; }
+.lines-ticks span:last-child { transform: translateX(-100%); }
+.lines-plot { margin-bottom: 20px; }
+.lines .legend { margin-top: 12px; }
+
 /* ---------- Plan vs. actual ---------- */
 .plan-status { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
 .plan-dot { width: 16px; height: 16px; border-radius: 50%; flex: none; }
@@ -530,7 +569,14 @@ select.input { cursor: pointer; }
 .conv-name:hover { color: var(--burg); text-decoration: underline; }
 .conv-meta { display: flex; align-items: center; gap: 4px; margin-top: 6px; flex-wrap: wrap; }
 .chip-sm { background: var(--panel2); color: var(--muted); border-radius: 5px; padding: 1px 6px; font-size: 11px; font-weight: 700; }
-.conv-target { margin-top: 6px; font-size: 12px; color: var(--burg-dark); font-weight: 700; }
+.conv-target { margin-top: 6px; font-size: 12px; color: var(--burg-dark); font-weight: 700; display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+/* The verdict on the target date. Status colours are right here – it IS a
+   status – and the "not enough data" case takes neither of them, because
+   "unknown" is not "on time". */
+.target-chip { font-size: 10.5px; font-weight: 800; border-radius: 999px; padding: 0 6px; line-height: 16px; }
+.target-chip.ok { background: var(--green); color: #fff; }
+.target-chip.over { background: var(--red); color: #fff; }
+.target-chip.partial { background: var(--panel2); color: var(--muted); }
 .conv-note { margin-top: 4px; font-size: 12px; color: var(--muted); overflow-wrap: anywhere; }
 .conv-actions { display: flex; gap: 4px; margin-top: 6px; justify-content: flex-end; }
 /* Scoped to the board: .mini-btn is shared with the list editors, where the

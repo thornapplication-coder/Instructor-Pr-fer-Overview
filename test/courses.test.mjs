@@ -5,6 +5,12 @@
 import {
   attendees,
   conflictsFor,
+  courseEvents,
+  deviationByMonth,
+  durationByMonth,
+  durationSummary,
+  finishForecast,
+  openEnded,
   emptyCourseRun,
   findRun,
   isOverbooked,
@@ -155,4 +161,87 @@ console.log('\nCourse dates – the merge knows about them')
 {
   ok(MERGE_LISTS.includes('courseRuns'),
     'courseRuns is a merged list – otherwise two devices adding a course would keep only one of them')
+}
+
+console.log('\nCourse dates – how long a course type takes')
+{
+  const RUNS2 = [
+    ...RUNS,
+    { id: 'c4', stepId: 'tr', providerId: '', location: '', from: '2026-05-04', to: '2026-05-13', seats: 0 }
+  ]
+  // Twelve people on one course, one person on another the same month.
+  const many = []
+  for (let i = 0; i < 12; i++) many.push({ id: 'm' + i, assignments: { tr: { courseId: 'c2', status: 'booked' } } })
+  many.push({ id: 'solo', assignments: { tr: { courseId: 'c4', status: 'booked' } } })
+
+  const ev = courseEvents(many, STEPS, RUNS2)
+  ok(ev.length === 2, 'twelve people on one course are ONE event, not twelve (' + ev.length + ')')
+  const may = durationByMonth(many, STEPS, RUNS2).find((r) => r.key === '2026-05')
+  // c2 = 4.5. to 21.5. = 18 days, c4 = 4.5. to 13.5. = 10 days -> 14
+  ok(may.values.tr === 14, 'the month averages the two COURSES, not the thirteen heads (' + may.values.tr + ')')
+  ok(may.counts.tr === 2, 'and says how many courses are behind the point (' + may.counts.tr + ')')
+
+  // Per head the big course would drag it to 17.4 – the number this avoids.
+  ok(may.values.tr !== 17.4, 'a per-head average would have read 17.4 and let one course decide the month')
+
+  const perPerson = [{ id: 'p', assignments: { tri: { date: '2026-04-06', end: '2026-04-10', status: 'booked' } } }]
+  const own = durationByMonth(perPerson, STEPS, RUNS2)
+  ok(own.length === 1 && own[0].values.tri === 5, 'a booking with its own period is its own event (' + own[0].values.tri + ' days)')
+
+  const running = [{ id: 'r', assignments: { tri: { date: '2026-04-06', status: 'booked' } } }]
+  ok(durationByMonth(running, STEPS, RUNS2).length === 0,
+    'a course that has started but not ended is left out, not counted as zero days')
+  ok(openEnded(running, STEPS, RUNS2) === 1, 'but it is counted as still running, so the caption can say so')
+
+  const naOnly = [{ id: 'n', assignments: { tr: { courseId: 'c2', status: 'na' } } }]
+  ok(courseEvents(naOnly, STEPS, RUNS2).length === 0, 'a step marked n/a is not a course anybody sat')
+
+  const sum = durationSummary(many, STEPS, RUNS2)
+  const tr = sum.find((r) => r.id === 'tr')
+  ok(tr.n === 2 && tr.avg === 14, 'the summary agrees with the monthly figures (' + tr.n + ' courses, ' + tr.avg + ' days)')
+  ok(tr.target === 18 && tr.pct === 78, 'and expresses it against the course type target (' + tr.pct + ' %)')
+  ok(sum.find((r) => r.id === 'tri').avg === null, 'a course type with no readings has no average, not zero')
+
+  const dev = deviationByMonth(many, STEPS, RUNS2).find((r) => r.key === '2026-05')
+  ok(dev.values.tr === 78, 'the percentage view divides by the target (' + dev.values.tr + ')')
+  ok(!('tri' in dev.values), 'a course type without a target does not appear in the percentage view')
+}
+
+console.log('\nCourse dates – does the target date hold?')
+{
+  const t1 = {
+    conv: { target: '2026-04-30' },
+    assignments: {
+      tr: { courseId: 'c1' },          // ends 2026-03-20
+      tri: { courseId: 'c3' },         // ends 2026-03-25
+      lifus: { date: '2026-04-01', end: '2026-04-05' }
+    }
+  }
+  const f = finishForecast(t1, STEPS, RUNS)
+  ok(f.to === '2026-04-05', 'the forecast is the LAST end, not the first (' + f.to + ')')
+  ok(f.complete === true, 'every step has an end, so the verdict is allowed')
+  ok(f.over === -25, 'finishing on 5 April against a 30 April target is 25 days early (' + f.over + ')')
+
+  const late = finishForecast({ ...t1, conv: { target: '2026-03-31' } }, STEPS, RUNS)
+  ok(late.over === 5, 'against a 31 March target the same plan is 5 days over (' + late.over + ')')
+
+  const partial = {
+    conv: { target: '2026-04-30' },
+    assignments: { tr: { courseId: 'c1' } }
+  }
+  const p = finishForecast(partial, STEPS, RUNS)
+  ok(p.complete === false, 'a half-entered plan is marked incomplete')
+  ok(p.known === 1 && p.of === 3, 'and says how much of it is known (' + p.known + '/' + p.of + ')')
+
+  const skipped = {
+    conv: { target: '2026-04-30' },
+    assignments: { tr: { courseId: 'c1' }, tri: { courseId: 'c3' }, lifus: { status: 'na' } }
+  }
+  ok(finishForecast(skipped, STEPS, RUNS).complete === true,
+    'a step marked n/a does not hold the verdict back – it is not going to happen')
+
+  const nothing = finishForecast({ conv: { target: '2026-04-30' }, assignments: {} }, STEPS, RUNS)
+  ok(nothing.over === null && nothing.to === '', 'with nothing booked there is no forecast, rather than a made-up one')
+  const noTarget = finishForecast({ assignments: { tr: { courseId: 'c1' } } }, STEPS, RUNS)
+  ok(noTarget.over === null, 'and no target date means no verdict either')
 }

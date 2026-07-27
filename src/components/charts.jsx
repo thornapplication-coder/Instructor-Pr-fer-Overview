@@ -339,6 +339,140 @@ export function ProgressRing({ value, size = 128, thickness = 14, label }) {
   )
 }
 
+// ---- Multi-line trend -----------------------------------------------------
+// One line per category over months. Used for durations, where the interesting
+// thing is the SHAPE per course type, not a total – so nothing is stacked and
+// nothing is summed across types.
+//
+// Missing months are holes, not zeros: a month in which nobody finished a TRI
+// course says nothing about how long a TRI course takes. The line is therefore
+// cut into runs of consecutive readings, and a lone reading shows as a dot.
+//
+// `series[].target` draws a faint dashed line in the same colour – the same
+// identity, so it can never be mistaken for a sixth course type.
+export function LineTrend({ data, series, height = 200, labelOf, unit, legendValue, refLine, format }) {
+  const fmt = format || String
+  const pick = useChartColor()
+  const vals = []
+  for (const d of data) for (const s of series) if (d.values[s.key] != null) vals.push(d.values[s.key])
+  for (const s of series) if (s.target) vals.push(s.target)
+  if (refLine) vals.push(refLine.value)
+  const raw = Math.max(1, ...vals)
+  // A round ceiling, so the axis reads 30 rather than 28,4.
+  const stepSize = raw <= 10 ? 2 : raw <= 50 ? 5 : 10
+  const max = Math.ceil(raw / stepSize) * stepSize
+  const xOf = (i) => (data.length > 1 ? (i / (data.length - 1)) * 100 : 50)
+  const yOf = (v) => 100 - (v / max) * 100
+  const tick = Math.ceil(data.length / 12)
+
+  // Consecutive readings only – the gaps stay gaps.
+  const runsOf = (key) => {
+    const runs = []
+    let cur = []
+    data.forEach((d, i) => {
+      const v = d.values[key]
+      if (v == null) {
+        if (cur.length) runs.push(cur)
+        cur = []
+      } else cur.push({ x: xOf(i), y: yOf(v) })
+    })
+    if (cur.length) runs.push(cur)
+    return runs
+  }
+
+  return (
+    <div className="lines">
+      <div className="lines-plot" style={{ height: height + 'px' }}>
+        <div className="lines-axis">
+          <span>{fmt(max)}{unit ? ' ' + unit : ''}</span>
+          <span>{fmt(max / 2)}</span>
+          <span>0</span>
+        </div>
+        <div className="lines-area">
+          {/* preserveAspectRatio="none" stretches the 100x100 grid to the box;
+              non-scaling-stroke keeps the lines from being stretched with it. */}
+          <svg className="lines-svg" viewBox="0 0 100 100" preserveAspectRatio="none" aria-hidden="true">
+            {/* One neutral reference for every series – used when the values are
+                already expressed against their own target, where a line per
+                course type would be five copies of the same 100 %. */}
+            {refLine && (
+              <line
+                className="lines-ref"
+                x1="0"
+                x2="100"
+                y1={yOf(refLine.value)}
+                y2={yOf(refLine.value)}
+                vectorEffect="non-scaling-stroke"
+              />
+            )}
+            {series.map((s) =>
+              s.target ? (
+                <line
+                  key={'t-' + s.key}
+                  className="lines-target"
+                  x1="0"
+                  x2="100"
+                  y1={yOf(s.target)}
+                  y2={yOf(s.target)}
+                  stroke={pick(s.color, 0)}
+                  vectorEffect="non-scaling-stroke"
+                />
+              ) : null
+            )}
+            {series.map((s) =>
+              runsOf(s.key).map((run, i) => (
+                <polyline
+                  key={s.key + '-' + i}
+                  className="lines-path"
+                  points={run.map((p) => p.x + ',' + p.y).join(' ')}
+                  fill="none"
+                  stroke={pick(s.color, 0)}
+                  vectorEffect="non-scaling-stroke"
+                />
+              ))
+            )}
+          </svg>
+          {series.map((s) =>
+            data.map((d, i) =>
+              d.values[s.key] == null ? null : (
+                <span
+                  key={s.key + '-' + d.key}
+                  className="lines-dot"
+                  style={{
+                    left: xOf(i) + '%',
+                    bottom: 100 - yOf(d.values[s.key]) + '%',
+                    background: pick(s.color, 0)
+                  }}
+                  title={`${labelOf ? labelOf(d.key) : d.key} · ${s.label}: ${fmt(d.values[s.key])}${unit ? ' ' + unit : ''}`}
+                />
+              )
+            )
+          )}
+          {/* Inside the plot area, so a tick sits under the point it names
+              rather than under the middle of an evenly divided slot. */}
+          <div className="lines-ticks">
+            {data.map((d, i) =>
+              i % tick === 0 ? (
+                <span key={d.key} style={{ left: xOf(i) + '%' }}>{labelOf ? labelOf(d.key) : d.key}</span>
+              ) : null
+            )}
+          </div>
+        </div>
+      </div>
+      <ChartLegend
+        wrap
+        className="stacked-legend"
+        items={series.map((s) => ({
+          key: s.key,
+          color: pick(s.color, 0),
+          label: s.label,
+          value: legendValue ? legendValue(s) : ''
+        }))}
+      />
+    </div>
+  )
+}
+
 // ---- Pipeline stacked bar -------------------------------------------------
 export function PipelineBar({ stages }) {
   const pick = useChartColor()

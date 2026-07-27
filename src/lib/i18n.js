@@ -580,6 +580,42 @@ const DICT = {
     de: 'Ein Kurstermin ist ein konkreter Durchlauf: Kursart, Provider, Ort und Zeitraum. In der Planung werden Personen darauf gebucht – der Zeitraum wird also einmal getippt, nicht je Person.',
     en: 'A course date is one concrete run: course type, provider, location and period. People are booked onto it in the planning grid, so the period is typed once, not per person.'
   },
+  chart_duration: { de: 'Ø Dauer je Kursart', en: 'Avg. duration by course type' },
+  dur_inDays: { de: 'Tage', en: 'Days' },
+  dur_inPct: { de: '% vom Soll', en: '% of target' },
+  dur_empty: {
+    de: 'Noch keine abgeschlossenen Kurse. Sobald ein Kurstermin einen Zeitraum von–bis hat und jemand darauf gebucht ist, entsteht hier die Kurve.',
+    en: 'No completed courses yet. As soon as a course date has a period from–to and somebody is booked onto it, the curve appears here.'
+  },
+  dur_hint: {
+    de: 'Gezählt wird je Kurs, nicht je Kopf: ein Kurs mit zwölf Teilnehmern hat einmal stattgefunden. Der Monat ist der Kursbeginn.',
+    en: 'Counted per course, not per head: a course with twelve attendees happened once. The month is the course start.'
+  },
+  dur_hintPct: {
+    de: '100 % ist die Soll-Dauer der jeweiligen Kursart; nur Kursarten mit gesetztem Soll erscheinen.',
+    en: '100 % is the course type\'s target duration; only types with a target are shown.'
+  },
+  dur_hintNoTarget: {
+    de: 'Kursarten ohne Soll-Dauer haben keine Vergleichslinie (Planung → Spalten bearbeiten).',
+    en: 'Course types without a target duration have no reference line (Planning → Edit columns).'
+  },
+  dur_open: {
+    de: '{n} Kurse laufen noch (Start ohne Ende) und sind nicht mitgerechnet.',
+    en: '{n} courses are still running (a start with no end) and are not counted.'
+  },
+  target_partial: { de: '{n}/{m}', en: '{n}/{m}' },
+  target_partialHint: {
+    de: 'Erst {n} von {m} Schritten haben ein Enddatum – für ein Urteil zum Zieltermin fehlen noch Termine.',
+    en: 'Only {n} of {m} steps have an end date – too little to judge the target date.'
+  },
+  target_overHint: {
+    de: 'Der letzte gebuchte Kurs endet nach dem Zieltermin.',
+    en: 'The last booked course ends after the target date.'
+  },
+  target_okHint: {
+    de: 'Der letzte gebuchte Kurs endet bis zum Zieltermin.',
+    en: 'The last booked course ends by the target date.'
+  },
   step_targetDays: { de: 'Soll-Dauer', en: 'Target duration' },
   step_targetHint: {
     de: 'Die Soll-Dauer je Kursart in Tagen (leer = keine Vorgabe). Sie ist die Vergleichslinie im Dauer-Diagramm.',

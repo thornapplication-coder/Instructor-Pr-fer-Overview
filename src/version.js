@@ -4,12 +4,39 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.27.0'
+export const APP_VERSION = '1.28.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.28.0',
+    date: '2026-07-27',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neue Kachel „Ø Dauer je Kursart" in der B737-Umschulung: Monate auf der x-Achse, eine Linie je Kursart, umschaltbar zwischen **Tagen** und **% vom Soll**.',
+        'Gezählt wird je Kurs, nicht je Kopf. Ein Kurstermin mit zwölf Teilnehmern hat einmal stattgefunden — pro Kopf gerechnet hätte er den Monat zwölffach bestimmt und jeden anderen Kurs übertönt.',
+        'In der Tagen-Ansicht bekommt jede Kursart ihre gestrichelte Soll-Linie in der eigenen Farbe; in der Prozent-Ansicht gibt es stattdessen eine neutrale 100-%-Linie, weil dort alle Soll-Linien dieselbe wären.',
+        'Ein Monat ohne Kurs ist eine Lücke, keine Null: die Linie wird unterbrochen, ein einzelner Messpunkt bleibt als Punkt stehen.',
+        'Laufende Kurse (Start ohne Ende) werden nicht mitgerechnet — sonst zöge ein begonnener Kurs den Schnitt gegen null. Wie viele es sind, steht unter dem Diagramm.',
+        'Der Zieltermin bekommt ein Urteil: auf jeder Board-Karte steht neben dem Zieltermin, ob das letzte gebuchte Kursende ihn hält (grün) oder um wie viele Tage darüber liegt (rot).',
+        'Solange nicht jeder Schritt ein Enddatum hat, steht dort „3/4" statt einer Farbe. Ein halb erfasster Plan sagt immer einen frühen Abschluss voraus — das wäre eine schmeichelnde Aussage, keine Messung.',
+        'Kurslängen und Achsenwerte laufen durch dieselbe Zahlenformatierung wie die FTE-Werte („11,3" statt „11.3").'
+      ],
+      en: [
+        'New card "Avg. duration by course type" in the B737 conversion: months on the x axis, one line per course type, switchable between **days** and **% of target**.',
+        'Counted per course, not per head. A course date with twelve attendees happened once – per head it would have decided its month twelve times over and drowned out every other course.',
+        'In the days view each course type gets its dashed target line in its own colour; the percentage view has a single neutral 100 % line instead, because there every target line would be the same one.',
+        'A month with no course is a gap, not a zero: the line breaks, and a lone reading stays as a dot.',
+        'Courses still running (a start with no end) are left out – otherwise a course that has begun would drag the average towards nothing. How many there are is stated under the chart.',
+        'The target date finally gets a verdict: every board card says next to it whether the last booked course end holds it (green) or by how many days it is over (red).',
+        'Until every step has an end date it reads "3/4" instead of a colour. A half-entered plan always forecasts an early finish, which would be flattering rather than measured.',
+        'Course lengths and axis values run through the same number formatting as the FTE figures ("11,3" rather than "11.3").'
+      ]
+    }
+  },
   {
     version: '1.27.0',
     date: '2026-07-27',

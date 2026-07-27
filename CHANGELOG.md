@@ -11,6 +11,37 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.28.0] – 2026-07-27
+
+- **Ø Dauer je Kursart.** Neue Kachel in der B737-Umschulung: Monate auf der
+  x-Achse, eine Linie je Kursart, umschaltbar zwischen **Tagen** und
+  **% vom Soll**. Beides beantwortet eine eigene Frage — „wie lang ist ein
+  TRI-Kurs" und „welche Kursart läuft über", letzteres über Kursarten hinweg,
+  deren natürliche Längen nichts miteinander zu tun haben.
+- **Gezählt wird je Kurs, nicht je Kopf.** Ein Kurstermin mit zwölf
+  Teilnehmern hat *einmal* stattgefunden. Pro Kopf gerechnet hätte er seinen
+  Monat zwölffach bestimmt und jeden anderen Kurs desselben Monats übertönt.
+  Ein Eintrag ohne Kurstermin zählt als eigener Kurs — das ist die einzige
+  sinnvolle Lesart eines Einzelfalls.
+- Tagen-Ansicht: je Kursart eine gestrichelte **Soll-Linie in der eigenen
+  Farbe**. Prozent-Ansicht: **eine** neutrale 100-%-Linie, weil dort alle
+  Soll-Linien dieselbe wären. Die Linie ist Tinte, keine Statusfarbe — unter
+  100 % ist nicht automatisch gut.
+- **Ein Monat ohne Kurs ist eine Lücke, keine Null.** Die Linie bricht ab,
+  ein einzelner Messpunkt bleibt als Punkt stehen.
+- **Laufende Kurse zählen nicht mit** (Start ohne Ende). Sonst zöge jeder
+  begonnene Kurs den Schnitt gegen null. Wie viele gerade laufen, steht unter
+  dem Diagramm, statt still unterschlagen zu werden.
+- **Der Zieltermin bekommt ein Urteil.** Auf der Board-Karte steht neben dem
+  Zieltermin, ob das letzte gebuchte Kursende ihn hält (grün) oder um wie
+  viele Tage darüber liegt (rot).
+- Solange nicht jeder Schritt ein Enddatum hat, steht dort **„3/4"** statt
+  einer Farbe. Ein halb erfasster Plan sagt immer einen frühen Abschluss
+  voraus; das wäre eine schmeichelnde Aussage, keine Messung. Ein Schritt auf
+  „n/a" hält das Urteil nicht auf — er wird nicht mehr stattfinden.
+- Kurslängen und Achsenwerte laufen durch dieselbe Zahlenformatierung wie die
+  FTE-Werte (`formatNum1`), also „11,3" statt „11.3".
+
 ## [1.27.0] – 2026-07-27
 
 - **Kurstermine.** Ein Kurstermin ist ein konkreter Durchlauf: Kursart,
