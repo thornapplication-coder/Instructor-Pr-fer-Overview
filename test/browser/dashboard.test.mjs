@@ -105,9 +105,11 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForSelector('.data-table')
   await page.waitForTimeout(300)
   ok(await page.locator('.data-table.compact').count() === 0, 'other tables keep their original size')
-  // `compact` is shared with the course dates. The card layout must hang off
-  // `trainer-table` alone, or that table would be rearranged by rules written
-  // for columns it does not have.
+  // `compact` is shared with the course dates. The trainer card rules must
+  // hang off `trainer-table` alone, or that table would be rearranged by rules
+  // written for columns it does not have. It has a card of its OWN since the
+  // dialog turned out not to fit at any width – so the check is not "still a
+  // table" but "laid out by its own grid, not the trainer's".
   // It sits under Umschulung → Planung. Asserted, not skipped: a check that
   // quietly finds nothing reads exactly like a check that passed.
   await page.setViewportSize({ width: 390, height: 844 })
@@ -119,8 +121,23 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForSelector('.course-table')
   await page.waitForTimeout(400)
   ok(await page.locator('.course-table').count() === 1, 'found the course-date table under Umschulung → Planung → Kurstermine')
-  const courseDisplay = await page.locator('.course-table').evaluate((e) => getComputedStyle(e).display)
-  ok(courseDisplay === 'table', 'and it is still a table on a phone – the card rules are the trainer table\'s alone (' + courseDisplay + ')')
+  const courseGrid = await page.evaluate(() => {
+    const row = document.querySelector('.course-table tbody tr')
+    if (!row) return { empty: true }
+    const areas = getComputedStyle(row).gridTemplateAreas
+    return {
+      empty: false,
+      // Its own areas name the course fields (ty/pv/lo/fr/to/dy/se/bk/rm);
+      // the trainer grid names nm/qu/bs/tl/ro/ft/ac/or/st.
+      ownGrid: /ty/.test(areas) && !/qu/.test(areas),
+      // And none of the trainer's cells can be hiding here.
+      trainerCells: row.querySelectorAll('.t-name, .t-qual, .t-stage').length,
+      areas
+    }
+  })
+  ok(!courseGrid.empty, 'the course-date dialog has a row at phone width')
+  ok(courseGrid.ownGrid && courseGrid.trainerCells === 0,
+    'and it is laid out by its own card grid, not the trainer table\'s (' + courseGrid.areas + ')')
   // Close it: the backdrop swallows every later click on a tab.
   await page.keyboard.press('Escape')
   await page.waitForTimeout(300)
