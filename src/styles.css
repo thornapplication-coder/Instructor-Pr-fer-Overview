@@ -1022,6 +1022,75 @@ textarea.input { resize: vertical; }
   .trainer-table td.t-qual { justify-self: start; }
 }
 
+/* ---------- The provider tables on a phone / tablet ---------- */
+/* These two do fit from about 770px, so the complaint here is not the one the
+   other tables had. It is the course chips: squeezed into a sixth of a phone
+   screen, "Type Rating + Base Training" breaks over four lines and a single
+   provider grows taller than the display — three of them and the list is
+   unreadable, which is exactly what it looked like.
+   So the card is not about rescuing hidden columns. It is about giving the
+   chip lists the WHOLE width, where the same chip sits on one line.
+   1000px, like the roster: an iPad in portrait (768-834px) is inside the
+   width where the table technically fits and is still cramped. */
+@media (max-width: 1000px) {
+  .provider-table, .provider-table tbody,
+  .provider-cap-table, .provider-cap-table tbody { display: block; }
+  .provider-table thead, .provider-cap-table thead { display: none; }
+  .provider-table tbody tr, .provider-cap-table tbody tr {
+    display: grid;
+    gap: 9px 8px;
+    padding: 12px;
+    border-top: 1px solid var(--hair);
+  }
+  .provider-table tbody tr:first-child,
+  .provider-cap-table tbody tr:first-child { border-top: 0; }
+  .provider-table tbody td, .provider-cap-table tbody td { display: block; padding: 0; border-top: 0; }
+  .provider-table tbody td[data-label]::before,
+  .provider-cap-table tbody td[data-label]::before {
+    content: attr(data-label);
+    display: block; margin-bottom: 3px;
+    font-size: 9.5px; font-weight: 800; letter-spacing: .4px; line-height: 14px;
+    text-transform: uppercase; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  /* Name and status make the head line; the two short chip lists share the
+     next one; courses and the contact get the full width. */
+  /* Two columns, not three with an auto track for the status: an auto track is
+     sized by the longest status chip, so "Keine Vereinbarung" stole the width
+     from the field headings one row below it and truncated them to
+     "STANDORTE (ICA…" — on that card only. Halves keep the headings intact
+     whatever the status says. */
+  .provider-table tbody tr {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'nm st'
+      'lo sv'
+      'ku ku'
+      'co co';
+  }
+  .provider-table td.pv-name { grid-area: nm; font-size: 14.5px; align-self: center; }
+  .provider-table td.pv-status { grid-area: st; justify-self: end; align-self: center; }
+  .provider-table td.pv-loc { grid-area: lo; }
+  .provider-table td.pv-sim { grid-area: sv; }
+  .provider-table td.pv-courses { grid-area: ku; }
+  .provider-table td.pv-contact { grid-area: co; }
+
+  .provider-cap-table tbody tr {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'nm nm'
+      'as sl'
+      'ku ku';
+  }
+  .provider-cap-table td.pc-name { grid-area: nm; font-size: 14.5px; }
+  .provider-cap-table td.pc-assigned { grid-area: as; }
+  .provider-cap-table td.pc-slots { grid-area: sl; }
+  .provider-cap-table td.pc-courses { grid-area: ku; }
+  /* A right-aligned number under a left-aligned heading reads as a stray. */
+  .provider-table tbody td.num, .provider-cap-table tbody td.num { text-align: left; }
+  .provider-table td.empty-row, .provider-cap-table td.empty-row { grid-area: nm; }
+}
+
 /* ---------- Editable pick lists (settings) ---------- */
 /* Collapsed by default: twelve open list editors would bury the rest of the
    settings page, and most visits only touch one of them. */

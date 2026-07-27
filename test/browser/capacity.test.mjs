@@ -119,6 +119,65 @@ export default async function run(browser, baseUrl, shots) {
     'twenty people against two seats a month is flagged (' + (await cap2.locator('.type-tag.over').first().innerText()).trim() + ')')
 
   await cap.screenshot({ path: shots + '/prov-capacity.png' })
+
+  // ---- the provider tables on a phone --------------------------------------
+  // These two fit from ~770px, so nothing was hidden. What made them unusable
+  // was the course chips: a sixth of a phone screen broke "Type Rating + Base
+  // Training" over four lines and grew one provider taller than the display.
+  // The card gives the chip lists the whole width, so the chip is one line.
+  await page.evaluate((K) => {
+    // Give a provider the three long course names the screenshot showed.
+    const d = JSON.parse(localStorage.getItem(K))
+    d.providers = d.providers.map((p, i) =>
+      i === 0
+        ? { ...p, courses: ['SIM only', 'Type Rating + Base Training', 'Type Rating + ZFTT'],
+            simVersions: ['MAX'], locations: ['BCN'], status: 'no agreement', contactPerson: 'Test Person' }
+        : p
+    )
+    localStorage.setItem(K, JSON.stringify(d))
+  }, STORAGE_KEY)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.locator('.tab', { hasText: 'Provider' }).first().click()
+  await page.waitForSelector('.provider-table')
+  await page.waitForTimeout(600)
+  const phone = await page.evaluate(() => {
+    const t = document.querySelector('.provider-table')
+    const wrap = t.closest('.table-wrap')
+    const capT = document.querySelector('.provider-cap-table')
+    const capWrap = capT.closest('.table-wrap')
+    const row = [...t.querySelectorAll('tbody tr')]
+      .find((r) => r.querySelectorAll('.pv-courses .type-tag').length >= 3)
+    const chips = [...row.querySelectorAll('.pv-courses .type-tag')]
+    const label = row.querySelector('.pv-loc')
+    return {
+      hidden: wrap.scrollWidth - wrap.clientWidth,
+      capHidden: capWrap.scrollWidth - capWrap.clientWidth,
+      pageOverflow: document.documentElement.scrollWidth - window.innerWidth,
+      rowHeight: Math.round(row.getBoundingClientRect().height),
+      tallestChip: Math.max(...chips.map((c) => Math.round(c.getBoundingClientRect().height))),
+      // The heading must not be truncated by a wide status chip on the row above.
+      labelFull: getComputedStyle(label, '::before').content,
+      fields: ['.pv-name', '.pv-status', '.pv-loc', '.pv-sim', '.pv-courses', '.pv-contact']
+        .filter((s) => row.querySelector(s) && getComputedStyle(row.querySelector(s)).display !== 'none').length,
+      worstRight: Math.max(...[...row.querySelectorAll('td')].map((td) => Math.round(td.getBoundingClientRect().right)))
+    }
+  })
+  ok(phone.hidden === 0 && phone.capHidden === 0,
+    'neither provider table hides anything on a phone (' + phone.hidden + ' / ' + phone.capHidden + ')')
+  ok(phone.pageOverflow === 0, 'and the page does not scroll sideways (' + phone.pageOverflow + ')')
+  ok(phone.fields === 6, 'all six fields stay on the card (' + phone.fields + ')')
+  ok(phone.tallestChip <= 24, 'a long course name sits on ONE line, not four (' + phone.tallestChip + 'px tall)')
+  ok(phone.rowHeight < 260, 'so a provider with three courses fits a phone screen (' + phone.rowHeight + 'px)')
+  ok(phone.worstRight <= 391, 'nothing runs off the side (' + phone.worstRight + ')')
+  ok(/ICAO/.test(phone.labelFull),
+    'the field heading is not truncated by the status chip above it (' + phone.labelFull + ')')
+  await page.screenshot({ path: shots + '/prov-phone.png' })
+  await page.setViewportSize({ width: 1500, height: 1000 })
+  await page.waitForTimeout(400)
+  const back = await page.evaluate(() => getComputedStyle(document.querySelector('.provider-table')).display)
+  ok(back === 'table', 'and a desktop keeps the real table (' + back + ')')
+
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.close()
   return fails

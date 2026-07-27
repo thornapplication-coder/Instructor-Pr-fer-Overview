@@ -80,7 +80,7 @@ export default function Providers() {
         </div>
       ) : (
         <div className="table-wrap">
-          <table className="data-table">
+          <table className="data-table provider-table">
             <thead>
               {(() => { const sp = { sortKey: main.sortKey, dir: main.dir, onSort: main.toggle }; return (
               <tr>
@@ -105,8 +105,14 @@ export default function Providers() {
                     aria-label={p.name || ''}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing({ ...p }) } }}
                   >
-                    <td className="strong">{p.name || '–'}</td>
-                    <td>
+                    {/* Named cells and their own headings: inert while this is
+                        a table, and what the card layout rearranges below the
+                        width the six columns need. The course chips get the
+                        card's full width there — squeezed into a narrow column
+                        "Type Rating + Base Training" broke over four lines and
+                        made one provider taller than a phone screen. */}
+                    <td className="pv-name strong">{p.name || '–'}</td>
+                    <td className="pv-courses" data-label={t('p_courses')}>
                       <div className="type-tags">
                         {[...(p.courses || [])]
                           .map((c) => courseLabel(providerCourses, c))
@@ -116,7 +122,7 @@ export default function Providers() {
                           ))}
                       </div>
                     </td>
-                    <td>
+                    <td className="pv-sim" data-label={t('p_simVersion')}>
                       <div className="type-tags">
                         {[...(p.simVersions || [])]
                           .map((s) => simVersionLabel(simVersions, s))
@@ -127,18 +133,18 @@ export default function Providers() {
                         {!(p.simVersions || []).length && <span className="muted small">–</span>}
                       </div>
                     </td>
-                    <td>
+                    <td className="pv-loc" data-label={t('p_locations')}>
                       <div className="type-tags">
                         {[...(p.locations || [])].sort().map((l) => (
                           <span key={l} className="icao-tag">{l}</span>
                         ))}
                       </div>
                     </td>
-                    <td>
+                    <td className="pv-contact" data-label={t('p_contact')}>
                       {p.contactPerson || '–'}
                       {p.email && <div className="muted small">{p.email}</div>}
                     </td>
-                    <td><span className="status-tag" style={{ '--tag': tint(st.color) }}>{st.label}</span></td>
+                    <td className="pv-status"><span className="status-tag" style={{ '--tag': tint(st.color) }}>{st.label}</span></td>
                   </tr>
                 )
               })}
@@ -152,7 +158,7 @@ export default function Providers() {
           <h3 className="card-title">{t('prov_capacity')}</h3>
           <p className="muted small">{t('prov_capacityHint')}</p>
           <div className="table-wrap">
-            <table className="data-table">
+            <table className="data-table provider-cap-table">
               <thead>
                 {(() => { const sp = { sortKey: utilS.sortKey, dir: utilS.dir, onSort: utilS.toggle }; return (
                 <tr>
@@ -173,8 +179,8 @@ export default function Providers() {
                     aria-label={u.provider.name || ''}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing({ ...u.provider }) } }}
                   >
-                    <td className="strong">{u.provider.name || '–'}</td>
-                    <td>
+                    <td className="pc-name strong">{u.provider.name || '–'}</td>
+                    <td className="pc-courses" data-label={t('p_courses')}>
                       <div className="type-tags">
                         {/* Demand against the capacity of the SAME course type.
                             A provider's total can look comfortable while the one
@@ -212,8 +218,8 @@ export default function Providers() {
                         )}
                       </div>
                     </td>
-                    <td className="num strong">{u.demand}</td>
-                    <td className="num">
+                    <td className="pc-assigned num strong" data-label={t('prov_assigned')}>{u.demand}</td>
+                    <td className="pc-slots num" data-label={t('prov_slots')}>
                       {u.slots || '–'}
                       {u.slotsSplitOver && <span className="warn-text small" title={t('p_slotsOverShort')}> !</span>}
                     </td>

@@ -11,6 +11,28 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.37.0] – 2026-07-27
+
+### Geändert
+- **Die beiden Provider-Tabellen am Handy und am iPad als Karten.** Der Befund
+  war hier ein anderer als bei Trainer und Other Pilots: die Tabelle *passte*
+  ab etwa 770 px. Unlesbar war sie trotzdem, weil die Kurs-Chips in ein
+  Sechstel der Bildschirmbreite gequetscht wurden — „Type Rating + Base
+  Training" brach über vier Zeilen um und ein einzelner Provider wurde höher
+  als der Bildschirm.
+- Auf der Karte bekommen die Chip-Listen die **volle Breite**, damit steht
+  jeder Kurs auf einer Zeile. Gemessen: die höchste Zeile ist von rund 350 px
+  auf 204 px geschrumpft, ohne dass ein Feld weggefallen ist.
+- Aufbau je Karte: oben Anbieter und Status, darunter Standorte und
+  SIM-Version nebeneinander, dann die Kurse über die volle Breite, unten der
+  Ansprechpartner. Die Kapazitäts-Tabelle darunter genauso (Anbieter,
+  Zugewiesen und Plätze/Monat, dann die Kurs-Chips).
+- Zwei Spalten und keine dritte für den Status: eine automatisch breite
+  Status-Spalte nahm ihre Breite vom längsten Eintrag und schnitt dadurch die
+  Feldüberschrift eine Zeile tiefer zu „STANDORTE (ICA…" ab — nur auf der
+  betroffenen Karte.
+- Ab 1000 px bleiben beide Tabellen wie gewohnt.
+
 ## [1.36.0] – 2026-07-27
 
 ### Geändert

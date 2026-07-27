@@ -4,12 +4,31 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.36.0'
+export const APP_VERSION = '1.37.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.37.0',
+    date: '2026-07-27',
+    type: 'minor',
+    changes: {
+      de: [
+        'Die beiden Provider-Tabellen am Handy und am iPad als Karten. Hier war das Problem ein anderes als bei den vorigen Reitern: die Tabelle passte, aber die Kurs-Chips wurden in ein Sechstel der Bildschirmbreite gequetscht — „Type Rating + Base Training" brach auf vier Zeilen um und ein einzelner Provider wurde höher als der Bildschirm.',
+        'Auf der Karte bekommen die Chip-Listen die volle Breite, dadurch steht jeder Kurs auf einer Zeile. Die höchste Zeile ist von rund 350 px auf 204 px geschrumpft, ohne dass ein Feld weggefallen ist.',
+        'Aufbau je Karte: oben Anbieter und Status, darunter Standorte und SIM-Version nebeneinander, dann die Kurse über die volle Breite, unten der Ansprechpartner. Die Kapazitäts-Tabelle darunter genauso.',
+        'Ab 1000 px Breite bleiben beide Tabellen wie gewohnt.'
+      ],
+      en: [
+        'Both provider tables become cards on a phone and an iPad. The problem here was a different one: the table fitted, but the course chips were squeezed into a sixth of the screen — "Type Rating + Base Training" broke over four lines and a single provider grew taller than the display.',
+        'On the card the chip lists get the full width, so each course sits on one line. The tallest row shrank from about 350px to 204px without dropping a single field.',
+        'Per card: provider and status on top, then locations and SIM version side by side, then the courses across the full width, and the contact at the bottom. The capacity table below it works the same way.',
+        'From 1000px wide both tables stay as they were.'
+      ]
+    }
+  },
   {
     version: '1.36.0',
     date: '2026-07-27',
