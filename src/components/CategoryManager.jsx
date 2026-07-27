@@ -8,7 +8,10 @@ import { useStore } from '../lib/store.jsx'
 // `numField` (optional) adds one number input per row, e.g. the target duration
 // of a course type. It lives on the category itself so it travels with the
 // column: rename "TRI-Kurs" and its 10-day target follows.
-export default function CategoryManager({ items, onChange, hasColor = true, defaultColor = BRAND.burgundy, numField }) {
+// `locked` = the ids are values the code branches on. Renaming and recolouring
+// stay open, adding and deleting do not: a fifth assignment status would be a
+// value no branch knows, and it would quietly behave like "open" everywhere.
+export default function CategoryManager({ items, onChange, hasColor = true, defaultColor = BRAND.burgundy, numField, locked }) {
   const { t, newId } = useStore()
   const [drag, setDrag] = useState(null)
 
@@ -86,13 +89,13 @@ export default function CategoryManager({ items, onChange, hasColor = true, defa
             <div className="catman-actions">
               <button className="mini-btn" disabled={i === 0} onClick={() => move(i, i - 1)} title="up">↑</button>
               <button className="mini-btn" disabled={i === items.length - 1} onClick={() => move(i, i + 1)} title="down">↓</button>
-              <button className="mini-btn danger" onClick={() => remove(i)} title="delete">✕</button>
+              {!locked && <button className="mini-btn danger" onClick={() => remove(i)} title="delete">✕</button>}
             </div>
           </li>
         ))}
         {items.length === 0 && <li className="catman-empty">{t('none')}</li>}
       </ul>
-      <button className="btn btn-ghost" onClick={add}>+ {t('addCategory')}</button>
+      {!locked && <button className="btn btn-ghost" onClick={add}>+ {t('addCategory')}</button>}
     </div>
   )
 }

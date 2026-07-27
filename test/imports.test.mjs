@@ -52,6 +52,14 @@ function namesInScope(src) {
     const bare = clause.replace(/\{[^}]*\}/g, '').replace(/\*\s+as\s+/, '').split(',')
     for (const b of bare) { const n = b.trim(); if (n && /^[A-Za-z_$][\w$]*$/.test(n)) names.add(n) }
   }
+  // Destructured function parameters – `function X({ a, b })` and `({ a }) =>`
+  // put those names in scope just as firmly as a const does.
+  for (const m of src.matchAll(/(?:function\s*[A-Za-z_$][\w$]*\s*|=>|\()\s*\{([^{}]*)\}\s*(?:\)|=>)/g)) {
+    for (const part of m[1].split(',')) {
+      const n = part.trim().split(':').pop().trim().split('=')[0].trim()
+      if (/^[A-Za-z_$][\w$]*$/.test(n)) names.add(n)
+    }
+  }
   // Anything declared in the file itself, at any depth.
   for (const m of src.matchAll(/(?:const|let|var|function|class)\s+([A-Za-z_$][\w$]*)/g)) names.add(m[1])
   // `export { x as y }` puts BOTH names in scope of the exporting file.

@@ -28,9 +28,10 @@ const end = src.indexOf('\n}', start)
 ok(start > -1 && end > start, 'freshData() found in store.jsx')
 const body = src.slice(start, end)
 
-// Array-valued keys: either a seed mapped over, or an empty list.
+// Array-valued keys: an empty list, a seed mapped over, or a builder call that
+// returns one (the pick lists come from data/lists.js that way).
 const found = new Set()
-for (const m of body.matchAll(/^\s{4}(\w+):\s*(?:\[\]|[A-Za-z_$][\w.$]*\.map\()/gm)) found.add(m[1])
+for (const m of body.matchAll(/^\s{4}(\w+):\s*(?:\[\]|[A-Za-z_$][\w.$]*\.map\(|(?:default|seed)[A-Z][\w$]*\()/gm)) found.add(m[1])
 
 ok(found.size >= 9, 'array-valued keys detected in freshData (' + [...found].join(', ') + ')')
 

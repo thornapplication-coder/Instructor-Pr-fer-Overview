@@ -86,6 +86,13 @@ export default async function run(browser, baseUrl, shots) {
   const providers = read(idx['Provider'])
   ok(providers.length > 3000, 'the provider PDF has real content (' + Math.round(providers.length / 1024) + ' KB)')
 
+  // The Umschulung tab has three views, so its PDF carries all three: the
+  // board columns, the planning grid and the calendar.
+  const conv = read(idx['Umschulung'])
+  ok(conv.length > planning.length * 0.8,
+    'the Umschulung PDF is as substantial as the planning one, because it contains it (' +
+      Math.round(conv.length / 1024) + ' KB vs ' + Math.round(planning.length / 1024) + ' KB)')
+
   ok(errs.length === 0, 'no page errors while exporting' + (errs.length ? ': ' + errs[0] : ''))
 
   // ---- every Excel builder runs -------------------------------------------

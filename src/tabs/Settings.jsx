@@ -9,6 +9,8 @@ import { parsePilotsFromArrayBuffer, mergePilotRecords } from '../lib/importPilo
 import { resolveQualId } from '../data/qualifications.js'
 import { APP_VERSION, APP_BUILD_DATE, CHANGELOG } from '../version.js'
 import SyncCard from '../components/SyncCard.jsx'
+import CategoryManager from '../components/CategoryManager.jsx'
+import { EDITABLE_LISTS } from '../data/lists.js'
 import { persistenceStatus } from '../lib/persistence.js'
 
 // Per-page export choices, in tab-bar order. Planung and the course dates are
@@ -34,7 +36,7 @@ function fmtBytes(n) {
 }
 
 export default function Settings() {
-  const { data, t, lang, setLang, exportData, importData, resetData, setTrainers, setPilots, saveError } = useStore()
+  const { data, t, lang, setLang, exportData, importData, resetData, setTrainers, setPilots, setList, saveError } = useStore()
   const captureTabImage = useContext(CaptureContext)
   const fileRef = useRef(null)
   const xlsRef = useRef(null)
@@ -200,6 +202,29 @@ export default function Settings() {
           ))}
         </div>
         {pdfMsg && <p className={'inline-msg ' + (pdfMsg.ok ? 'ok' : 'err')}>{pdfMsg.text}</p>}
+      </section>
+
+      <section className="card">
+        <h3 className="card-title">{t('lists_title')}</h3>
+        <p className="muted small">{t('lists_hint')}</p>
+        <div className="lists-grid">
+          {EDITABLE_LISTS.map((l) => (
+            <details className="list-block" key={l.key}>
+              <summary>
+                <span className="list-name">{t(l.labelKey)}</span>
+                <span className="list-count">{(data[l.key] || []).length}</span>
+                {l.locked && <span className="list-locked">{t('lists_locked')}</span>}
+              </summary>
+              {l.hint && <p className="muted small">{t(l.hint)}</p>}
+              <CategoryManager
+                items={data[l.key] || []}
+                onChange={(items) => setList(l.key, items)}
+                hasColor={l.hasColor !== false}
+                locked={!!l.locked}
+              />
+            </details>
+          ))}
+        </div>
       </section>
 
       <section className="card safety-card">

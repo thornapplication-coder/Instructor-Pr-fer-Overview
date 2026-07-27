@@ -3,7 +3,8 @@
 // downloads; the individual tabs no longer carry their own export controls.
 import { downloadExcel } from './exports.js'
 import { formatPartTime, formatFte } from './format.js'
-import { stageLabel, ASSIGNMENT_STATUS } from '../data/pipeline.js'
+import { stageLabel } from '../data/pipeline.js'
+import { labelOf } from '../data/lists.js'
 import { qualLabel } from '../data/qualifications.js'
 import { courseLabel, simVersionLabel } from '../data/providers.js'
 import { pilotStatusLabel, pilotRole } from '../data/pilots.js'
@@ -74,8 +75,7 @@ export function exportPlanningExcel(data, t, lang) {
     const span = spanLabel(a)
     if (!label && !span) return ''
     if (a.status === 'na') return label || 'n/a'
-    const stDef = ASSIGNMENT_STATUS[a.status]
-    const stLbl = stDef ? ` [${lang === 'de' ? stDef.de : stDef.en}]` : ''
+    const stLbl = a.status ? ` [${labelOf(data.assignStatus, a.status, a.status)}]` : ''
     return [label, span].filter(Boolean).join(' · ') + stLbl
   }
   downloadExcel(

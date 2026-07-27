@@ -11,6 +11,28 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.32.0] – 2026-07-27
+
+- **„Auslastung" entfernt** aus der Provider-Kapazität.
+- **Neu: „Auswahllisten" in den Einstellungen.** Alle zwölf Auswahlfelder der
+  App an einer Stelle — umbenennen, umfärben, sortieren. Bisher lagen sie
+  verstreut hinter fünf Zahnrädern, und zwei lagen überhaupt nicht in der App.
+- **Aircraft und ORE-Stufen sind erstmals editierbar.** Sie standen fest im
+  Code; ein neues Muster erscheint jetzt sofort in jedem Filter und in jeder
+  Auswertung.
+- **Die Trennlinie ist die id, nicht die Bequemlichkeit.** Eine id ist der Wert,
+  der auf dem Datensatz steht und auf den der Code verzweigt („absolviert"
+  zählt nicht mehr als offener Bedarf, „n/a" belegt keinen Platz); ein Label ist
+  das, was der Leser sieht. Bei den vier Status-Listen sind deshalb Name und
+  Farbe frei, Hinzufügen und Löschen nicht: ein fünfter Zuweisungs-Status wäre
+  ein Wert, den kein Zweig kennt, und würde sich überall still wie „offen"
+  verhalten. Die Karte sagt das dazu, statt es zu verschweigen.
+- Alle Listen werden **je Eintrag synchronisiert** wie die übrigen Datensätze —
+  eine Umbenennung auf dem iPad und ein neues Muster am Laptop überleben beide.
+- **Ein PDF für den ganzen Umschulungs-Reiter**: Board, Planungsraster und
+  Kalender in einer Datei. Der Reiter hat drei Ansichten, also hat sein PDF
+  drei Teile. Querformat, weil das Raster eine Spalte je Kursart hat.
+
 ## [1.31.0] – 2026-07-27
 
 ### Dashboard aufgeräumt

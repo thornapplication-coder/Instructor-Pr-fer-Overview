@@ -4,10 +4,10 @@ import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import HScroll from '../components/HScroll.jsx'
-import { CONV_STATUS, stageIndex, stageLabel, STAFF_TYPE, firstStageId } from '../data/pipeline.js'
+import { stageIndex, stageLabel, firstStageId } from '../data/pipeline.js'
 import { useThemed } from '../lib/useThemed.js'
 import { qualLabel, isConversionQual, conversionTrainers, CONVERSION_QUALS } from '../data/qualifications.js'
-import { AIRCRAFT } from '../data/aircraft.js'
+import { colorOf, idsOf, labelOf } from '../data/lists.js'
 import { conversionFteSummary } from '../lib/stats.js'
 import { finishForecast, findRun, resolveAssignment, spanText } from '../lib/courses.js'
 import { trainerAlerts } from '../lib/alerts.js'
@@ -32,7 +32,7 @@ function assignTarget(providers, runs, a, lang) {
 export default function Conversion({ embedded }) {
   const tint = useThemed()
   const { data, t, lang, setConversion, setStages } = useStore()
-  const { trainers, stages, providers, quals, assignmentSteps, courseRuns } = data
+  const { trainers, stages, providers, quals, assignmentSteps, courseRuns, aircraftTypes, oreTiers, convStatus } = data
   const fte1 = (v) => formatFte1(v, lang)
   const [q, setQ] = useState('')
   const [fBase, setFBase] = useState('')
@@ -94,7 +94,7 @@ export default function Conversion({ embedded }) {
         <input className="input search" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
         <select className="input" value={fAircraft} onChange={(e) => setFAircraft(e.target.value)}>
           <option value="">{t('filterAircraft')}: {t('all')}</option>
-          {[...AIRCRAFT].sort().map((a) => <option key={a} value={a}>{a}</option>)}
+          {aircraftTypes.map((a) => <option key={a.id} value={a.id}>{a.label}</option>)}
         </select>
         <select className="input" value={fQual} onChange={(e) => setFQual(e.target.value)}>
           <option value="">{t('filterQual')}: {t('all')}</option>
@@ -102,8 +102,7 @@ export default function Conversion({ embedded }) {
         </select>
         <select className="input" value={fStaff} onChange={(e) => setFStaff(e.target.value)}>
           <option value="">{t('filterStaff')}: {t('all')}</option>
-          <option value="external">{t('staff_external')}</option>
-          <option value="internal">{t('staff_internal')}</option>
+          {data.staffTypes.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
         </select>
         <select className="input" value={fBase} onChange={(e) => setFBase(e.target.value)}>
           <option value="">{t('filterBase')}: {t('all')}</option>
@@ -111,7 +110,7 @@ export default function Conversion({ embedded }) {
         </select>
         <select className="input" value={fOre} onChange={(e) => setFOre(e.target.value)}>
           <option value="">{t('filterOre')}: {t('all')}</option>
-          {['A', 'B', 'C'].map((o) => <option key={o} value={o}>{o}</option>)}
+          {oreTiers.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
         </select>
         <span className="push-right" />
         <button className="btn btn-ghost" onClick={() => setManageStages(true)}>
@@ -147,7 +146,7 @@ export default function Conversion({ embedded }) {
               </div>
               <div className="board-col-body">
                 {cards.map((x) => {
-                  const st = CONV_STATUS[x.conv?.status] || CONV_STATUS.on_track
+                  const stId = x.conv?.status || 'on_track'
                   const al = trainerAlerts(x, null, stages)
                   return (
                     <div
@@ -165,7 +164,7 @@ export default function Conversion({ embedded }) {
                       onDragEnd={() => { setDragId(null); setOverStage(null) }}
                     >
                       <div className="conv-card-top">
-                        <span className="conv-status-dot" style={{ background: tint(st.color) }} title={lang === 'de' ? st.de : st.en} />
+                        <span className="conv-status-dot" style={{ background: tint(colorOf(convStatus, stId)) }} title={labelOf(convStatus, stId)} />
                         <button className="conv-name" onClick={() => setDetail({ ...x })}>{x.name}</button>
                       </div>
                       <div className="conv-meta">
@@ -174,8 +173,8 @@ export default function Conversion({ embedded }) {
                         <span className="chip-sm">{x.base}</span>
                         {x.aircraft && <AircraftTag value={x.aircraft} sm />}
                         <OreTag value={x.ore} sm />
-                        <span className="staff-tag sm" style={{ '--tag': tint(STAFF_TYPE[x.staffType || 'internal'].color) }}>
-                          {t('staff_' + (x.staffType || 'internal'))}
+                        <span className="staff-tag sm" style={{ '--tag': tint(colorOf(data.staffTypes, x.staffType || 'internal')) }}>
+                          {labelOf(data.staffTypes, x.staffType || 'internal')}
                         </span>
                       </div>
                       {(() => {
@@ -235,6 +234,7 @@ export default function Conversion({ embedded }) {
 
       {detail && (
         <ConvDetail
+          statusList={convStatus}
           trainer={detail}
           stages={stages}
           onClose={() => setDetail(null)}
@@ -253,7 +253,7 @@ export default function Conversion({ embedded }) {
   )
 }
 
-function ConvDetail({ trainer, stages, onClose, onSave }) {
+function ConvDetail({ trainer, stages, statusList, onClose, onSave }) {
   const { t, lang } = useStore()
   const [c, setC] = useState({ ...trainer.conv })
   const set = (k, v) => setC((s) => ({ ...s, [k]: v }))
@@ -278,8 +278,8 @@ function ConvDetail({ trainer, stages, onClose, onSave }) {
         </Field>
         <Field label={t('status')}>
           <select className="input" value={c.status} onChange={(e) => set('status', e.target.value)}>
-            {Object.entries(CONV_STATUS).map(([k, v]) => (
-              <option key={k} value={k}>{lang === 'de' ? v.de : v.en}</option>
+            {statusList.map((v) => (
+              <option key={v.id} value={v.id}>{v.label}</option>
             ))}
           </select>
         </Field>

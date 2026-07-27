@@ -16,6 +16,14 @@ import { translate } from './i18n.js'
 import { useCloudSync } from './cloudSync.js'
 import { backfillStamps, stampChanges } from './merge.js'
 import { normalizeCourseRun } from './courses.js'
+import {
+  defaultAircraftTypes,
+  defaultAssignStatus,
+  defaultConvStatus,
+  defaultOreTiers,
+  defaultPilotStatus,
+  defaultStaffTypes
+} from '../data/lists.js'
 import { BRAND, migrateColors } from './palette.js'
 
 const STORAGE_KEY = 'ewl737:data:v1'
@@ -111,6 +119,15 @@ function freshData(lang = 'de') {
     providerCourses: DEFAULT_PROVIDER_COURSES.map((x) => ({ ...x })),
     providerStatus: DEFAULT_PROVIDER_STATUS.map((x) => ({ ...x })),
     simVersions: DEFAULT_SIM_VERSIONS.map((x) => ({ ...x })),
+    // The remaining pick lists, as data so the settings page can edit them.
+    // Their ids are what records store and what the code branches on; only
+    // labels and colours are meant to change (see data/lists.js).
+    aircraftTypes: defaultAircraftTypes(),
+    oreTiers: defaultOreTiers(),
+    convStatus: defaultConvStatus(lang),
+    assignStatus: defaultAssignStatus(lang),
+    pilotStatus: defaultPilotStatus(lang),
+    staffTypes: defaultStaffTypes(lang),
     otherPilots: [],
     conversionFrom: 'A320',
     conversionTo: 'B737',
@@ -189,6 +206,12 @@ function normalize(obj) {
     simVersions: Array.isArray(obj.simVersions)
       ? obj.simVersions.map((x) => ({ ...x }))
       : base.simVersions,
+    aircraftTypes: Array.isArray(obj.aircraftTypes) ? obj.aircraftTypes.map((x) => ({ ...x })) : base.aircraftTypes,
+    oreTiers: Array.isArray(obj.oreTiers) ? obj.oreTiers.map((x) => ({ ...x })) : base.oreTiers,
+    convStatus: Array.isArray(obj.convStatus) ? obj.convStatus.map((x) => ({ ...x })) : base.convStatus,
+    assignStatus: Array.isArray(obj.assignStatus) ? obj.assignStatus.map((x) => ({ ...x })) : base.assignStatus,
+    pilotStatus: Array.isArray(obj.pilotStatus) ? obj.pilotStatus.map((x) => ({ ...x })) : base.pilotStatus,
+    staffTypes: Array.isArray(obj.staffTypes) ? obj.staffTypes.map((x) => ({ ...x })) : base.staffTypes,
     otherPilots: Array.isArray(obj.otherPilots) ? obj.otherPilots.map(withPilotDefaults) : base.otherPilots,
     conversionFrom: obj.conversionFrom || 'A320',
     conversionTo: obj.conversionTo || 'B737',
@@ -532,6 +555,9 @@ export function StoreProvider({ children }) {
       setProviderCourses: (providerCourses) => patch((d) => ({ ...d, providerCourses })),
       setProviderStatus: (providerStatus) => patch((d) => ({ ...d, providerStatus })),
       setSimVersions: (simVersions) => patch((d) => ({ ...d, simVersions })),
+      // One setter for every pick list the settings page edits – twelve named
+      // setters would be twelve places to forget when a list is added.
+      setList: (key, items) => patch((d) => ({ ...d, [key]: items })),
 
       // ---- other pilots (company line pilots, kept apart from `trainers`)
       upsertPilot: (pilot) =>

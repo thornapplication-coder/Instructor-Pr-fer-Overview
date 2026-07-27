@@ -107,12 +107,6 @@ const DICT = {
     en: 'The light bar is the headcount, the solid one the FTE within it. The light remainder is the part-time share.'
   },
   overallProgress: { de: 'Gesamtfortschritt', en: 'Overall progress' },
-  plan_targetDue: { de: 'Soll ({m})', en: 'Plan ({m})' },
-  plan_next: { de: 'Nächstes Ziel: {n} bis {m}', en: 'Next milestone: {n} by {m}' },
-  trend_hint: {
-    de: 'Je Säule ein Monat, von unten nach oben: freigegeben, in Umschulung, noch nicht gestartet. Der Verlauf wird ab sofort mitgeschrieben – jeder Monat hält den zuletzt bekannten Stand fest.',
-    en: 'One column per month, bottom to top: released, in conversion, not started yet. The history is recorded from now on – each month keeps the last state known in it.'
-  },
 
   // ---- dashboard sections + arrange mode
   section_overview: { de: 'Instruktoren & Prüfer Overview', en: 'Instructors & Examiners overview' },
@@ -372,14 +366,13 @@ const DICT = {
   p_notes: { de: 'Notizen', en: 'Notes' },
   prov_capacity: { de: 'Kapazität & Auslastung', en: 'Capacity & utilization' },
   prov_capacityHint: {
-    de: 'Offene Planungs-Zuweisungen je Provider gegen die Kapazität EINES Monats – über 100 % heißt: der offene Bedarf braucht länger als einen Monat. Kapazität im Bearbeiten-Dialog setzen, gesamt und je Kursart; Zeile antippen zum Bearbeiten.',
-    en: 'Open planning assignments per provider against ONE month of capacity – above 100 % means the open demand needs longer than a month. Set the capacity in the edit dialog, overall and per course type; tap a row to edit.'
+    de: 'Offene Planungs-Zuweisungen je Provider und die Plätze, die er pro Monat anbietet. Je Kursart steht dabei, wie viele Monate der offene Bedarf braucht. Kapazität im Bearbeiten-Dialog setzen; Zeile antippen zum Bearbeiten.',
+    en: 'Open planning assignments per provider and the seats it offers per month. Per course type it says how many months the open demand needs. Set the capacity in the edit dialog; tap a row to edit.'
   },
   prov_stepTag: { de: '{n} offen · {m} Plätze/Monat · rund {k} Monate', en: '{n} open · {m} seats/month · about {k} months' },
   prov_months: { de: 'Mon.', en: 'mo.' },
   prov_assigned: { de: 'Zugewiesen', en: 'Assigned' },
   prov_slots: { de: 'Plätze / Monat', en: 'Seats / month' },
-  prov_util: { de: 'Auslastung', en: 'Utilization' },
 
   // ---- staff type & planning / assignments
   f_staffType: { de: 'Zugehörigkeit', en: 'Affiliation' },
@@ -563,6 +556,33 @@ const DICT = {
     de: 'Der letzte gebuchte Kurs endet bis zum Zieltermin.',
     en: 'The last booked course ends by the target date.'
   },
+  // ---- editable pick lists (settings)
+  lists_title: { de: 'Auswahllisten', en: 'Pick lists' },
+  lists_hint: {
+    de: 'Alle Auswahlfelder der App an einer Stelle: umbenennen, umfärben, sortieren. Bei den unteren vier Listen steuert der gespeicherte Wert das Verhalten der App (z. B. „absolviert" zählt nicht mehr als offener Bedarf) – dort lassen sich Name und Farbe ändern, aber keine Einträge hinzufügen oder löschen.',
+    en: 'Every pick list in one place: rename, recolour, reorder. In the last four the stored value drives behaviour (a completed step stops counting as open demand), so there the name and colour can change but entries cannot be added or removed.'
+  },
+  lists_locked: { de: 'Name und Farbe änderbar', en: 'Name and colour only' },
+  list_quals: { de: 'Qualifikationen', en: 'Qualifications' },
+  list_qualsHint: { de: 'SEN, TRE, TRI, LTC zählen zum Umschulungs-Pool.', en: 'SEN, TRE, TRI, LTC make up the conversion pool.' },
+  list_stages: { de: 'Umschulungs-Phasen', en: 'Conversion stages' },
+  list_stagesHint: {
+    de: 'Die Spalten des Boards. Die erste gilt als „noch nicht gestartet", die letzte als „freigegeben".',
+    en: 'The board columns. The first counts as "not started", the last as "released".'
+  },
+  list_steps: { de: 'Planungs-Schritte (Kursarten)', en: 'Planning steps (course types)' },
+  list_stepsHint: { de: 'Die Spalten der Planung und die Kursarten der Kurstermine.', en: 'The planning columns and the course types of the course dates.' },
+  list_aircraft: { de: 'Aircraft', en: 'Aircraft' },
+  list_aircraftHint: { de: 'Muster, auf denen Personen geführt werden.', en: 'Types people are held on.' },
+  list_ore: { de: 'ORE-Stufen', en: 'ORE tiers' },
+  list_oreHint: { de: 'Priorität der Umschulung, von dringend nach nachrangig.', en: 'Conversion priority, most urgent first.' },
+  list_providerCourses: { de: 'Provider-Angebot (Kurse)', en: 'Provider offering (courses)' },
+  list_providerStatus: { de: 'Provider-Status', en: 'Provider status' },
+  list_simVersions: { de: 'SIM-Versionen', en: 'SIM versions' },
+  list_convStatus: { de: 'Umschulungs-Status', en: 'Conversion status' },
+  list_assignStatus: { de: 'Zuweisungs-Status', en: 'Assignment status' },
+  list_pilotStatus: { de: 'Piloten-Status', en: 'Pilot status' },
+  list_staffTypes: { de: 'Intern / Extern', en: 'Internal / external' },
   categoriesEditableHint: {
     de: 'Balken oben, Werte im Diagramm – die Tabelle darunter entfällt. Berechtigungen/Phasen sind editierbar (umbenennen, Farbe).',
     en: 'Bars above with values in the chart – the duplicate table is gone. Qualifications/stages are editable (rename, colour).'

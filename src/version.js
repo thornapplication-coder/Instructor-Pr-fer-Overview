@@ -4,12 +4,35 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.31.0'
+export const APP_VERSION = '1.32.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.32.0',
+    date: '2026-07-27',
+    type: 'minor',
+    changes: {
+      de: [
+        'Die Spalte „Auslastung" in der Provider-Kapazität ist entfernt.',
+        'Neu in den Einstellungen: „Auswahllisten" — alle zwölf Auswahlfelder der App an einer Stelle, umbenennbar, umfärbbar, sortierbar.',
+        'Aircraft und ORE-Stufen sind damit erstmals editierbar; bisher standen sie fest im Code. Ein neu angelegtes Muster erscheint sofort in jedem Filter.',
+        'Bei vier Listen (Umschulungs-Status, Zuweisungs-Status, Piloten-Status, Intern/Extern) steuert der gespeicherte Wert das Verhalten der App — „absolviert" zählt zum Beispiel nicht mehr als offener Bedarf. Dort lassen sich Name und Farbe ändern, aber keine Einträge hinzufügen oder löschen; die Karte sagt das dazu.',
+        'Alle Listen werden wie die übrigen Datensätze je Eintrag synchronisiert: eine Umbenennung auf dem iPad und ein neues Muster am Laptop überleben beide.',
+        'Das Umschulungs-PDF enthält jetzt alle drei Ansichten des Reiters: Board, Planungsraster und Kalender in einer Datei (Querformat, damit das Raster hineinpasst).'
+      ],
+      en: [
+        'The "Utilisation" column is gone from the provider capacity table.',
+        'New in the settings: "Pick lists" - all twelve of the app\'s dropdowns in one place, renameable, recolourable, reorderable.',
+        'Aircraft and ORE tiers are editable for the first time; they used to be fixed in code. A newly added type shows up in every filter immediately.',
+        'In four lists (conversion status, assignment status, pilot status, internal/external) the stored value drives behaviour - a completed step stops counting as open demand. There the name and colour can change but entries cannot be added or removed, and the card says so.',
+        'Every list syncs per entry like the rest of the data: a rename on the iPad and a new type on the laptop both survive.',
+        'The Conversion PDF now contains all three views of the tab: board, planning grid and calendar in one file (landscape, so the grid fits).'
+      ]
+    }
+  },
   {
     version: '1.31.0',
     date: '2026-07-27',

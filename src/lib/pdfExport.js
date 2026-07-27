@@ -4,7 +4,7 @@
 // opens in the share sheet). jsPDF + autotable are lazy-loaded (heavy).
 import { BRAND_NAME, BRAND_HEX, hexToRgb, fileStamp, reportDate } from './brand.js'
 import { formatPartTime, formatFte, formatFte1, formatDate } from './format.js'
-import { stageLabel, CONV_STATUS, ASSIGNMENT_STATUS, firstStageId } from '../data/pipeline.js'
+import { stageLabel, firstStageId } from '../data/pipeline.js'
 import { qualLabel } from '../data/qualifications.js'
 import { courseLabel, simVersionLabel } from '../data/providers.js'
 import { PILOT_STATUS_IDS, pilotStatusLabel, pilotRole } from '../data/pilots.js'
@@ -28,6 +28,7 @@ import {
   providerSlots
 } from './stats.js'
 import { stageName, targetsByMonth, monthLabel } from './alerts.js'
+import { labelOf } from '../data/lists.js'
 import { courseEntries, courseMonths, monthTitle } from './courseCalendar.js'
 import { findRun, resolveAssignment, seatUsage, spanDays, spanText } from './courses.js'
 
@@ -223,10 +224,10 @@ async function exportTrainersPdf(data, t, lang, opts) {
 }
 
 // ---------------------------------------------------------------- Planning ---
-async function exportPlanningPdf(data, t, lang, opts) {
-  const { jsPDF, autoTable } = await loadPdf()
-  const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
-  const ctx = makeCtx(doc, autoTable, t('planning_title'), lang)
+// The planning grid and the course calendar as blocks, so the Umschulung PDF
+// can carry all three of the tab's views – board, grid, calendar – in one file,
+// which is what the tab now IS.
+function planningTables(ctx, data, t, lang) {
   const steps = data.assignmentSteps
   const rows = [...data.trainers].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
   // Resolved through the course date, like the screen: otherwise the PDF of a
@@ -254,8 +255,7 @@ async function exportPlanningPdf(data, t, lang, opts) {
     const span = spanLabel(a)
     if (!lbl && !span) return ''
     if (a.status === 'na') return lbl || 'n/a'
-    const st = ASSIGNMENT_STATUS[a.status]
-    const stl = st ? ` [${lang === 'de' ? st.de : st.en}]` : ''
+    const stl = a.status ? ` [${labelOf(data.assignStatus, a.status, a.status)}]` : ''
     // Name AND period: the screen shows both in the cell, and a PDF that drops
     // the period is missing the thing the course dates exist for.
     return [lbl, span].filter(Boolean).join('\n') + stl
@@ -283,7 +283,7 @@ async function exportPlanningPdf(data, t, lang, opts) {
           it.trainer.name || '',
           it.step.label,
           it.where || '-',
-          ASSIGNMENT_STATUS[it.status] ? (lang === 'de' ? ASSIGNMENT_STATUS[it.status].de : ASSIGNMENT_STATUS[it.status].en) : ''
+          labelOf(data.assignStatus, it.status, '')
         ]),
         columnStyles: { 0: { cellWidth: 62 }, 1: { cellWidth: 40 } }
       })
@@ -295,6 +295,13 @@ async function exportPlanningPdf(data, t, lang, opts) {
       body: [['-', t('planning_calendarEmpty'), '']]
     })
   }
+}
+
+async function exportPlanningPdf(data, t, lang, opts) {
+  const { jsPDF, autoTable } = await loadPdf()
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
+  const ctx = makeCtx(doc, autoTable, t('planning_title'), lang)
+  planningTables(ctx, data, t, lang)
   return finalize(doc, 'planung', opts)
 }
 
@@ -344,8 +351,7 @@ async function exportCourseDatesPdf(data, t, lang, opts) {
       body: people.map((x) => {
         const s2 = data.assignmentSteps.find((s3) => x.assignments?.[s3.id]?.courseId === r.id)
         const a = s2 ? x.assignments[s2.id] : null
-        const stt = a && ASSIGNMENT_STATUS[a.status]
-        return [x.tlc || '', x.name || '', x.base || '', qualLabel(data.quals, x.qual), stt ? (lang === 'de' ? stt.de : stt.en) : '']
+        return [x.tlc || '', x.name || '', x.base || '', qualLabel(data.quals, x.qual), labelOf(data.assignStatus, a && a.status, '')]
       })
     })
   }
@@ -375,7 +381,7 @@ async function exportProvidersPdf(data, t, lang, opts) {
     // The per-course-type breakdown is the point of the capacity figure: a
     // provider's total can look comfortable while the one course everybody
     // needs is the bottleneck. A PDF without it hides exactly that.
-    head: [t('p_name'), t('p_courses'), t('prov_assigned'), t('prov_slots'), t('prov_util')],
+    head: [t('p_name'), t('p_courses'), t('prov_assigned'), t('prov_slots')],
     body: util.map((u) => [
       u.provider.name || '',
       data.assignmentSteps
@@ -383,10 +389,9 @@ async function exportProvidersPdf(data, t, lang, opts) {
         .map((s2) => `${s2.label}: ${u.byStep[s2.id] || 0}${u.slotsByStep?.[s2.id] ? ' / ' + u.slotsByStep[s2.id] : ''}`)
         .join('\n') || '-',
       String(u.demand),
-      u.slots ? String(u.slots) : '-',
-      u.util == null ? '-' : Math.round(u.util * 100) + '%'
+      u.slots ? String(u.slots) : '-'
     ]),
-    columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } }
+    columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' } }
   })
 
   // Course dates: a whole data set that existed nowhere in any export.
@@ -505,7 +510,9 @@ async function exportDashboardPdf(data, t, lang, opts) {
 // -------------------------------------------------------------- Conversion ---
 async function exportConversionPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
-  const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
+  // Landscape: the tab's three views go in one file and the planning grid has
+  // a column per course type, which portrait cannot hold.
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, t('conversion_title'), lang)
   const stages = data.stages
   const stageIds = new Set(stages.map((s) => s.id))
@@ -535,12 +542,14 @@ async function exportConversionPdf(data, t, lang, opts) {
       body: cards.length
         ? cards.map((x) => [
             x.name || '', x.base || '', qualLabel(data.quals, x.qual), x.aircraft || '',
-            (CONV_STATUS[x.conv?.status] ? (lang === 'de' ? CONV_STATUS[x.conv.status].de : CONV_STATUS[x.conv.status].en) : ''),
+            labelOf(data.convStatus, x.conv?.status, ''),
             x.conv?.target ? formatDate(x.conv.target, lang) : '-'
           ])
         : [['-', '', '', '', '', '']]
     })
   })
+  // Board above, then the same tab's other two views.
+  planningTables(ctx, data, t, lang)
   return finalize(doc, 'umschulung', opts)
 }
 

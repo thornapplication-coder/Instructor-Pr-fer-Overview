@@ -9,20 +9,6 @@ import { emptyProvider, courseLabel, simVersionLabel } from '../data/providers.j
 import { providerSlots, providerUtilization } from '../lib/stats.js'
 import { findRun, resolveAssignment } from '../lib/courses.js'
 
-function UtilBar({ value }) {
-  if (value == null) return <span className="muted small">–</span>
-  const pct = Math.round(value * 100)
-  const lvl = value > 1 ? 'over' : value >= 0.8 ? 'high' : 'ok'
-  return (
-    <div className="util">
-      <div className="util-track">
-        <div className={'util-fill ' + lvl} style={{ width: Math.min(100, pct) + '%' }} />
-      </div>
-      <span className={'util-pct ' + lvl}>{pct}%</span>
-    </div>
-  )
-}
-
 export default function Providers() {
   const tint = useThemed()
   const { data, t, upsertProvider, deleteProvider, newId } = useStore()
@@ -71,8 +57,7 @@ export default function Providers() {
     () => ({
       name: (u) => u.provider.name || '',
       assigned: (u) => u.demand,
-      slots: (u) => u.slots,
-      util: (u) => (u.util == null ? -1 : u.util)
+      slots: (u) => u.slots
     }),
     []
   )
@@ -175,7 +160,6 @@ export default function Providers() {
                   <th>{t('p_courses')}</th>
                   <Th label={t('prov_assigned')} k="assigned" className="num" {...sp} />
                   <Th label={t('prov_slots')} k="slots" className="num" {...sp} />
-                  <Th label={t('prov_util')} k="util" {...sp} />
                 </tr>
                 ) })()}
               </thead>
@@ -233,7 +217,6 @@ export default function Providers() {
                       {u.slots || '–'}
                       {u.slotsSplitOver && <span className="warn-text small" title={t('p_slotsOverShort')}> !</span>}
                     </td>
-                    <td><UtilBar value={u.util} /></td>
                   </tr>
                 ))}
               </tbody>

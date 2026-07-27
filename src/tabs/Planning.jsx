@@ -9,10 +9,9 @@ import CourseRunManager from '../components/CourseRunManager.jsx'
 import { providersForStep } from '../lib/providerMatch.js'
 import { conflictsFor, findRun, resolveAssignment, runsForStep, spanDays, spanText } from '../lib/courses.js'
 import { formatDate } from '../lib/format.js'
-import { ASSIGNMENT_STATUS, STAFF_TYPE } from '../data/pipeline.js'
 import { useThemed } from '../lib/useThemed.js'
 import { qualLabel } from '../data/qualifications.js'
-import { AIRCRAFT } from '../data/aircraft.js'
+import { colorOf, labelOf } from '../data/lists.js'
 
 
 function targetLabel(providers, resolved) {
@@ -34,7 +33,7 @@ function cellLabel(providers, runs, a) {
 export default function Planning({ view: viewProp, embedded }) {
   const tint = useThemed()
   const { data, t, lang, setAssignmentSteps } = useStore()
-  const { trainers, providers, assignmentSteps, quals, courseRuns } = data
+  const { trainers, providers, assignmentSteps, quals, courseRuns, aircraftTypes, oreTiers, assignStatus, staffTypes } = data
   const [q, setQ] = useState('')
   const [fBase, setFBase] = useState('')
   const [fStaff, setFStaff] = useState('')
@@ -88,16 +87,15 @@ export default function Planning({ view: viewProp, embedded }) {
         </select>
         <select className="input" value={fStaff} onChange={(e) => setFStaff(e.target.value)}>
           <option value="">{t('filterStaff')}: {t('all')}</option>
-          <option value="external">{t('staff_external')}</option>
-          <option value="internal">{t('staff_internal')}</option>
+          {staffTypes.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
         </select>
         <select className="input" value={fAircraft} onChange={(e) => setFAircraft(e.target.value)}>
           <option value="">{t('filterAircraft')}: {t('all')}</option>
-          {[...AIRCRAFT].sort().map((a) => <option key={a} value={a}>{a}</option>)}
+          {aircraftTypes.map((a) => <option key={a.id} value={a.id}>{a.label}</option>)}
         </select>
         <select className="input" value={fOre} onChange={(e) => setFOre(e.target.value)}>
           <option value="">{t('filterOre')}: {t('all')}</option>
-          {['A', 'B', 'C'].map((o) => <option key={o} value={o}>{o}</option>)}
+          {oreTiers.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
         </select>
         <span className="count-pill">{rows.length} / {trainers.length} {t('showing')}</span>
         {anyFilter && (
@@ -161,7 +159,6 @@ export default function Planning({ view: viewProp, embedded }) {
           </thead>
           <tbody>
             {sorted.map((x) => {
-              const staff = STAFF_TYPE[x.staffType || 'internal']
               return (
                 <tr key={x.id}>
                   <td className="strong nowrap">
@@ -169,14 +166,14 @@ export default function Planning({ view: viewProp, embedded }) {
                     <div className="muted small">{x.base} · {qualLabel(quals, x.qual)}{x.aircraft ? ' · ' + x.aircraft : ''}</div>
                   </td>
                   <td>
-                    <span className="staff-tag" style={{ '--tag': tint(staff.color) }}>
-                      {t('staff_' + (x.staffType || 'internal'))}
+                    <span className="staff-tag" style={{ '--tag': tint(colorOf(staffTypes, x.staffType || 'internal')) }}>
+                      {labelOf(staffTypes, x.staffType || 'internal')}
                     </span>
                   </td>
                   {assignmentSteps.map((s) => {
                     const a = x.assignments?.[s.id]
                     const label = cellLabel(providers, courseRuns, a)
-                    const st = ASSIGNMENT_STATUS[a?.status] || ASSIGNMENT_STATUS.open
+                    const stColor = colorOf(assignStatus, a?.status || 'open')
                     const r = a ? resolveAssignment(a, findRun(courseRuns, a.courseId)) : null
                     const span = r ? spanText(r.from, r.to, lang) : ''
                     return (
@@ -187,7 +184,7 @@ export default function Planning({ view: viewProp, embedded }) {
                         <button className="cell-assign" onClick={() => setEditing(x.id)}>
                           {label || span ? (
                             <>
-                              <span className="assign-dot" style={{ background: tint(st.color) }} />
+                              <span className="assign-dot" style={{ background: tint(stColor) }} />
                               {label && <span className="assign-label">{label}</span>}
                               {span && <span className="assign-date">{span}</span>}
                             </>
@@ -220,6 +217,7 @@ export default function Planning({ view: viewProp, embedded }) {
               providers={providers}
               steps={assignmentSteps}
               runs={courseRuns}
+              statusList={assignStatus}
               onClose={() => setEditing(null)}
             />
           ) : null
@@ -250,7 +248,7 @@ function runOption(run, providers, lang) {
   return [span || '(?)', where].filter(Boolean).join(' · ')
 }
 
-function PlanningModal({ trainer, providers, steps, runs, onClose }) {
+function PlanningModal({ trainer, providers, steps, runs, statusList, onClose }) {
   // Its own themed resolver: this is a sibling of Planning(), not a nested
   // function, so the `tint` defined there is simply not in scope here. Reading
   // it threw on the first render of the dialog and blanked the whole app.
@@ -392,11 +390,11 @@ function PlanningModal({ trainer, providers, steps, runs, onClose }) {
                   {/* empty choice = back to default "open" so stored value and UI never diverge */}
                   <select className="input" value={a.status || 'open'} onChange={(e) => setStep(s.id, { status: e.target.value || 'open' })}>
                     <option value=""></option>
-                    {Object.entries(ASSIGNMENT_STATUS)
-                      .sort((x, y) => (lang === 'de' ? x[1].de : x[1].en).localeCompare(lang === 'de' ? y[1].de : y[1].en))
-                      .map(([k, v]) => (
-                        <option key={k} value={k}>{lang === 'de' ? v.de : v.en}</option>
-                      ))}
+                    {/* From the store, so a status renamed in the settings
+                        reads the same here as everywhere else. */}
+                    {statusList.map((v) => (
+                      <option key={v.id} value={v.id}>{v.label}</option>
+                    ))}
                   </select>
                 </label>
                 <label className="field">

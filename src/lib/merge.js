@@ -27,7 +27,16 @@ export const MERGE_LISTS = [
   'courseRuns',
   'providerCourses',
   'providerStatus',
-  'simVersions'
+  'simVersions',
+  // The pick lists behind the dropdowns. Merged per record like the rest, so
+  // renaming a status on one device and adding an aircraft on another both
+  // survive.
+  'aircraftTypes',
+  'oreTiers',
+  'convStatus',
+  'assignStatus',
+  'pilotStatus',
+  'staffTypes'
 ]
 
 // A tombstone older than this is dropped. It has to outlive any plausible
