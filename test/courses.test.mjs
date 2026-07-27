@@ -66,6 +66,11 @@ console.log('\nCourse dates – the record itself')
   ok(emptyCourseRun('n').id === 'n', 'a blank course carries the id it was given')
   ok(runsForStep(RUNS, 'tr').length === 2, 'courses are filtered by course type (2 TR courses)')
   ok(runsForStep(RUNS, 'nope').length === 0, 'an unknown type has none, rather than all of them')
+  // They feed a dropdown of dates; unsorted it came back in storage order.
+  ok(runsForStep([RUNS[1], RUNS[0]], 'tr').map((r) => r.id).join() === 'c1,c2',
+    'and they come back in date order, not in the order they were entered')
+  ok(runsForStep([{ id: 'x', stepId: 'tr', from: '' }, RUNS[0]], 'tr').map((r) => r.id).join() === 'c1,x',
+    'a course with no date yet sorts last instead of jumping to the top')
   ok(findRun(RUNS, 'c2').id === 'c2', 'a course is found by id')
   ok(findRun(RUNS, '') === null, 'no id is no course – not the first one')
   ok(findRun(RUNS, 'gone') === null, 'a deleted id resolves to nothing rather than throwing')

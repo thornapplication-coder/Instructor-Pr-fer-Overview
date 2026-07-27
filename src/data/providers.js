@@ -58,8 +58,12 @@ export function emptyProvider(id) {
     phone: '',
     website: '',
     price: '',
-    capacity: '',
-    slots: '', // capacity as a number of seats/slots (for utilization)
+    // Seats the provider can take PER MONTH. `slots` is the overall figure,
+    // `slotsByStep` the same thing broken down by course type ({stepId: n}) -
+    // a provider that runs six type ratings a month may only run two TRI
+    // courses, and a single total hides exactly that.
+    slots: '',
+    slotsByStep: {},
     status: '',
     notes: ''
   }

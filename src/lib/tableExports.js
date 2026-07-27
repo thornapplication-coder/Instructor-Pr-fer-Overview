@@ -107,7 +107,7 @@ export function exportProvidersExcel(data, t, lang) {
       { label: t('p_contact'), value: (p) => p.contactPerson },
       { label: t('p_email'), value: (p) => p.email },
       { label: t('p_phone'), value: (p) => p.phone },
-      { label: t('p_capacity'), value: (p) => p.capacity },
+      { label: t('p_slots'), value: (p) => p.slots || '' },
       { label: t('p_status'), value: (p) => statusLabel(p.status) }
     ],
     rows,

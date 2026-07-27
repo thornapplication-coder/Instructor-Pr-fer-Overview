@@ -61,7 +61,6 @@ export default function Providers() {
       sim: (p) => [...(p.simVersions || [])].map((s) => simVersionLabel(simVersions, s)).sort().join(', '),
       locations: (p) => [...(p.locations || [])].sort().join(', '),
       contact: (p) => p.contactPerson || '',
-      capacity: (p) => p.capacity || '',
       status: (p) => statusLabel(p.status)
     }),
     [providerStatus, providerCourses, simVersions]
@@ -105,7 +104,6 @@ export default function Providers() {
                 <Th label={t('p_simVersion')} k="sim" {...sp} />
                 <Th label={t('p_locations')} k="locations" {...sp} />
                 <Th label={t('p_contact')} k="contact" {...sp} />
-                <Th label={t('p_capacity')} k="capacity" {...sp} />
                 <Th label={t('p_status')} k="status" {...sp} />
               </tr>
               ) })()}
@@ -155,7 +153,6 @@ export default function Providers() {
                       {p.contactPerson || '–'}
                       {p.email && <div className="muted small">{p.email}</div>}
                     </td>
-                    <td className="muted small">{p.capacity || '–'}</td>
                     <td><span className="status-tag" style={{ '--tag': tint(st.color) }}>{st.label}</span></td>
                   </tr>
                 )
@@ -195,16 +192,34 @@ export default function Providers() {
                     <td className="strong">{u.provider.name || '–'}</td>
                     <td>
                       <div className="type-tags">
+                        {/* Demand against the capacity of the SAME course type.
+                            A provider's total can look comfortable while the one
+                            course everybody needs is the bottleneck. */}
                         {assignmentSteps
-                          .filter((s) => u.byStep[s.id])
-                          .map((s) => (
-                            <span key={s.id} className="type-tag">{s.label}: {u.byStep[s.id]}</span>
-                          ))}
-                        {u.demand === 0 && <span className="muted small">–</span>}
+                          .filter((s) => u.byStep[s.id] || u.slotsByStep?.[s.id])
+                          .map((s) => {
+                            const need = u.byStep[s.id] || 0
+                            const cap = u.slotsByStep?.[s.id] || 0
+                            return (
+                              <span
+                                key={s.id}
+                                className={'type-tag' + (cap > 0 && need > cap ? ' over' : '')}
+                                title={cap > 0 ? t('prov_stepTag').replace('{n}', String(need)).replace('{m}', String(cap)) : ''}
+                              >
+                                {s.label}: {need}{cap > 0 ? ' / ' + cap : ''}
+                              </span>
+                            )
+                          })}
+                        {u.demand === 0 && !assignmentSteps.some((s) => u.slotsByStep?.[s.id]) && (
+                          <span className="muted small">–</span>
+                        )}
                       </div>
                     </td>
                     <td className="num strong">{u.demand}</td>
-                    <td className="num">{u.slots || '–'}</td>
+                    <td className="num">
+                      {u.slots || '–'}
+                      {u.slotsSplitOver && <span className="warn-text small" title={t('p_slotsOverShort')}> !</span>}
+                    </td>
                     <td><UtilBar value={u.util} /></td>
                   </tr>
                 ))}
@@ -220,6 +235,7 @@ export default function Providers() {
           providerCourses={providerCourses}
           providerStatus={providerStatus}
           simVersions={simVersions}
+          steps={assignmentSteps}
           onClose={() => setEditing(null)}
           onSave={(p) => { upsertProvider(p); setEditing(null) }}
           onDelete={(id) => {
@@ -319,7 +335,7 @@ function ManageLink({ onClick, title }) {
   )
 }
 
-function ProviderForm({ provider, providerCourses, providerStatus, simVersions, onClose, onSave, onDelete, isNew }) {
+function ProviderForm({ provider, providerCourses, providerStatus, simVersions, steps, onClose, onSave, onDelete, isNew }) {
   const { t, setProviderCourses, setProviderStatus, setSimVersions } = useStore()
   const [p, setP] = useState({
     ...provider,
@@ -329,6 +345,8 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
   })
   // Which taxonomy list is being edited in-place ('courses' | 'sim' | 'status').
   const [manage, setManage] = useState(null)
+  const typedSlots = Math.max(0, Math.round(Number(p.slots) || 0))
+  const splitSum = (steps || []).reduce((n, st) => n + Math.max(0, Math.round(Number(p.slotsByStep?.[st.id]) || 0)), 0)
   const set = (k, v) => setP((s) => ({ ...s, [k]: v }))
   const toggleCourse = (id) =>
     setP((s) => {
@@ -455,11 +473,38 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
         <Field label={t('p_price')}>
           <input className="input" value={p.price} onChange={(e) => set('price', e.target.value)} />
         </Field>
-        <Field label={t('p_capacity')}>
-          <input className="input" value={p.capacity} onChange={(e) => set('capacity', e.target.value)} />
-        </Field>
         <Field label={t('p_slots')}>
           <input className="input" type="number" min="0" step="1" value={p.slots ?? ''} onChange={(e) => set('slots', e.target.value)} />
+        </Field>
+        <Field label={t('p_slotsByStep')} span2>
+          {/* Per course type, because a provider that runs six type ratings a
+              month may only run two TRI courses – a single total hides that. */}
+          <div className="slot-grid">
+            {steps.map((st) => (
+              <label className="slot-cell" key={st.id}>
+                <span className="slot-name">{st.label}</span>
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  step="1"
+                  placeholder="–"
+                  value={p.slotsByStep?.[st.id] || ''}
+                  aria-label={st.label + ' – ' + t('p_slots')}
+                  onChange={(e) =>
+                    set('slotsByStep', { ...(p.slotsByStep || {}), [st.id]: e.target.value === '' ? 0 : Number(e.target.value) })
+                  }
+                />
+              </label>
+            ))}
+          </div>
+          <p className="stat-hint">
+            {t('p_slotsHint')}
+            {splitSum > 0 && ' ' + t('p_slotsSum').replace('{n}', String(splitSum))}
+          </p>
+          {typedSlots > 0 && splitSum > typedSlots && (
+            <p className="warn-text small">{t('p_slotsOver').replace('{n}', String(splitSum)).replace('{m}', String(typedSlots))}</p>
+          )}
         </Field>
         <Field label={t('p_notes')} span2>
           <textarea className="input" rows={3} value={p.notes} onChange={(e) => set('notes', e.target.value)} />

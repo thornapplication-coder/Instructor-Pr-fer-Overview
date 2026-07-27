@@ -4,12 +4,35 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.29.1'
+export const APP_VERSION = '1.30.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.30.0',
+    date: '2026-07-27',
+    type: 'minor',
+    changes: {
+      de: [
+        'Die Kapazität eines Providers heißt jetzt ausdrücklich **Plätze / Monat** — vorher war die Zahl ohne Zeitbezug und damit nicht vergleichbar.',
+        'Zusätzlich je Kursart: wie viele Personen der Provider pro Monat im Type Rating, im TRI-Kurs, im LIFUS usw. aufnehmen kann. Ein Gesamtwert allein verdeckt genau den Engpass — sechs Type Ratings im Monat, aber nur zwei TRI-Kurse.',
+        'In der Kapazitätstabelle steht je Kursart „Bedarf / Plätze". Ist der Bedarf höher als die Plätze, wird die Kursart rot markiert. Gesperrt wird nichts.',
+        'Ist kein Gesamtwert eingetragen, gilt die Summe der Aufteilung — die Zahl muss also nicht zweimal getippt werden. Verspricht die Aufteilung mehr als der Gesamtwert, wird gewarnt, aber nichts korrigiert.',
+        'Das Freitextfeld „Kapazität / Konditionen" ist entfallen (die Zahl und „Preis / Konditionen" decken es ab). Was dort stand, wandert automatisch in die Notizen, statt gelöscht zu werden.',
+        'Behoben: Die Karten auf dem Umschulungs-Board standen in Speicher-Reihenfolge statt alphabetisch. Ebenso stand die Auswahl der Kurstermine im Zuweisungs-Dialog in Eingabereihenfolge statt nach Datum.'
+      ],
+      en: [
+        'A provider’s capacity is now explicitly **seats / month** – the figure had no time reference before, which made it incomparable.',
+        'Broken down per course type as well: how many people the provider can take per month in the type rating, the TRI course, LIFUS and so on. A single total hides exactly the bottleneck – six type ratings a month, but only two TRI courses.',
+        'The capacity table shows "demand / seats" per course type. Where demand beats the seats, the course type turns red. Nothing is blocked.',
+        'With no overall figure entered, the breakdown is the total – so the number never has to be typed twice. Where the breakdown promises more than the total, it warns but corrects nothing.',
+        'The free-text "Capacity / conditions" field is gone (the number and "Price / conditions" cover it between them). Whatever was typed there moves into the notes rather than being deleted.',
+        'Fixed: the cards on the conversion board came out in storage order rather than alphabetically. The same for the course-date dropdown in the assign dialog, which was in entry order rather than by date.'
+      ]
+    }
+  },
   {
     version: '1.29.1',
     date: '2026-07-27',

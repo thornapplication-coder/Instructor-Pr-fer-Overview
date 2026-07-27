@@ -67,8 +67,17 @@ export function runIsValid(run) {
   return !!run && spanDays(run.from, run.to) != null
 }
 
+// Chronological: this feeds a dropdown of dates, and a list of dates that is
+// not in date order is unreadable. Undated entries (still being typed) go last.
 export function runsForStep(runs, stepId) {
-  return (runs || []).filter((r) => r.stepId === stepId)
+  return (runs || [])
+    .filter((r) => r.stepId === stepId)
+    .sort((a, b) => {
+      if (!a.from && !b.from) return 0
+      if (!a.from) return 1
+      if (!b.from) return -1
+      return a.from.localeCompare(b.from)
+    })
 }
 
 export function findRun(runs, id) {

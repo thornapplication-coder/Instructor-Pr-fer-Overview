@@ -281,6 +281,23 @@ export function capacityByQual(trainers, aircraftList, stages) {
 // Provider load vs. capacity. Demand = planning assignments pointing at each
 // provider that are still active (any status except "n/a" and "completed").
 // util = demand / slots (null when no slots number is set).
+// Seats a provider can take PER MONTH, overall and per course type.
+//
+// The overall figure is typed, because that is the contract ("we have eight
+// slots a month"). Where it is not typed the breakdown stands in for it, so the
+// same number never has to be entered twice.
+export function providerSlots(provider, steps) {
+  const byStep = {}
+  let sum = 0
+  for (const s of steps || []) {
+    const n = Math.max(0, Math.round(Number(provider?.slotsByStep?.[s.id]) || 0))
+    byStep[s.id] = n
+    sum += n
+  }
+  const typed = Math.max(0, Math.round(Number(provider?.slots) || 0))
+  return { total: typed > 0 ? typed : sum, byStep, split: sum, splitOver: typed > 0 && sum > typed }
+}
+
 // `runs` are the course dates: a booking made through one carries the provider
 // on the COURSE, not on the person. Without resolving that, every properly
 // booked trainer would count as no demand at all and the utilisation bars would
@@ -307,13 +324,17 @@ export function providerUtilization(trainers, providers, steps, runs) {
   return providers
     .map((p) => {
       const d = demand.get(p.id) || { total: 0, byStep: {}, people: [] }
-      const slots = Number(p.slots) || 0
+      const slots = providerSlots(p, steps)
       return {
         provider: p,
         demand: d.total,
         byStep: d.byStep,
-        slots,
-        util: slots > 0 ? d.total / slots : null,
+        slots: slots.total,
+        slotsByStep: slots.byStep,
+        // The breakdown promising more than the overall figure is a warning,
+        // not an error: a provider really can shuffle a slot between courses.
+        slotsSplitOver: slots.splitOver,
+        util: slots.total > 0 ? d.total / slots.total : null,
         people: d.people
       }
     })

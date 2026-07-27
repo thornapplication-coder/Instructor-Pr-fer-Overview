@@ -50,6 +50,9 @@ export default function Conversion({ embedded }) {
   const fteS = conversionFteSummary(convPool, stages)
 
   const needle = q.trim().toLowerCase()
+  // Sorted by name. Unsorted this rendered in storage order, which is the order
+  // the seed happened to have and the order an import happened to produce –
+  // finding a person on a fifty-card column then meant reading every card.
   const visible = convPool.filter(
     (x) =>
       (fBase ? x.base === fBase : true) &&
@@ -63,7 +66,7 @@ export default function Conversion({ embedded }) {
             .toLowerCase()
             .includes(needle)
         : true)
-  )
+  ).sort((a, b) => (a.name || '').localeCompare(b.name || ''))
 
   // The stage<->status coupling now lives in the store's setConversion, so all
   // editors (board drag, inline editor, detail modal) behave identically.

@@ -27,6 +27,13 @@ export default async function run(browser, baseUrl, shots) {
   const views = await page.locator('.hub-bar .seg-btn').allInnerTexts()
   ok(views.join('/') === 'Board/Planung/Kalender', 'the tab offers three views (' + views.join(' | ') + ')')
   ok(await page.locator('.board-col').count() > 0, 'and opens on the board')
+  // Unsorted the cards came out in storage order, so finding somebody on a
+  // fifty-card column meant reading every card.
+  const names = (await page.locator('.board-col').first().locator('.conv-name').allInnerTexts()).map((x) => x.trim())
+  const sorted = [...names].sort((a, b) => a.localeCompare(b))
+  ok(names.length > 3, 'the first column holds a stack of cards (' + names.length + ')')
+  ok(names.join('|') === sorted.join('|'),
+    'and they are in alphabetical order (' + names.slice(0, 3).join(', ') + ' …)')
   ok(await page.locator('.pane-title').count() === 1, 'exactly one title, not one per view (' + (await page.locator('.pane-title').count()) + ')')
 
   await page.locator('.hub-bar .seg-btn', { hasText: 'Planung' }).click()

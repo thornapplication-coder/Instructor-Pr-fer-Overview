@@ -11,6 +11,32 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.30.0] – 2026-07-27
+
+- **Provider-Kapazität heißt jetzt „Plätze / Monat".** Die Zahl stand vorher
+  ohne Zeitbezug da und war damit mit nichts vergleichbar.
+- **Zusätzlich je Kursart.** Wie viele Personen der Provider pro Monat im Type
+  Rating, im TRI-Kurs, im LIFUS aufnehmen kann. Ein Gesamtwert allein verdeckt
+  genau den Engpass: sechs Type Ratings im Monat, aber nur zwei TRI-Kurse — und
+  gebraucht wird der TRI-Kurs.
+- Die Aufteilung hängt an den **Planungs-Schritten**, nicht am Angebots-Katalog
+  des Providers. Nur so sind Bedarf und Kapazität dieselbe Größe: in der
+  Kapazitätstabelle steht je Kursart „Bedarf / Plätze", und wo der Bedarf die
+  Plätze übersteigt, wird die Kursart rot. Gesperrt wird nichts.
+- Ohne eingetragenen Gesamtwert gilt die **Summe der Aufteilung** — die Zahl
+  muss nicht zweimal getippt werden. Verspricht die Aufteilung mehr als der
+  Gesamtwert, wird gewarnt und nichts korrigiert: ein Provider kann einen Platz
+  zwischen Kursarten verschieben.
+- Das Freitextfeld **„Kapazität / Konditionen" ist entfallen**; die Zahl und
+  „Preis / Konditionen" decken es zwischen sich ab. Was dort stand, wandert per
+  Migration (`_capNotes`) in die **Notizen** — selbst geschriebene Information
+  wird nicht gelöscht.
+- **Behoben: unsortierte Listen.** Die Karten auf dem Umschulungs-Board standen
+  in Speicher-Reihenfolge (also so, wie der Seed oder ein Import es zufällig
+  ergab) statt alphabetisch — auf einer Spalte mit fünfzig Karten hieß das:
+  jede Karte lesen. Ebenso stand die Auswahl der Kurstermine im
+  Zuweisungs-Dialog in Eingabereihenfolge statt nach Datum.
+
 ## [1.29.1] – 2026-07-27
 
 - **Behoben: die Dauer-Kachel liess sich nicht zurückschalten.** Trug keine

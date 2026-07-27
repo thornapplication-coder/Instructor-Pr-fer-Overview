@@ -117,7 +117,7 @@ Datensatz angefasst wurde. Freitext-Bemerkungen wie „Rente 2027" bleiben
 bewusst stehen — das ist selbst geschriebene Information.
 
 **Migrationen sind durch ein Flag abgesichert** (`_provSeeded`, `_courseSeed2`,
-`_provStatus2`, `_qualMerge`, `_roleSeed`, `_palette3`, `_oreNoRente`) und
+`_provStatus2`, `_qualMerge`, `_roleSeed`, `_palette3`, `_oreNoRente`, `_capNotes`) und
 fassen nur an, was noch den alten Standardwert trägt — selbst gewählte Werte
 bleiben.
 

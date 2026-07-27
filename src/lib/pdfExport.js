@@ -304,12 +304,12 @@ async function exportProvidersPdf(data, t, lang, opts) {
   const statusLabel = (id) => (data.providerStatus.find((s) => s.id === id) || {}).label || ''
   table(ctx, {
     section: t('providers_title'),
-    head: [t('p_name'), t('p_courses'), t('p_simVersion'), t('p_locations'), t('p_contact'), t('p_capacity'), t('p_status')],
+    head: [t('p_name'), t('p_courses'), t('p_simVersion'), t('p_locations'), t('p_contact'), t('p_slots'), t('p_status')],
     body: providers.map((p) => [
       p.name || '', [...(p.courses || [])].map((c) => courseLabel(data.providerCourses, c)).sort().join(', '),
       [...(p.simVersions || [])].map((s) => simVersionLabel(data.simVersions, s)).sort().join(', '),
       [...(p.locations || [])].sort().join(', '),
-      p.contactPerson || '', p.capacity || '', statusLabel(p.status)
+      p.contactPerson || '', p.slots ? String(p.slots) : '', statusLabel(p.status)
     ])
   })
   const util = providerUtilization(data.trainers, data.providers, data.assignmentSteps)

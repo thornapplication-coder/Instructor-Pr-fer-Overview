@@ -403,17 +403,31 @@ const DICT = {
   p_phone: { de: 'Telefon', en: 'Phone' },
   p_website: { de: 'Website', en: 'Website' },
   p_price: { de: 'Preis / Konditionen', en: 'Price / terms' },
-  p_capacity: { de: 'Kapazität / Konditionen', en: 'Capacity / terms' },
-  p_slots: { de: 'Kapazität (Plätze, Anzahl)', en: 'Capacity (slots, number)' },
+  p_slots: { de: 'Plätze / Monat (gesamt)', en: 'Seats / month (total)' },
+  p_slotsByStep: { de: 'Plätze / Monat je Kursart', en: 'Seats / month per course type' },
+  p_slotsHint: {
+    de: 'Wie viele Personen der Provider pro Monat in der jeweiligen Kursart aufnehmen kann. Leer heißt „nicht angegeben", nicht „null".',
+    en: 'How many people the provider can take per month in each course type. Blank means "not stated", not "zero".'
+  },
+  p_slotsSum: { de: 'Aufteilung ergibt {n}.', en: 'The breakdown adds up to {n}.' },
+  p_slotsOver: {
+    de: 'Die Aufteilung ({n}) übersteigt die Gesamtkapazität ({m}). Gesperrt wird nichts – ein Provider kann einen Platz zwischen Kursarten verschieben.',
+    en: 'The breakdown ({n}) exceeds the overall capacity ({m}). Nothing is blocked – a provider really can move a slot between course types.'
+  },
+  p_slotsOverShort: {
+    de: 'Die Aufteilung je Kursart übersteigt die Gesamtkapazität.',
+    en: 'The per-course breakdown exceeds the overall capacity.'
+  },
   p_status: { de: 'Status', en: 'Status' },
   p_notes: { de: 'Notizen', en: 'Notes' },
   prov_capacity: { de: 'Kapazität & Auslastung', en: 'Capacity & utilization' },
   prov_capacityHint: {
-    de: 'Aktive Planungs-Zuweisungen je Provider gegenüber der Platz-Kapazität. Kapazität pro Provider im Bearbeiten-Dialog setzen; Zeile antippen zum Bearbeiten.',
-    en: 'Active planning assignments per provider vs. the number of slots. Set the capacity per provider in the edit dialog; tap a row to edit.'
+    de: 'Offene Planungs-Zuweisungen je Provider gegen die Kapazität EINES Monats – über 100 % heißt: der offene Bedarf braucht länger als einen Monat. Kapazität im Bearbeiten-Dialog setzen, gesamt und je Kursart; Zeile antippen zum Bearbeiten.',
+    en: 'Open planning assignments per provider against ONE month of capacity – above 100 % means the open demand needs longer than a month. Set the capacity in the edit dialog, overall and per course type; tap a row to edit.'
   },
+  prov_stepTag: { de: '{n} zugewiesen · {m} Plätze/Monat', en: '{n} assigned · {m} seats/month' },
   prov_assigned: { de: 'Zugewiesen', en: 'Assigned' },
-  prov_slots: { de: 'Kapazität', en: 'Slots' },
+  prov_slots: { de: 'Plätze / Monat', en: 'Seats / month' },
   prov_util: { de: 'Auslastung', en: 'Utilization' },
 
   // ---- staff type & planning / assignments

@@ -80,7 +80,16 @@ function normalizeProvider(p) {
     ...p,
     locations: Array.isArray(p.locations) ? p.locations : p.location ? [p.location] : [],
     courses: Array.isArray(p.courses) ? p.courses : [],
-    simVersions: Array.isArray(p.simVersions) ? p.simVersions : []
+    simVersions: Array.isArray(p.simVersions) ? p.simVersions : [],
+    // Whole seats only, and never negative. Values for course types that no
+    // longer exist are simply carried – deleting them here would lose the
+    // number if the column comes back under the same id.
+    slotsByStep:
+      p.slotsByStep && typeof p.slotsByStep === 'object' && !Array.isArray(p.slotsByStep)
+        ? Object.fromEntries(
+            Object.entries(p.slotsByStep).map(([k, v]) => [k, Math.max(0, Math.round(Number(v) || 0))])
+          )
+        : {}
   }
 }
 
@@ -123,6 +132,7 @@ function freshData(lang = 'de') {
     _qualMerge: true,
     _roleSeed: true,
     _oreNoRente: true,
+    _capNotes: true,
     updatedAt: at
   }, at)
 }
@@ -211,6 +221,7 @@ function normalize(obj) {
     _qualMerge: obj._qualMerge === true,
     _roleSeed: obj._roleSeed === true,
     _oreNoRente: obj._oreNoRente === true,
+    _capNotes: obj._capNotes === true,
     updatedAt: obj.updatedAt || nowIso()
   }
   // One-time: merge newly shipped default courses (e.g. "SIM only") into stored
@@ -253,6 +264,19 @@ function normalize(obj) {
   if (!result._oreNoRente) {
     result.trainers = result.trainers.map((t) => ((t.ore || '') === 'Rente' ? { ...t, ore: '' } : t))
     result._oreNoRente = true
+  }
+  // One-time: the free-text "Kapazität / Konditionen" field is gone – the
+  // numeric seats-per-month field and "Preis / Konditionen" cover it between
+  // them. Whatever was typed there is self-written information, so it moves
+  // into the notes instead of being deleted.
+  if (!result._capNotes) {
+    result.providers = result.providers.map((p) => {
+      const txt = String(p.capacity || '').trim()
+      if (!txt) return p.capacity === undefined ? p : { ...p, capacity: undefined }
+      const notes = String(p.notes || '').trim()
+      return { ...p, capacity: undefined, notes: notes ? notes + '\n' + txt : txt }
+    })
+    result._capNotes = true
   }
   // One-time: move the stored category colours onto the documented palette.
   // Only entries still carrying their OLD shipped default are touched, so a
