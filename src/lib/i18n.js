@@ -291,6 +291,8 @@ const DICT = {
   filterOre: { de: 'ORE', en: 'ORE' },
   filterStage: { de: 'Phase', en: 'Stage' },
   showing: { de: 'angezeigt', en: 'showing' },
+  // Card mode only: the header row that carried the sort is hidden there.
+  sortBy: { de: 'Sortieren', en: 'Sort by' },
 
   // ---- conversion
   conversion_title: { de: 'Umschulung', en: 'Conversion' },

@@ -11,6 +11,38 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.40.0] – 2026-07-27
+
+### Neu
+- **Sortieren am Handy und am iPad.** Wo eine Liste zur Karte wird, ist die
+  Kopfzeile ausgeblendet — und `toggle` war nur über sie erreichbar, also gab
+  es dort gar keine Sortierung mehr. Neu ist ein Auswahlfeld „Sortieren" mit
+  einem Richtungspfeil, das genau in der Breite erscheint, in der die Kopfzeile
+  verschwindet. In Trainer, Other Pilots, Provider, Kapazität und Planung.
+  Bewusst eine kurze Auswahl statt aller Spalten: am Handy braucht man zwei bis
+  drei sinnvolle Reihenfolgen, nicht vierzehn.
+- Am wichtigsten in der **Kapazitäts-Liste**: sie existiert, um „wer ist der
+  Engpass" zu beantworten, und das ist eine Frage nach der Reihenfolge. Am
+  Handy war sie auf Name-aufsteigend eingefroren.
+- Am Rechner ändert sich nichts — dort bleibt die Kopfzeile und das Feld
+  erscheint nicht.
+
+### Behoben
+- **Spaltenköpfe waren für Screenreader keine.** Der sortierbare `<th>` trug
+  `role="button"`, was die Kopfzeilen-Rolle *ersetzt*. Gemessen: mit der alten
+  Form meldete der Barrierefreiheits-Baum **null** Spaltenköpfe statt acht, und
+  die Kopfzeile hatte nicht einmal einen Namen. Der Kopf ist jetzt wieder ein
+  Kopf mit `aria-sort`; gedrückt wird ein echter Knopf darin.
+
+### Geändert
+- Die Karten-Tabellen benennen Tabelle, Zeile und Zelle jetzt ausdrücklich.
+  **Ehrlich gemessen war das nicht nötig:** Chromium behält diese Rollen auch
+  bei `display: grid` — nach dem Entfernen der Attribute blieben Tabelle, 64
+  Zeilen und 512 Zellen im Baum stehen. Der Review-Fund traf für diese Engine
+  also nicht zu. Die Attribute bleiben als Absicherung für Engines, die die
+  Rollen beim Umbau verlieren, und ein Test hält sie fest — aber sie beheben
+  hier keinen beobachteten Fehler.
+
 ## [1.39.0] – 2026-07-27
 
 ### Geändert

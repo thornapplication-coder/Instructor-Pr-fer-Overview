@@ -168,6 +168,69 @@ export default async function run(browser, baseUrl, shots) {
   await phone.screenshot({ path: shots + '/pilots-phone.png', fullPage: false })
   await phone.close()
 
+
+  // ---- sorting, and what a screen reader is told --------------------------
+  // Below the card breakpoint the header row is hidden, and with it the only
+  // way to sort: `toggle` is reachable through `Th` alone. The card gets its
+  // own control instead.
+  const sortPage = await browser.newPage({ viewport: { width: 390, height: 844 } })
+  await sortPage.goto(baseUrl, { waitUntil: 'networkidle' })
+  await sortPage.waitForSelector('.kpi-hero')
+  await sortPage.locator('.tab', { hasText: 'Other Pilots' }).first().click()
+  await sortPage.waitForSelector('.pilots-table')
+  await sortPage.waitForTimeout(500)
+  ok(await sortPage.locator('.sort-select').isVisible(), 'a phone offers a sort control instead of the header row')
+  ok(!(await sortPage.locator('.pilots-table thead').isVisible()), '  and the header row is gone')
+  const basesOf = async () =>
+    (await sortPage.locator('.pilots-table .c-base').allInnerTexts()).map((x) => x.trim())
+  await sortPage.selectOption('.sort-select select', 'base')
+  await sortPage.waitForTimeout(400)
+  const asc = await basesOf()
+  ok(asc.join('|') === [...asc].sort().join('|'),
+    'picking a field really reorders the cards (' + asc.slice(0, 3).join(', ') + ' …)')
+  await sortPage.locator('.sort-dir').click()
+  await sortPage.waitForTimeout(400)
+  const desc = await basesOf()
+  ok(desc.join('|') === [...asc].reverse().join('|'),
+    'and the arrow reverses them (' + desc.slice(0, 3).join(', ') + ' …)')
+  // Re-picking the field that is already chosen must not silently reverse it.
+  await sortPage.selectOption('.sort-select select', 'base')
+  await sortPage.waitForTimeout(400)
+  ok((await basesOf()).join('|') === desc.join('|'),
+    'choosing the field that is already selected leaves the direction alone')
+
+  // The structure a screen reader walks. Chromium keeps table/row/cell through
+  // the display change on its own; the explicit roles are insurance for engines
+  // that do not, so this asserts they are PRESENT, not that they rescue
+  // anything here.
+  const roleCount = async (page) => {
+    const snap = await page.accessibility.snapshot({ interestingOnly: false })
+    const seen = new Map()
+    const walk = (n) => { if (!n) return; seen.set(n.role, (seen.get(n.role) || 0) + 1); (n.children || []).forEach(walk) }
+    walk(snap)
+    return seen
+  }
+  const onCard = await roleCount(sortPage)
+  ok((onCard.get('table') || 0) >= 1 && (onCard.get('row') || 0) >= 60 && (onCard.get('cell') || 0) >= 400,
+    'the card still reads as a table with rows and cells (' +
+    [onCard.get('table'), onCard.get('row'), onCard.get('cell')].join('/') + ')')
+  await sortPage.setViewportSize({ width: 1500, height: 900 })
+  await sortPage.waitForTimeout(600)
+  ok(!(await sortPage.locator('.sort-select').isVisible()),
+    'on a desktop the control steps aside for the header row it replaced')
+  const onDesk = await roleCount(sortPage)
+  // The sortable header used to carry `role="button"`, which REPLACES its
+  // columnheader role – measured, that took all eight of them to zero.
+  ok((onDesk.get('columnheader') || 0) === 8,
+    'and every sortable header is announced as a column header, not a button (' +
+    (onDesk.get('columnheader') || 0) + ')')
+  const stillSorts = await sortPage.locator('.pilots-table th', { hasText: 'BASE' }).first()
+  await stillSorts.click()
+  await sortPage.waitForTimeout(400)
+  ok(await sortPage.locator('.pilots-table th.sortable.active').count() >= 1,
+    '  and clicking it still sorts')
+  await sortPage.close()
+
   // ---- the tablet ----------------------------------------------------------
   // The first cut of this switched at 780px, which reads like a phone
   // breakpoint and is not one: an iPad Air/Pro in portrait is 820-834px and

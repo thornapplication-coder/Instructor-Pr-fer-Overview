@@ -3,7 +3,7 @@ import { useStore } from '../lib/store.jsx'
 import { RoleTag } from '../components/tags.jsx'
 import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
-import { useSort, Th } from '../components/sortable.jsx'
+import { useSort, Th, SortSelect } from '../components/sortable.jsx'
 import { formatDate } from '../lib/format.js'
 import { emptyPilot, emptyRating, normalizeTlc, pilotRole, pilotValidity, ratingValid } from '../data/pilots.js'
 
@@ -81,6 +81,21 @@ export default function Pilots() {
           <option value="valid">{t('f_valid')}</option>
           <option value="expired">{t('f_expired')}</option>
         </select>
+        <SortSelect
+          label={t('sortBy')}
+          at={1000}
+          sortKey={sortKey}
+          dir={dir}
+          onSort={toggle}
+          options={[
+            { k: 'name', label: t('f_name') },
+            { k: 'base', label: t('f_base') },
+            { k: 'tlc', label: t('f_tlc') },
+            { k: 'type', label: t('f_type') },
+            { k: 'until', label: t('f_validity') },
+            { k: 'expired', label: t('f_expired') }
+          ]}
+        />
         <span className="count-pill">{rows.length} / {otherPilots.length} {t('showing')}</span>
         {anyFilter && (
           <button className="btn btn-ghost" onClick={() => { setQ(''); setFBase(''); setFType(''); setFValidity('') }}>
@@ -101,9 +116,9 @@ export default function Pilots() {
         </div>
       ) : (
         <div className="table-wrap">
-          <table className="data-table card-at-1000 pilots-table">
-            <thead>
-              <tr>
+          <table className="data-table card-at-1000 pilots-table" role="table">
+            <thead role="rowgroup">
+              <tr role="row">
                 <Th label={t('f_base')} k="base" {...sp} />
                 <Th label={t('f_tlc')} k="tlc" {...sp} />
                 <Th label={t('f_name')} k="name" {...sp} />
@@ -114,11 +129,11 @@ export default function Pilots() {
                 <Th label={t('f_expired')} k="expired" className="center" {...sp} />
               </tr>
             </thead>
-            <tbody>
+            <tbody role="rowgroup">
               {sorted.map((p) => {
                 const list = p.ratings || []
                 return (
-                  <tr
+                  <tr role="row"
                     key={p.id}
                     className="clickable"
                     onClick={() => setEditing({ ...p })}
@@ -130,9 +145,9 @@ export default function Pilots() {
                         the table is a table; on a phone the row becomes a card,
                         the header row is gone, and this is what names the
                         value. */}
-                    <td className="c-base" data-label={t('f_base')}>{p.base || '–'}</td>
-                    <td className="c-tlc mono" data-label={t('f_tlc')}>{p.tlc || '–'}</td>
-                    <td className="c-name card-name strong nowrap">
+                    <td role="cell" className="c-base" data-label={t('f_base')}>{p.base || '–'}</td>
+                    <td role="cell" className="c-tlc mono" data-label={t('f_tlc')}>{p.tlc || '–'}</td>
+                    <td role="cell" className="c-name card-name strong nowrap">
                       {p.name || '–'}
                       <div className="muted small"><RoleTag role={pilotRole(p)} sm /></div>
                     </td>
@@ -140,12 +155,12 @@ export default function Pilots() {
                         the × for "valid" sits on the SAME line as the date it
                         refers to. One × per person put the mark of the second
                         rating next to the first rating's date. */}
-                    <td className="c-type" data-label={t('f_type')}>
+                    <td role="cell" className="c-type" data-label={t('f_type')}>
                       {list.length
                         ? list.map((r) => <div key={r.id} className="rating-line">{r.type || '–'}</div>)
                         : <div className="rating-line">–</div>}
                     </td>
-                    <td className="c-until" data-label={t('f_validity')}>
+                    <td role="cell" className="c-until" data-label={t('f_validity')}>
                       {list.length
                         ? list.map((r) => {
                             const rv = ratingValid(r)
@@ -162,18 +177,18 @@ export default function Pilots() {
                     </td>
                     {/* Boeing experience belongs to the PERSON, so it is marked
                         once, on the first line. */}
-                    <td className="c-exp center" data-label={t('f_boeingExp')}>
+                    <td role="cell" className="c-exp center" data-label={t('f_boeingExp')}>
                       <div className="rating-line">{p.boeingExp ? '×' : ''}</div>
                       {list.slice(1).map((r) => <div key={r.id} className="rating-line" />)}
                     </td>
-                    <td className="c-valid center mark-ok" data-label={t('f_valid')}>
+                    <td role="cell" className="c-valid center mark-ok" data-label={t('f_valid')}>
                       {list.length
                         ? list.map((r) => (
                             <div key={r.id} className="rating-line">{ratingValid(r) === true ? '×' : ''}</div>
                           ))
                         : <div className="rating-line" />}
                     </td>
-                    <td className="c-expired center mark-bad" data-label={t('f_expired')}>
+                    <td role="cell" className="c-expired center mark-bad" data-label={t('f_expired')}>
                       {list.length
                         ? list.map((r) => (
                             <div key={r.id} className="rating-line">{ratingValid(r) === false ? '×' : ''}</div>
@@ -183,7 +198,7 @@ export default function Pilots() {
                   </tr>
                 )
               })}
-              {sorted.length === 0 && <tr><td colSpan={8} className="empty-row">{t('noTrainers')}</td></tr>}
+              {sorted.length === 0 && <tr role="row"><td role="cell" colSpan={8} className="empty-row">{t('noTrainers')}</td></tr>}
             </tbody>
           </table>
         </div>

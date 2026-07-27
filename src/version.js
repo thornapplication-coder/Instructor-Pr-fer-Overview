@@ -4,12 +4,33 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.39.0'
+export const APP_VERSION = '1.40.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.40.0',
+    date: '2026-07-27',
+    type: 'minor',
+    changes: {
+      de: [
+        'Sortieren am Handy und am iPad. Wo eine Liste zur Karte wird, verschwindet die Kopfzeile — und mit ihr war bisher jede Sortiermöglichkeit weg. Jetzt steht dort ein Auswahlfeld „Sortieren" mit einem Pfeil für die Richtung. Betrifft Trainer, Other Pilots, Provider, die Kapazitäts-Liste und die Planung.',
+        'Besonders die Kapazitäts-Liste: sie beantwortet „wer ist der Engpass", und das ist eine Frage nach der Reihenfolge. Am Handy war sie vorher auf Name-aufsteigend eingefroren.',
+        'Am Rechner ändert sich nichts: dort bleibt die Kopfzeile, und das Auswahlfeld erscheint gar nicht erst.',
+        'Spaltenköpfe werden Screenreadern wieder als Spaltenköpfe angesagt. Sie trugen die Rolle „Schaltfläche\u0022, was die Kopfzeilen-Bedeutung ersetzt — gemessen waren damit alle acht Spaltenköpfe der Piloten-Liste für einen Screenreader keine mehr. Der Kopf ist jetzt wieder ein Kopf, gedrückt wird ein Knopf darin.',
+        'Die Karten-Tabellen benennen ihre Struktur (Tabelle, Zeile, Zelle) ausdrücklich. In Chromium war das nicht nötig, dort bleibt sie ohnehin erhalten; für Engines, die sie beim Umbau verlieren, ist es die Absicherung.'
+      ],
+      en: [
+        'Sorting on a phone and an iPad. Where a list becomes a card the header row goes away — and with it, until now, every way to sort. There is a "Sort by" picker with a direction arrow instead. Trainers, Other Pilots, Providers, the capacity list and Planning.',
+        'The capacity list most of all: it answers "who is the bottleneck", which is a question about order. On a phone it was frozen at name-ascending.',
+        'Nothing changes on a desktop: the header row stays and the picker never appears.',
+        'Column headers are announced as column headers again. They carried the role "button", which replaces the columnheader role — measured, that left all eight headers of the roster as no headers at all. The header is a header again and the thing you press is a button inside it.',
+        'The card tables state their structure (table, row, cell) explicitly. Chromium keeps it through the layout change anyway; this is insurance for engines that do not.'
+      ]
+    }
+  },
   {
     version: '1.39.0',
     date: '2026-07-27',

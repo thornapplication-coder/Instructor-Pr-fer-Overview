@@ -3,7 +3,7 @@ import { useStore } from '../lib/store.jsx'
 import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
-import { useSort, Th } from '../components/sortable.jsx'
+import { useSort, Th, SortSelect } from '../components/sortable.jsx'
 import CourseCalendar from '../components/CourseCalendar.jsx'
 import CourseRunManager from '../components/CourseRunManager.jsx'
 import { providersForStep } from '../lib/providerMatch.js'
@@ -97,6 +97,22 @@ export default function Planning({ view: viewProp, embedded }) {
           <option value="">{t('filterOre')}: {t('all')}</option>
           {oreTiers.map((o) => <option key={o.id} value={o.id}>{o.label}</option>)}
         </select>
+        {/* Only in card mode, and only for the table view – the calendar has
+            its own order (by date) and no header row to lose. */}
+        {view === 'table' && (
+          <SortSelect
+            label={t('sortBy')}
+            at={1000}
+            sortKey={sortKey}
+            dir={dir}
+            onSort={toggle}
+            options={[
+              { k: 'name', label: t('f_name') },
+              { k: 'staff', label: t('f_staffType') },
+              ...assignmentSteps.map((st) => ({ k: 'step_' + st.id, label: st.label }))
+            ]}
+          />
+        )}
         <span className="count-pill">{rows.length} / {trainers.length} {t('showing')}</span>
         {anyFilter && (
           <button className="btn btn-ghost" onClick={resetFilters}>↺ {t('resetFilters')}</button>
@@ -139,9 +155,9 @@ export default function Planning({ view: viewProp, embedded }) {
 
       {view === 'table' && (
       <div className="table-wrap">
-        <table className="data-table card-at-1000 planning-table">
-          <thead>
-            <tr>
+        <table className="data-table card-at-1000 planning-table" role="table">
+          <thead role="rowgroup">
+            <tr role="row">
               <Th label={t('f_name')} k="name" {...sp} />
               <Th label={t('f_staffType')} k="staff" {...sp} />
               {assignmentSteps.map((s) => (
@@ -157,10 +173,10 @@ export default function Planning({ view: viewProp, embedded }) {
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody role="rowgroup">
             {sorted.map((x) => {
               return (
-                <tr key={x.id}>
+                <tr role="row" key={x.id}>
                   {/* Named cells: inert while this is a table, and what the
                       card layout below 1000px rearranges. Unlike the other
                       three lists this one is a MATRIX – people down, course
@@ -168,11 +184,11 @@ export default function Planning({ view: viewProp, embedded }) {
                       becomes one labelled line inside it. The number of steps
                       is user-editable, which is why the step cells are placed
                       by auto-flow rather than by a named grid area. */}
-                  <td className="pl-name card-name strong nowrap">
+                  <td role="cell" className="pl-name card-name strong nowrap">
                     <button className="link-btn" onClick={() => setEditing(x.id)}>{x.name}</button>
                     <div className="muted small">{x.base} · {qualLabel(quals, x.qual)}{x.aircraft ? ' · ' + x.aircraft : ''}</div>
                   </td>
-                  <td className="pl-staff card-chip-end">
+                  <td role="cell" className="pl-staff card-chip-end">
                     <span className="staff-tag" style={{ '--tag': tint(colorOf(staffTypes, x.staffType || 'internal')) }}>
                       {labelOf(staffTypes, x.staffType || 'internal')}
                     </span>
@@ -184,7 +200,7 @@ export default function Planning({ view: viewProp, embedded }) {
                     const r = a ? resolveAssignment(a, findRun(courseRuns, a.courseId)) : null
                     const span = r ? spanText(r.from, r.to, lang) : ''
                     return (
-                      <td key={s.id} className="pl-step" data-label={s.label}>
+                      <td role="cell" key={s.id} className="pl-step" data-label={s.label}>
                         {/* A booking onto a course date that has no provider yet
                             still IS a booking – judged on the label alone it read
                             as "+ zuweisen" and looked unassigned. */}
@@ -206,7 +222,7 @@ export default function Planning({ view: viewProp, embedded }) {
               )
             })}
             {sorted.length === 0 && (
-              <tr><td colSpan={2 + assignmentSteps.length} className="empty-row">{t('noTrainers')}</td></tr>
+              <tr role="row"><td role="cell" colSpan={2 + assignmentSteps.length} className="empty-row">{t('noTrainers')}</td></tr>
             )}
           </tbody>
         </table>

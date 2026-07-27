@@ -4,7 +4,7 @@ import { AircraftTag, OreTag, RoleTag } from '../components/tags.jsx'
 import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
-import { useSort, Th } from '../components/sortable.jsx'
+import { useSort, Th, SortSelect } from '../components/sortable.jsx'
 import { formatPartTime, formatDate, classNames, fteFromPartTime, formatFte } from '../lib/format.js'
 import { CONV_STATUS, STAFF_TYPE, stageLabel, stageIndex } from '../data/pipeline.js'
 import { OVERFLOW } from '../lib/palette.js'
@@ -177,6 +177,21 @@ export default function Trainers() {
           <option value="internal">{t('staff_internal')}</option>
           <option value="external">{t('staff_external')}</option>
         </select>
+        <SortSelect
+          label={t('sortBy')}
+          at={1280}
+          sortKey={sortKey}
+          dir={dir}
+          onSort={toggle}
+          options={[
+            { k: 'name', label: t('f_name') },
+            { k: 'qual', label: t('f_qual') },
+            { k: 'base', label: t('f_base') },
+            { k: 'fte', label: t('f_fte') },
+            { k: 'ore', label: t('f_ore') },
+            { k: 'stage', label: t('f_conversion') }
+          ]}
+        />
         <span className="count-pill">
           {rows.length} / {trainers.length} {t('showing')}
         </span>
@@ -193,9 +208,9 @@ export default function Trainers() {
         {/* `compact` is the narrow-cell variant and is shared with the course
             dates; `trainer-table` is what the phone card layout hangs off, and
             it belongs to this table alone. */}
-        <table className="data-table compact card-at-1280 trainer-table">
-          <thead>
-            <tr>
+        <table className="data-table compact card-at-1280 trainer-table" role="table">
+          <thead role="rowgroup">
+            <tr role="row">
               {(() => { const p = { sortKey, dir, onSort: toggle }; return (<>
               <Th label={t('f_qual')} k="qual" {...p} />
               <Th label={t('f_base')} k="base" {...p} />
@@ -216,13 +231,13 @@ export default function Trainers() {
               </>) })()}
             </tr>
           </thead>
-          <tbody>
+          <tbody role="rowgroup">
             {sorted.map((x) => (
-              <tr
+              <tr role="row"
                 key={x.id}
                 onClick={() => setEditing({ ...x })}
                 className="clickable"
-                // tabIndex only: role="button" on a <tr> would void the row/cell
+                // tabIndex only: role="button" on a <tr role="row"> would void the row/cell
                 // semantics and make screen readers read all 13 cells as one name.
                 tabIndex={0}
                 aria-label={x.name}
@@ -235,31 +250,31 @@ export default function Trainers() {
                     Behörde, Anmerkung, Notiz) step aside there and are read in
                     the dialog instead — fourteen fields per card would turn
                     fifty people into a very long scroll. */}
-                <td className="t-qual card-chip-end"><span className="qual-tag" style={{ background: qualColor(x.qual) }}>{qualLabel(quals, x.qual)}</span></td>
-                <td className="t-base" data-label={t('f_base')}>{x.base}</td>
-                <td className="t-tlc mono" data-label={t('f_tlc')}>{x.tlc}</td>
-                <td className="t-name card-name strong">{x.name}</td>
-                <td className="t-role" data-label={t('f_role')}><RoleTag role={roleOf(x)} /></td>
-                <td className="t-pt num" data-label={t('f_partTime')}>{formatPartTime(x.partTime, lang)}</td>
-                <td className="t-fte num" data-label={t('f_fte')}>{formatFte(x.fte)}</td>
-                <td className="t-ac" data-label={t('f_aircraft')}><AircraftTag value={x.aircraft} /></td>
-                <td className="t-ore" data-label={t('f_ore')}>
+                <td role="cell" className="t-qual card-chip-end"><span className="qual-tag" style={{ background: qualColor(x.qual) }}>{qualLabel(quals, x.qual)}</span></td>
+                <td role="cell" className="t-base" data-label={t('f_base')}>{x.base}</td>
+                <td role="cell" className="t-tlc mono" data-label={t('f_tlc')}>{x.tlc}</td>
+                <td role="cell" className="t-name card-name strong">{x.name}</td>
+                <td role="cell" className="t-role" data-label={t('f_role')}><RoleTag role={roleOf(x)} /></td>
+                <td role="cell" className="t-pt num" data-label={t('f_partTime')}>{formatPartTime(x.partTime, lang)}</td>
+                <td role="cell" className="t-fte num" data-label={t('f_fte')}>{formatFte(x.fte)}</td>
+                <td role="cell" className="t-ac" data-label={t('f_aircraft')}><AircraftTag value={x.aircraft} /></td>
+                <td role="cell" className="t-ore" data-label={t('f_ore')}>
                   <OreTag value={x.ore} />
                 </td>
-                <td className="t-staff" data-label={t('f_staffType')}>
+                <td role="cell" className="t-staff" data-label={t('f_staffType')}>
                   <span className="staff-tag" style={{ '--tag': tint((STAFF_TYPE[x.staffType || 'internal']).color) }}>
                     {t('staff_' + (x.staffType || 'internal'))}
                   </span>
                 </td>
-                <td className="t-auth muted small" data-label={t('f_authority')}>{x.authority || '–'}</td>
-                <td className="t-stage" data-label={t('f_conversion')}><StageBadge trainer={x} stages={stages} /></td>
-                <td className="t-remark muted" data-label={t('f_remark')}><span className="cell-clamp" title={x.remark || ''}>{x.remark || '–'}</span></td>
-                <td className="t-note muted" data-label={t('f_note')}><span className="cell-clamp" title={x.note || ''}>{x.note || '–'}</span></td>
+                <td role="cell" className="t-auth muted small" data-label={t('f_authority')}>{x.authority || '–'}</td>
+                <td role="cell" className="t-stage" data-label={t('f_conversion')}><StageBadge trainer={x} stages={stages} /></td>
+                <td role="cell" className="t-remark muted" data-label={t('f_remark')}><span className="cell-clamp" title={x.remark || ''}>{x.remark || '–'}</span></td>
+                <td role="cell" className="t-note muted" data-label={t('f_note')}><span className="cell-clamp" title={x.note || ''}>{x.note || '–'}</span></td>
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr>
-                <td colSpan={14} className="empty-row">{t('noTrainers')}</td>
+              <tr role="row">
+                <td role="cell" colSpan={14} className="empty-row">{t('noTrainers')}</td>
               </tr>
             )}
           </tbody>

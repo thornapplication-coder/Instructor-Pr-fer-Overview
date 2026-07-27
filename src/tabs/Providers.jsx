@@ -4,7 +4,7 @@ import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
-import { useSort, Th } from '../components/sortable.jsx'
+import { useSort, Th, SortSelect } from '../components/sortable.jsx'
 import { emptyProvider, courseLabel, simVersionLabel } from '../data/providers.js'
 import { providerSlots, providerUtilization } from '../lib/stats.js'
 import { findRun, resolveAssignment } from '../lib/courses.js'
@@ -68,6 +68,19 @@ export default function Providers() {
       <div className="toolbar">
         <h2 className="pane-title">{t('providers_title')}</h2>
         <input className="input search" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
+        <SortSelect
+          label={t('sortBy')}
+          at={1000}
+          sortKey={main.sortKey}
+          dir={main.dir}
+          onSort={main.toggle}
+          options={[
+            { k: 'name', label: t('p_name') },
+            { k: 'status', label: t('p_status') },
+            { k: 'locations', label: t('p_locations') },
+            { k: 'courses', label: t('p_courses') }
+          ]}
+        />
         <span className="push-right" />
         <button className="btn btn-primary" onClick={() => setEditing(emptyProvider(newId('prov')))}>+ {t('addProvider')}</button>
       </div>
@@ -80,10 +93,10 @@ export default function Providers() {
         </div>
       ) : (
         <div className="table-wrap">
-          <table className="data-table card-at-1000 provider-table">
-            <thead>
+          <table className="data-table card-at-1000 provider-table" role="table">
+            <thead role="rowgroup">
               {(() => { const sp = { sortKey: main.sortKey, dir: main.dir, onSort: main.toggle }; return (
-              <tr>
+              <tr role="row">
                 <Th label={t('p_name')} k="name" {...sp} />
                 <Th label={t('p_courses')} k="courses" {...sp} />
                 <Th label={t('p_simVersion')} k="sim" {...sp} />
@@ -93,11 +106,11 @@ export default function Providers() {
               </tr>
               ) })()}
             </thead>
-            <tbody>
+            <tbody role="rowgroup">
               {main.sorted.map((p) => {
                 const st = providerStatus.find((s) => s.id === p.status) || { label: p.status || '–', color: STATUS.neutral }
                 return (
-                  <tr
+                  <tr role="row"
                     key={p.id}
                     className="clickable"
                     onClick={() => setEditing({ ...p })}
@@ -111,8 +124,8 @@ export default function Providers() {
                         card's full width there — squeezed into a narrow column
                         "Type Rating + Base Training" broke over four lines and
                         made one provider taller than a phone screen. */}
-                    <td className="pv-name card-name strong">{p.name || '–'}</td>
-                    <td className="pv-courses" data-label={t('p_courses')}>
+                    <td role="cell" className="pv-name card-name strong">{p.name || '–'}</td>
+                    <td role="cell" className="pv-courses" data-label={t('p_courses')}>
                       <div className="type-tags">
                         {[...(p.courses || [])]
                           .map((c) => courseLabel(providerCourses, c))
@@ -127,7 +140,7 @@ export default function Providers() {
                         {!(p.courses || []).length && <span className="muted small">–</span>}
                       </div>
                     </td>
-                    <td className="pv-sim" data-label={t('p_simVersion')}>
+                    <td role="cell" className="pv-sim" data-label={t('p_simVersion')}>
                       <div className="type-tags">
                         {[...(p.simVersions || [])]
                           .map((s) => simVersionLabel(simVersions, s))
@@ -138,7 +151,7 @@ export default function Providers() {
                         {!(p.simVersions || []).length && <span className="muted small">–</span>}
                       </div>
                     </td>
-                    <td className="pv-loc" data-label={t('p_locations')}>
+                    <td role="cell" className="pv-loc" data-label={t('p_locations')}>
                       <div className="type-tags">
                         {[...(p.locations || [])].sort().map((l) => (
                           <span key={l} className="icao-tag">{l}</span>
@@ -146,11 +159,11 @@ export default function Providers() {
                         {!(p.locations || []).length && <span className="muted small">–</span>}
                       </div>
                     </td>
-                    <td className="pv-contact wrap-anywhere" data-label={t('p_contact')}>
+                    <td role="cell" className="pv-contact wrap-anywhere" data-label={t('p_contact')}>
                       {p.contactPerson || '–'}
                       {p.email && <div className="muted small">{p.email}</div>}
                     </td>
-                    <td className="pv-status card-chip-end"><span className="status-tag" style={{ '--tag': tint(st.color) }}>{st.label}</span></td>
+                    <td role="cell" className="pv-status card-chip-end"><span className="status-tag" style={{ '--tag': tint(st.color) }}>{st.label}</span></td>
                   </tr>
                 )
               })}
@@ -163,11 +176,26 @@ export default function Providers() {
         <section className="card" style={{ marginTop: 18 }}>
           <h3 className="card-title">{t('prov_capacity')}</h3>
           <p className="muted small">{t('prov_capacityHint')}</p>
+          {/* This table exists to answer "who is the bottleneck", which is a
+              question about ORDER. Losing the header row on a card would have
+              left it frozen at name-ascending. */}
+          <SortSelect
+            label={t('sortBy')}
+            at={1000}
+            sortKey={utilS.sortKey}
+            dir={utilS.dir}
+            onSort={utilS.toggle}
+            options={[
+              { k: 'assigned', label: t('prov_assigned') },
+              { k: 'slots', label: t('prov_slots') },
+              { k: 'name', label: t('p_name') }
+            ]}
+          />
           <div className="table-wrap">
-            <table className="data-table card-at-1000 provider-cap-table">
-              <thead>
+            <table className="data-table card-at-1000 provider-cap-table" role="table">
+              <thead role="rowgroup">
                 {(() => { const sp = { sortKey: utilS.sortKey, dir: utilS.dir, onSort: utilS.toggle }; return (
-                <tr>
+                <tr role="row">
                   <Th label={t('p_name')} k="name" {...sp} />
                   <th>{t('p_courses')}</th>
                   <Th label={t('prov_assigned')} k="assigned" className="num" {...sp} />
@@ -175,9 +203,9 @@ export default function Providers() {
                 </tr>
                 ) })()}
               </thead>
-              <tbody>
+              <tbody role="rowgroup">
                 {utilS.sorted.map((u) => (
-                  <tr
+                  <tr role="row"
                     key={u.provider.id}
                     className="clickable"
                     onClick={() => setEditing({ ...u.provider })}
@@ -185,8 +213,8 @@ export default function Providers() {
                     aria-label={u.provider.name || ''}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing({ ...u.provider }) } }}
                   >
-                    <td className="pc-name card-name strong">{u.provider.name || '–'}</td>
-                    <td className="pc-courses" data-label={t('p_courses')}>
+                    <td role="cell" className="pc-name card-name strong">{u.provider.name || '–'}</td>
+                    <td role="cell" className="pc-courses" data-label={t('p_courses')}>
                       <div className="type-tags">
                         {/* Demand against the capacity of the SAME course type.
                             A provider's total can look comfortable while the one
@@ -224,8 +252,8 @@ export default function Providers() {
                         )}
                       </div>
                     </td>
-                    <td className="pc-assigned num strong" data-label={t('prov_assigned')}>{u.demand}</td>
-                    <td className="pc-slots num" data-label={t('prov_slots')}>
+                    <td role="cell" className="pc-assigned num strong" data-label={t('prov_assigned')}>{u.demand}</td>
+                    <td role="cell" className="pc-slots num" data-label={t('prov_slots')}>
                       {u.slots || '–'}
                       {u.slotsSplitOver && <span className="warn-text small" title={t('p_slotsOverShort')}> !</span>}
                     </td>
