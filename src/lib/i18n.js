@@ -117,7 +117,13 @@ const DICT = {
   plan_month: { de: 'Monat', en: 'Month' },
   plan_released: { de: 'Freigegeben (Soll)', en: 'Released (plan)' },
   plan_intake: { de: 'Trainer/Monat (Soll)', en: 'Trainers/month (plan)' },
-  plan_add: { de: 'Ziel setzen', en: 'Set milestone' },
+  plan_window: { de: 'Zeitfenster verschieben', en: 'Shift the time window' },
+  plan_earlier: { de: 'Einen Monat zurück', en: 'One month back' },
+  plan_later: { de: 'Einen Monat vor', en: 'One month forward' },
+  plan_gridHint: {
+    de: 'Jeder Monat hat sein eigenes Ziel – leer heißt „kein Ziel gesetzt", nicht „Ziel null". Der Regler schiebt das Sechs-Monats-Fenster bis Ende 2027.',
+    en: 'Every month has its own target – empty means "no target set", not "target zero". The slider moves the six-month window through to the end of 2027.'
+  },
   chart_intake: { de: 'Eingehende Trainer je Monat', en: 'Incoming trainers per month' },
   intake_hint: {
     de: 'Je Säule ein Monat: wie viele Trainer laut Zieltermin in diesem Monat durch die Umschulung gehen, aufgeteilt in Captain und First Officer. Die gestrichelte Linie ist das Monatsziel aus „Umschulungs-Ziele" unter Kapazität.',
@@ -127,7 +133,6 @@ const DICT = {
     de: 'Noch keine Zieltermine gesetzt. Sobald unter „Kapazität" oder im Umschulungs-Board Zieltermine vergeben sind, erscheinen sie hier je Monat.',
     en: 'No target dates set yet. As soon as target dates are assigned on the Capacity tab or the conversion board, they show up here by month.'
   },
-  plan_remove: { de: 'Ziel löschen', en: 'Remove milestone' },
   chart_planVsActual: { de: 'Soll gegen Ist', en: 'Plan vs. actual' },
   plan_none: {
     de: 'Noch kein Ziel gesetzt. Unter „Kapazität" lässt sich je Monat festlegen, wie viele bis dahin freigegeben sein sollen – dann steht hier, ob ihr auf Kurs seid.',

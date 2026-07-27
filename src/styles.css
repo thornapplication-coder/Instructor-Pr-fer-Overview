@@ -216,8 +216,6 @@ button { font-family: inherit; }
 .plan-numbers { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 14px; }
 .plan-num .kpi-value { font-size: 26px; }
 .plan-next { margin-top: 12px; }
-.plan-add { display: flex; gap: 8px; align-items: center; flex-wrap: wrap; margin-top: 12px; }
-.plan-add .input { max-width: 190px; }
 
 /* ---------- Cards & grids ---------- */
 .card {
@@ -902,3 +900,11 @@ textarea.input { resize: vertical; }
     border-top: 1px solid var(--hair); padding-top: 12px;
   }
 }
+
+/* ---------- Plan window ---------- */
+.plan-window { display: flex; align-items: center; gap: 10px; margin: 10px 0 14px; }
+.plan-slider { flex: 1 1 auto; min-width: 0; accent-color: var(--burg); }
+/* Narrow cells: six of them plus a label have to fit the card without
+   scrolling sideways, and a target is at most a two-digit headcount. */
+.plan-grid .plan-cell { padding: 6px 6px; text-align: right; min-width: 0; }
+.plan-grid th, .plan-grid td { white-space: nowrap; }

@@ -4,12 +4,33 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.25.0'
+export const APP_VERSION = '1.26.0'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.26.0',
+    date: '2026-07-25',
+    type: 'minor',
+    changes: {
+      de: [
+        'Die Umschulungs-Ziele unter „Kapazität" sind jetzt ein Raster: sechs Monate nebeneinander, jeder Monat mit eigenem Feld für „Freigegeben (Soll)" und „Trainer/Monat (Soll)". Direkt eintippen statt Monat für Monat über ein Formular hinzuzufügen.',
+        'Ein Schieberegler (plus ‹ ›-Knöpfe) verschiebt das Sechs-Monats-Fenster bis Ende 2027 – in der Zielsetzung wie im Dashboard-Diagramm.',
+        'Jeder Monat hat sein eigenes Ziel: ein leeres Feld heißt „kein Ziel gesetzt" und zeichnet keine Linie. Bisher wurde das letzte gesetzte Ziel stillschweigend in alle Folgemonate übernommen – das sah aus wie eine Entscheidung, die niemand getroffen hatte.',
+        'Das Diagramm zeigt auch Monate ohne Zugang als leere Säule, damit das Fenster seine Form behält und ruhige Monate nicht einfach übersprungen werden.',
+        'Behoben: lag ein Monatsziel über dem höchsten Balken, wurde die Ziellinie an den oberen Rand geklemmt – drei verschiedene Ziele lagen dann auf einer Höhe und sahen aus wie ein flacher Plan. Die Skala schließt die Ziellinie jetzt ein.'
+      ],
+      en: [
+        'The conversion milestones on the Capacity tab are now a grid: six months side by side, each with its own field for "Released (plan)" and "Trainers/month (plan)". Type straight in instead of adding month after month through a form.',
+        'A slider (plus ‹ › buttons) moves the six-month window through to the end of 2027 – both in the editor and in the dashboard chart.',
+        'Every month owns its target: an empty field means "no target set" and draws no line. Previously the last target set was silently carried into every following month, which looked like a decision nobody had made.',
+        'The chart keeps months with no intake as empty columns, so the window holds its shape and quiet months are not simply skipped.',
+        'Fixed: a monthly target above the tallest bar was clamped to the top edge – three different targets then drew at the same height and read as one flat plan. The scale now includes the target line.'
+      ]
+    }
+  },
   {
     version: '1.25.0',
     date: '2026-07-25',

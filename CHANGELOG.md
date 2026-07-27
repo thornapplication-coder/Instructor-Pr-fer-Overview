@@ -11,6 +11,28 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.26.0] – 2026-07-25
+
+- **Ziele je Monat einzeln setzbar.** Die Karte „Umschulungs-Ziele" unter
+  *Kapazität* ist jetzt ein Raster: sechs Monate nebeneinander, je Monat ein
+  Feld für „Freigegeben (Soll)" und eines für „Trainer/Monat (Soll)". Direkt
+  eintippen statt über ein „Ziel hinzufügen"-Formular — ein Ziel, das man nicht
+  sieht, ist ein Ziel, das man zu setzen vergisst.
+- **Sechs-Monats-Fenster mit Schieberegler**, bis **Ende 2027**. Der Regler
+  (plus ‹ ›-Knöpfe für einen Monat auf einmal) sitzt sowohl in der Zielsetzung
+  als auch über dem Dashboard-Diagramm.
+- **Jeder Monat besitzt sein eigenes Ziel.** `intakeFor()` schreibt den letzten
+  gesetzten Wert **nicht mehr** in die Folgemonate fort. Ein leeres Feld heißt
+  „kein Ziel gesetzt" und zeichnet keine Linie — eine geliehene Zahl sah aus wie
+  eine Entscheidung, die niemand getroffen hatte.
+- Das Diagramm behält Monate ohne Zugang als **leere Säule** im Fenster. Ein
+  Diagramm, das die ruhigen Monate stillschweigend überspringt, lässt das Tempo
+  gleichmäßiger aussehen, als es ist.
+- **Behoben: geklemmte Ziellinien.** Lag ein Monatsziel über dem höchsten
+  Balken, zeichnete `TrendColumns` die Linie am oberen Rand — drei verschiedene
+  Ziele lagen dann alle auf derselben Höhe und lasen sich als *ein* flacher
+  Plan. Die Skala wird jetzt aus Balken **und** Ziellinien gebildet.
+
 ## [1.25.0] – 2026-07-25
 
 - **Neu: „Eingehende Trainer je Monat"** in der B737-Umschulung. Je Säule ein

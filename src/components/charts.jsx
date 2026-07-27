@@ -170,7 +170,12 @@ export function StackedBars({ data, series }) {
 // totals every column – right for a FLOW, where each month is different people.
 export function TrendColumns({ data, series, height = 180, labelOf, markOf, markLabel, legendMode = 'last', showValues }) {
   const pick = useChartColor()
-  const max = Math.max(1, ...data.map((d) => d.total || 0))
+  // The scale has to contain the target line too. Sized on the bars alone, a
+  // target above the tallest month gets clamped to the top edge – and then
+  // three different targets all draw at the same height, which reads as one
+  // flat plan instead of a rising one.
+  const marks = markOf ? data.map((d) => markOf(d.key)).filter((v) => v != null) : []
+  const max = Math.max(1, ...data.map((d) => d.total || 0), ...marks)
   // Only every nth label once the axis gets crowded, so months never overlap.
   const step = Math.ceil(data.length / 12)
   return (

@@ -27,21 +27,48 @@ export default async function run(browser, baseUrl, shots) {
   ok((await card.innerText()).includes('Noch kein Ziel gesetzt'), 'and it explains where to set one')
 
   // ---- 2. the editor writes a real record ---------------------------------
+  // The editor is a six-month grid: one input per month per target row, no
+  // "add" button any more. The window opens on the current month, so the first
+  // cell of the first row is this month's cumulative milestone.
   await page.locator('.tab', { hasText: 'Kapazität' }).first().click()
-  await page.waitForSelector('.plan-add')
+  await page.waitForSelector('.plan-grid')
   const editor = page.locator('.card').filter({ hasText: 'Umschulungs-Ziele' }).first()
-  await editor.locator('input[type="month"]').fill('2026-07')
-  // .first(): the editor now has two number fields, the cumulative milestone
-  // and the monthly intake target. This test is about the milestone.
-  await editor.locator('input[type="number"]').first().fill('12')
-  await editor.locator('button', { hasText: 'Ziel setzen' }).click()
+  const thisMonth = await page.evaluate(() => {
+    const d = new Date()
+    return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
+  })
+  const cells = editor.locator('.plan-cell')
+  ok(await cells.count() === 12, 'six months x two target rows = 12 editable cells (' + (await cells.count()) + ')')
+
+  const releasedCell = editor.locator('.plan-grid tbody tr').nth(0).locator('.plan-cell').first()
+  const intakeCell = editor.locator('.plan-grid tbody tr').nth(1).locator('.plan-cell').first()
+  await releasedCell.fill('12')
   await page.waitForTimeout(600)
 
   const stored = await page.evaluate((KEY) => JSON.parse(localStorage.getItem(KEY)).plan, STORAGE_KEY)
-  ok(stored.length === 1 && stored[0].id === '2026-07', 'the milestone is stored keyed by month (' + JSON.stringify(stored) + ')')
+  ok(stored.length === 1 && stored[0].id === thisMonth, 'the milestone is stored keyed by month (' + JSON.stringify(stored) + ')')
   ok(stored[0].released === 12, 'with the number that was typed')
   ok(!!stored[0]._at, 'and a merge stamp, so another device can reconcile it')
-  ok((await editor.innerText()).includes('12'), 'the editor lists it back')
+  ok(await releasedCell.inputValue() === '12', 'the cell keeps the number it was given')
+
+  // Both rows write into the SAME month record, and neither wipes the other.
+  await intakeCell.fill('4')
+  await page.waitForTimeout(600)
+  const both = await page.evaluate((KEY) => JSON.parse(localStorage.getItem(KEY)).plan, STORAGE_KEY)
+  ok(both.length === 1, 'the intake target lands in the same record, not a second one (' + both.length + ')')
+  ok(both[0].released === 12 && both[0].intake === 4,
+    'and the two targets live side by side (' + both[0].released + ' / ' + both[0].intake + ')')
+
+  // The slider scrolls the window forward without touching what is stored.
+  const firstHead = () => editor.locator('.plan-grid thead th').nth(1).innerText()
+  const headBefore = await firstHead()
+  await editor.locator('.plan-window .mini-btn').nth(1).click()
+  await page.waitForTimeout(300)
+  ok((await firstHead()) !== headBefore, 'the "later" button moves the window on (' + headBefore + ' -> ' + (await firstHead()) + ')')
+  await editor.locator('.plan-window .mini-btn').nth(0).click()
+  await page.waitForTimeout(300)
+  ok((await firstHead()) === headBefore, 'and back again')
+  ok(await releasedCell.inputValue() === '12', 'scrolling the window changed no target')
 
   // ---- 3. the dashboard judges it ------------------------------------------
   // Nobody is released in the seed, so 0 of 12 has to be red.

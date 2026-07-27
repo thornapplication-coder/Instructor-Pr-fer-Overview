@@ -48,14 +48,55 @@ export function intakeByMonth(trainers) {
   return [...map.values()].sort((a, b) => a.key.localeCompare(b.key))
 }
 
-/** The monthly intake target in force for a month (flat between milestones). */
+/**
+ * The monthly intake target for exactly this month.
+ *
+ * No carrying forward from an earlier month: every month owns its target. A
+ * month you have not planned yet must show NO line, not last month's – a
+ * borrowed number looks like a decision somebody made.
+ */
 export function intakeFor(series, month) {
-  let v = null
-  for (const p of series) {
-    if (p.id > month) break
-    if (p.intake > 0) v = p.intake
+  const hit = series.find((p) => p.id === month)
+  return hit && hit.intake > 0 ? hit.intake : null
+}
+
+/** How far the planning window may run. The phase-in is planned to here. */
+export const PLAN_HORIZON = '2027-12'
+
+/** Add n months to a 'YYYY-MM' key. */
+export function addMonths(key, n) {
+  const m = /^(\d{4})-(\d{2})$/.exec(String(key))
+  if (!m) return key
+  const total = Number(m[1]) * 12 + (Number(m[2]) - 1) + n
+  const y = Math.floor(total / 12)
+  const mo = total % 12
+  return `${y}-${String(mo + 1).padStart(2, '0')}`
+}
+
+/** Whole months from `from` to `to`, inclusive. Empty if `to` precedes `from`. */
+export function monthRange(from, to) {
+  const out = []
+  let cur = from
+  // Bounded: a malformed key would otherwise never reach `to` and spin forever.
+  for (let i = 0; i < 600 && cur <= to; i++) {
+    out.push(cur)
+    cur = addMonths(cur, 1)
   }
-  return v
+  return out
+}
+
+/**
+ * A fixed-width window of months, and how far it may be pushed.
+ *
+ * The window always holds `size` months even where there is no data, so the
+ * chart keeps a steady shape instead of collapsing to two columns whenever the
+ * planning thins out.
+ */
+export function monthWindow(first, offset, size = 6, horizon = PLAN_HORIZON) {
+  const all = monthRange(first, horizon)
+  const maxOffset = Math.max(0, all.length - size)
+  const start = Math.min(Math.max(0, Math.round(Number(offset) || 0)), maxOffset)
+  return { months: all.slice(start, start + size), start, maxOffset, all }
 }
 
 /**

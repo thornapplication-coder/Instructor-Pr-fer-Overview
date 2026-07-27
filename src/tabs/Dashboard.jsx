@@ -3,7 +3,7 @@ import { useStore } from '../lib/store.jsx'
 import KpiTile from '../components/KpiTile.jsx'
 import { Donut, NestedBars, HBars, ProgressRing, PipelineBar, StackedBars, TrendColumns, colorAt } from '../components/charts.jsx'
 import { historySeries, monthKey, monthLabelShort } from '../lib/history.js'
-import { planStatus, planFor, intakeByMonth, intakeFor } from '../lib/plan.js'
+import { planStatus, planFor, intakeByMonth, intakeFor, monthWindow } from '../lib/plan.js'
 import { monthLabel } from '../lib/alerts.js'
 import { useThemed } from '../lib/useThemed.js'
 import {
@@ -185,7 +185,16 @@ export default function Dashboard() {
   // Monthly intake: the conversion pool grouped by the month of its target
   // date, split by cockpit role. Same two colours as the Captain/FO ring above
   // – one thing, one colour, on one page.
-  const intake = useMemo(() => intakeByMonth(convPool), [convPool])
+  // Six months at a time, walkable to the end of 2027. Months with nobody in
+  // them stay in the window as empty columns – a chart that silently skips the
+  // quiet months would make the pace look steadier than it is.
+  const [intakeAt, setIntakeAt] = useState(0)
+  const intakeAll = useMemo(() => intakeByMonth(convPool), [convPool])
+  const intakeWin = monthWindow(thisMonth, intakeAt, 6)
+  const intake = useMemo(() => {
+    const by = new Map(intakeAll.map((r) => [r.key, r]))
+    return intakeWin.months.map((m) => by.get(m) || { key: m, captain: 0, fo: 0, total: 0 })
+  }, [intakeAll, intakeWin.months.join()])
   const intakeSeries = [
     { key: 'captain', label: t('role_captain'), short: t('role_captainShort'), color: ROLE_COLORS.captain },
     { key: 'fo', label: t('role_fo'), short: t('role_foShort'), color: ROLE_COLORS.fo }
@@ -422,10 +431,39 @@ export default function Dashboard() {
       id: 'intake',
       node: (
         <Card title={t('chart_intake')} total={intake.reduce((n, r) => n + r.total, 0)}>
-          {intake.length === 0 ? (
+          {intakeAll.length === 0 ? (
             <p className="trend-empty">{t('intake_empty')}</p>
           ) : (
             <>
+              <div className="plan-window no-capture">
+                <button
+                  className="mini-btn"
+                  disabled={intakeWin.start === 0}
+                  onClick={() => setIntakeAt(intakeWin.start - 1)}
+                  aria-label={t('plan_earlier')}
+                  title={t('plan_earlier')}
+                >
+                  ‹
+                </button>
+                <input
+                  className="plan-slider"
+                  type="range"
+                  min="0"
+                  max={intakeWin.maxOffset}
+                  value={intakeWin.start}
+                  onChange={(e) => setIntakeAt(Number(e.target.value))}
+                  aria-label={t('plan_window')}
+                />
+                <button
+                  className="mini-btn"
+                  disabled={intakeWin.start >= intakeWin.maxOffset}
+                  onClick={() => setIntakeAt(intakeWin.start + 1)}
+                  aria-label={t('plan_later')}
+                  title={t('plan_later')}
+                >
+                  ›
+                </button>
+              </div>
               <TrendColumns
                 data={intake}
                 series={intakeSeries}

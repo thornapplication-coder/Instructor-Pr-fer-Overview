@@ -1,6 +1,6 @@
 // Plan vs. actual. The traffic light drives a real decision ("do we book more
 // sim slots"), so the rule behind it has to be exact and explainable.
-import { planSeries, planStatus, upsertMilestone, planFor, slackFor, intakeByMonth, intakeFor } from '../src/lib/plan.js'
+import { planSeries, planStatus, upsertMilestone, planFor, slackFor, intakeByMonth, intakeFor, addMonths, monthRange, monthWindow } from '../src/lib/plan.js'
 import { mergeBlobs } from '../src/lib/merge.js'
 
 const fails = []
@@ -155,7 +155,38 @@ console.log('\nIntake – the monthly target line')
   ])
   ok(intakeFor(s, '2026-04') === null, 'before the first target there is no line')
   ok(intakeFor(s, '2026-05') === 26, 'the target month carries its value')
-  ok(intakeFor(s, '2026-07') === 26, 'and it stays flat until the next one')
-  ok(intakeFor(s, '2026-08') === 30, 'then steps to the new target')
-  ok(intakeFor(s, '2026-10') === 30, 'a month with only a milestone does not reset the intake line to zero')
+  ok(intakeFor(s, '2026-08') === 30, 'and each planned month carries its own')
+  ok(intakeFor(s, '2026-10') === null, 'a month with only a cumulative milestone has no intake target')
+}
+
+console.log('\nPlan – the six-month window')
+{
+  ok(addMonths('2026-07', 1) === '2026-08', 'one month on')
+  ok(addMonths('2026-12', 1) === '2027-01', 'across the year boundary')
+  ok(addMonths('2027-01', -1) === '2026-12', 'and backwards across it')
+  ok(monthRange('2026-11', '2027-02').join() === '2026-11,2026-12,2027-01,2027-02', 'a range spans the year end')
+  ok(monthRange('2027-05', '2027-01').length === 0, 'a backwards range is empty, not infinite')
+
+  const w = monthWindow('2026-07', 0, 6, '2027-12')
+  ok(w.months.length === 6, 'the window always holds six months')
+  ok(w.months[0] === '2026-07' && w.months[5] === '2026-12', 'starting at the given month (' + w.months.join(' ') + ')')
+  // 2026-07 .. 2027-12 is 18 months, so the last window starts at index 12.
+  ok(w.maxOffset === 12, 'and it can be pushed to the end of the horizon (' + w.maxOffset + ')')
+
+  const last = monthWindow('2026-07', 99, 6, '2027-12')
+  ok(last.months[5] === '2027-12', 'an offset past the end clamps to the final month')
+  ok(last.months.length === 6, 'and still shows six')
+  ok(monthWindow('2026-07', -5, 6, '2027-12').start === 0, 'a negative offset clamps to the start')
+}
+
+console.log('\nIntake – every month owns its target')
+{
+  const s = planSeries([{ id: '2026-05', intake: 26 }, { id: '2026-08', intake: 30 }])
+  ok(intakeFor(s, '2026-05') === 26, 'the month with a target shows it')
+  // No carrying forward: an unplanned month must show NO line. A borrowed
+  // number would look like a decision somebody actually made.
+  ok(intakeFor(s, '2026-06') === null, 'the month after it has no target of its own')
+  ok(intakeFor(s, '2026-07') === null, 'nor the one after that')
+  ok(intakeFor(s, '2026-08') === 30, 'and the next planned month shows its own')
+  ok(intakeFor(s, '2026-04') === null, 'a month before the first is empty too')
 }
