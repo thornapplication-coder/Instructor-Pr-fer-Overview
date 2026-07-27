@@ -77,6 +77,16 @@ export function stageRamp(n, dark = false) {
 // within dE 2.2 of the conversion stage ramp, i.e. the same colour. At this
 // chroma the distance is 6.3 (light) / 11.1 (dark), and it still clears the
 // 2:1 an ordinal light end needs (2.07:1 on white, 3.34:1 on the dark card).
+// Captain / First Officer. One hue in two steps rather than two hues: in the
+// monthly-intake chart the two are stacked into one column, so they are parts
+// of one total, and a second hue there would read as a second subject. Both
+// steps are taken from the validated burgundy family, far enough apart in
+// lightness to stay apart for a colour-blind reader too.
+export const ROLE_CPT = '#AF1E65'
+export const ROLE_FO = '#FD95BC'
+export const ROLE_CPT_DARK = '#E0619A'
+export const ROLE_FO_DARK = '#7A2E52'
+
 export const MEASURE_WHOLE = '#DDA5B8'
 export const MEASURE_WHOLE_DARK = '#9B5A72'
 export const MEASURE_PART = BRAND.burgundy
@@ -109,6 +119,7 @@ const DARK_OF = new Map()
 CATEGORICAL.forEach((hex, i) => DARK_OF.set(hex.toLowerCase(), CATEGORICAL_DARK[i]))
 STAGE_RAMP.forEach((hex, i) => DARK_OF.set(hex.toLowerCase(), STAGE_RAMP_DARK[i]))
 DARK_OF.set(MEASURE_WHOLE.toLowerCase(), MEASURE_WHOLE_DARK)
+DARK_OF.set(ROLE_FO.toLowerCase(), ROLE_FO_DARK)
 Object.keys(STATUS).forEach((k) => DARK_OF.set(STATUS[k].toLowerCase(), STATUS_DARK[k]))
 DARK_OF.set(OVERFLOW.toLowerCase(), OVERFLOW_DARK)
 

@@ -192,7 +192,13 @@ button { font-family: inherit; }
 /* The stack fills the column from the bottom; column-reverse would fight the
    reversed series order, so the segments are simply laid out top-down. */
 .trend-stack { display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
-.trend-seg { width: 100%; }
+.trend-seg { width: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
+/* On the burgundy fills, so white with a soft dark shadow to survive both the
+   dark and the light step of the ramp. */
+.trend-seg-val {
+  font-size: 11px; font-weight: 700; color: #fff; white-space: nowrap;
+  text-shadow: 0 1px 2px rgba(0,0,0,.35); pointer-events: none;
+}
 /* Only the cap is rounded – the segments below it butt against each other, so
    rounding them too would notch the column where two series meet. */
 .trend-seg:first-child { border-top-left-radius: 3px; border-top-right-radius: 3px; }

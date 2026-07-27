@@ -116,7 +116,17 @@ const DICT = {
   },
   plan_month: { de: 'Monat', en: 'Month' },
   plan_released: { de: 'Freigegeben (Soll)', en: 'Released (plan)' },
+  plan_intake: { de: 'Trainer/Monat (Soll)', en: 'Trainers/month (plan)' },
   plan_add: { de: 'Ziel setzen', en: 'Set milestone' },
+  chart_intake: { de: 'Eingehende Trainer je Monat', en: 'Incoming trainers per month' },
+  intake_hint: {
+    de: 'Je Säule ein Monat: wie viele Trainer laut Zieltermin in diesem Monat durch die Umschulung gehen, aufgeteilt in Captain und First Officer. Die gestrichelte Linie ist das Monatsziel aus „Umschulungs-Ziele" unter Kapazität.',
+    en: 'One column per month: how many trainers pass through the conversion that month according to their target date, split into Captain and First Officer. The dashed line is the monthly target from "Conversion milestones" on the Capacity tab.'
+  },
+  intake_empty: {
+    de: 'Noch keine Zieltermine gesetzt. Sobald unter „Kapazität" oder im Umschulungs-Board Zieltermine vergeben sind, erscheinen sie hier je Monat.',
+    en: 'No target dates set yet. As soon as target dates are assigned on the Capacity tab or the conversion board, they show up here by month.'
+  },
   plan_remove: { de: 'Ziel löschen', en: 'Remove milestone' },
   chart_planVsActual: { de: 'Soll gegen Ist', en: 'Plan vs. actual' },
   plan_none: {

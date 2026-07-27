@@ -518,10 +518,11 @@ export function StoreProvider({ children }) {
       // Set a conversion milestone; 0 removes it. Guarded like the recorder:
       // upsertMilestone returns the same array when the number is unchanged,
       // and patching anyway would stamp a record for a no-op edit.
-      setMilestone: (month, released) => {
+      // `values` is a partial { released, intake } – see upsertMilestone.
+      setMilestone: (month, values) => {
         const d = dataRef.current
-        if (upsertMilestone(d.plan, month, released) === d.plan) return
-        patch((cur) => ({ ...cur, plan: upsertMilestone(cur.plan, month, released) }))
+        if (upsertMilestone(d.plan, month, values) === d.plan) return
+        patch((cur) => ({ ...cur, plan: upsertMilestone(cur.plan, month, values) }))
       },
       deleteMilestone: (month) => patch((d) => ({ ...d, plan: d.plan.filter((p) => p.id !== month) })),
 

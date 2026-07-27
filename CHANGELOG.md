@@ -11,6 +11,31 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.25.0] – 2026-07-25
+
+- **Neu: „Eingehende Trainer je Monat"** in der B737-Umschulung. Je Säule ein
+  Monat, gestapelt in Captain und First Officer, die Zahl steht im Balken.
+  Grundlage sind die **Zieltermine** der Personen — anders als die Zeitachse
+  auf dem Kapazitäts-Reiter lässt diese Auswertung bereits Freigegebene
+  ausdrücklich **drin**: es geht um Durchsatz je Monat, und der Monat, in dem
+  jemand fertig wurde, ist genau ein Monat, in dem er dazugehörte.
+- **Monatsziel je Monat setzbar.** Unter *Kapazität → Umschulungs-Ziele* gibt es
+  neben dem bisherigen Meilenstein jetzt „Trainer/Monat (Soll)". Es wird als
+  gestrichelte Linie über den Säulen gezeichnet, bleibt zwischen zwei Zielen
+  flach und springt beim nächsten.
+- **Zwei Ziele, ein Datensatz, verschiedene Bedeutung.** Der Meilenstein ist
+  **kumulativ** („bis Oktober 15 fertig"), das Monatsziel ein **Durchsatz**
+  („26 Trainer im Oktober"). Sie werden getrennt gehalten: ein Ziel zu setzen
+  lässt das andere unangetastet, und der Monat verschwindet erst aus der Liste,
+  wenn **beide** leer sind — ein gelöschtes Monatsziel darf keinen Meilenstein
+  mitnehmen.
+- Die Legende dieser Kachel **summiert** über die Monate, während die
+  „Fortschritt je Monat"-Kachel den letzten Monat zeigt. Das ist kein
+  Widerspruch: Fortschritt ist ein *Bestand* (dieselben Leute, monatlich neu
+  gezählt), der Zugang ein *Fluss* (jeden Monat andere Leute).
+- Captain und First Officer tragen dieselben zwei Farben wie der
+  Captain/First-Officer-Ring weiter oben.
+
 ## [1.24.1] – 2026-07-25
 
 - **Weiße Seite beim Zuweisen behoben.** In der Planung riss ein Klick auf

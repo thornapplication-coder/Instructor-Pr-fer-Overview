@@ -165,7 +165,10 @@ export function StackedBars({ data, series }) {
 // `markOf` (optional) returns the planned value for a column, drawn as a thin
 // rule across it. A line rather than a fourth series: the plan is not part of
 // the population, it is the height the dark block is supposed to reach.
-export function TrendColumns({ data, series, height = 180, labelOf, markOf, markLabel }) {
+// `legendMode`: 'last' (default) reads the most recent column – right for a
+// STOCK, where adding months would count the same people once per month. 'sum'
+// totals every column – right for a FLOW, where each month is different people.
+export function TrendColumns({ data, series, height = 180, labelOf, markOf, markLabel, legendMode = 'last', showValues }) {
   const pick = useChartColor()
   const max = Math.max(1, ...data.map((d) => d.total || 0))
   // Only every nth label once the axis gets crowded, so months never overlap.
@@ -192,14 +195,22 @@ export function TrendColumns({ data, series, height = 180, labelOf, markOf, mark
                   sits at the base of the column. */}
               {[...series].reverse().map((ser) => {
                 const v = d[ser.key] || 0
-                return v ? (
+                if (!v) return null
+                const share = v / max
+                return (
                   <div
                     key={ser.key}
                     className="trend-seg"
-                    style={{ height: `${(v / max) * 100}%`, background: pick(ser.color, 0) }}
+                    style={{ height: `${share * 100}%`, background: pick(ser.color, 0) }}
                     title={`${ser.label}: ${v}`}
-                  />
-                ) : null
+                  >
+                    {/* Only label a segment tall enough to hold the text – a
+                        number spilling out of a 6px sliver is worse than none. */}
+                    {showValues && share >= 0.09 && (
+                      <span className="trend-seg-val">{v} {ser.short || ser.label}</span>
+                    )}
+                  </div>
+                )
               })}
             </div>
             <div className="trend-tick">{i % step === 0 ? (labelOf ? labelOf(d.key) : d.key) : ''}</div>
@@ -213,9 +224,12 @@ export function TrendColumns({ data, series, height = 180, labelOf, markOf, mark
           key: ser.key,
           color: pick(ser.color, 0),
           label: ser.label,
-          // The LATEST month, not a sum: adding a headcount across months would
-          // count the same people once per month and mean nothing.
-          value: data.length ? data[data.length - 1][ser.key] || 0 : 0
+          value:
+            legendMode === 'sum'
+              ? data.reduce((s, d) => s + (d[ser.key] || 0), 0)
+              : data.length
+                ? data[data.length - 1][ser.key] || 0
+                : 0
         }))}
       />
     </div>

@@ -4,12 +4,31 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.24.1'
+export const APP_VERSION = '1.25.0'
 export const APP_BUILD_DATE = '2026-07-25'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.25.0',
+    date: '2026-07-25',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neu in der B737-Umschulung: „Eingehende Trainer je Monat". Je Säule ein Monat, aufgeteilt in Captain und First Officer, mit der Zahl direkt im Balken. Grundlage sind die Zieltermine der Personen.',
+        'Dazu ein Monatsziel: unter „Kapazität → Umschulungs-Ziele" lässt sich je Monat neben dem bisherigen Gesamt-Meilenstein jetzt auch „Trainer/Monat (Soll)" setzen. Es erscheint als gestrichelte Linie über den Säulen.',
+        'Die beiden Ziele liegen im selben Monats-Datensatz, meinen aber Verschiedenes: der Meilenstein ist kumulativ („bis Oktober 15 fertig"), das Monatsziel ein Durchsatz („26 Trainer im Oktober"). Sie überschreiben einander nicht, und erst wenn beide leer sind, verschwindet der Monat aus der Liste.',
+        'Captain und First Officer tragen hier dieselben zwei Farben wie der Captain/First-Officer-Ring weiter oben – eine Sache, eine Farbe.'
+      ],
+      en: [
+        'New in the B737 conversion section: "Incoming trainers per month". One column per month, split into Captain and First Officer, with the figure inside the bar. It is built from the people\'s target dates.',
+        'With a monthly target: under "Capacity → Conversion milestones" you can now set "Trainers/month (plan)" per month alongside the existing cumulative milestone. It appears as a dashed line across the columns.',
+        'Both targets live in the same month record but mean different things: the milestone is cumulative ("15 done by October"), the monthly target is throughput ("26 trainers in October"). They do not overwrite each other, and the month only disappears from the list once both are empty.',
+        'Captain and First Officer carry the same two colours here as the Captain/First-Officer ring above – one thing, one colour.'
+      ]
+    }
+  },
   {
     version: '1.24.1',
     date: '2026-07-25',

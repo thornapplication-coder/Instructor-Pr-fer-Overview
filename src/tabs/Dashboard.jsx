@@ -3,7 +3,7 @@ import { useStore } from '../lib/store.jsx'
 import KpiTile from '../components/KpiTile.jsx'
 import { Donut, NestedBars, HBars, ProgressRing, PipelineBar, StackedBars, TrendColumns, colorAt } from '../components/charts.jsx'
 import { historySeries, monthKey, monthLabelShort } from '../lib/history.js'
-import { planStatus, planFor } from '../lib/plan.js'
+import { planStatus, planFor, intakeByMonth, intakeFor } from '../lib/plan.js'
 import { monthLabel } from '../lib/alerts.js'
 import { useThemed } from '../lib/useThemed.js'
 import {
@@ -24,7 +24,7 @@ import {
 import { conversionProgress, STAFF_TYPE } from '../data/pipeline.js'
 import { qualLabel, conversionTrainers, CONVERSION_QUALS } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
-import { CATEGORICAL, MEASURE_WHOLE, MEASURE_PART, STATUS, BRAND, stageRamp } from '../lib/palette.js'
+import { CATEGORICAL, MEASURE_WHOLE, MEASURE_PART, STATUS, BRAND, ROLE_CPT, ROLE_FO, stageRamp } from '../lib/palette.js'
 import { formatFte1 } from '../lib/format.js'
 
 // ORE is a priority tier (A before B before C), so it reads as an ordinal ramp –
@@ -33,9 +33,10 @@ import { formatFte1 } from '../lib/format.js'
 const ORE_RAMP = stageRamp(3)
 const ORE_COLORS = { A: ORE_RAMP[2], B: ORE_RAMP[1], C: ORE_RAMP[0] }
 const AC_COLORS = { A320: CATEGORICAL[0], B737: CATEGORICAL[1] }
-// Slot 4 rather than slot 2: the role tag sits right next to the aircraft tag on
-// a conversion card, and two identical blues there would read as one thing.
-const ROLE_COLORS = { captain: CATEGORICAL[0], fo: CATEGORICAL[3] }
+// One burgundy hue in two steps – see palette.js. The pair has to be the same
+// in the donut and in the stacked intake columns, or Captain would be two
+// different colours on one page.
+const ROLE_COLORS = { captain: ROLE_CPT, fo: ROLE_FO }
 
 function Card({ title, total, children }) {
   const { t } = useStore()
@@ -180,6 +181,15 @@ export default function Dashboard() {
     at_risk: { color: STATUS.warn, label: 'plan_atRisk' },
     behind: { color: STATUS.critical, label: 'plan_behind' }
   }
+
+  // Monthly intake: the conversion pool grouped by the month of its target
+  // date, split by cockpit role. Same two colours as the Captain/FO ring above
+  // – one thing, one colour, on one page.
+  const intake = useMemo(() => intakeByMonth(convPool), [convPool])
+  const intakeSeries = [
+    { key: 'captain', label: t('role_captain'), short: t('role_captainShort'), color: ROLE_COLORS.captain },
+    { key: 'fo', label: t('role_fo'), short: t('role_foShort'), color: ROLE_COLORS.fo }
+  ]
 
   const pipe = pipelineDistribution(convPool, stages)
   const overall =
@@ -403,6 +413,31 @@ export default function Dashboard() {
                 </p>
               )}
               <p className="stat-hint">{t('plan_slack')}</p>
+            </>
+          )}
+        </Card>
+      )
+    },
+    {
+      id: 'intake',
+      node: (
+        <Card title={t('chart_intake')} total={intake.reduce((n, r) => n + r.total, 0)}>
+          {intake.length === 0 ? (
+            <p className="trend-empty">{t('intake_empty')}</p>
+          ) : (
+            <>
+              <TrendColumns
+                data={intake}
+                series={intakeSeries}
+                labelOf={(k) => monthLabelShort(k, lang)}
+                markOf={(k) => intakeFor(plan.series, k)}
+                markLabel={t('plan_intake')}
+                // A flow, not a stock: each month is different people, so the
+                // legend may add them up.
+                legendMode="sum"
+                showValues
+              />
+              <p className="stat-hint">{t('intake_hint')}</p>
             </>
           )}
         </Card>

@@ -31,7 +31,9 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForSelector('.plan-add')
   const editor = page.locator('.card').filter({ hasText: 'Umschulungs-Ziele' }).first()
   await editor.locator('input[type="month"]').fill('2026-07')
-  await editor.locator('input[type="number"]').fill('12')
+  // .first(): the editor now has two number fields, the cumulative milestone
+  // and the monthly intake target. This test is about the milestone.
+  await editor.locator('input[type="number"]').first().fill('12')
   await editor.locator('button', { hasText: 'Ziel setzen' }).click()
   await page.waitForTimeout(600)
 

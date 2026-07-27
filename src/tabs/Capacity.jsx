@@ -183,14 +183,23 @@ function PlanEditor() {
   const rows = useMemo(() => planSeries(data.plan), [data.plan])
   const [month, setMonth] = useState('')
   const [count, setCount] = useState('')
+  const [intake, setIntake] = useState('')
   const pool = useMemo(() => conversionTrainers(data.trainers).length, [data.trainers])
 
   const add = () => {
-    const n = Number(count)
-    if (!/^\d{4}-\d{2}$/.test(month) || !Number.isFinite(n) || n <= 0) return
-    setMilestone(month, n)
+    if (!/^\d{4}-\d{2}$/.test(month)) return
+    const released = Number(count)
+    const perMonth = Number(intake)
+    const values = {}
+    if (Number.isFinite(released) && count !== '') values.released = released
+    if (Number.isFinite(perMonth) && intake !== '') values.intake = perMonth
+    // Neither field filled is not an edit – silently doing nothing beats
+    // writing a record of two zeros that the chart would then have to ignore.
+    if (!Object.keys(values).length) return
+    setMilestone(month, values)
     setMonth('')
     setCount('')
+    setIntake('')
   }
 
   return (
@@ -204,6 +213,7 @@ function PlanEditor() {
               <tr>
                 <th>{t('plan_month')}</th>
                 <th className="num">{t('plan_released')}</th>
+                <th className="num">{t('plan_intake')}</th>
                 <th />
               </tr>
             </thead>
@@ -211,7 +221,10 @@ function PlanEditor() {
               {rows.map((p) => (
                 <tr key={p.id}>
                   <td className="strong">{monthLabel(p.id, lang)}</td>
-                  <td className="num">{p.released}</td>
+                  {/* A dash, not a 0: "no target set" and "target of zero" are
+                      different statements about a month. */}
+                  <td className="num">{p.released || '–'}</td>
+                  <td className="num">{p.intake || '–'}</td>
                   <td className="num">
                     <button
                       className="mini-btn danger"
@@ -241,12 +254,22 @@ function PlanEditor() {
         <input
           className="input"
           type="number"
-          min="1"
+          min="0"
           max={pool}
           value={count}
           placeholder={t('plan_released')}
           onChange={(e) => setCount(e.target.value)}
           aria-label={t('plan_released')}
+        />
+        <input
+          className="input"
+          type="number"
+          min="0"
+          max={pool}
+          value={intake}
+          placeholder={t('plan_intake')}
+          onChange={(e) => setIntake(e.target.value)}
+          aria-label={t('plan_intake')}
         />
         <button className="btn btn-primary" onClick={add}>{t('plan_add')}</button>
       </div>

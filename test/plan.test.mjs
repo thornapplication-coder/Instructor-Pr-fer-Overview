@@ -1,6 +1,6 @@
 // Plan vs. actual. The traffic light drives a real decision ("do we book more
 // sim slots"), so the rule behind it has to be exact and explainable.
-import { planSeries, planStatus, upsertMilestone, planFor, slackFor } from '../src/lib/plan.js'
+import { planSeries, planStatus, upsertMilestone, planFor, slackFor, intakeByMonth, intakeFor } from '../src/lib/plan.js'
 import { mergeBlobs } from '../src/lib/merge.js'
 
 const fails = []
@@ -69,16 +69,16 @@ console.log('\nPlan – the traffic light')
 
 console.log('\nPlan – editing milestones')
 {
-  const one = upsertMilestone([], '2026-08', 5)
+  const one = upsertMilestone([], '2026-08', { released: 5 })
   ok(one.length === 1 && one[0].released === 5, 'a milestone is created')
   // Same guard as the history recorder: no change means no new array, so the
   // store can skip the patch and not stamp a record for a no-op.
-  ok(upsertMilestone(one, '2026-08', 5) === one, 'setting the same number again returns the identical array')
-  ok(upsertMilestone(one, '2026-08', 6) !== one, 'a different number does write')
-  ok(upsertMilestone(one, '2026-08', 6)[0].released === 6, 'and replaces rather than appends')
-  ok(upsertMilestone(one, '2026-08', 0).length === 0, 'setting 0 removes the milestone')
-  ok(upsertMilestone(one, 'kaputt', 5) === one, 'a malformed month is refused outright')
-  ok(upsertMilestone(one, '2026-09', 9).length === 2, 'another month appends')
+  ok(upsertMilestone(one, '2026-08', { released: 5 }) === one, 'setting the same number again returns the identical array')
+  ok(upsertMilestone(one, '2026-08', { released: 6 }) !== one, 'a different number does write')
+  ok(upsertMilestone(one, '2026-08', { released: 6 })[0].released === 6, 'and replaces rather than appends')
+  ok(upsertMilestone(one, '2026-08', { released: 0 }).length === 0, 'setting 0 removes the milestone')
+  ok(upsertMilestone(one, 'kaputt', { released: 5 }) === one, 'a malformed month is refused outright')
+  ok(upsertMilestone(one, '2026-09', { released: 9 }).length === 2, 'another month appends')
 }
 
 console.log('\nPlan – the line drawn on the trend chart')
@@ -104,4 +104,58 @@ console.log('\nPlan – two devices')
   const x = { ...base, plan: [{ id: '2026-08', released: 5, _at: '2026-07-01T10:00:00.000Z' }] }
   const y = { ...base, plan: [{ id: '2026-08', released: 8, _at: '2026-07-02T10:00:00.000Z' }] }
   ok(mergeBlobs(x, y).plan[0].released === 8, 'the same month edited twice keeps the newer number')
+}
+
+console.log('\nPlan – the two targets do not overwrite each other')
+{
+  // One month record holds a CUMULATIVE milestone and a MONTHLY intake target.
+  // Editing one must leave the other alone, or the two editors on the Capacity
+  // tab would silently wipe each other's number.
+  const a = upsertMilestone([], '2026-08', { released: 5 })
+  const b = upsertMilestone(a, '2026-08', { intake: 26 })
+  ok(b[0].released === 5 && b[0].intake === 26, 'setting the intake keeps the milestone (5 / 26)')
+  const c = upsertMilestone(b, '2026-08', { released: 7 })
+  ok(c[0].intake === 26, 'and setting the milestone keeps the intake')
+  ok(upsertMilestone(c, '2026-08', { intake: 26 }) === c, 'an unchanged intake is still a no-op')
+
+  // Clearing one target must not take the other with it.
+  const d = upsertMilestone(c, '2026-08', { intake: 0 })
+  ok(d.length === 1 && d[0].released === 7 && d[0].intake === 0, 'clearing the intake leaves the milestone standing')
+  ok(upsertMilestone(d, '2026-08', { released: 0 }).length === 0, 'only clearing BOTH removes the record')
+}
+
+console.log('\nIntake – trainers per month by role')
+{
+  const T = (role, target) => ({ role, conv: { target } })
+  const rows = intakeByMonth([
+    T('captain', '2026-05-04'), T('fo', '2026-05-20'), T('fo', '2026-05-31'),
+    T('captain', '2026-07-01'),
+    T('fo', ''), T('captain', undefined), { role: 'fo' }
+  ])
+  ok(rows.map((r) => r.key).join() === '2026-05,2026-07', 'only months that actually have target dates (' + rows.map((r) => r.key).join() + ')')
+  ok(rows[0].captain === 1 && rows[0].fo === 2, 'May splits 1 captain / 2 first officers')
+  ok(rows[0].total === 3, 'and totals them')
+  ok(rows.every((r) => r.total === r.captain + r.fo), 'every column totals its own two segments')
+
+  // A missing role is a Captain everywhere else in the app; stay consistent.
+  ok(intakeByMonth([{ conv: { target: '2026-05-01' } }])[0].captain === 1, 'no role recorded counts as Captain, as it does everywhere else')
+
+  // Sorting, not insert order – a merge appends whatever the other device had.
+  const unsorted = intakeByMonth([T('fo', '2026-09-01'), T('fo', '2026-02-01')])
+  ok(unsorted[0].key === '2026-02', 'months come back chronologically')
+  ok(intakeByMonth([]).length === 0 && intakeByMonth(undefined).length === 0, 'no data is an empty list, not a crash')
+}
+
+console.log('\nIntake – the monthly target line')
+{
+  const s = planSeries([
+    { id: '2026-05', intake: 26 },
+    { id: '2026-08', intake: 30 },
+    { id: '2026-10', released: 15 } // milestone only – no intake target
+  ])
+  ok(intakeFor(s, '2026-04') === null, 'before the first target there is no line')
+  ok(intakeFor(s, '2026-05') === 26, 'the target month carries its value')
+  ok(intakeFor(s, '2026-07') === 26, 'and it stays flat until the next one')
+  ok(intakeFor(s, '2026-08') === 30, 'then steps to the new target')
+  ok(intakeFor(s, '2026-10') === 30, 'a month with only a milestone does not reset the intake line to zero')
 }
