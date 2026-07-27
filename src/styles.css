@@ -820,6 +820,23 @@ textarea.input { resize: vertical; }
 .catman-num .input { width: 66px; text-align: right; }
 .catman-num span { font-size: 12px; color: var(--muted); font-weight: 700; }
 
+/* ---------- Other pilots ---------- */
+/* Several ratings per person, stacked so the type and its date stay on the
+   same line as each other in their two columns. */
+.rating-line { line-height: 1.5; white-space: nowrap; }
+.rating-line + .rating-line { border-top: 1px dashed var(--hair); }
+.mark-ok { color: var(--green); font-weight: 900; }
+.mark-bad { color: var(--red); font-weight: 900; }
+.pilots-table td { vertical-align: top; }
+.rating-editor { display: flex; flex-direction: column; gap: 8px; }
+.rating-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto auto; gap: 8px; align-items: center; }
+.rating-verdict { font-size: 11.5px; font-weight: 800; color: var(--muted); white-space: nowrap; }
+.rating-verdict.ok { color: var(--green); }
+.rating-verdict.bad { color: var(--red); }
+.check-line { display: flex; align-items: center; gap: 8px; height: 38px; }
+.check-line input { width: 18px; height: 18px; accent-color: var(--burg); }
+@media (max-width: 700px) { .rating-row { grid-template-columns: 1fr 1fr; } }
+
 /* ---------- Editable pick lists (settings) ---------- */
 /* Collapsed by default: twelve open list editors would bury the rest of the
    settings page, and most visits only touch one of them. */

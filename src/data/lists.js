@@ -1,6 +1,5 @@
 import { AIRCRAFT } from './aircraft.js'
 import { ASSIGNMENT_STATUS, CONV_STATUS, STAFF_TYPE } from './pipeline.js'
-import { PILOT_STATUS, PILOT_STATUS_IDS } from './pilots.js'
 import { ORE_COLORS, AC_COLORS, STATUS } from '../lib/palette.js'
 
 // The pick lists behind the dropdowns, as data rather than as constants.
@@ -42,9 +41,19 @@ export function defaultConvStatus(lang) {
 export function defaultAssignStatus(lang) {
   return fromMap(ASSIGNMENT_STATUS, null, lang)
 }
-export function defaultPilotStatus(lang) {
-  return fromMap(PILOT_STATUS, PILOT_STATUS_IDS, lang)
+// Bases. Seeded from the roster so the dropdown is useful on day one; the list
+// is the user's from then on (a station opens, a station closes). No colour:
+// a base is a place, not a category anything is drawn by.
+export function defaultBases() {
+  return ['ARN', 'PMI', 'PRG', 'SZG', 'VIE', 'WP BCN', 'WP PMI', 'WP PRG', 'WP WAW']
+    .map((id) => ({ id, label: id }))
 }
+
+// The Boeing types a line pilot can be rated on.
+export function defaultPilotTypes() {
+  return ['737', '747', '757', '757/767', '777', '777/787'].map((id) => ({ id, label: id }))
+}
+
 export function defaultStaffTypes(lang) {
   return fromMap(STAFF_TYPE, ['internal', 'external'], lang)
 }
@@ -59,12 +68,13 @@ export const EDITABLE_LISTS = [
   { key: 'assignmentSteps', labelKey: 'list_steps', hint: 'list_stepsHint' },
   { key: 'aircraftTypes', labelKey: 'list_aircraft', hint: 'list_aircraftHint' },
   { key: 'oreTiers', labelKey: 'list_ore', hint: 'list_oreHint' },
+  { key: 'bases', labelKey: 'list_bases', hint: 'list_basesHint', hasColor: false },
+  { key: 'pilotTypes', labelKey: 'list_pilotTypes', hint: 'list_pilotTypesHint', hasColor: false },
   { key: 'providerCourses', labelKey: 'list_providerCourses', hasColor: false },
   { key: 'providerStatus', labelKey: 'list_providerStatus' },
   { key: 'simVersions', labelKey: 'list_simVersions', hasColor: false },
   { key: 'convStatus', labelKey: 'list_convStatus', locked: true },
   { key: 'assignStatus', labelKey: 'list_assignStatus', locked: true },
-  { key: 'pilotStatus', labelKey: 'list_pilotStatus', locked: true },
   { key: 'staffTypes', labelKey: 'list_staffTypes', locked: true }
 ]
 

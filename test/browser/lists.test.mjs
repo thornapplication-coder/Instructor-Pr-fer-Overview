@@ -16,10 +16,11 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForTimeout(400)
 
   const blocks = page.locator('.list-block')
-  ok(await blocks.count() === 12, 'every pick list is offered (' + (await blocks.count()) + ')')
+  ok(await blocks.count() === 13, 'every pick list is offered (' + (await blocks.count()) + ')')
   const names = (await page.locator('.list-name').allInnerTexts()).map((x) => x.trim())
-  ok(names.includes('Aircraft') && names.includes('ORE-Stufen'), 'including the two that were hardcoded (' + names.join(', ') + ')')
-  ok(await page.locator('.list-locked').count() === 4, 'four lists are marked name-and-colour only (' + (await page.locator('.list-locked').count()) + ')')
+  ok(names.includes('Aircraft') && names.includes('ORE-Stufen') && names.includes('Bases'),
+    'including the ones that were hardcoded (' + names.join(', ') + ')')
+  ok(await page.locator('.list-locked').count() === 3, 'three lists are marked name-and-colour only (' + (await page.locator('.list-locked').count()) + ')')
 
   // ---- a locked list can be renamed but not added to or emptied ------------
   const conv = page.locator('.list-block').filter({ hasText: 'Umschulungs-Status' }).first()

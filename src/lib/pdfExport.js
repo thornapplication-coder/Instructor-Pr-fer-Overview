@@ -7,7 +7,7 @@ import { formatPartTime, formatFte, formatFte1, formatDate } from './format.js'
 import { stageLabel, firstStageId } from '../data/pipeline.js'
 import { qualLabel } from '../data/qualifications.js'
 import { courseLabel, simVersionLabel } from '../data/providers.js'
-import { PILOT_STATUS_IDS, pilotStatusLabel, pilotRole } from '../data/pilots.js'
+import { pilotRole, pilotValidity, ratingValid } from '../data/pilots.js'
 import { conversionTrainers } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import {
@@ -558,23 +558,48 @@ async function exportPilotsPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
   const ctx = makeCtx(doc, autoTable, t('pilots_title'), lang)
-  const all = [...(data.otherPilots || [])].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
-  const head = [t('f_name'), t('f_tlc'), t('f_base'), t('f_position'), t('f_b737Until'), t('f_comment')]
-  const row = (p) => [
-    p.name || '', p.tlc || '', p.base || '',
-    t(pilotRole(p) === 'fo' ? 'role_fo' : 'role_captain'),
-    p.b737Until ? formatDate(p.b737Until, lang) : '-',
-    p.remark || ''
-  ]
-  // One section per B737 standing, so the printout groups the way the tab does.
-  for (const st of PILOT_STATUS_IDS) {
-    const group = all.filter((p) => p.status === st)
-    table(ctx, {
-      section: `${pilotStatusLabel(st, lang)} (${group.length})`,
-      head,
-      body: group.length ? group.map(row) : [['-', '', '', '', '', '']]
-    })
+  const pilots = [...data.otherPilots].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+  // One row per rating, exactly like the roster it replaces; the continuation
+  // row repeats nothing, so a person with two types reads as one block.
+  const body = []
+  for (const p of pilots) {
+    const list = p.ratings && p.ratings.length ? p.ratings : [{ type: '', until: '' }]
+    list.forEach((r, i) =>
+      body.push([
+        i === 0 ? p.base || '' : '',
+        i === 0 ? p.tlc || '' : '',
+        i === 0 ? p.name || '' : '',
+        r.type || '',
+        r.until ? formatDate(r.until, lang) : '',
+        i === 0 && p.boeingExp ? 'x' : '',
+        ratingValid(r) === true ? 'x' : '',
+        ratingValid(r) === false ? 'x' : ''
+      ])
+    )
   }
+  table(ctx, {
+    section: t('pilots_title'),
+    head: [t('f_base'), t('f_tlc'), t('f_name'), t('f_type'), t('f_validity'), t('f_boeingExp'), t('f_valid'), t('f_expired')],
+    body: body.length ? body : [['-', '', t('pilots_none'), '', '', '', '', '']],
+    columnStyles: {
+      0: { cellWidth: 58 }, 1: { cellWidth: 36 }, 3: { cellWidth: 62 }, 4: { cellWidth: 68 },
+      5: { halign: 'center', cellWidth: 74 }, 6: { halign: 'center', cellWidth: 46 }, 7: { halign: 'center', cellWidth: 58 }
+    }
+  })
+  // The counts a reader would otherwise have to tally by hand off the page.
+  const v = pilots.filter((p) => pilotValidity(p).valid).length
+  const e = pilots.filter((p) => pilotValidity(p).expired).length
+  table(ctx, {
+    section: t('total'),
+    head: [t('category'), t('count')],
+    body: [
+      [t('pilots_title'), String(pilots.length)],
+      [t('f_valid'), String(v)],
+      [t('f_expired'), String(e)],
+      [t('f_boeingExp'), String(pilots.filter((p) => p.boeingExp).length)]
+    ],
+    columnStyles: { 1: { halign: 'right', cellWidth: 80 } }
+  })
   return finalize(doc, 'other-pilots', opts)
 }
 

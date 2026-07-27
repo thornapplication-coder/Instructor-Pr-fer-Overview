@@ -19,7 +19,8 @@ const SUITES = [
   './courses.test.mjs',
   './capacity.test.mjs',
   './exportsAll.test.mjs',
-  './lists.test.mjs'
+  './lists.test.mjs',
+  './pilots.test.mjs'
 ]
 
 const chromium = await loadChromium()

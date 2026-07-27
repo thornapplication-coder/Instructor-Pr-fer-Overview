@@ -1,139 +1,123 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
-import { AircraftTag, OreTag, RoleTag } from '../components/tags.jsx'
+import { RoleTag } from '../components/tags.jsx'
 import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
 import { formatDate } from '../lib/format.js'
-import {
-  PILOT_STATUS,
-  PILOT_STATUS_IDS,
-  pilotStatusLabel,
-  pilotStatusColor,
-  pilotRole,
-  isRatingOverdue,
-  emptyPilot
-} from '../data/pilots.js'
+import { emptyPilot, emptyRating, normalizeTlc, pilotRole, pilotValidity, ratingValid } from '../data/pilots.js'
 
-// Company line pilots (not trainers): who already holds a B737 rating, whose
-// rating lapsed, and who has Boeing experience without a current rating.
+// Company line pilots (not trainers): which Boeing types they are rated on and
+// whether those ratings still hold TODAY.
+//
+// "Gültig" and "Abgelaufen" are columns of the spreadsheet this replaces, but
+// they are not fields here: they are worked out from the expiry date every time
+// the table is drawn. A stored flag would be wrong the morning after it was
+// written, on a list whose only job is to say who may fly what now.
 export default function Pilots() {
   const { data, t, lang, upsertPilot, deletePilot, newId } = useStore()
-  const { otherPilots, trainers } = data
+  const { otherPilots, bases, pilotTypes } = data
   const [q, setQ] = useState('')
   const [fBase, setFBase] = useState('')
-  const [fRole, setFRole] = useState('')
-  const [fStatus, setFStatus] = useState('')
+  const [fType, setFType] = useState('')
+  const [fValidity, setFValidity] = useState('')
   const [editing, setEditing] = useState(null)
-
-  // Offer the bases already in use anywhere in the app, so the dropdown is
-  // useful even before the first pilot is imported.
-  const bases = useMemo(() => {
-    const set = new Set()
-    for (const p of otherPilots) if (p.base) set.add(p.base)
-    for (const x of trainers) if (x.base) set.add(x.base)
-    return [...set].sort()
-  }, [otherPilots, trainers])
 
   const rows = useMemo(() => {
     const n = q.trim().toLowerCase()
     return otherPilots
       .filter((p) => (fBase ? p.base === fBase : true))
-      .filter((p) => (fRole ? pilotRole(p) === fRole : true))
-      .filter((p) => (fStatus ? p.status === fStatus : true))
+      .filter((p) => (fType ? (p.ratings || []).some((r) => r.type === fType) : true))
+      .filter((p) => {
+        if (!fValidity) return true
+        const v = pilotValidity(p)
+        return fValidity === 'valid' ? v.valid : v.expired
+      })
       .filter((p) =>
         n
-          ? [p.name, p.tlc, p.base, p.remark, pilotStatusLabel(p.status, lang)]
+          ? [p.name, p.tlc, p.base, p.remark, ...(p.ratings || []).map((r) => r.type)]
               .join(' ')
               .toLowerCase()
               .includes(n)
           : true
       )
-  }, [otherPilots, q, fBase, fRole, fStatus, lang])
+  }, [otherPilots, q, fBase, fType, fValidity])
 
-  const accessors = useMemo(
+  const acc = useMemo(
     () => ({
-      name: (p) => p.name || '',
-      tlc: (p) => p.tlc || '',
       base: (p) => p.base || '',
-      role: (p) => (pilotRole(p) === 'captain' ? 0 : 1),
-      status: (p) => PILOT_STATUS_IDS.indexOf(p.status),
-      until: (p) => p.b737Until || '9999',
-      remark: (p) => p.remark || ''
+      tlc: (p) => p.tlc || '',
+      name: (p) => p.name || '',
+      type: (p) => (p.ratings || []).map((r) => r.type).join(' '),
+      // Soonest expiry first; a person with no date at all sorts last.
+      until: (p) => (p.ratings || []).map((r) => r.until || '9999').sort()[0] || '9999',
+      exp: (p) => (p.boeingExp ? 0 : 1),
+      valid: (p) => (pilotValidity(p).valid ? 0 : 1),
+      expired: (p) => (pilotValidity(p).expired ? 0 : 1)
     }),
     []
   )
-  const { sorted, sortKey, dir, toggle } = useSort(rows, accessors, 'name')
+  const { sorted, sortKey, dir, toggle } = useSort(rows, acc, 'name')
   const sp = { sortKey, dir, onSort: toggle }
+  const anyFilter = !!(q.trim() || fBase || fType || fValidity)
 
-  const counts = useMemo(() => {
-    const c = { valid: 0, expired: 0, experience: 0 }
-    for (const p of otherPilots) if (c[p.status] != null) c[p.status]++
-    return c
-  }, [otherPilots])
+  const addPilot = () => setEditing({ ...emptyPilot(newId('plt')), _isNew: true })
 
   return (
     <div className="tab-pane">
-      <div className="toolbar no-print">
+      <div className="toolbar">
         <h2 className="pane-title">{t('pilots_title')}</h2>
         <input className="input search" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
         <select className="input" value={fBase} onChange={(e) => setFBase(e.target.value)}>
           <option value="">{t('filterBase')}: {t('all')}</option>
-          {bases.map((b) => <option key={b} value={b}>{b}</option>)}
+          {bases.map((b) => <option key={b.id} value={b.id}>{b.label}</option>)}
         </select>
-        <select className="input" value={fRole} onChange={(e) => setFRole(e.target.value)}>
-          <option value="">{t('f_position')}: {t('all')}</option>
-          <option value="captain">{t('role_captain')}</option>
-          <option value="fo">{t('role_fo')}</option>
+        <select className="input" value={fType} onChange={(e) => setFType(e.target.value)}>
+          <option value="">{t('f_type')}: {t('all')}</option>
+          {pilotTypes.map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}
         </select>
-        <select className="input" value={fStatus} onChange={(e) => setFStatus(e.target.value)}>
-          <option value="">{t('f_b737Status')}: {t('all')}</option>
-          {PILOT_STATUS_IDS.map((s) => (
-            <option key={s} value={s}>{pilotStatusLabel(s, lang)}</option>
-          ))}
+        <select className="input" value={fValidity} onChange={(e) => setFValidity(e.target.value)}>
+          <option value="">{t('f_validity')}: {t('all')}</option>
+          <option value="valid">{t('f_valid')}</option>
+          <option value="expired">{t('f_expired')}</option>
         </select>
         <span className="count-pill">{rows.length} / {otherPilots.length} {t('showing')}</span>
+        {anyFilter && (
+          <button className="btn btn-ghost" onClick={() => { setQ(''); setFBase(''); setFType(''); setFValidity('') }}>
+            ↺ {t('resetFilters')}
+          </button>
+        )}
         <span className="push-right" />
-        <button className="btn btn-primary" onClick={() => setEditing({ ...emptyPilot(newId('plt')), _isNew: true })}>
-          + {t('addPilot')}
-        </button>
+        <button className="btn btn-primary" onClick={addPilot}>+ {t('addPilot')}</button>
       </div>
 
-      <p className="planning-note">{t('pilots_hint')}</p>
-
-      <div className="fte-summary">
-        {PILOT_STATUS_IDS.map((s) => (
-          <span key={s} className="fte-pill" style={{ borderLeft: `4px solid ${pilotStatusColor(s)}` }}>
-            {pilotStatusLabel(s, lang)}: <b>{counts[s]}</b>
-          </span>
-        ))}
-      </div>
+      <p className="planning-note">{t('pilot_ratingsHint')}</p>
 
       {otherPilots.length === 0 ? (
         <div className="empty-state">
-          <div className="empty-icon">🧑‍✈️</div>
-          <p>{t('pilots_empty')}</p>
-          <button className="btn btn-primary" onClick={() => setEditing({ ...emptyPilot(newId('plt')), _isNew: true })}>
-            + {t('addPilot')}
-          </button>
+          <div className="empty-icon">✈️</div>
+          <p>{t('pilots_none')}</p>
+          <button className="btn btn-primary" onClick={addPilot}>+ {t('addPilot')}</button>
         </div>
       ) : (
         <div className="table-wrap">
-          <table className="data-table">
+          <table className="data-table pilots-table">
             <thead>
               <tr>
-                <Th label={t('f_name')} k="name" {...sp} />
-                <Th label={t('f_tlc')} k="tlc" {...sp} />
                 <Th label={t('f_base')} k="base" {...sp} />
-                <Th label={t('f_position')} k="role" {...sp} />
-                <Th label={t('f_b737Status')} k="status" {...sp} />
-                <Th label={t('f_b737Until')} k="until" {...sp} />
-                <Th label={t('f_comment')} k="remark" {...sp} />
+                <Th label={t('f_tlc')} k="tlc" {...sp} />
+                <Th label={t('f_name')} k="name" {...sp} />
+                <Th label={t('f_type')} k="type" {...sp} />
+                <Th label={t('f_validity')} k="until" {...sp} />
+                <Th label={t('f_boeingExp')} k="exp" className="num" {...sp} />
+                <Th label={t('f_valid')} k="valid" className="num" {...sp} />
+                <Th label={t('f_expired')} k="expired" className="num" {...sp} />
               </tr>
             </thead>
             <tbody>
               {sorted.map((p) => {
-                const overdue = isRatingOverdue(p)
+                const list = p.ratings || []
+                const v = pilotValidity(p)
                 return (
                   <tr
                     key={p.id}
@@ -143,26 +127,35 @@ export default function Pilots() {
                     aria-label={p.name || ''}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing({ ...p }) } }}
                   >
-                    <td className="strong">{p.name || '–'}</td>
-                    <td className="mono">{p.tlc || '–'}</td>
                     <td>{p.base || '–'}</td>
-                    <td><RoleTag role={pilotRole(p)} /></td>
+                    <td className="mono">{p.tlc || '–'}</td>
+                    <td className="strong nowrap">
+                      {p.name || '–'}
+                      <div className="muted small"><RoleTag role={pilotRole(p)} sm /></div>
+                    </td>
+                    {/* Both ratings stay visible: stacked in their own cells so
+                        the type and its date always line up on the same line. */}
                     <td>
-                      <span className="status-tag" style={{ background: pilotStatusColor(p.status) }}>
-                        {pilotStatusLabel(p.status, lang)}
-                      </span>
+                      {list.length
+                        ? list.map((r) => <div key={r.id} className="rating-line">{r.type || '–'}</div>)
+                        : '–'}
                     </td>
-                    <td className={overdue ? 'strong overdue-date' : ''} title={overdue ? t('pilots_overdueHint') : undefined}>
-                      {p.b737Until ? formatDate(p.b737Until, lang) : '–'}
-                      {overdue && ' ⚠'}
+                    <td>
+                      {list.length
+                        ? list.map((r) => (
+                            <div key={r.id} className={'rating-line' + (ratingValid(r) === false ? ' overdue-date' : '')}>
+                              {r.until ? formatDate(r.until, lang) : '–'}
+                            </div>
+                          ))
+                        : '–'}
                     </td>
-                    <td className="muted small">{p.remark || '–'}</td>
+                    <td className="num">{p.boeingExp ? '×' : ''}</td>
+                    <td className="num mark-ok">{v.valid ? '×' : ''}</td>
+                    <td className="num mark-bad">{v.expired ? '×' : ''}</td>
                   </tr>
                 )
               })}
-              {sorted.length === 0 && (
-                <tr><td colSpan={7} className="empty-row">{t('pilots_none')}</td></tr>
-              )}
+              {sorted.length === 0 && <tr><td colSpan={8} className="empty-row">{t('noTrainers')}</td></tr>}
             </tbody>
           </table>
         </div>
@@ -172,37 +165,33 @@ export default function Pilots() {
         <PilotForm
           pilot={editing}
           bases={bases}
+          types={pilotTypes}
           onClose={() => setEditing(null)}
           onSave={(p) => { upsertPilot(p); setEditing(null) }}
-          onDelete={(id) => {
-            if (window.confirm(t('deletePilotConfirm'))) { deletePilot(id); setEditing(null) }
-          }}
+          onDelete={(id) => { if (window.confirm(t('deletePilotConfirm'))) { deletePilot(id); setEditing(null) } }}
         />
       )}
     </div>
   )
 }
 
-function PilotForm({ pilot, bases, onClose, onSave, onDelete }) {
-  const { t, lang } = useStore()
-  const [p, setP] = useState({ ...pilot })
+function PilotForm({ pilot, bases, types, onClose, onSave, onDelete }) {
+  const { t, lang, newId } = useStore()
+  const [p, setP] = useState({ ...pilot, ratings: [...(pilot.ratings || [])] })
   const set = (k, v) => setP((s) => ({ ...s, [k]: v }))
   const isNew = !!pilot._isNew
 
+  const setRating = (id, changes) =>
+    setP((s) => ({ ...s, ratings: s.ratings.map((r) => (r.id === id ? { ...r, ...changes } : r)) }))
+  const addRating = () => setP((s) => ({ ...s, ratings: [...s.ratings, emptyRating(newId('rat'))] }))
+  const dropRating = (id) => setP((s) => ({ ...s, ratings: s.ratings.filter((r) => r.id !== id) }))
+
   const submit = () => {
-    if (!(p.name || '').trim()) {
-      window.alert(t('pilotNameRequired'))
-      return
-    }
-    const out = { ...p }
+    if (!(p.name || '').trim()) { window.alert(t('pilotNameRequired')); return }
+    const out = { ...p, tlc: normalizeTlc(p.tlc) }
     delete out._isNew
     onSave(out)
   }
-
-  // The date means "valid until" for a current rating and "expired on" for a
-  // lapsed one; Boeing experience usually carries no date at all.
-  const dateLabel =
-    p.status === 'expired' ? t('f_b737ExpiredOn') : p.status === 'valid' ? t('f_b737ValidUntil') : t('f_b737Until')
 
   return (
     <Modal
@@ -221,16 +210,32 @@ function PilotForm({ pilot, bases, onClose, onSave, onDelete }) {
     >
       <div className="form-grid">
         <Field label={t('f_name')} span2>
-          <input className="input" value={p.name || ''} onChange={(e) => set('name', e.target.value)} />
+          <input
+            className="input"
+            value={p.name || ''}
+            placeholder="Nachname, Vorname"
+            onChange={(e) => set('name', e.target.value)}
+          />
         </Field>
         <Field label={t('f_tlc')}>
-          <input className="input" value={p.tlc || ''} onChange={(e) => set('tlc', e.target.value)} />
+          {/* Three characters, upper case, on entry rather than on save: a field
+              that silently rewrites what was typed once it is closed is worse
+              than one that shows the rule while it is being typed. */}
+          <input
+            className="input mono"
+            value={p.tlc || ''}
+            maxLength={3}
+            placeholder="ABC"
+            onChange={(e) => set('tlc', normalizeTlc(e.target.value))}
+          />
         </Field>
         <Field label={t('f_base')}>
           <select className="input" value={p.base || ''} onChange={(e) => set('base', e.target.value)}>
             <option value=""></option>
-            {!bases.includes(p.base) && p.base && <option value={p.base}>{p.base}</option>}
-            {bases.map((b) => <option key={b} value={b}>{b}</option>)}
+            {/* A base that is no longer on the list stays selectable, or the
+                controlled select would silently blank the stored value. */}
+            {p.base && !bases.some((b) => b.id === p.base) && <option value={p.base}>{p.base}</option>}
+            {bases.map((b) => <option key={b.id} value={b.id}>{b.label}</option>)}
           </select>
         </Field>
         <Field label={t('f_position')}>
@@ -239,16 +244,38 @@ function PilotForm({ pilot, bases, onClose, onSave, onDelete }) {
             <option value="fo">{t('role_fo')}</option>
           </select>
         </Field>
-        <Field label={t('f_b737Status')}>
-          <select className="input" value={p.status || 'valid'} onChange={(e) => set('status', e.target.value)}>
-            {PILOT_STATUS_IDS.map((s) => (
-              <option key={s} value={s}>{pilotStatusLabel(s, lang)}</option>
-            ))}
-          </select>
+        <Field label={t('f_boeingExp')}>
+          <label className="check-line">
+            <input type="checkbox" checked={!!p.boeingExp} onChange={(e) => set('boeingExp', e.target.checked)} />
+            <span>{t('yes')}</span>
+          </label>
         </Field>
-        <Field label={dateLabel} span2>
-          <DateInput value={p.b737Until || ''} onChange={(v) => set('b737Until', v)} />
-        </Field>
+
+        <div className="field span2">
+          <span className="field-label">{t('f_type')}</span>
+          <div className="rating-editor">
+            {p.ratings.map((r) => {
+              const v = ratingValid(r)
+              return (
+                <div className="rating-row" key={r.id}>
+                  <select className="input" value={r.type || ''} onChange={(e) => setRating(r.id, { type: e.target.value })}>
+                    <option value=""></option>
+                    {r.type && !types.some((x) => x.id === r.type) && <option value={r.type}>{r.type}</option>}
+                    {types.map((x) => <option key={x.id} value={x.id}>{x.label}</option>)}
+                  </select>
+                  <DateInput value={r.until || ''} onChange={(val) => setRating(r.id, { until: val })} />
+                  <span className={'rating-verdict' + (v === true ? ' ok' : v === false ? ' bad' : '')}>
+                    {v === true ? t('f_valid') : v === false ? t('f_expired') : '–'}
+                  </span>
+                  <button className="mini-btn danger" onClick={() => dropRating(r.id)} title={t('delete')}>✕</button>
+                </div>
+              )
+            })}
+            {!p.ratings.length && <p className="muted small">{t('pilot_noRatings')}</p>}
+            <button className="btn btn-ghost" onClick={addRating}>+ {t('pilot_addRating')}</button>
+          </div>
+        </div>
+
         <Field label={t('f_comment')} span2>
           <input className="input" value={p.remark || ''} onChange={(e) => set('remark', e.target.value)} />
         </Field>

@@ -11,6 +11,7 @@ import {
 import { DEFAULT_STAGES, ASSIGNMENT_STEPS, mergeAssignments, releasedStageId, firstStageId } from '../data/pipeline.js'
 import { DEFAULT_QUALS, normalizeQual } from '../data/qualifications.js'
 import { withPilotDefaults } from '../data/pilots.js'
+import { SEED_PILOTS } from '../data/pilotsSeed.js'
 import { fteFromPartTime, normalizeAuthority } from './format.js'
 import { translate } from './i18n.js'
 import { useCloudSync } from './cloudSync.js'
@@ -21,7 +22,8 @@ import {
   defaultAssignStatus,
   defaultConvStatus,
   defaultOreTiers,
-  defaultPilotStatus,
+  defaultBases,
+  defaultPilotTypes,
   defaultStaffTypes
 } from '../data/lists.js'
 import { BRAND, migrateColors } from './palette.js'
@@ -126,9 +128,10 @@ function freshData(lang = 'de') {
     oreTiers: defaultOreTiers(),
     convStatus: defaultConvStatus(lang),
     assignStatus: defaultAssignStatus(lang),
-    pilotStatus: defaultPilotStatus(lang),
+    bases: defaultBases(),
+    pilotTypes: defaultPilotTypes(),
     staffTypes: defaultStaffTypes(lang),
-    otherPilots: [],
+    otherPilots: SEED_PILOTS.map((p) => withPilotDefaults({ ...p })),
     conversionFrom: 'A320',
     conversionTo: 'B737',
     dashboard: { order: {} },
@@ -142,6 +145,7 @@ function freshData(lang = 'de') {
     _roleSeed: true,
     _oreNoRente: true,
     _capNotes: true,
+    _pilotSeed: true,
     updatedAt: at
   }, at)
 }
@@ -210,7 +214,8 @@ function normalize(obj) {
     oreTiers: Array.isArray(obj.oreTiers) ? obj.oreTiers.map((x) => ({ ...x })) : base.oreTiers,
     convStatus: Array.isArray(obj.convStatus) ? obj.convStatus.map((x) => ({ ...x })) : base.convStatus,
     assignStatus: Array.isArray(obj.assignStatus) ? obj.assignStatus.map((x) => ({ ...x })) : base.assignStatus,
-    pilotStatus: Array.isArray(obj.pilotStatus) ? obj.pilotStatus.map((x) => ({ ...x })) : base.pilotStatus,
+    bases: Array.isArray(obj.bases) ? obj.bases.map((x) => ({ ...x })) : base.bases,
+    pilotTypes: Array.isArray(obj.pilotTypes) ? obj.pilotTypes.map((x) => ({ ...x })) : base.pilotTypes,
     staffTypes: Array.isArray(obj.staffTypes) ? obj.staffTypes.map((x) => ({ ...x })) : base.staffTypes,
     otherPilots: Array.isArray(obj.otherPilots) ? obj.otherPilots.map(withPilotDefaults) : base.otherPilots,
     conversionFrom: obj.conversionFrom || 'A320',
@@ -229,6 +234,7 @@ function normalize(obj) {
     _roleSeed: obj._roleSeed === true,
     _oreNoRente: obj._oreNoRente === true,
     _capNotes: obj._capNotes === true,
+    _pilotSeed: obj._pilotSeed === true,
     updatedAt: obj.updatedAt || nowIso()
   }
   // One-time: merge newly shipped default courses (e.g. "SIM only") into stored
@@ -284,6 +290,12 @@ function normalize(obj) {
       return { ...p, capacity: undefined, notes: notes ? notes + '\n' + txt : txt }
     })
     result._capNotes = true
+  }
+  // One-time: bring in the Boeing roster. Only while the list is still empty –
+  // a planner who has already typed their own must not get 65 duplicates.
+  if (!result._pilotSeed) {
+    if (!result.otherPilots.length) result.otherPilots = SEED_PILOTS.map((p) => withPilotDefaults({ ...p }))
+    result._pilotSeed = true
   }
   // One-time: move the stored category colours onto the documented palette.
   // Only entries still carrying their OLD shipped default are touched, so a

@@ -11,6 +11,33 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.33.0] – 2026-07-27
+
+- **Other Pilots neu aufgebaut**, im Stil der Trainer-Liste: *Base · TLC · Name ·
+  Type · Gültigkeit · Boeing Erfahrung · Gültig · Abgelaufen*. Die **65 Personen
+  (71 Berechtigungen)** aus der Excel-Datei sind übernommen.
+- **Mehrere Muster je Person.** Wer zwei Berechtigungen mit verschiedenen
+  Enddaten hat, sieht beide untereinander in seiner Zeile und kann sie einzeln
+  ändern. Wer eine abgelaufene und eine gültige hat, bekommt in **beiden**
+  Spalten ein ×, genau wie in der Vorlage.
+- **„Gültig" und „Abgelaufen" sind keine Felder.** Sie werden bei jeder
+  Darstellung gegen das heutige Datum gerechnet. Ein gespeichertes Kennzeichen
+  ist am Morgen danach falsch — auf einer Liste, deren einziger Zweck es ist zu
+  sagen, wer *jetzt* was fliegen darf.
+- **Base und Type sind Dropdowns mit leerer Auswahl** und in den Einstellungen
+  editierbar (zwei neue Listen: *Bases* und *Muster*). Ein Wert, der nicht mehr
+  auf der Liste steht, bleibt an der Person wählbar, statt still zu verschwinden.
+- **TLC**: drei Zeichen, Großbuchstaben, direkt bei der Eingabe — nicht erst
+  beim Speichern, denn ein Feld, das hinterher heimlich umschreibt, ist
+  schlimmer als eines, das die Regel beim Tippen zeigt.
+- **Name** im Format „Nachname, Vorname".
+- **PDF, Excel und Druck** im selben Stil wie die übrigen Exporte: eine Zeile je
+  Berechtigung wie in der Vorlage, die Folgezeile wiederholt nichts. Das PDF
+  bringt zusätzlich eine Zusammenfassung (Anzahl, gültig, abgelaufen, Boeing
+  Erfahrung).
+- Alte Datensätze wandern automatisch: „B737-Status" + „gültig bis" werden zu
+  einer 737-Berechtigung, „Boeing-Erfahrung" zum gleichnamigen Kennzeichen.
+
 ## [1.32.0] – 2026-07-27
 
 - **„Auslastung" entfernt** aus der Provider-Kapazität.

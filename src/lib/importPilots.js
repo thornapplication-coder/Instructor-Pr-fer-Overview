@@ -2,7 +2,6 @@
 // Reuses the hardened sheet reader from importExcel.js: same CSV handling for
 // German dates, same header detection, same prototype-pollution guard.
 import { parseRecordsFromArrayBuffer, toISO, norm } from './importExcel.js'
-import { PILOT_STATUS } from '../data/pilots.js'
 
 // Header text -> pilot field. Normalized, lower-case, tolerant of DE/EN.
 const PILOT_ALIASES = {
@@ -10,7 +9,7 @@ const PILOT_ALIASES = {
   tlc: ['tlc', 'kürzel', 'kuerzel', 'kz'],
   base: ['base', 'standort', 'homebase'],
   role: ['position', 'rolle', 'rolle (cockpit)', 'role', 'role (cockpit)', 'funktion cockpit', 'cockpit'],
-  status: ['status', 'b737', 'b737 status', 'b737-status', 'rating', 'b737 rating', 'typerating', 'type rating'],
+  type: ['type', 'muster', 'rating', 'type rating', 'typerating'],
   b737Until: [
     'gültig bis', 'gueltig bis', 'abgelaufen', 'abgelaufen am', 'ablauf', 'ablaufdatum',
     'valid until', 'expiry', 'expires', 'expiry date', 'b737 bis', 'datum'
@@ -29,26 +28,7 @@ function toRole(v) {
 
 // Free text -> one of the three B737 standings. Falls back to null so the
 // caller can derive the status from the date instead.
-function toStatus(v) {
-  const s = String(v == null ? '' : v).trim().toLowerCase()
-  if (!s) return null
-  if (/erfahr|experience|ehemal|former|past/.test(s)) return 'experience'
-  if (/abgelaufen|expired|invalid|ungültig|ungueltig|lapsed/.test(s)) return 'expired'
-  if (/gültig|gueltig|valid|current|aktiv|active|ok|ja|yes/.test(s)) return 'valid'
-  if (PILOT_STATUS[s]) return s
-  return null
-}
-
 // A rating date in the past means the rating lapsed, in the future that it is
-// still current – used when the sheet carries a date but no explicit status.
-function statusFromDate(iso, today) {
-  if (!/^\d{4}-\d{2}-\d{2}$/.test(String(iso || ''))) return null
-  const [y, m, d] = iso.split('-').map(Number)
-  const due = new Date(y, m - 1, d)
-  const now = today || new Date()
-  return due < new Date(now.getFullYear(), now.getMonth(), now.getDate()) ? 'expired' : 'valid'
-}
-
 export function parsePilotsFromArrayBuffer(buf, today) {
   return parseRecordsFromArrayBuffer(buf, PILOT_ALIASES, (rec) => {
     const str = (v) => (v == null ? '' : String(v).trim())
@@ -63,8 +43,11 @@ export function parsePilotsFromArrayBuffer(buf, today) {
       role: toRole(rec.role) || 'captain',
       // Explicit status wins; otherwise derive it from the date; otherwise
       // treat the row as Boeing experience without a rating.
-      status: toStatus(rec.status) || statusFromDate(until, today) || 'experience',
-      b737Until: until,
+      // The importer feeds withPilotDefaults(), which turns a single date into
+      // one 737 rating. A sheet with several types per person is entered in the
+      // dialog rather than guessed at from repeated rows here.
+      ratings: until ? [{ id: '', type: rec.type || '737', until }] : [],
+      boeingExp: !until,
       remark: str(rec.remark)
     }
     return out

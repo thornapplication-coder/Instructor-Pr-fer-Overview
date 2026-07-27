@@ -7,7 +7,7 @@ import { stageLabel } from '../data/pipeline.js'
 import { labelOf } from '../data/lists.js'
 import { qualLabel } from '../data/qualifications.js'
 import { courseLabel, simVersionLabel } from '../data/providers.js'
-import { pilotStatusLabel, pilotRole } from '../data/pilots.js'
+import { pilotRole, pilotValidity, ratingValid } from '../data/pilots.js'
 import { formatDate } from './format.js'
 import { findRun, resolveAssignment, seatUsage, spanDays, spanText } from './courses.js'
 import { providerSlots } from './stats.js'
@@ -154,17 +154,28 @@ export function exportCourseDatesExcel(data, t, lang) {
 }
 
 export function exportPilotsExcel(data, t, lang) {
-  const rows = [...(data.otherPilots || [])].sort(byName)
+  const { otherPilots } = data
+  // One row per RATING, like the roster spreadsheet: a person with two types
+  // gets two lines, and the continuation line repeats nothing but the rating.
+  // "Gültig"/"Abgelaufen" are computed against today, never read from a field.
+  const rows = []
+  for (const p of [...otherPilots].sort(byName)) {
+    const list = p.ratings && p.ratings.length ? p.ratings : [{ id: p.id + '-none', type: '', until: '' }]
+    list.forEach((r, i) => rows.push({ p, r, first: i === 0 }))
+  }
   downloadExcel(
     'other-pilots',
     [
-      { label: t('f_name'), value: (p) => p.name },
-      { label: t('f_tlc'), value: (p) => p.tlc },
-      { label: t('f_base'), value: (p) => p.base },
-      { label: t('f_position'), value: (p) => t(pilotRole(p) === 'fo' ? 'role_fo' : 'role_captain') },
-      { label: t('f_b737Status'), value: (p) => pilotStatusLabel(p.status, lang) },
-      { label: t('f_b737Until'), value: (p) => (p.b737Until ? formatDate(p.b737Until, lang) : '') },
-      { label: t('f_comment'), value: (p) => p.remark }
+      { label: t('f_base'), value: (x) => (x.first ? x.p.base || '' : '') },
+      { label: t('f_tlc'), value: (x) => (x.first ? x.p.tlc || '' : '') },
+      { label: t('f_name'), value: (x) => (x.first ? x.p.name || '' : '') },
+      { label: t('f_position'), value: (x) => (x.first ? t('role_' + (pilotRole(x.p) === 'fo' ? 'fo' : 'captain')) : '') },
+      { label: t('f_type'), value: (x) => x.r.type || '' },
+      { label: t('f_validity'), value: (x) => (x.r.until ? formatDate(x.r.until, lang) : '') },
+      { label: t('f_boeingExp'), value: (x) => (x.first && x.p.boeingExp ? 'x' : '') },
+      { label: t('f_valid'), value: (x) => (ratingValid(x.r) === true ? 'x' : '') },
+      { label: t('f_expired'), value: (x) => (ratingValid(x.r) === false ? 'x' : '') },
+      { label: t('f_comment'), value: (x) => (x.first ? x.p.remark || '' : '') }
     ],
     rows,
     t('pilots_title'),

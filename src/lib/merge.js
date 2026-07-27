@@ -35,7 +35,8 @@ export const MERGE_LISTS = [
   'oreTiers',
   'convStatus',
   'assignStatus',
-  'pilotStatus',
+  'bases',
+  'pilotTypes',
   'staffTypes'
 ]
 

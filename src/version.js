@@ -4,12 +4,39 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.32.0'
+export const APP_VERSION = '1.33.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.33.0',
+    date: '2026-07-27',
+    type: 'minor',
+    changes: {
+      de: [
+        'Other Pilots ist neu aufgebaut, im Stil der Trainer-Liste: Base, TLC, Name, Type, Gültigkeit, Boeing Erfahrung, Gültig, Abgelaufen.',
+        'Die 65 Personen aus der Excel-Datei sind übernommen (71 Berechtigungen).',
+        'Eine Person kann mehrere Muster mit unterschiedlicher Gültigkeit haben. Beide stehen untereinander in der Zeile und sind einzeln änderbar; wer eines abgelaufen und eines gültig hat, bekommt in beiden Spalten ein x.',
+        '"Gültig" und "Abgelaufen" sind keine Felder, sondern werden immer gegen das heutige Datum gerechnet. Ein gespeichertes Kennzeichen wäre am Morgen danach falsch.',
+        'Base und Type sind Dropdowns mit leerer Auswahl und in den Einstellungen editierbar (neue Listen "Bases" und "Muster").',
+        'TLC ist auf drei Zeichen begrenzt und wird direkt bei der Eingabe groß geschrieben. Name im Format "Nachname, Vorname".',
+        'PDF, Excel und Druck im selben Stil wie die übrigen Exporte: eine Zeile je Berechtigung, wie in der Vorlage, plus eine Zusammenfassung im PDF.',
+        'Die früheren Felder "B737-Status" und "gültig bis" wandern automatisch in eine 737-Berechtigung bzw. in das Kennzeichen "Boeing Erfahrung".'
+      ],
+      en: [
+        'Other Pilots rebuilt in the style of the trainer list: base, TLC, name, type, expiry, Boeing experience, valid, expired.',
+        'The 65 people from the spreadsheet are in (71 ratings).',
+        'A person can hold several types with different expiry dates. Both are stacked in the row and editable one by one; somebody with one lapsed and one current rating gets an x in both columns.',
+        '"Valid" and "expired" are not fields: they are worked out against today every time. A stored flag would be wrong the morning after.',
+        'Base and type are dropdowns with an empty choice, editable in the settings (new "Bases" and "Types" lists).',
+        'TLC is held to three characters and upper-cased as it is typed. Names read "Surname, First name".',
+        'PDF, Excel and print in the same style as the other exports: one row per rating, as in the source, plus a summary in the PDF.',
+        'The former "B737 status" and "valid until" fields migrate into one 737 rating or into the Boeing-experience flag.'
+      ]
+    }
+  },
   {
     version: '1.32.0',
     date: '2026-07-27',
