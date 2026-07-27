@@ -11,6 +11,24 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.35.1] – 2026-07-27
+
+### Behoben
+- **Other Pilots am iPad.** Die Kartenansicht griff erst unter 780 px. Ein
+  iPad Air oder Pro im Hochformat ist 820 bzw. 834 px breit, lag also darüber
+  und bekam weiter die abgeschnittene Tabelle — genau das Problem, das die
+  Kartenansicht lösen sollte. Gemessen brauchen die acht Spalten 966 px;
+  umgeschaltet wird deshalb unter **1000 px**. Im Querformat (1024 px) bleibt
+  die echte Tabelle, dort passt sie.
+- **Karte auf dem Tablet.** Die Spalten „Gültig" und „Abgelaufen" wuchsen auf
+  über 200 px, das × stand weit entfernt von seiner Überschrift. Die vier
+  Felder je Berechtigung haben jetzt feste Breiten; der übrige Platz bleibt
+  leer, statt sie auseinanderzuziehen.
+- **Piloten-Dialog am Handy.** Bei zwei Berechtigungen brechen die vier
+  Bedienelemente auf zwei Zeilen um, wodurch das Lösch-× der ersten direkt
+  über dem Muster-Feld der zweiten stand. Jede Berechtigung hat jetzt einen
+  eigenen Rahmen.
+
 ## [1.35.0] – 2026-07-27
 
 ### Geändert

@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.35.0'
+export const APP_VERSION = '1.35.1'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.35.1',
+    date: '2026-07-27',
+    type: 'patch',
+    changes: {
+      de: [
+        'Other Pilots am iPad: die Kartenansicht griff erst unter 780 px. Ein iPad Air oder Pro im Hochformat ist 820 px breit und bekam deshalb weiter die abgeschnittene Tabelle — die acht Spalten brauchen gemessene 966 px. Umgeschaltet wird jetzt unter 1000 px; im Querformat (1024 px) bleibt die echte Tabelle.',
+        'Auf dem Tablet zog die Karte die Spalten „Gültig" und „Abgelaufen" auf über 200 px auseinander, das × stand weit weg von seiner Überschrift. Die Felder bekommen jetzt feste Breiten, der Rest bleibt frei.',
+        'Im Piloten-Dialog am Handy stand das Lösch-× einer Berechtigung direkt über dem Muster-Feld der nächsten — verwechslungsgefährlich. Jede Berechtigung hat jetzt einen eigenen Rahmen.'
+      ],
+      en: [
+        'Other Pilots on an iPad: the card layout only started below 780px. An iPad Air or Pro in portrait is 820px wide and so kept the cut-off table — the eight columns need a measured 966px. The switch is now below 1000px; in landscape (1024px) the real table stays.',
+        'On a tablet the card stretched the "valid" and "expired" columns past 200px each, leaving the × far from its heading. The fields now have fixed widths and the slack is left empty.',
+        'In the pilot dialog on a phone the delete × of one rating sat directly above the next rating\'s type field, inviting a mis-tap. Each rating now has its own frame.'
+      ]
+    }
+  },
   {
     version: '1.35.0',
     date: '2026-07-27',

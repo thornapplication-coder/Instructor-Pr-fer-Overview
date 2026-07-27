@@ -860,16 +860,31 @@ textarea.input { resize: vertical; }
 .rating-verdict.bad { color: var(--red); }
 .check-line { display: flex; align-items: center; gap: 8px; height: 38px; }
 .check-line input { width: 18px; height: 18px; accent-color: var(--burg); }
-@media (max-width: 700px) { .rating-row { grid-template-columns: 1fr 1fr; } }
+/* Narrow: the four controls of one rating wrap onto two lines, which puts the
+   delete ✕ of this rating directly above the NEXT rating's type dropdown — and
+   that is the one that gets tapped. The frame says which rating the ✕ belongs
+   to. */
+@media (max-width: 700px) {
+  .rating-row {
+    grid-template-columns: 1fr 1fr;
+    border: 1px solid var(--hair); border-radius: var(--radius-sm);
+    padding: 8px; background: var(--panel);
+  }
+}
 
 /* Eight columns do not fit a phone. They never did – the table simply ended
    after the name and the rest lived behind a sideways scroll nobody finds, so
    on an iPhone the roster read as "base, TLC, name" and nothing else.
-   Below 780px each row becomes a card instead.
-   The four per-rating fields stay COLUMNS inside that card: stacking them
+   The eight columns need 966px of room; measured, not guessed. So the switch
+   sits at 1000px and not at a phone width: an iPad Air or Pro in portrait is
+   820-834px wide, which is well above any phone breakpoint and still ~190px
+   short of the table – it would have gone on showing the cut-off table that
+   started all this. An iPad in landscape (1024) clears 966 and keeps the real
+   table.
+   The four per-rating fields stay COLUMNS inside the card: stacking them
    would put the second rating's date under the first rating's type and undo
    the line-by-line alignment the whole table is built around. */
-@media (max-width: 780px) {
+@media (max-width: 1000px) {
   .pilots-table, .pilots-table tbody { display: block; }
   .pilots-table thead { display: none; }
   .pilots-table tbody tr {
@@ -916,6 +931,19 @@ textarea.input { resize: vertical; }
   .pilots-table td.c-exp .rating-line + .rating-line { display: none; }
   .pilots-table .c-name .muted { display: inline-block; margin-left: 8px; }
   .pilots-table td.empty-row { grid-area: nm; }
+}
+/* On a tablet the card has room to spare, and fractional columns spend it all:
+   the two × columns grew past 200px each and the mark drifted so far from the
+   heading above it that they stopped reading as one thing. Give the four
+   fields what they need and park the slack in a fifth, empty track. */
+@media (min-width: 521px) and (max-width: 1000px) {
+  .pilots-table tbody tr {
+    grid-template-columns: 70px 96px 104px 132px minmax(0, 1fr);
+    grid-template-areas:
+      'nm nm nm nm nm'
+      'bs tl ex ex ex'
+      'ty un va xp .';
+  }
 }
 
 /* ---------- Editable pick lists (settings) ---------- */

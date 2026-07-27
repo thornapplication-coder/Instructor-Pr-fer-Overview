@@ -168,6 +168,49 @@ export default async function run(browser, baseUrl, shots) {
   await phone.screenshot({ path: shots + '/pilots-phone.png', fullPage: false })
   await phone.close()
 
+  // ---- the tablet ----------------------------------------------------------
+  // The first cut of this switched at 780px, which reads like a phone
+  // breakpoint and is not one: an iPad Air/Pro in portrait is 820-834px and
+  // was still 190px short of the table it kept showing.
+  for (const [w, h, label] of [[820, 1180, 'iPad Air portrait'], [768, 1024, 'iPad portrait']]) {
+    const pad = await browser.newPage({ viewport: { width: w, height: h } })
+    await pad.goto(baseUrl, { waitUntil: 'networkidle' })
+    await pad.waitForSelector('.kpi-hero')
+    await pad.locator('.tab', { hasText: 'Other Pilots' }).first().click()
+    await pad.waitForSelector('.pilots-table')
+    await pad.waitForTimeout(400)
+    const m = await pad.evaluate((vw) => {
+      const wrap = document.querySelector('.table-wrap')
+      const r = document.querySelector('.pilots-table tbody tr td.c-expired').getBoundingClientRect()
+      const valid = document.querySelector('.pilots-table tbody tr td.c-valid').getBoundingClientRect()
+      return { hidden: wrap.scrollWidth - wrap.clientWidth, lastRight: Math.round(r.right), vw, validWidth: Math.round(valid.width) }
+    }, w)
+    ok(m.hidden === 0 && m.lastRight <= w + 1,
+      label + ' (' + w + 'px): the last column is on the screen, nothing hidden (' + m.hidden + 'px hidden, right edge ' + m.lastRight + ')')
+    // And the card does not spend the extra room stretching two × columns.
+    ok(m.validWidth <= 140, '  and the mark columns keep a sane width (' + m.validWidth + 'px)')
+    await pad.close()
+  }
+
+  // Landscape clears the 966px the table needs, so it stays a table there.
+  const land = await browser.newPage({ viewport: { width: 1024, height: 768 } })
+  await land.goto(baseUrl, { waitUntil: 'networkidle' })
+  await land.waitForSelector('.kpi-hero')
+  await land.locator('.tab', { hasText: 'Other Pilots' }).first().click()
+  await land.waitForSelector('.pilots-table')
+  await land.waitForTimeout(400)
+  const lm = await land.evaluate(() => {
+    const wrap = document.querySelector('.table-wrap')
+    return {
+      hidden: wrap.scrollWidth - wrap.clientWidth,
+      isTable: getComputedStyle(document.querySelector('.pilots-table')).display === 'table',
+      headVisible: document.querySelectorAll('.pilots-table thead th').length
+    }
+  })
+  ok(lm.isTable && lm.headVisible === 8, 'an iPad in landscape keeps the real table with its header row (' + lm.headVisible + ' columns)')
+  ok(lm.hidden === 0, '  and it fits without a sideways scroll (' + lm.hidden + 'px hidden)')
+  await land.close()
+
   // ---- the roster correction reaches a device that has the old one ---------
   // 1.33.0 shipped the roster with the wrong bases and no TLCs, and _pilotSeed
   // was already set, so 1.34.0's corrected list could never replace it.
