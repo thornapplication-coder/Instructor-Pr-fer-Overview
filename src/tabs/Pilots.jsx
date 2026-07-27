@@ -109,15 +109,14 @@ export default function Pilots() {
                 <Th label={t('f_name')} k="name" {...sp} />
                 <Th label={t('f_type')} k="type" {...sp} />
                 <Th label={t('f_validity')} k="until" {...sp} />
-                <Th label={t('f_boeingExp')} k="exp" className="num" {...sp} />
-                <Th label={t('f_valid')} k="valid" className="num" {...sp} />
-                <Th label={t('f_expired')} k="expired" className="num" {...sp} />
+                <Th label={t('f_boeingExp')} k="exp" className="center" {...sp} />
+                <Th label={t('f_valid')} k="valid" className="center" {...sp} />
+                <Th label={t('f_expired')} k="expired" className="center" {...sp} />
               </tr>
             </thead>
             <tbody>
               {sorted.map((p) => {
                 const list = p.ratings || []
-                const v = pilotValidity(p)
                 return (
                   <tr
                     key={p.id}
@@ -133,25 +132,50 @@ export default function Pilots() {
                       {p.name || '–'}
                       <div className="muted small"><RoleTag role={pilotRole(p)} sm /></div>
                     </td>
-                    {/* Both ratings stay visible: stacked in their own cells so
-                        the type and its date always line up on the same line. */}
+                    {/* Every rating gets its own line in all four columns, so
+                        the × for "valid" sits on the SAME line as the date it
+                        refers to. One × per person put the mark of the second
+                        rating next to the first rating's date. */}
                     <td>
                       {list.length
                         ? list.map((r) => <div key={r.id} className="rating-line">{r.type || '–'}</div>)
-                        : '–'}
+                        : <div className="rating-line">–</div>}
                     </td>
                     <td>
                       {list.length
-                        ? list.map((r) => (
-                            <div key={r.id} className={'rating-line' + (ratingValid(r) === false ? ' overdue-date' : '')}>
-                              {r.until ? formatDate(r.until, lang) : '–'}
-                            </div>
-                          ))
-                        : '–'}
+                        ? list.map((r) => {
+                            const rv = ratingValid(r)
+                            return (
+                              <div
+                                key={r.id}
+                                className={'rating-line' + (rv === true ? ' date-ok' : rv === false ? ' date-bad' : '')}
+                              >
+                                {r.until ? formatDate(r.until, lang) : '–'}
+                              </div>
+                            )
+                          })
+                        : <div className="rating-line">–</div>}
                     </td>
-                    <td className="num">{p.boeingExp ? '×' : ''}</td>
-                    <td className="num mark-ok">{v.valid ? '×' : ''}</td>
-                    <td className="num mark-bad">{v.expired ? '×' : ''}</td>
+                    {/* Boeing experience belongs to the PERSON, so it is marked
+                        once, on the first line. */}
+                    <td className="center">
+                      <div className="rating-line">{p.boeingExp ? '×' : ''}</div>
+                      {list.slice(1).map((r) => <div key={r.id} className="rating-line" />)}
+                    </td>
+                    <td className="center mark-ok">
+                      {list.length
+                        ? list.map((r) => (
+                            <div key={r.id} className="rating-line">{ratingValid(r) === true ? '×' : ''}</div>
+                          ))
+                        : <div className="rating-line" />}
+                    </td>
+                    <td className="center mark-bad">
+                      {list.length
+                        ? list.map((r) => (
+                            <div key={r.id} className="rating-line">{ratingValid(r) === false ? '×' : ''}</div>
+                          ))
+                        : <div className="rating-line" />}
+                    </td>
                   </tr>
                 )
               })}

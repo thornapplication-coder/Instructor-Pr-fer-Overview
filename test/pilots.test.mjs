@@ -47,9 +47,9 @@ console.log('\nOther pilots – the record')
 
 console.log('\nOther pilots – the roster that was imported')
 {
-  ok(SEED_PILOTS.length === 65, 'sixty-five people (' + SEED_PILOTS.length + ')')
+  ok(SEED_PILOTS.length === 64, 'sixty-four people (' + SEED_PILOTS.length + ')')
   const ratings = SEED_PILOTS.reduce((n, p) => n + p.ratings.length, 0)
-  ok(ratings === 71, 'seventy-one ratings – six people hold two (' + ratings + ')')
+  ok(ratings === 70, 'seventy ratings – six people hold two (' + ratings + ')')
   ok(SEED_PILOTS.every((p) => /^[^,]+, .+$/.test(p.name)), 'every name reads "Nachname, Vorname"')
   ok(SEED_PILOTS.every((p) => p.ratings.every((r) => !r.until || /^\d{4}-\d{2}-\d{2}$/.test(r.until))),
     'every date is a real ISO date, not the sheet\'s M/D/YY')
@@ -60,4 +60,8 @@ console.log('\nOther pilots – the roster that was imported')
   ok(jerry.ratings.map((r) => r.type).join('/') === '777/787/757/767', 'both of the first row\'s types are on one record')
   const jv = pilotValidity(jerry, TODAY)
   ok(jv.valid && jv.expired, 'and he is both valid and expired, like the source sheet says')
+  // The corrected sheet fills the TLC and the cockpit role as well.
+  ok(SEED_PILOTS.every((p) => /^[A-Z0-9]{3}$/.test(p.tlc)), 'every TLC is three upper-case characters')
+  ok(SEED_PILOTS.filter((p) => p.role === 'fo').length === 5, 'the five First Officers came through as FO')
+  ok(SEED_PILOTS.every((p) => p.base), 'and every person has a base')
 }

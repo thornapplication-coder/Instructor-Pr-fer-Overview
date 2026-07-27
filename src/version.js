@@ -4,12 +4,35 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.33.0'
+export const APP_VERSION = '1.34.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.34.0',
+    date: '2026-07-27',
+    type: 'minor',
+    changes: {
+      de: [
+        'Other Pilots: das × steht jetzt in derselben Zeile wie das Datum, auf das es sich bezieht. Bei zwei Mustern stand beides auf der ersten Zeile.',
+        'Die drei Kreuz-Spalten (Boeing Erfahrung, Gültig, Abgelaufen) sind zentriert.',
+        'Ein Datum, das noch hält, ist grün; ein abgelaufenes bleibt rot.',
+        'Die korrigierte Liste ist übernommen: 64 Personen, 70 Berechtigungen, mit TLC und Cockpit-Rolle aus der Datei.',
+        'Ein Tab-Wechsel beginnt wieder oben auf der Seite, statt die Scroll-Position der vorigen Seite zu behalten.',
+        'Der offene Reiter steht in der Adresse. Ein Refresh bleibt damit auf der Seite, statt aufs Dashboard zu springen — und der Zurück-Knopf funktioniert.'
+      ],
+      en: [
+        'Other Pilots: the × now sits on the same line as the date it refers to. With two ratings both marks landed on the first line.',
+        'The three marked columns (Boeing experience, valid, expired) are centred.',
+        'A date that still holds is green; a lapsed one stays red.',
+        'The corrected roster is in: 64 people, 70 ratings, with the TLC and the cockpit role from the file.',
+        'Switching tabs starts at the top of the page again instead of keeping the previous page scroll position.',
+        'The open tab is in the address. A refresh therefore stays on the page instead of jumping to the dashboard, and the back button works.'
+      ]
+    }
+  },
   {
     version: '1.33.0',
     date: '2026-07-27',

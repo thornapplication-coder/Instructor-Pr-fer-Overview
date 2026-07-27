@@ -28,8 +28,17 @@ const TABS = [
   { id: 'settings', labelKey: 'tab_settings', icon: 'gear', Comp: Settings }
 ]
 
+// Which tab is open lives in the URL fragment, not only in state. A reload used
+// to land on the dashboard however deep into the Provider list you were, which
+// on a page that is saved and reloaded all day is a small tax paid constantly.
+// The fragment also makes a tab linkable, and it survives the PWA update reload.
+function tabFromHash() {
+  const id = String(window.location.hash || '').replace(/^#\/?/, '')
+  return TABS.some((t) => t.id === id) ? id : 'dashboard'
+}
+
 export default function App() {
-  const [active, setActive] = useState('dashboard')
+  const [active, setActive] = useState(tabFromHash)
   const [captureTab, setCaptureTab] = useState(null)
   const captureRef = useRef(null)
   const Current = TABS.find((t) => t.id === active)?.Comp || Dashboard
@@ -37,6 +46,25 @@ export default function App() {
   // Ask the browser to keep our local data (prevents automatic eviction).
   useEffect(() => {
     requestPersistence()
+  }, [])
+
+  // Keep the fragment in step, and follow the back button.
+  useEffect(() => {
+    const want = '#/' + active
+    if (window.location.hash !== want) window.history.replaceState(null, '', want)
+  }, [active])
+  useEffect(() => {
+    const onHash = () => setActive(tabFromHash())
+    window.addEventListener('hashchange', onHash)
+    return () => window.removeEventListener('hashchange', onHash)
+  }, [])
+
+  // Switching tabs starts at the top of the new page. Without this the browser
+  // keeps the scroll position, so tapping a tab from halfway down a long table
+  // opens the next one already scrolled past its own toolbar.
+  const openTab = useCallback((id) => {
+    setActive(id)
+    window.scrollTo({ top: 0, behavior: 'auto' })
   }, [])
 
   // Render a tab off-screen at desktop width and rasterize it to a canvas, so
@@ -72,7 +100,7 @@ export default function App() {
   return (
     <CaptureContext.Provider value={captureTabImage}>
       <div className="app">
-        <TopBar tabs={TABS} active={active} onSelect={setActive} />
+        <TopBar tabs={TABS} active={active} onSelect={openTab} />
         <main className="content">
           <Current />
         </main>

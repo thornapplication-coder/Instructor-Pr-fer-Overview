@@ -70,6 +70,9 @@ export default async function run(browser, baseUrl, shots) {
     localStorage.setItem(KEY, JSON.stringify(d))
   }, STORAGE_KEY)
   await page.reload({ waitUntil: 'networkidle' })
+  // A reload now stays on the page it was on (the settings), so come back to
+  // the dashboard deliberately rather than relying on where a reload lands.
+  await page.locator('.tab', { hasText: 'Dashboard' }).first().click()
   await page.waitForSelector('.kpi')
   await page.waitForTimeout(800)
   await page.locator('.topbar-right button[aria-label="Einstellungen"]').click()

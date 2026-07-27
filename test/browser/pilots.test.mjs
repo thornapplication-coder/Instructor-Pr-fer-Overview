@@ -20,7 +20,7 @@ export default async function run(browser, baseUrl, shots) {
     'including the two derived ones')
 
   const rows = page.locator('.pilots-table tbody tr')
-  ok(await rows.count() === 65, 'all sixty-five people are listed (' + (await rows.count()) + ')')
+  ok(await rows.count() === 64, 'all sixty-four people are listed (' + (await rows.count()) + ')')
 
   // Sorted by name by default, and the name carries the comma.
   const names = (await page.locator('.pilots-table tbody tr td:nth-child(3)').allInnerTexts()).map((x) => x.trim().split('\n')[0])
@@ -29,10 +29,31 @@ export default async function run(browser, baseUrl, shots) {
 
   // Somebody with two ratings shows both, and is marked in both columns.
   const jerry = page.locator('.pilots-table tbody tr').filter({ hasText: 'Altenhuber' }).first()
-  ok(await jerry.locator('.rating-line').count() === 4, 'two types and two dates are all visible (' + (await jerry.locator('.rating-line').count()) + ')')
-  const cells = await jerry.locator('td').allInnerTexts()
-  ok(cells[6].trim() === '×' && cells[7].trim() === '×',
-    'one lapsed and one current means an x in BOTH columns, like the roster (' + JSON.stringify(cells.slice(5)) + ')')
+  // Two lines in each of the five per-rating columns: type, date, Boeing
+  // experience, valid, expired.
+  ok(await jerry.locator('td:nth-child(4) .rating-line').count() === 2, 'both types are visible')
+  ok(await jerry.locator('td:nth-child(5) .rating-line').count() === 2, 'and both dates')
+  // The × has to sit on the SAME line as the date it judges: the first rating
+  // (expired) marks line 1 of "Abgelaufen", the second (valid) line 2 of
+  // "Gültig". One × per person put them both on line 1.
+  const lineTop = (sel, i) =>
+    jerry.locator(sel).nth(i).evaluate((e) => Math.round(e.getBoundingClientRect().top))
+  const d1 = await lineTop('td:nth-child(5) .rating-line', 0)
+  const d2 = await lineTop('td:nth-child(5) .rating-line', 1)
+  const expiredMark = await lineTop('td:nth-child(8) .rating-line', 0)
+  const validMark = await lineTop('td:nth-child(7) .rating-line', 1)
+  ok(Math.abs(expiredMark - d1) <= 1, 'the expired × is level with the date that lapsed (' + expiredMark + ' vs ' + d1 + ')')
+  ok(Math.abs(validMark - d2) <= 1, 'and the valid × is level with the date that still holds (' + validMark + ' vs ' + d2 + ')')
+  const marks = await jerry.locator('td:nth-child(7) .rating-line, td:nth-child(8) .rating-line').allInnerTexts()
+  ok(marks.map((x) => x.trim()).join('|') === '|×|×|', 'exactly one mark per rating (' + JSON.stringify(marks) + ')')
+
+  // Centred, and the dates carry their own verdict as a colour.
+  const align = await jerry.locator('td').nth(6).evaluate((e) => getComputedStyle(e).textAlign)
+  ok(align === 'center', 'the marked columns are centred (' + align + ')')
+  const c1 = await jerry.locator('td:nth-child(5) .rating-line').nth(0).evaluate((e) => getComputedStyle(e).color)
+  const c2 = await jerry.locator('td:nth-child(5) .rating-line').nth(1).evaluate((e) => getComputedStyle(e).color)
+  ok(c1 === 'rgb(179, 18, 44)', 'a lapsed date is red (' + c1 + ')')
+  ok(c2 === 'rgb(31, 122, 77)', 'and a date that still holds is green (' + c2 + ')')
 
   // The verdict is computed: move the date and the mark moves with it.
   await page.evaluate((K) => {
@@ -46,9 +67,10 @@ export default async function run(browser, baseUrl, shots) {
   await page.locator('.tab', { hasText: 'Other Pilots' }).first().click()
   await page.waitForSelector('.pilots-table')
   await page.waitForTimeout(400)
-  const j2 = await page.locator('.pilots-table tbody tr').filter({ hasText: 'Altenhuber' }).first().locator('td').allInnerTexts()
-  ok(j2[6].trim() === '' && j2[7].trim() === '×',
-    'both dates in the past means expired only – nothing is read from a stored flag (' + JSON.stringify(j2.slice(5)) + ')')
+  const j2 = page.locator('.pilots-table tbody tr').filter({ hasText: 'Altenhuber' }).first()
+  const after = (await j2.locator('td:nth-child(7) .rating-line, td:nth-child(8) .rating-line').allInnerTexts()).map((x) => x.trim())
+  ok(after.join('|') === '||×|×',
+    'both dates in the past means two expired marks and none valid – nothing is read from a stored flag (' + JSON.stringify(after) + ')')
 
   // ---- the dialog: base and type are dropdowns with an empty choice --------
   await page.locator('.pilots-table tbody tr').first().click()

@@ -11,6 +11,32 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.34.0] – 2026-07-27
+
+### Other Pilots
+
+- **Das × steht in derselben Zeile wie sein Datum.** Bei zwei Mustern wurde je
+  Person **ein** Kreuz gesetzt, also landete die Bewertung der zweiten
+  Berechtigung neben dem Datum der ersten. Jetzt bekommt jede Berechtigung ihre
+  eigene Zeile in allen Spalten, und die Zeilen haben feste Höhe, damit sie über
+  die Spalten hinweg nicht auseinanderlaufen.
+- Die drei Kreuz-Spalten (*Boeing Erfahrung · Gültig · Abgelaufen*) sind
+  **zentriert**. „Boeing Erfahrung" gehört der Person, steht also einmal in der
+  ersten Zeile.
+- **Ein Datum sagt seinen eigenen Befund**: noch gültig grün, abgelaufen rot.
+- Die **korrigierte Liste** ist übernommen: 64 Personen, 70 Berechtigungen,
+  jetzt mit TLC und Cockpit-Rolle aus der Datei.
+
+### Navigation
+
+- **Ein Tab-Wechsel beginnt oben.** Vorher behielt der Browser die
+  Scroll-Position, sodass ein Tipp auf einen Reiter mitten aus einer langen
+  Tabelle die nächste Seite bereits an ihrer Werkzeugleiste vorbei öffnete.
+- **Der offene Reiter steht in der Adresse** (`#/providers`). Ein Refresh bleibt
+  damit auf der Seite, statt aufs Dashboard zu springen — auf einer Seite, die
+  den ganzen Tag neu geladen wird, ist das eine kleine Steuer, die ständig
+  anfällt. Nebenbei funktioniert der Zurück-Knopf und ein Reiter ist verlinkbar.
+
 ## [1.33.0] – 2026-07-27
 
 - **Other Pilots neu aufgebaut**, im Stil der Trainer-Liste: *Base · TLC · Name ·

@@ -52,6 +52,24 @@ export default async function run(browser, baseUrl, shots) {
   ok(!(await second.evaluate((e) => e.hasAttribute('open'))), 'Enter collapses it again (keyboard operable)')
 
   await page.locator('.changelog').screenshot({ path: shots + '/changelog.png' })
+  // ---- the tab survives a reload, and switching starts at the top ---------
+  await page.locator('.tab', { hasText: 'Provider' }).first().click()
+  await page.waitForTimeout(400)
+  ok(page.url().includes('#/providers'), 'the open tab is in the address (' + page.url().split('#')[1] + ')')
+  await page.evaluate(() => window.scrollTo(0, 600))
+  await page.waitForTimeout(200)
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.waitForTimeout(700)
+  const stillThere = await page.locator('.tab.active').innerText()
+  ok(stillThere.trim() === 'Provider', 'a reload stays on the page instead of jumping to the dashboard (' + stillThere.trim() + ')')
+
+  await page.evaluate(() => window.scrollTo(0, 900))
+  await page.waitForTimeout(200)
+  await page.locator('.tab', { hasText: 'Trainer' }).first().click()
+  await page.waitForTimeout(500)
+  const y = await page.evaluate(() => window.scrollY)
+  ok(y < 40, 'switching tabs opens the new page at the top, not where the old one was scrolled to (' + y + ')')
+
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.close()
   return fails

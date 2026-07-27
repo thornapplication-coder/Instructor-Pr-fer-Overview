@@ -823,10 +823,18 @@ textarea.input { resize: vertical; }
 /* ---------- Other pilots ---------- */
 /* Several ratings per person, stacked so the type and its date stay on the
    same line as each other in their two columns. */
-.rating-line { line-height: 1.5; white-space: nowrap; }
+/* One line per rating in EVERY column of the row, so the × for "valid" and the
+   date it refers to are always on the same line. Fixed height rather than
+   natural height: an empty cell must take exactly as much room as a filled one
+   or the lines drift apart across the columns. */
+.rating-line { height: 21px; line-height: 21px; white-space: nowrap; }
 .rating-line + .rating-line { border-top: 1px dashed var(--hair); }
+.pilots-table td.center, .pilots-table th.center { text-align: center; }
 .mark-ok { color: var(--green); font-weight: 900; }
 .mark-bad { color: var(--red); font-weight: 900; }
+/* An expiry date says its own verdict: still good is green, past is red. */
+.date-ok { color: var(--green); font-weight: 700; }
+.date-bad { color: var(--red); font-weight: 700; }
 .pilots-table td { vertical-align: top; }
 .rating-editor { display: flex; flex-direction: column; gap: 8px; }
 .rating-row { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.2fr) auto auto; gap: 8px; align-items: center; }
