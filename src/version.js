@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.35.1'
+export const APP_VERSION = '1.36.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.36.0',
+    date: '2026-07-27',
+    type: 'minor',
+    changes: {
+      de: [
+        'Die Trainer-Liste am Handy und am iPad im Hochformat: aus vierzehn Spalten, von denen vier auf den Bildschirm passten, wird je Person eine Karte. Oben Name und Qualifikations-Chip, darunter Base, TLC, Rolle, FTE, Aircraft, ORE-Stufe und die Umschulungs-Phase.',
+        'Teilzeit, Intern/Extern, Behörde, Anmerkung und Notiz stehen nicht auf der Karte, sondern im Dialog, der sich beim Antippen öffnet — vierzehn Felder mal fünfzig Personen wären am Handy nicht mehr überblickbar. In der Tabelle, in der Suche und in allen Exporten sind sie unverändert enthalten.',
+        'Ab 1280 px Breite bleibt die gewohnte Tabelle mit allen vierzehn Spalten — gemessen brauchen die vierzehn Spalten 1234 px, ein iPad im Querformat (1024 px) ist noch 245 px zu schmal und bekommt deshalb ebenfalls Karten.'
+      ],
+      en: [
+        'The trainer list on a phone and on an iPad in portrait: fourteen columns, of which four fitted the screen, become one card per person. Name and qualification chip on top, then base, TLC, role, FTE, aircraft, ORE tier and the conversion stage.',
+        'Part-time, internal/external, authority, remark and note are not on the card but in the dialog that opens on tap — fourteen fields times fifty people stopped being readable on a phone. They are unchanged in the table, in the search and in every export.',
+        'From 1280px wide the familiar table with all fourteen columns stays — measured, those columns want 1234px, so an iPad in landscape (1024px) is still 245px short and gets cards as well.'
+      ]
+    }
+  },
   {
     version: '1.35.1',
     date: '2026-07-27',

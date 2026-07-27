@@ -190,7 +190,10 @@ export default function Trainers() {
       </div>
 
       <div className="table-wrap">
-        <table className="data-table compact">
+        {/* `compact` is the narrow-cell variant and is shared with the course
+            dates; `trainer-table` is what the phone card layout hangs off, and
+            it belongs to this table alone. */}
+        <table className="data-table compact trainer-table">
           <thead>
             <tr>
               {(() => { const p = { sortKey, dir, onSort: toggle }; return (<>
@@ -225,26 +228,33 @@ export default function Trainers() {
                 aria-label={x.name}
                 onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing({ ...x }) } }}
               >
-                <td><span className="qual-tag" style={{ background: qualColor(x.qual) }}>{qualLabel(quals, x.qual)}</span></td>
-                <td>{x.base}</td>
-                <td className="mono">{x.tlc}</td>
-                <td className="strong">{x.name}</td>
-                <td><RoleTag role={roleOf(x)} /></td>
-                <td className="num">{formatPartTime(x.partTime, lang)}</td>
-                <td className="num">{formatFte(x.fte)}</td>
-                <td><AircraftTag value={x.aircraft} /></td>
-                <td>
+                {/* Each cell names itself and carries a handle. Both are inert
+                    while this is a table; below 1000px the row becomes a card,
+                    the header row is gone, and the CSS rearranges the cells by
+                    those handles. Five of them (Teilzeit, Intern/Extern,
+                    Behörde, Anmerkung, Notiz) step aside there and are read in
+                    the dialog instead — fourteen fields per card would turn
+                    fifty people into a very long scroll. */}
+                <td className="t-qual"><span className="qual-tag" style={{ background: qualColor(x.qual) }}>{qualLabel(quals, x.qual)}</span></td>
+                <td className="t-base" data-label={t('f_base')}>{x.base}</td>
+                <td className="t-tlc mono" data-label={t('f_tlc')}>{x.tlc}</td>
+                <td className="t-name strong">{x.name}</td>
+                <td className="t-role" data-label={t('f_role')}><RoleTag role={roleOf(x)} /></td>
+                <td className="t-pt num" data-label={t('f_partTime')}>{formatPartTime(x.partTime, lang)}</td>
+                <td className="t-fte num" data-label={t('f_fte')}>{formatFte(x.fte)}</td>
+                <td className="t-ac" data-label={t('f_aircraft')}><AircraftTag value={x.aircraft} /></td>
+                <td className="t-ore" data-label={t('f_ore')}>
                   <OreTag value={x.ore} />
                 </td>
-                <td>
+                <td className="t-staff" data-label={t('f_staffType')}>
                   <span className="staff-tag" style={{ '--tag': tint((STAFF_TYPE[x.staffType || 'internal']).color) }}>
                     {t('staff_' + (x.staffType || 'internal'))}
                   </span>
                 </td>
-                <td className="muted small">{x.authority || '–'}</td>
-                <td><StageBadge trainer={x} stages={stages} /></td>
-                <td className="muted"><span className="cell-clamp" title={x.remark || ''}>{x.remark || '–'}</span></td>
-                <td className="muted"><span className="cell-clamp" title={x.note || ''}>{x.note || '–'}</span></td>
+                <td className="t-auth muted small" data-label={t('f_authority')}>{x.authority || '–'}</td>
+                <td className="t-stage" data-label={t('f_conversion')}><StageBadge trainer={x} stages={stages} /></td>
+                <td className="t-remark muted" data-label={t('f_remark')}><span className="cell-clamp" title={x.remark || ''}>{x.remark || '–'}</span></td>
+                <td className="t-note muted" data-label={t('f_note')}><span className="cell-clamp" title={x.note || ''}>{x.note || '–'}</span></td>
               </tr>
             ))}
             {rows.length === 0 && (

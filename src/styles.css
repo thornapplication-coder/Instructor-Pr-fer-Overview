@@ -946,6 +946,82 @@ textarea.input { resize: vertical; }
   }
 }
 
+/* ---------- The trainer list on a phone / tablet ---------- */
+/* Fourteen columns. On an iPhone four of them fitted and 863px sat behind a
+   sideways scroll, which is the same complaint that turned Other Pilots into
+   cards — only here it is the list the day is actually run from.
+   Same reasoning as .pilots-table above, but NOT the same number: measured,
+   these fourteen columns want 1234px where the eight of the roster wanted 966.
+   1280px is where they first fit — and it is where `.content` stops growing,
+   so above it nothing changes anyway. An iPad in landscape (1024px) is still
+   245px short and therefore gets cards too.
+   What differs is the answer to "all fourteen on a card?": no. Fifty people
+   with a free-text remark each would be an endless scroll of unequal blocks.
+   Nine fields carry the card, the other five are read in the dialog that
+   opens on tap — and are still in the table, the exports and the search. */
+@media (max-width: 1279px) {
+  .trainer-table, .trainer-table tbody { display: block; }
+  .trainer-table thead { display: none; }
+  .trainer-table tbody tr {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    grid-template-areas:
+      'nm nm qu'
+      'bs tl ro'
+      'ft ac or'
+      'st st st';
+    gap: 9px 8px;
+    padding: 11px 12px;
+    border-top: 1px solid var(--hair);
+  }
+  .trainer-table tbody tr:first-child { border-top: 0; }
+  .trainer-table tbody td { display: block; padding: 0; border-top: 0; }
+  .trainer-table tbody td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 9.5px; font-weight: 800; letter-spacing: .4px; line-height: 14px;
+    text-transform: uppercase; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  /* The head: who, and what they are qualified as. The chip already carries a
+     colour, so it needs no heading of its own. */
+  .trainer-table td.t-name { grid-area: nm; font-size: 14.5px; align-self: center; }
+  .trainer-table td.t-qual { grid-area: qu; justify-self: end; align-self: center; }
+  .trainer-table td.t-base { grid-area: bs; }
+  .trainer-table td.t-tlc { grid-area: tl; }
+  .trainer-table td.t-role { grid-area: ro; }
+  .trainer-table td.t-fte { grid-area: ft; text-align: left; }
+  .trainer-table td.t-ac { grid-area: ac; }
+  .trainer-table td.t-ore { grid-area: or; }
+  .trainer-table td.t-stage { grid-area: st; }
+  /* Read in the dialog instead. `display: none` and not a smaller font: half a
+     free-text note is worse than none, because it reads as the whole note. */
+  .trainer-table td.t-pt,
+  .trainer-table td.t-staff,
+  .trainer-table td.t-auth,
+  .trainer-table td.t-remark,
+  .trainer-table td.t-note { display: none; }
+  .trainer-table td.empty-row { grid-area: nm; display: block; }
+  /* The clamp exists to stop a long remark widening a column; on the card the
+     column is gone and the value has the width it has. */
+  .trainer-table .cell-clamp { max-width: none; }
+}
+/* Same lesson as the roster card: from a tablet up, thirds of 1000px are
+   150px of air around a three-letter base code. Give the fields what they
+   need, keep the qualification chip beside the name where it is read, and let
+   the slack sit in a fourth, empty track. */
+@media (min-width: 521px) and (max-width: 1279px) {
+  .trainer-table tbody tr {
+    grid-template-columns: 150px 150px 170px minmax(0, 1fr);
+    grid-template-areas:
+      'nm nm qu .'
+      'bs tl ro .'
+      'ft ac or .'
+      'st st st .';
+  }
+  .trainer-table td.t-qual { justify-self: start; }
+}
+
 /* ---------- Editable pick lists (settings) ---------- */
 /* Collapsed by default: twelve open list editors would bury the rest of the
    settings page, and most visits only touch one of them. */

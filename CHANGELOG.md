@@ -11,6 +11,26 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.36.0] – 2026-07-27
+
+### Geändert
+- **Die Trainer-Liste am Handy und am iPad im Hochformat.** Vierzehn Spalten,
+  von denen auf einem iPhone vier auf den Bildschirm passten und 863 px hinter
+  dem seitlichen Schieben lagen — dieselbe Sache, die bei Other Pilots zu
+  Karten geführt hat, nur auf der Liste, aus der heraus der Tag läuft. Unter
+  1280 px wird jede Zeile eine Karte: oben **Name und Qualifikations-Chip**,
+  darunter Base, TLC, Rolle, FTE, Aircraft, ORE-Stufe und Umschulungs-Phase.
+- **Fünf Felder stehen nicht auf der Karte:** Teilzeit, Intern/Extern,
+  Behörde, Anmerkung und Notiz. Sie werden im Dialog gelesen, der sich beim
+  Antippen öffnet. Vierzehn Felder mal fünfzig Personen — mit zwei
+  Freitextfeldern je Karte — wären am Handy eine endlose Folge unterschiedlich
+  hoher Blöcke. In der Tabelle, in der Suche und in **allen** Exporten (PDF,
+  Excel, Druck) sind sie unverändert enthalten.
+- **Ab 1280 px** bleibt die gewohnte Tabelle mit allen vierzehn Spalten.
+  Gemessen brauchen sie 1234 px; ein iPad im Querformat (1024 px) ist noch
+  245 px zu schmal und bekommt deshalb ebenfalls Karten. Oberhalb von 1280 px
+  wächst der Inhaltsbereich ohnehin nicht weiter.
+
 ## [1.35.1] – 2026-07-27
 
 ### Behoben

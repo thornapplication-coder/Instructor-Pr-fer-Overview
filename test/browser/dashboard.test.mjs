@@ -49,11 +49,55 @@ export default async function run(browser, baseUrl, shots) {
   // padding is the only room left to give.
   ok(pad === '6px', 'cell padding tightened to 6px (' + pad + ')')
   ok(box.s <= box.c, 'the table fits without sideways scrolling (' + box.s + ' <= ' + box.c + ')')
-  // It has to stay usable on a phone: there the wrapper is expected to scroll.
+  // On a phone it is not a table any more: fourteen columns left four on the
+  // screen and 863px behind a sideways scroll nobody finds, so each row is a
+  // card there. Eight fields carry it; the other five are read in the dialog.
   await page.setViewportSize({ width: 390, height: 844 })
-  await page.waitForTimeout(300)
+  await page.waitForTimeout(400)
   const small = await page.locator('.table-wrap').evaluate((e) => ({ c: e.clientWidth, s: e.scrollWidth }))
-  ok(small.s > small.c, 'on a phone the table still scrolls sideways rather than squashing')
+  ok(small.s <= small.c + 1, 'on a phone nothing hides behind a sideways scroll (' + small.s + ' <= ' + small.c + ')')
+  const card = page.locator('.trainer-table tbody tr').first()
+  const seen = await card.evaluate((tr) => {
+    const box = (sel) => {
+      const el = tr.querySelector(sel)
+      if (!el) return null
+      const s = getComputedStyle(el)
+      if (s.display === 'none') return null
+      const r = el.getBoundingClientRect()
+      return { top: Math.round(r.top), right: Math.round(r.right) }
+    }
+    return {
+      shown: ['.t-name', '.t-qual', '.t-base', '.t-tlc', '.t-role', '.t-fte', '.t-ac', '.t-ore', '.t-stage']
+        .filter((s) => box(s)),
+      hidden: ['.t-pt', '.t-staff', '.t-auth', '.t-remark', '.t-note'].filter((s) => !box(s)),
+      worstRight: Math.max(...['.t-name', '.t-qual', '.t-base', '.t-role', '.t-ore', '.t-stage']
+        .map((s) => (box(s) || { right: 0 }).right)),
+      headTop: box('.t-name').top,
+      qualTop: box('.t-qual').top,
+      bodyTop: box('.t-base').top
+    }
+  })
+  ok(seen.shown.length === 9, 'nine fields carry the card (' + seen.shown.length + ')')
+  ok(seen.hidden.length === 5, 'and the five free-text/rare ones step aside for the dialog (' + seen.hidden.length + ')')
+  ok(seen.worstRight <= 391, 'nothing runs off the side (worst right edge ' + seen.worstRight + ')')
+  ok(Math.abs(seen.headTop - seen.qualTop) <= 12, 'name and qualification share the head line')
+  ok(seen.bodyTop > seen.headTop, 'and the rest sits below it')
+  // An iPad in landscape is 1024px and the fourteen columns want 1234px, so it
+  // is a card there too. This is the width the first cut got wrong.
+  await page.setViewportSize({ width: 1024, height: 768 })
+  await page.waitForTimeout(400)
+  const tablet = await page.locator('.table-wrap').evaluate((e) => ({ c: e.clientWidth, s: e.scrollWidth }))
+  ok(tablet.s <= tablet.c + 1, 'an iPad in landscape hides nothing either (' + tablet.s + ' <= ' + tablet.c + ')')
+  // And the width where the real table does fit keeps it.
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.waitForTimeout(400)
+  const wide = await page.evaluate(() => ({
+    display: getComputedStyle(document.querySelector('.trainer-table')).display,
+    heads: document.querySelectorAll('.trainer-table thead th').length,
+    hidden: (() => { const w = document.querySelector('.table-wrap'); return w.scrollWidth - w.clientWidth })()
+  }))
+  ok(wide.display === 'table' && wide.heads === 14, 'a desktop keeps the real table with all fourteen columns (' + wide.heads + ')')
+  ok(wide.hidden === 0, '  and it fits (' + wide.hidden + 'px hidden)')
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.waitForTimeout(300)
   // The compact variant must not leak into the other tables.
@@ -61,6 +105,24 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForSelector('.data-table')
   await page.waitForTimeout(300)
   ok(await page.locator('.data-table.compact').count() === 0, 'other tables keep their original size')
+  // `compact` is shared with the course dates. The card layout must hang off
+  // `trainer-table` alone, or that table would be rearranged by rules written
+  // for columns it does not have.
+  // It sits under Umschulung → Planung. Asserted, not skipped: a check that
+  // quietly finds nothing reads exactly like a check that passed.
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.locator('.tab', { hasText: 'Umschulung' }).first().click()
+  await page.waitForTimeout(400)
+  await page.locator('.seg-btn', { hasText: 'Planung' }).first().click()
+  await page.waitForTimeout(500)
+  await page.locator('.btn-ghost', { hasText: 'Kurstermine' }).first().click()
+  await page.waitForSelector('.course-table')
+  await page.waitForTimeout(400)
+  ok(await page.locator('.course-table').count() === 1, 'found the course-date table under Umschulung → Planung → Kurstermine')
+  const courseDisplay = await page.locator('.course-table').evaluate((e) => getComputedStyle(e).display)
+  ok(courseDisplay === 'table', 'and it is still a table on a phone – the card rules are the trainer table\'s alone (' + courseDisplay + ')')
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.waitForTimeout(300)
 
   // ---- 4. heads vs FTE on the dashboard --------------------------------------
   await page.locator('.tab', { hasText: 'Dashboard' }).first().click()
