@@ -21,7 +21,7 @@ Commit-Nachrichten auf Englisch.
 | `src/lib/plan.js` | Soll gegen Ist: Meilensteine, Ampel-Schwelle (`slackFor`), `planStatus`, `planFor`. |
 | `src/lib/i18n.js` | DE/EN, ein flaches Wörterbuch. |
 | `src/data/*.js` | Startdaten und Kategorien (Phasen, Berechtigungen, Provider, Piloten). |
-| `src/tabs/*.jsx` | Je Reiter eine Datei. |
+| `src/tabs/*.jsx` | Je Reiter eine Datei. `ConversionHub.jsx` fasst Board, Planung und Kalender unter einem Reiter zusammen. |
 | `src/version.js` | Version **und** Changelog (wird in den Einstellungen angezeigt). |
 | `test/` | `npm test` – Zusammenführung, Abdeckungs-Wächter, FTE, Verlauf. Reines Node. |
 | `test/browser/` | `npm run test:browser` – Playwright gegen den echten Build. |

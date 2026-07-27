@@ -14,7 +14,10 @@ export default async function run(browser, baseUrl, shots) {
 
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   await page.waitForSelector('.kpi-hero')
-  await page.locator('.tab', { hasText: 'Planung' }).first().click()
+  // Planung is a VIEW of the Umschulung tab now, not a tab of its own.
+  await page.locator('.tab', { hasText: 'Umschulung' }).first().click()
+  await page.waitForSelector('.hub-bar')
+  await page.locator('.hub-bar .seg-btn', { hasText: 'Planung' }).click()
   await page.waitForSelector('.planning-table')
   await page.waitForTimeout(400)
 
@@ -90,12 +93,12 @@ export default async function run(browser, baseUrl, shots) {
   ok((await cell.innerText()).includes('03.03.2026'), 'the grid cell carries the course period')
   ok((await cell.innerText()).includes('20.03.2026'), 'from its start to its end')
 
-  await page.locator('.seg-btn', { hasText: 'Kalender' }).first().click()
+  await page.locator('.hub-bar .seg-btn', { hasText: 'Kalender' }).click()
   await page.waitForSelector('.cal-month')
   await page.waitForTimeout(400)
   const chips = page.locator('.cal-chip')
   ok(await chips.count() >= 1, 'and the calendar places the booking on its start day (' + (await chips.count()) + ')')
-  await page.locator('.seg-btn', { hasText: 'Tabelle' }).first().click()
+  await page.locator('.hub-bar .seg-btn', { hasText: 'Planung' }).click()
   await page.waitForSelector('.planning-table')
 
   // ---- 4. seats warn, they do not block ------------------------------------
@@ -111,7 +114,10 @@ export default async function run(browser, baseUrl, shots) {
     localStorage.setItem(K, JSON.stringify(d))
   }, STORAGE_KEY)
   await page.reload({ waitUntil: 'networkidle' })
-  await page.locator('.tab', { hasText: 'Planung' }).first().click()
+  // Planung is a VIEW of the Umschulung tab now, not a tab of its own.
+  await page.locator('.tab', { hasText: 'Umschulung' }).first().click()
+  await page.waitForSelector('.hub-bar')
+  await page.locator('.hub-bar .seg-btn', { hasText: 'Planung' }).click()
   await page.waitForSelector('.planning-table')
   await page.locator('.btn', { hasText: 'Kurstermine' }).first().click()
   await page.waitForSelector('.course-man')

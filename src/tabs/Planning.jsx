@@ -56,7 +56,7 @@ function spanText(resolved, lang) {
   return formatDate(resolved.from, lang) + ' – ' + formatDate(resolved.to, lang)
 }
 
-export default function Planning() {
+export default function Planning({ view: viewProp, embedded }) {
   const tint = useThemed()
   const { data, t, lang, setAssignmentSteps } = useStore()
   const { trainers, providers, assignmentSteps, quals, courseRuns } = data
@@ -68,7 +68,10 @@ export default function Planning() {
   const [editing, setEditing] = useState(null)
   const [manageSteps, setManageSteps] = useState(false)
   const [manageCourses, setManageCourses] = useState(false)
-  const [view, setView] = useState('table') // 'table' | 'calendar'
+  // Controlled from the hub when it is embedded there; standalone it keeps its
+  // own two-way switch, so the component still works on its own.
+  const [ownView, setView] = useState('table') // 'table' | 'calendar'
+  const view = viewProp || ownView
 
   const bases = useMemo(() => [...new Set(trainers.map((x) => x.base).filter(Boolean))].sort(), [trainers])
   const anyFilter = !!(q.trim() || fBase || fStaff || fOre || fAircraft)
@@ -102,7 +105,7 @@ export default function Planning() {
   return (
     <div className="tab-pane">
       <div className="toolbar no-print">
-        <h2 className="pane-title">{t('planning_title')}</h2>
+        {!embedded && <h2 className="pane-title">{t('planning_title')}</h2>}
         <input className="input search" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
         <select className="input" value={fBase} onChange={(e) => setFBase(e.target.value)}>
           <option value="">{t('filterBase')}: {t('all')}</option>
@@ -126,22 +129,24 @@ export default function Planning() {
           <button className="btn btn-ghost" onClick={resetFilters}>↺ {t('resetFilters')}</button>
         )}
         <span className="push-right" />
-        <div className="seg-toggle" role="group" aria-label={t('planning_view')}>
-          <button
-            className={'seg-btn' + (view === 'table' ? ' active' : '')}
-            aria-pressed={view === 'table'}
-            onClick={() => setView('table')}
-          >
-            {t('planning_viewTable')}
-          </button>
-          <button
-            className={'seg-btn' + (view === 'calendar' ? ' active' : '')}
-            aria-pressed={view === 'calendar'}
-            onClick={() => setView('calendar')}
-          >
-            {t('planning_viewCalendar')}
-          </button>
-        </div>
+        {!viewProp && (
+          <div className="seg-toggle" role="group" aria-label={t('planning_view')}>
+            <button
+              className={'seg-btn' + (view === 'table' ? ' active' : '')}
+              aria-pressed={view === 'table'}
+              onClick={() => setView('table')}
+            >
+              {t('planning_viewTable')}
+            </button>
+            <button
+              className={'seg-btn' + (view === 'calendar' ? ' active' : '')}
+              aria-pressed={view === 'calendar'}
+              onClick={() => setView('calendar')}
+            >
+              {t('planning_viewCalendar')}
+            </button>
+          </div>
+        )}
         <button className="btn btn-ghost" onClick={() => setManageCourses(true)}>
           🗓 {t('manageCourses')}
         </button>

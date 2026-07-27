@@ -26,7 +26,7 @@ function assignTarget(providers, runs, a) {
   return r.from || null
 }
 
-export default function Conversion() {
+export default function Conversion({ embedded }) {
   const tint = useThemed()
   const { data, t, lang, setConversion, setStages } = useStore()
   const { trainers, stages, providers, quals, assignmentSteps, courseRuns } = data
@@ -83,7 +83,8 @@ export default function Conversion() {
   return (
     <div className="tab-pane">
       <div className="toolbar">
-        <h2 className="pane-title">{t('conversion_title')}</h2>
+        {/* The hub above already names the tab and offers the view switch. */}
+        {!embedded && <h2 className="pane-title">{t('conversion_title')}</h2>}
         <input className="input search" placeholder={t('search')} value={q} onChange={(e) => setQ(e.target.value)} />
         <select className="input" value={fAircraft} onChange={(e) => setFAircraft(e.target.value)}>
           <option value="">{t('filterAircraft')}: {t('all')}</option>

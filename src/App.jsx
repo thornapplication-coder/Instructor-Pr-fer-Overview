@@ -5,9 +5,8 @@ import TopBar from './components/TopBar.jsx'
 import UpdatePrompt from './components/UpdatePrompt.jsx'
 import Dashboard from './tabs/Dashboard.jsx'
 import Trainers from './tabs/Trainers.jsx'
-import Conversion from './tabs/Conversion.jsx'
+import ConversionHub from './tabs/ConversionHub.jsx'
 import Capacity from './tabs/Capacity.jsx'
-import Planning from './tabs/Planning.jsx'
 import Providers from './tabs/Providers.jsx'
 import Pilots from './tabs/Pilots.jsx'
 import Settings from './tabs/Settings.jsx'
@@ -16,9 +15,11 @@ import { APP_VERSION, COPYRIGHT } from './version.js'
 const TABS = [
   { id: 'dashboard', labelKey: 'tab_dashboard', Comp: Dashboard },
   { id: 'trainers', labelKey: 'tab_trainers', Comp: Trainers },
-  { id: 'conversion', labelKey: 'tab_conversion', Comp: Conversion },
+  // Board, planning grid and calendar live behind one tab (see ConversionHub):
+  // they describe the same journey of the same person and used to be able to
+  // disagree with each other unnoticed.
+  { id: 'conversion', labelKey: 'tab_conversion', Comp: ConversionHub },
   { id: 'capacity', labelKey: 'tab_capacity', Comp: Capacity },
-  { id: 'planning', labelKey: 'tab_planning', Comp: Planning },
   { id: 'providers', labelKey: 'tab_providers', Comp: Providers },
   { id: 'pilots', labelKey: 'tab_pilots', Comp: Pilots },
   // `icon` keeps this one out of the tab row and puts it in the header

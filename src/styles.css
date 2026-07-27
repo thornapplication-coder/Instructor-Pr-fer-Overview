@@ -840,6 +840,9 @@ textarea.input { resize: vertical; }
 .link-btn { border: 0; background: transparent; padding: 0; font: inherit; font-weight: 800; color: var(--ink); cursor: pointer; text-align: left; }
 .link-btn:hover { color: var(--burg); text-decoration: underline; }
 .planning-note { margin: -4px 0 4px; font-size: 12.5px; color: var(--muted); font-style: italic; }
+/* The shared header of the merged Umschulung tab. Its child pane brings its own
+   gap, so this one only needs to not add a second one. */
+.hub-bar { margin-bottom: -8px; }
 
 .planning-table th { vertical-align: bottom; }
 .cell-assign {

@@ -11,6 +11,20 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.29.0] – 2026-07-27
+
+- **Ein Reiter für Board, Planung und Kalender.** Alles unter *Umschulung*,
+  umgeschaltet oben rechts. Der eigene Reiter *Planung* entfällt.
+- An den Daten ändert sich **nichts**. Jede Ansicht behält ihre eigene
+  Filterleiste: das Board filtert Personen, das Raster filtert Zeilen — das
+  sind zwei verschiedene Fragen. Geteilt sind nur Titel und Umschalter.
+- Der Grund: beide beschreiben denselben Weg derselben Person. Getrennt
+  konnten sie sich widersprechen, ohne dass es auffiel — ein Schritt in der
+  Planung auf „absolviert", während die Karte auf dem Board noch in einer
+  früheren Spalte hing. Das Zusammenführen der beiden Listen (sechs Stufen,
+  vier Schritte) ist ein eigenes, größeres Vorhaben; das hier ist die billige
+  und risikolose Hälfte.
+
 ## [1.28.0] – 2026-07-27
 
 - **Ø Dauer je Kursart.** Neue Kachel in der B737-Umschulung: Monate auf der

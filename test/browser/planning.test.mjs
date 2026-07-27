@@ -17,9 +17,31 @@ export default async function run(browser, baseUrl, shots) {
 
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
   await page.waitForSelector('.kpi-hero')
-  await page.locator('.tab', { hasText: 'Planung' }).first().click()
+  // ---- 0. one tab, three views --------------------------------------------
+  // Board, grid and calendar describe the same journey of the same person, so
+  // they live behind one tab now. Planung is a view, not a tab of its own.
+  const tabs = await page.locator('.tab').allInnerTexts()
+  ok(!tabs.some((x) => x.trim() === 'Planung'), 'Planung is no longer a tab of its own (' + tabs.join(' | ') + ')')
+  await page.locator('.tab', { hasText: 'Umschulung' }).first().click()
+  await page.waitForSelector('.hub-bar')
+  const views = await page.locator('.hub-bar .seg-btn').allInnerTexts()
+  ok(views.join('/') === 'Board/Planung/Kalender', 'the tab offers three views (' + views.join(' | ') + ')')
+  ok(await page.locator('.board-col').count() > 0, 'and opens on the board')
+  ok(await page.locator('.pane-title').count() === 1, 'exactly one title, not one per view (' + (await page.locator('.pane-title').count()) + ')')
+
+  await page.locator('.hub-bar .seg-btn', { hasText: 'Planung' }).click()
   await page.waitForSelector('.planning-table')
   await page.waitForTimeout(500)
+  ok(await page.locator('.board-col').count() === 0, 'switching to Planung puts the board away')
+  ok(await page.locator('.pane-title').count() === 1, 'and the grid does not add a second title')
+
+  await page.locator('.hub-bar .seg-btn', { hasText: 'Kalender' }).click()
+  await page.waitForSelector('.cal-card, .card')
+  await page.waitForTimeout(400)
+  ok(await page.locator('.planning-table').count() === 0, 'the calendar view drops the grid')
+  await page.locator('.hub-bar .seg-btn', { hasText: 'Planung' }).click()
+  await page.waitForSelector('.planning-table')
+  await page.waitForTimeout(400)
 
   // ---- 1. it opens at all --------------------------------------------------
   const chips = page.locator('.planning-table').getByText('zuweisen')

@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.28.0'
+export const APP_VERSION = '1.29.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.29.0',
+    date: '2026-07-27',
+    type: 'minor',
+    changes: {
+      de: [
+        'Board, Planung und Kalender liegen jetzt unter **einem** Reiter „Umschulung", umschaltbar oben rechts. Der eigene Reiter „Planung" entfällt.',
+        'An den Daten ändert sich nichts. Jede Ansicht behält ihre eigene Filterleiste — das Board filtert Personen, das Raster filtert Zeilen, und das sind zwei verschiedene Fragen. Geteilt sind nur Titel und Umschalter.',
+        'Grund: beide beschreiben denselben Weg derselben Person. Getrennt konnten sie sich widersprechen, ohne dass es jemandem auffiel — ein Schritt in der Planung auf „absolviert", während die Karte auf dem Board noch in einer früheren Spalte hing.'
+      ],
+      en: [
+        'Board, planning grid and calendar now live under **one** "Conversion" tab, switchable top right. The separate "Planning" tab is gone.',
+        'Nothing about the data changes. Each view keeps its own filter bar – the board filters people, the grid filters rows, and those are two different questions. Only the title and the view switch are shared.',
+        'The reason: both describe the same journey of the same person. Kept apart they could disagree unnoticed – a step marked completed in Planning while the card still sat in an earlier column on the board.'
+      ]
+    }
+  },
   {
     version: '1.28.0',
     date: '2026-07-27',

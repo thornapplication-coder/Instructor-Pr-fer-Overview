@@ -422,6 +422,7 @@ const DICT = {
   staff_external: { de: 'extern', en: 'external' },
   filterStaff: { de: 'Intern/Extern', en: 'Internal/External' },
   planning_title: { de: 'Planung – wer macht was, wo?', en: 'Planning – who does what, where?' },
+  view_board: { de: 'Board', en: 'Board' },
   planning_view: { de: 'Ansicht', en: 'View' },
   planning_viewTable: { de: 'Tabelle', en: 'Table' },
   planning_viewCalendar: { de: 'Kalender', en: 'Calendar' },
