@@ -588,6 +588,10 @@ const DICT = {
     de: 'Noch keine abgeschlossenen Kurse. Sobald ein Kurstermin einen Zeitraum von–bis hat und jemand darauf gebucht ist, entsteht hier die Kurve.',
     en: 'No completed courses yet. As soon as a course date has a period from–to and somebody is booked onto it, the curve appears here.'
   },
+  dur_noTargets: {
+    de: 'Keine Kursart hat eine Soll-Dauer, deshalb gibt es nichts, wovon etwas abweichen könnte. Setzen unter Umschulung → Planung → Spalten bearbeiten.',
+    en: 'No course type has a target duration, so there is nothing for anything to deviate from. Set one under Conversion → Planning → Edit columns.'
+  },
   dur_hint: {
     de: 'Gezählt wird je Kurs, nicht je Kopf: ein Kurs mit zwölf Teilnehmern hat einmal stattgefunden. Der Monat ist der Kursbeginn.',
     en: 'Counted per course, not per head: a course with twelve attendees happened once. The month is the course start.'

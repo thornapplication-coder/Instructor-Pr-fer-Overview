@@ -211,6 +211,36 @@ export default async function run(browser, baseUrl, shots) {
   }, STORAGE_KEY)
   ok(perCourse > 1, 'several people sit on the same course (' + perCourse + ') – so the average is per course, not per head')
 
+  // The way back has to exist even when the other view has nothing to draw.
+  // Tied to the current mode, the switch rendered its own empty state and took
+  // itself with it – once on "% vom Soll" there was no way back to days.
+  await page.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    d.assignmentSteps = d.assignmentSteps.map((s) => ({ ...s, targetDays: 0 }))
+    localStorage.setItem(K, JSON.stringify(d))
+  }, STORAGE_KEY)
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.waitForSelector('.lines')
+  await page.waitForTimeout(500)
+  const noT = page.locator('.card').filter({ hasText: 'Dauer je Kursart' }).first()
+  await noT.scrollIntoViewIfNeeded()
+  await noT.locator('.seg-btn', { hasText: '%' }).click()
+  await page.waitForTimeout(400)
+  ok(await noT.locator('.seg-btn').count() === 2, 'with no target set the percentage view keeps its switch')
+  ok((await noT.innerText()).includes('Keine Kursart hat eine Soll-Dauer'), 'and says what is missing instead of an empty grid')
+  await noT.locator('.seg-btn', { hasText: 'Tage' }).click()
+  await page.waitForTimeout(400)
+  ok(await noT.locator('.lines-path').count() > 0, 'and switching back to days draws the curve again')
+
+  await page.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    d.assignmentSteps = d.assignmentSteps.map((s, i) => ({ ...s, targetDays: [18, 10, 6, 0][i] || 0 }))
+    localStorage.setItem(K, JSON.stringify(d))
+  }, STORAGE_KEY)
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.waitForSelector('.lines')
+  await page.waitForTimeout(500)
+
   await dur.locator('.seg-btn', { hasText: '%' }).click()
   await page.waitForTimeout(500)
   ok(await dur.locator('.lines-ref').count() === 1, 'the percentage view draws ONE neutral 100 % line')

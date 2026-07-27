@@ -224,6 +224,8 @@ export default function Dashboard() {
     [convPool, assignmentSteps, courseRuns]
   )
   const durRated = durSummary.filter((r) => r.target != null)
+  // "Is there anything to show at all" – independent of the current mode.
+  const durAny = durSummary.some((r) => r.avg != null)
   const durData = durMode === 'days' ? durDays : durPct
   const durRows = durMode === 'days' ? durSummary : durRated
   // Only course types that actually have readings – an empty line in the legend
@@ -522,7 +524,11 @@ export default function Dashboard() {
       id: 'duration',
       node: (
         <Card title={t('chart_duration')}>
-          {durSeries.length === 0 ? (
+          {/* The switch is tied to "is there ANY duration data", never to the
+              current mode. Hung off the current mode, the percentage view with
+              no target duration set anywhere rendered its empty state – and
+              took the switch with it, so there was no way back to days. */}
+          {!durAny ? (
             <p className="trend-empty">{t('dur_empty')}</p>
           ) : (
             <>
@@ -538,24 +544,30 @@ export default function Dashboard() {
                   </button>
                 ))}
               </div>
-              <LineTrend
-                data={durData}
-                series={durSeries}
-                labelOf={(k) => monthLabelShort(k, lang)}
-                unit={durMode === 'days' ? t('course_daysShort') : '%'}
-                format={(v) => formatNum1(v, lang)}
-                refLine={durMode === 'pct' ? { value: 100 } : null}
-                legendValue={(s) => {
-                  const row = durRows.find((r) => r.id === s.key)
-                  if (!row || row.avg == null) return '–'
-                  return durMode === 'days'
-                    ? formatNum1(row.avg, lang) + ' ' + t('course_daysShort') + (row.target ? ' / ' + row.target : '')
-                    : row.pct + ' %'
-                }}
-              />
+              {durSeries.length === 0 ? (
+                // Percent with no target set anywhere: say what is missing and
+                // where to set it, rather than drawing an empty grid.
+                <p className="trend-empty">{t('dur_noTargets')}</p>
+              ) : (
+                <LineTrend
+                  data={durData}
+                  series={durSeries}
+                  labelOf={(k) => monthLabelShort(k, lang)}
+                  unit={durMode === 'days' ? t('course_daysShort') : '%'}
+                  format={(v) => formatNum1(v, lang)}
+                  refLine={durMode === 'pct' ? { value: 100 } : null}
+                  legendValue={(s) => {
+                    const row = durRows.find((r) => r.id === s.key)
+                    if (!row || row.avg == null) return '–'
+                    return durMode === 'days'
+                      ? formatNum1(row.avg, lang) + ' ' + t('course_daysShort') + (row.target ? ' / ' + row.target : '')
+                      : row.pct + ' %'
+                  }}
+                />
+              )}
               <p className="stat-hint">
                 {t('dur_hint')}
-                {durMode === 'pct' && ' ' + t('dur_hintPct')}
+                {durMode === 'pct' && durSeries.length > 0 && ' ' + t('dur_hintPct')}
                 {durMode === 'days' && durSummary.some((r) => r.target == null) && ' ' + t('dur_hintNoTarget')}
                 {durOpen > 0 && ' ' + t('dur_open').replace('{n}', String(durOpen))}
               </p>

@@ -4,12 +4,27 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.29.0'
+export const APP_VERSION = '1.29.1'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.29.1',
+    date: '2026-07-27',
+    type: 'patch',
+    changes: {
+      de: [
+        'Behoben: In der Kachel „Ø Dauer je Kursart" ließ sich die Ansicht „% vom Soll" nicht mehr verlassen, wenn keine Kursart eine Soll-Dauer trug — die leere Ansicht nahm den Umschalter mit sich.',
+        'Der Umschalter hängt jetzt daran, ob es überhaupt Daten gibt, nicht an der gerade gewählten Ansicht. Ohne gesetzte Soll-Dauer steht in der Prozent-Ansicht, was fehlt und wo es zu setzen ist.'
+      ],
+      en: [
+        'Fixed: in the "Avg. duration by course type" card the "% of target" view could not be left again when no course type carried a target duration – the empty view took the switch with it.',
+        'The switch now depends on whether there is any data at all, not on the current view. With no target set, the percentage view says what is missing and where to set it.'
+      ]
+    }
+  },
   {
     version: '1.29.0',
     date: '2026-07-27',

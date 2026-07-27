@@ -11,6 +11,16 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.29.1] – 2026-07-27
+
+- **Behoben: die Dauer-Kachel liess sich nicht zurückschalten.** Trug keine
+  Kursart eine Soll-Dauer, war die Ansicht „% vom Soll" leer — und weil der
+  Umschalter innerhalb des Diagrammzweigs stand, verschwand er mit ihm. Man
+  kam nicht mehr zu „Tage" zurück.
+- Der Umschalter hängt jetzt daran, ob es **überhaupt** Messwerte gibt, nicht
+  an der gerade gewählten Ansicht. Die Prozent-Ansicht ohne Soll-Dauer sagt,
+  was fehlt und wo es zu setzen ist, statt ein leeres Raster zu zeichnen.
+
 ## [1.29.0] – 2026-07-27
 
 - **Ein Reiter für Board, Planung und Kalender.** Alles unter *Umschulung*,
