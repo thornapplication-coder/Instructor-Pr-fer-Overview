@@ -121,6 +121,10 @@ export default async function run(browser, baseUrl, shots) {
   ok(await page.locator('.course-table').count() === 1, 'found the course-date table under Umschulung → Planung → Kurstermine')
   const courseDisplay = await page.locator('.course-table').evaluate((e) => getComputedStyle(e).display)
   ok(courseDisplay === 'table', 'and it is still a table on a phone – the card rules are the trainer table\'s alone (' + courseDisplay + ')')
+  // Close it: the backdrop swallows every later click on a tab.
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(300)
+  ok(await page.locator('.modal-backdrop').count() === 0, 'and the dialog closes again')
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.waitForTimeout(300)
 
