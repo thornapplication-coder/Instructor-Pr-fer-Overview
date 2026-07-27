@@ -906,6 +906,29 @@ textarea.input { resize: vertical; }
     text-transform: uppercase; color: var(--muted);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
+  /* The row IS the card now, so the tap highlight belongs on it. Painted on
+     the cells it covered only the text boxes and left the 12px card padding
+     and the 8px gutters white – a tap lit up loose rectangles. */
+  .card-at-1000 tr.clickable:hover td { background: transparent; }
+  .card-at-1000 tr.clickable:hover { background: var(--sky-lightest); }
+  /* The card's headline. */
+  .card-at-1000 tbody td.card-name { font-size: 14.5px; }
+  /* A right-aligned number under a left-aligned heading reads as a stray. */
+  .card-at-1000 tbody td.num { text-align: left; }
+  /* Free text on a card has the width it has; nothing behind it to widen. */
+  .card-at-1000 .cell-clamp { max-width: none; }
+  /* An address has no break opportunity of its own, and one long enough to
+     outgrow the card would hand `.table-wrap` back the sideways scroll the
+     card exists to remove. */
+  .card-at-1000 .wrap-anywhere { overflow-wrap: anywhere; }
+  /* A chip pinned to the end of a fixed track cannot shrink (`.status-tag` is
+     nowrap), so it overflows towards the START – i.e. across the name beside
+     it. Statuses are user-named, so their width is unbounded: let the chip
+     wrap inside its own half instead. */
+  .card-at-1000 td.card-chip-end { justify-self: end; min-width: 0; }
+  .card-at-1000 td.card-chip-end > span {
+    max-width: 100%; white-space: normal; text-align: center;
+  }
 }
 @media screen and (max-width: 1279px) {
   .card-at-1280, .card-at-1280 tbody { display: block; }
@@ -925,34 +948,30 @@ textarea.input { resize: vertical; }
     text-transform: uppercase; color: var(--muted);
     white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
-}
-/* Shared card details that do not depend on which width switched it on. */
-@media screen and (max-width: 1279px) {
   /* The row IS the card now, so the tap highlight belongs on it. Painted on
      the cells it covered only the text boxes and left the 12px card padding
      and the 8px gutters white – a tap lit up loose rectangles. */
-  .card-table tr.clickable:hover td { background: transparent; }
-  .card-table tr.clickable:hover { background: var(--sky-lightest); }
-  /* The card's headline, in all three. */
-  .card-table tbody td.card-name { font-size: 14.5px; }
+  .card-at-1280 tr.clickable:hover td { background: transparent; }
+  .card-at-1280 tr.clickable:hover { background: var(--sky-lightest); }
+  /* The card's headline. */
+  .card-at-1280 tbody td.card-name { font-size: 14.5px; }
   /* A right-aligned number under a left-aligned heading reads as a stray. */
-  .card-table tbody td.num { text-align: left; }
+  .card-at-1280 tbody td.num { text-align: left; }
   /* Free text on a card has the width it has; nothing behind it to widen. */
-  .card-table .cell-clamp { max-width: none; }
+  .card-at-1280 .cell-clamp { max-width: none; }
   /* An address has no break opportunity of its own, and one long enough to
      outgrow the card would hand `.table-wrap` back the sideways scroll the
      card exists to remove. */
-  .card-table .wrap-anywhere { overflow-wrap: anywhere; }
+  .card-at-1280 .wrap-anywhere { overflow-wrap: anywhere; }
   /* A chip pinned to the end of a fixed track cannot shrink (`.status-tag` is
      nowrap), so it overflows towards the START – i.e. across the name beside
      it. Statuses are user-named, so their width is unbounded: let the chip
      wrap inside its own half instead. */
-  .card-table td.card-chip-end { justify-self: end; min-width: 0; }
-  .card-table td.card-chip-end > span {
+  .card-at-1280 td.card-chip-end { justify-self: end; min-width: 0; }
+  .card-at-1280 td.card-chip-end > span {
     max-width: 100%; white-space: normal; text-align: center;
   }
 }
-
 /* ---------- Other Pilots: the card grid ---------- */
 /* Eight columns do not fit a phone. They never did – the table simply ended
    after the name and the rest lived behind a sideways scroll nobody finds, so
@@ -1212,10 +1231,16 @@ textarea.input { resize: vertical; }
 :root[data-theme='dark'] .cell-assign:hover { background: #222a31; }
 :root[data-theme='dark'] .data-table th.sortable:hover { background: #2b333b; color: #E86FB0; }
 /* Card mode: the row is the card, so the tap highlight goes on the row. Stated
-   again for dark because the rule above outranks the light-mode card rule. */
+   again for dark because the rule above outranks the light-mode card rule, and
+   once per breakpoint because a table that is NOT yet a card must keep the
+   cell tint. */
+@media screen and (max-width: 1000px) {
+  :root[data-theme='dark'] .card-at-1000 tr.clickable:hover td { background: transparent; }
+  :root[data-theme='dark'] .card-at-1000 tr.clickable:hover { background: #222a31; }
+}
 @media screen and (max-width: 1279px) {
-  :root[data-theme='dark'] .card-table tr.clickable:hover td { background: transparent; }
-  :root[data-theme='dark'] .card-table tr.clickable:hover { background: #222a31; }
+  :root[data-theme='dark'] .card-at-1280 tr.clickable:hover td { background: transparent; }
+  :root[data-theme='dark'] .card-at-1280 tr.clickable:hover { background: #222a31; }
 }
 :root[data-theme='dark'] .hbar-track,
 :root[data-theme='dark'] .pipeline-bar,

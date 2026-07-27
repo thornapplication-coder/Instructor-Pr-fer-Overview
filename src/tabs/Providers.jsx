@@ -80,7 +80,7 @@ export default function Providers() {
         </div>
       ) : (
         <div className="table-wrap">
-          <table className="data-table card-table card-at-1000 provider-table">
+          <table className="data-table card-at-1000 provider-table">
             <thead>
               {(() => { const sp = { sortKey: main.sortKey, dir: main.dir, onSort: main.toggle }; return (
               <tr>
@@ -164,7 +164,7 @@ export default function Providers() {
           <h3 className="card-title">{t('prov_capacity')}</h3>
           <p className="muted small">{t('prov_capacityHint')}</p>
           <div className="table-wrap">
-            <table className="data-table card-table card-at-1000 provider-cap-table">
+            <table className="data-table card-at-1000 provider-cap-table">
               <thead>
                 {(() => { const sp = { sortKey: utilS.sortKey, dir: utilS.dir, onSort: utilS.toggle }; return (
                 <tr>

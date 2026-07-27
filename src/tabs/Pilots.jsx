@@ -101,7 +101,7 @@ export default function Pilots() {
         </div>
       ) : (
         <div className="table-wrap">
-          <table className="data-table card-table card-at-1000 pilots-table">
+          <table className="data-table card-at-1000 pilots-table">
             <thead>
               <tr>
                 <Th label={t('f_base')} k="base" {...sp} />

@@ -193,7 +193,7 @@ export default function Trainers() {
         {/* `compact` is the narrow-cell variant and is shared with the course
             dates; `trainer-table` is what the phone card layout hangs off, and
             it belongs to this table alone. */}
-        <table className="data-table compact card-table card-at-1280 trainer-table">
+        <table className="data-table compact card-at-1280 trainer-table">
           <thead>
             <tr>
               {(() => { const p = { sortKey, dir, onSort: toggle }; return (<>
