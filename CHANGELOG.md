@@ -11,6 +11,38 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.39.0] – 2026-07-27
+
+### Geändert
+- **Die Planungs-Ansicht am Handy und am iPad als Karten.** Gemessen brauchen
+  die Spalten 888 px; darunter lagen am iPhone 528 px und am iPad 114–166 px
+  hinter dem seitlichen Schieben — auf der Ansicht, in der die Buchungen
+  gemacht werden. Diese Liste ist als einzige eine **Matrix** (Personen mal
+  Kursschritte), deshalb ist die Karte die Person und jeder Kursschritt eine
+  beschriftete Zeile darin. Die Zahl der Schritte ist einstellbar, die Zeilen
+  werden deshalb automatisch gesetzt statt über feste Bereiche.
+- Auf dem Tablet stehen zwei Buchungen nebeneinander (Kartenhöhe 280 → 166 px).
+
+### Behoben
+- **Der Kurstermin-Dialog passte nie.** Seine Tabelle braucht gemessen 818 px,
+  der Dialog war auf 720 px gedeckelt — Plätze, Belegt und der **Löschen-Knopf**
+  lagen bei *jeder* Fenstergröße hinter dem seitlichen Schieben, auch am
+  Rechner. Ein Kurstermin ließ sich anlegen, aber nicht entfernen, ohne die
+  Tabelle zu schieben. Der Dialog hat jetzt eine dritte Breitenstufe (940 px).
+- Unter 900 px kann der Dialog nicht so breit sein, dort wird die Zeile zur
+  Karte: ein gestapeltes Formular, jedes Feld mit der Beschriftung, die vorher
+  die Kopfzeile trug. Unter 480 px bekommen „von" und „bis" je eine eigene
+  Zeile — in einer halben Handybreite (92 px) schneidet der Browser das Datum
+  auf „09/01/" ab.
+
+### Tests
+- Beide neuen Karten sind gemessen abgesichert, und beide Wächter wurden
+  gegengeprüft, indem die Behebung im Browser rückgängig gemacht wurde.
+- Der erste Entwurf des Kurstermin-Tests meldete einen erreichbaren
+  Löschen-Knopf, den es gar nicht gab: die Tabelle war leer. Der Test legt den
+  Kurstermin jetzt über die Schaltfläche selbst an und prüft vorher, dass eine
+  Zeile da ist.
+
 ## [1.38.0] – 2026-07-27
 
 ### Behoben

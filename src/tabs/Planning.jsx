@@ -139,7 +139,7 @@ export default function Planning({ view: viewProp, embedded }) {
 
       {view === 'table' && (
       <div className="table-wrap">
-        <table className="data-table planning-table">
+        <table className="data-table card-at-1000 planning-table">
           <thead>
             <tr>
               <Th label={t('f_name')} k="name" {...sp} />
@@ -161,11 +161,18 @@ export default function Planning({ view: viewProp, embedded }) {
             {sorted.map((x) => {
               return (
                 <tr key={x.id}>
-                  <td className="strong nowrap">
+                  {/* Named cells: inert while this is a table, and what the
+                      card layout below 1000px rearranges. Unlike the other
+                      three lists this one is a MATRIX – people down, course
+                      steps across – so the card is the person, and each step
+                      becomes one labelled line inside it. The number of steps
+                      is user-editable, which is why the step cells are placed
+                      by auto-flow rather than by a named grid area. */}
+                  <td className="pl-name card-name strong nowrap">
                     <button className="link-btn" onClick={() => setEditing(x.id)}>{x.name}</button>
                     <div className="muted small">{x.base} · {qualLabel(quals, x.qual)}{x.aircraft ? ' · ' + x.aircraft : ''}</div>
                   </td>
-                  <td>
+                  <td className="pl-staff card-chip-end">
                     <span className="staff-tag" style={{ '--tag': tint(colorOf(staffTypes, x.staffType || 'internal')) }}>
                       {labelOf(staffTypes, x.staffType || 'internal')}
                     </span>
@@ -177,7 +184,7 @@ export default function Planning({ view: viewProp, embedded }) {
                     const r = a ? resolveAssignment(a, findRun(courseRuns, a.courseId)) : null
                     const span = r ? spanText(r.from, r.to, lang) : ''
                     return (
-                      <td key={s.id}>
+                      <td key={s.id} className="pl-step" data-label={s.label}>
                         {/* A booking onto a course date that has no provider yet
                             still IS a booking – judged on the label alone it read
                             as "+ zuweisen" and looked unassigned. */}
@@ -223,7 +230,7 @@ export default function Planning({ view: viewProp, embedded }) {
           ) : null
         })()}
       {manageCourses && (
-        <Modal title={t('manageCourseDates')} onClose={() => setManageCourses(false)} wide
+        <Modal title={t('manageCourseDates')} onClose={() => setManageCourses(false)} xwide
           footer={<div className="foot-row"><div className="push-right">
             <button className="btn btn-primary" onClick={() => setManageCourses(false)}>{t('close')}</button></div></div>}>
           <CourseRunManager steps={assignmentSteps} providers={providers} trainers={trainers} />

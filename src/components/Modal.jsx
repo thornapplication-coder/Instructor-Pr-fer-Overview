@@ -3,7 +3,7 @@ import React, { useEffect, useRef } from 'react'
 const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
 
-export default function Modal({ title, onClose, children, footer, wide }) {
+export default function Modal({ title, onClose, children, footer, wide, xwide }) {
   const ref = useRef(null)
   const lastFocused = useRef(null)
   // Callers pass a fresh arrow on every render, so keep the latest handler in a
@@ -46,7 +46,7 @@ export default function Modal({ title, onClose, children, footer, wide }) {
       <div
         ref={ref}
         tabIndex={-1}
-        className={'modal' + (wide ? ' modal-wide' : '')}
+        className={'modal' + (xwide ? ' modal-xwide' : wide ? ' modal-wide' : '')}
         onMouseDown={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"

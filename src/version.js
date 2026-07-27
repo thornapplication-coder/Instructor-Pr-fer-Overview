@@ -4,12 +4,31 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.38.0'
+export const APP_VERSION = '1.39.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.39.0',
+    date: '2026-07-27',
+    type: 'minor',
+    changes: {
+      de: [
+        'Die Planungs-Ansicht am Handy und am iPad als Karten. Sie ist eine Matrix (Personen mal Kursschritte), deshalb ist die Karte die Person: oben Name, Base, Qualifikation und Aircraft mit dem Intern/Extern-Chip, darunter je Kursschritt eine beschriftete Zeile mit Provider, Status und Zeitraum. Am iPhone lagen vorher 528 px hinter dem seitlichen Schieben, am iPad 114 bis 166 px.',
+        'Auf dem Tablet stehen zwei Buchungen nebeneinander, das halbiert die Kartenhöhe.',
+        'Der Kurstermin-Dialog war auf 720 px gedeckelt, seine Tabelle braucht aber 818 px — Plätze, Belegt und der Löschen-Knopf lagen bei JEDER Fenstergröße hinter dem seitlichen Schieben, auch am Rechner. Ein Kurstermin ließ sich also anlegen, aber nicht entfernen, ohne die Tabelle seitlich zu schieben. Der Dialog ist jetzt breiter.',
+        'Unter 900 px wird auch dieser Dialog zur Karte: ein gestapeltes kleines Formular, jedes Feld mit eigener Beschriftung. Unter 480 px bekommen „von" und „bis" je eine eigene Zeile, weil ein Datumsfeld in einer halben Handybreite das Datum selbst abschneidet.'
+      ],
+      en: [
+        'The planning view becomes cards on a phone and an iPad. It is a matrix (people by course steps), so the card is the person: name, base, qualification and aircraft on top with the internal/external chip, then one labelled line per course step with provider, status and period. An iPhone had 528px behind a sideways scroll, an iPad 114 to 166px.',
+        'On a tablet two bookings sit side by side, which halves the card height.',
+        'The course-date dialog was capped at 720px while its table wants 818px — seats, booked and the delete button sat behind a sideways scroll at EVERY window size, desktop included. A course date could be added but not removed without knowing to swipe. The dialog is wider now.',
+        'Below 900px that dialog becomes a card too: a small stacked form, every field with its own label. Below 480px the two dates take a line each, because a date field in half a phone clips the date itself.'
+      ]
+    }
+  },
   {
     version: '1.38.0',
     date: '2026-07-27',

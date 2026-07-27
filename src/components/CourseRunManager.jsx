@@ -41,7 +41,7 @@ export default function CourseRunManager({ steps, providers, trainers }) {
     <div className="course-man">
       <p className="planning-note">{t('course_hint')}</p>
       <div className="table-wrap">
-        <table className="data-table compact course-table">
+        <table className="data-table compact card-at-900 course-table">
           <thead>
             <tr>
               <th>{t('course_type')}</th>
@@ -62,13 +62,16 @@ export default function CourseRunManager({ steps, providers, trainers }) {
               const over = isOverbooked(r, n)
               return (
                 <tr key={r.id}>
-                  <td>
+                  {/* Named cells for the card layout in a phone-width
+                      dialog. This one is an editor, so the card is a small
+                      stacked form rather than a read-out. */}
+                  <td className="cr-type" data-label={t('course_type')}>
                     <select className="input" value={r.stepId} onChange={(e) => set(r, { stepId: e.target.value })}>
                       <option value="">–</option>
                       {steps.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
                     </select>
                   </td>
-                  <td>
+                  <td className="cr-prov" data-label={t('provider')}>
                     <select className="input" value={r.providerId} onChange={(e) => set(r, { providerId: e.target.value })}>
                       <option value="">{t('noProvider')}</option>
                       {/* Same filter the assign dialog uses: a course of type
@@ -79,17 +82,17 @@ export default function CourseRunManager({ steps, providers, trainers }) {
                         .map((p) => <option key={p.id} value={p.id}>{p.name || '(?)'}</option>)}
                     </select>
                   </td>
-                  <td>
+                  <td className="cr-loc" data-label={t('location')}>
                     <input className="input" value={r.location || ''} onChange={(e) => set(r, { location: e.target.value })} />
                   </td>
-                  <td><DateInput value={r.from || ''} onChange={(v) => set(r, { from: v })} /></td>
-                  <td><DateInput value={r.to || ''} onChange={(v) => set(r, { to: v })} /></td>
-                  <td className="num">
+                  <td className="cr-from" data-label={t('course_from')}><DateInput value={r.from || ''} onChange={(v) => set(r, { from: v })} /></td>
+                  <td className="cr-to" data-label={t('course_to')}><DateInput value={r.to || ''} onChange={(v) => set(r, { to: v })} /></td>
+                  <td className="cr-days num" data-label={t('course_days')}>
                     {days == null
                       ? <span className={'muted' + (r.from && r.to ? ' warn-text' : '')}>{r.from && r.to ? t('course_badSpan') : '–'}</span>
                       : days}
                   </td>
-                  <td className="num">
+                  <td className="cr-seats num" data-label={t('course_seats')}>
                     <input
                       className="input seat-input"
                       type="number"
@@ -100,12 +103,12 @@ export default function CourseRunManager({ steps, providers, trainers }) {
                       aria-label={t('course_seats')}
                     />
                   </td>
-                  <td className="num">
+                  <td className="cr-booked num" data-label={t('course_booked')}>
                     <span className={'seat-count' + (over ? ' over' : '')} title={over ? t('course_overbooked') : ''}>
                       {n}
                     </span>
                   </td>
-                  <td className="num">
+                  <td className="cr-del num">
                     <button className="mini-btn danger" onClick={() => remove(r)} title={t('delete')}>✕</button>
                   </td>
                 </tr>

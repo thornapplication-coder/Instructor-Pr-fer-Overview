@@ -108,6 +108,128 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForSelector('.modal')
   await page.waitForTimeout(500)
   ok((await page.locator('.modal').count()) === 1, 'and reopens from the name without crashing')
+
+  // ---- the planning grid on a phone and a tablet ---------------------------
+  // Six columns want 888px, so below 1000px this was three quarters of the
+  // grid behind a sideways scroll — on the view the bookings are made in.
+  // Unlike the other lists this one is a matrix, so the card is the person and
+  // every course step is one labelled line inside it.
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(300)
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.waitForTimeout(500)
+  const card = await page.evaluate(() => {
+    const t = document.querySelector('.planning-table')
+    if (!t) return { error: 'no planning table' }
+    const wrap = t.closest('.table-wrap')
+    const row = t.querySelector('tbody tr')
+    if (!row) return { error: 'no row' }
+    const r = (el) => el.getBoundingClientRect()
+    const steps = [...row.querySelectorAll('.pl-step')]
+    const name = row.querySelector('.pl-name')
+    const staff = row.querySelector('.pl-staff')
+    const all = [...row.querySelectorAll('td, td *')]
+    return {
+      hidden: wrap.scrollWidth - wrap.clientWidth,
+      pageOverflow: document.documentElement.scrollWidth - window.innerWidth,
+      stepCount: steps.length,
+      // Every step on its own line, in the order the header row had them.
+      oneStepPerLine: steps.every((s, i) => i === 0 || Math.round(r(s).top) > Math.round(r(steps[i - 1]).top)),
+      stepsFullWidth: steps.every((s) => r(s).width > r(row).width - 40),
+      nameMid: Math.round(r(name).top + r(name).height / 2),
+      staffMid: Math.round(r(staff).top + r(staff).height / 2),
+      firstStepTop: Math.round(r(steps[0]).top),
+      nameTop: Math.round(r(name).top),
+      // Each step keeps the heading the column had.
+      headings: steps.map((s) => getComputedStyle(s, '::before').content).filter((c) => c && c !== 'none').length,
+      worstRight: Math.max(...all.map((e) => Math.round(r(e).right))),
+      cardRight: Math.round(r(row).right)
+    }
+  })
+  ok(!card.error, 'the planning card renders' + (card.error ? ': ' + card.error : ''))
+  if (!card.error) {
+    ok(card.hidden <= 1, 'nothing hides behind a sideways scroll (' + card.hidden + ')')
+    ok(card.pageOverflow <= 0, 'and the page does not scroll sideways (' + card.pageOverflow + ')')
+    ok(card.stepCount >= 4, 'every course step is on the card (' + card.stepCount + ')')
+    ok(card.oneStepPerLine && card.stepsFullWidth,
+      'each booking gets a line of its own, full width – "provider · from – to" does not survive being halved')
+    ok(card.headings === card.stepCount, 'and each carries its step name as a heading (' + card.headings + ')')
+    ok(Math.abs(card.nameMid - card.staffMid) <= 6, 'name and intern/extern share the head line')
+    ok(card.firstStepTop > card.nameTop, 'with the bookings below it')
+    ok(card.worstRight <= card.cardRight + 1, 'nothing paints outside the card')
+  }
+  // A tablet has room for two bookings side by side, which halves the height.
+  await page.setViewportSize({ width: 768, height: 1024 })
+  await page.waitForTimeout(500)
+  const tablet = await page.evaluate(() => {
+    const row = document.querySelector('.planning-table tbody tr')
+    const steps = [...row.querySelectorAll('.pl-step')]
+    const r = (el) => el.getBoundingClientRect()
+    return { pairs: Math.round(r(steps[0]).top) === Math.round(r(steps[1]).top),
+             height: Math.round(r(row).height) }
+  })
+  ok(tablet.pairs, 'on a tablet two bookings sit side by side (' + tablet.height + 'px tall)')
+  await page.setViewportSize({ width: 1400, height: 1000 })
+  await page.waitForTimeout(400)
+  const wide = await page.evaluate(() => ({
+    display: getComputedStyle(document.querySelector('.planning-table')).display,
+    hidden: (() => { const w = document.querySelector('.planning-table').closest('.table-wrap')
+                     return w.scrollWidth - w.clientWidth })()
+  }))
+  ok(wide.display === 'table' && wide.hidden === 0,
+    'and a desktop keeps the real grid (' + wide.display + ', ' + wide.hidden + 'px hidden)')
+
+  // ---- the course-date editor ---------------------------------------------
+  // Nine columns of form controls wanting 818px in a dialog capped at 720px:
+  // seats, booked and the delete button were behind a sideways scroll at every
+  // window size, desktop included. The dialog is wider now, and below ~900px
+  // the row is a stacked form.
+  await page.locator('.btn-ghost', { hasText: 'Kurstermine' }).first().click()
+  await page.waitForSelector('.course-table')
+  await page.waitForTimeout(400)
+  // Add one through the button rather than seeding storage: without a row the
+  // checks below would pass on nothing, which is how the first cut of this
+  // reported a reachable delete button that did not exist.
+  if (await page.locator('.course-table tbody tr:not(:has(.empty-row))').count() === 0) {
+    await page.locator('.btn-ghost', { hasText: 'Kurstermin' }).last().click()
+    await page.waitForTimeout(500)
+  }
+  ok(await page.locator('.course-table tbody .cr-del button').count() >= 1,
+    'the course-date dialog has a row to measure')
+  const deskCourses = await page.evaluate(() => {
+    const w = document.querySelector('.course-table').closest('.table-wrap')
+    const del = document.querySelector('.course-table tbody .cr-del button')
+    return { hidden: w.scrollWidth - w.clientWidth,
+             delRight: del ? Math.round(del.getBoundingClientRect().right) : null,
+             wrapRight: Math.round(w.getBoundingClientRect().right) }
+  })
+  ok(deskCourses.hidden === 0, 'on a desktop the course-date table fits its dialog (' + deskCourses.hidden + 'px hidden)')
+  ok(deskCourses.delRight !== null && deskCourses.delRight <= deskCourses.wrapRight + 1,
+    '  so the delete button is reachable without swiping (' + deskCourses.delRight + ' <= ' + deskCourses.wrapRight + ')')
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.waitForTimeout(500)
+  const phoneCourses = await page.evaluate(() => {
+    const t = document.querySelector('.course-table')
+    const w = t.closest('.table-wrap')
+    const row = [...t.querySelectorAll('tbody tr')].find((x) => x.querySelector('.cr-del button'))
+    if (!row) return { hidden: w.scrollWidth - w.clientWidth, empty: true }
+    const del = row.querySelector('.cr-del button').getBoundingClientRect()
+    const fromEl = row.querySelector('.cr-from input')
+    return { hidden: w.scrollWidth - w.clientWidth, empty: false,
+             delReachable: del.width > 0 && del.right <= window.innerWidth,
+             dateWidth: fromEl ? Math.round(fromEl.getBoundingClientRect().width) : 0 }
+  })
+  ok(phoneCourses.hidden <= 1, 'and on a phone nothing hides either (' + phoneCourses.hidden + ')')
+  ok(!phoneCourses.empty, '  with the row still there at phone width')
+  if (!phoneCourses.empty) {
+    ok(phoneCourses.delReachable, '  the delete button is on the screen')
+    // 92px is what half a phone gives it, and the browser then clips the date
+    // itself to "09/01/" – the value, not just the padding.
+    ok(phoneCourses.dateWidth >= 160, '  and a date field is wide enough to show its date (' + phoneCourses.dateWidth + 'px)')
+  }
+  await page.setViewportSize({ width: 1400, height: 1000 })
+  await page.waitForTimeout(300)
+
   ok(errs.length === 0, 'no page errors at all' + (errs.length ? ': ' + errs[0] : ''))
 
   await page.close()
