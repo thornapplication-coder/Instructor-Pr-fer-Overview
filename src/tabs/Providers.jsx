@@ -80,7 +80,7 @@ export default function Providers() {
         </div>
       ) : (
         <div className="table-wrap">
-          <table className="data-table provider-table">
+          <table className="data-table card-table card-at-1000 provider-table">
             <thead>
               {(() => { const sp = { sortKey: main.sortKey, dir: main.dir, onSort: main.toggle }; return (
               <tr>
@@ -111,7 +111,7 @@ export default function Providers() {
                         card's full width there — squeezed into a narrow column
                         "Type Rating + Base Training" broke over four lines and
                         made one provider taller than a phone screen. */}
-                    <td className="pv-name strong">{p.name || '–'}</td>
+                    <td className="pv-name card-name strong">{p.name || '–'}</td>
                     <td className="pv-courses" data-label={t('p_courses')}>
                       <div className="type-tags">
                         {[...(p.courses || [])]
@@ -120,6 +120,11 @@ export default function Providers() {
                           .map((label) => (
                             <span key={label} className="type-tag">{label}</span>
                           ))}
+                        {/* On the card the heading is drawn whether or not the
+                            list has anything in it, so an empty one has to say
+                            "nothing set" rather than leave a caption over blank
+                            space – on a fresh install that is every provider. */}
+                        {!(p.courses || []).length && <span className="muted small">–</span>}
                       </div>
                     </td>
                     <td className="pv-sim" data-label={t('p_simVersion')}>
@@ -138,13 +143,14 @@ export default function Providers() {
                         {[...(p.locations || [])].sort().map((l) => (
                           <span key={l} className="icao-tag">{l}</span>
                         ))}
+                        {!(p.locations || []).length && <span className="muted small">–</span>}
                       </div>
                     </td>
-                    <td className="pv-contact" data-label={t('p_contact')}>
+                    <td className="pv-contact wrap-anywhere" data-label={t('p_contact')}>
                       {p.contactPerson || '–'}
                       {p.email && <div className="muted small">{p.email}</div>}
                     </td>
-                    <td className="pv-status"><span className="status-tag" style={{ '--tag': tint(st.color) }}>{st.label}</span></td>
+                    <td className="pv-status card-chip-end"><span className="status-tag" style={{ '--tag': tint(st.color) }}>{st.label}</span></td>
                   </tr>
                 )
               })}
@@ -158,7 +164,7 @@ export default function Providers() {
           <h3 className="card-title">{t('prov_capacity')}</h3>
           <p className="muted small">{t('prov_capacityHint')}</p>
           <div className="table-wrap">
-            <table className="data-table provider-cap-table">
+            <table className="data-table card-table card-at-1000 provider-cap-table">
               <thead>
                 {(() => { const sp = { sortKey: utilS.sortKey, dir: utilS.dir, onSort: utilS.toggle }; return (
                 <tr>
@@ -179,7 +185,7 @@ export default function Providers() {
                     aria-label={u.provider.name || ''}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing({ ...u.provider }) } }}
                   >
-                    <td className="pc-name strong">{u.provider.name || '–'}</td>
+                    <td className="pc-name card-name strong">{u.provider.name || '–'}</td>
                     <td className="pc-courses" data-label={t('p_courses')}>
                       <div className="type-tags">
                         {/* Demand against the capacity of the SAME course type.

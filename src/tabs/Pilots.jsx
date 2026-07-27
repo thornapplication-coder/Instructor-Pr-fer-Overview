@@ -101,7 +101,7 @@ export default function Pilots() {
         </div>
       ) : (
         <div className="table-wrap">
-          <table className="data-table pilots-table">
+          <table className="data-table card-table card-at-1000 pilots-table">
             <thead>
               <tr>
                 <Th label={t('f_base')} k="base" {...sp} />
@@ -132,7 +132,7 @@ export default function Pilots() {
                         value. */}
                     <td className="c-base" data-label={t('f_base')}>{p.base || '–'}</td>
                     <td className="c-tlc mono" data-label={t('f_tlc')}>{p.tlc || '–'}</td>
-                    <td className="c-name strong nowrap">
+                    <td className="c-name card-name strong nowrap">
                       {p.name || '–'}
                       <div className="muted small"><RoleTag role={pilotRole(p)} sm /></div>
                     </td>

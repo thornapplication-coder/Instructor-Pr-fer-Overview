@@ -193,7 +193,7 @@ export default function Trainers() {
         {/* `compact` is the narrow-cell variant and is shared with the course
             dates; `trainer-table` is what the phone card layout hangs off, and
             it belongs to this table alone. */}
-        <table className="data-table compact trainer-table">
+        <table className="data-table compact card-table card-at-1280 trainer-table">
           <thead>
             <tr>
               {(() => { const p = { sortKey, dir, onSort: toggle }; return (<>
@@ -235,10 +235,10 @@ export default function Trainers() {
                     Behörde, Anmerkung, Notiz) step aside there and are read in
                     the dialog instead — fourteen fields per card would turn
                     fifty people into a very long scroll. */}
-                <td className="t-qual"><span className="qual-tag" style={{ background: qualColor(x.qual) }}>{qualLabel(quals, x.qual)}</span></td>
+                <td className="t-qual card-chip-end"><span className="qual-tag" style={{ background: qualColor(x.qual) }}>{qualLabel(quals, x.qual)}</span></td>
                 <td className="t-base" data-label={t('f_base')}>{x.base}</td>
                 <td className="t-tlc mono" data-label={t('f_tlc')}>{x.tlc}</td>
-                <td className="t-name strong">{x.name}</td>
+                <td className="t-name card-name strong">{x.name}</td>
                 <td className="t-role" data-label={t('f_role')}><RoleTag role={roleOf(x)} /></td>
                 <td className="t-pt num" data-label={t('f_partTime')}>{formatPartTime(x.partTime, lang)}</td>
                 <td className="t-fte num" data-label={t('f_fte')}>{formatFte(x.fte)}</td>

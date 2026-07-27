@@ -11,6 +11,52 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.38.0] – 2026-07-27
+
+### Behoben
+- **Langer Status überlappte den Anbieternamen.** Provider-Status sind frei
+  benennbar. Ein Chip, der breiter ist als seine Kartenhälfte, konnte nicht
+  schrumpfen (`white-space: nowrap`) und lief nach **links** über den Namen —
+  beides unlesbar. Der Chip umbricht jetzt in seiner eigenen Hälfte. Gemessen:
+  ohne die Behebung überlappt er um 114 px, mit ihr hält er 8 px Abstand.
+- **Provider-Karten auf dem iPad.** Zwei 1fr-Hälften galten von 320 bis
+  1000 px: ein ICAO-Kürzel stand allein in ~460 px und der Status klebte ebenso
+  weit vom Namen. Feste Feldbreiten, Rest bleibt frei — dieselbe Stufe, die
+  Other Pilots und Trainer schon hatten und die hier gefehlt hat.
+- **Leere Listen zeigen „–".** Die Kartenüberschrift wird immer gezeichnet;
+  ohne Rückfall stand „KURSE" über leerem Raum. Auf einer frischen Installation
+  betraf das jede Karte.
+- **Strg+P druckt wieder die Tabelle.** A4 hochkant ist ~794 px, also innerhalb
+  des Karten-Umschaltpunkts — gedruckt wurden Karten ohne Spaltenüberschriften.
+  Die Media-Queries gelten jetzt nur für `screen`. Betraf auch Trainer und
+  Other Pilots. Der PDF-Export war nie betroffen (baut eigene Tabellen).
+- **Lange E-Mail-Adresse.** Eine Adresse ohne Umbruchstelle gab `.table-wrap`
+  den seitlichen Scroll zurück, den die Karte abschaffen sollte (gemessen
+  47 px). Sie umbricht jetzt.
+- **Antippen färbt die ganze Karte.** Der Hover lag auf den Zellen; auf der
+  Karte sind das nur die engen Textkästen, umgeben von 12 px Kartenrand und
+  8 px Rinnen. Jetzt auf der Zeile, in hell und dunkel.
+
+### Geändert
+- **Das Karten-Gerüst steht an einer Stelle** statt dreimal kopiert. Die Kopien
+  waren bereits auseinandergelaufen (Kartenabstand 11/12 px, Zeilenabstand
+  8/9 px, Überschriftabstand nur bei einer). Zwei Blöcke statt einem, weil die
+  drei Listen nicht bei derselben Breite aufhören zu passen (966 / 724 /
+  1234 px gemessen) und CSS einen Regelkörper nicht über zwei Media-Queries
+  teilen kann.
+
+### Tests
+- Die Zusicherung gegen die abgeschnittene Überschrift war eine Tautologie: sie
+  las den berechneten `::before`-Inhalt, den das Abschneiden nie verändert.
+  Ersetzt durch eine Messung — die Statusbreite darf die Spaltenbreite darunter
+  nicht verändern (ohne die Behebung fällt sie von 164 px auf 17 px).
+- Der Testdatensatz nutzt jetzt einen **langen, selbst benannten** Status statt
+  des kurzen englischen Standardwerts, der den Fehler gar nicht auslösen konnte.
+- Neu geprüft: Kartenanordnung beider Tabellen (statt nur „Feld sichtbar"),
+  Überlappung nach links, Chips statt nur Zellkästen an den Rändern, der
+  „–"-Rückfall und das Druckbild. Jede neue Zusicherung wurde gegengeprüft,
+  indem die Behebung im Browser rückgängig gemacht wurde.
+
 ## [1.37.0] – 2026-07-27
 
 ### Geändert

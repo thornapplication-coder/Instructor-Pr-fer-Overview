@@ -4,12 +4,37 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.37.0'
+export const APP_VERSION = '1.38.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.38.0',
+    date: '2026-07-27',
+    type: 'minor',
+    changes: {
+      de: [
+        'Ein langer, selbst benannter Provider-Status lief auf der Karte nach links über den Anbieternamen und machte beides unlesbar. Der Chip umbricht jetzt in seiner eigenen Hälfte.',
+        'Provider-Karten auf dem iPad: die Felder haben feste Breiten statt Hälften: ein ICAO-Kürzel stand vorher allein in 460 px, der Status klebte weit weg vom Namen.',
+        'Leere Kurs- und Standort-Listen zeigen jetzt ein „–" statt einer Überschrift über leerem Raum. Auf einer frischen Installation betraf das jede Karte.',
+        'Strg+P druckt wieder die echte Tabelle mit Kopfzeile. A4 ist schmaler als der Karten-Umschaltpunkt, dadurch kamen Karten ohne Spaltenüberschriften aufs Papier — das galt auch für Trainer und Other Pilots.',
+        'Eine sehr lange E-Mail-Adresse hat den seitlichen Scroll zurückgebracht, den die Karte abschaffen sollte. Sie umbricht jetzt.',
+        'Antippen färbt die ganze Karte statt einzelner Textkästen — in beiden Farbschemata.',
+        'Das Karten-Layout stand dreimal kopiert im Stylesheet und war bereits auseinandergelaufen (unterschiedliche Abstände). Es steht jetzt an einer Stelle, dadurch sehen die drei Listen gleich aus.'
+      ],
+      en: [
+        'A long, user-named provider status painted leftward over the provider name on the card, making both unreadable. The chip now wraps inside its own half.',
+        'Provider cards on an iPad: the fields have fixed widths instead of halves — an ICAO code used to sit alone in 460px and the status was thrown far from the name.',
+        'Empty course and location lists now say "–" instead of leaving a heading over blank space. On a fresh install that was every card.',
+        'Ctrl+P prints the real table with its header row again. A4 is narrower than the card breakpoint, so cards with no column headings reached the paper — this affected Trainers and Other Pilots too.',
+        'A very long e-mail address handed back the sideways scroll the card exists to remove. It now wraps.',
+        'Tapping highlights the whole card rather than loose text boxes, in both colour schemes.',
+        'The card layout was copy-pasted three times in the stylesheet and had already drifted apart (different spacing). It now lives in one place, so the three lists look alike.'
+      ]
+    }
+  },
   {
     version: '1.37.0',
     date: '2026-07-27',

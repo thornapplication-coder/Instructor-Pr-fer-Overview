@@ -872,23 +872,101 @@ textarea.input { resize: vertical; }
   }
 }
 
+/* ---------- Table → card ---------- */
+/* Three lists stop fitting a narrow screen, and the answer for all three is
+   the same: below a measured width each row becomes a card. What follows is
+   that shared scaffolding — the table stops being a table, the header row goes
+   away, and every cell draws its own heading from `data-label` instead.
+   The per-table grids come after it; only they are genuinely different.
+
+   Two blocks and not one because the three do not stop fitting at the same
+   width, and plain CSS cannot share one rule body across two media queries.
+   Measured: the roster wants 966px, the provider list 724px, the trainer list
+   1234px. So `card-at-1000` covers the first two and `card-at-1280` the
+   trainer list, and the values below are identical in both on purpose — they
+   had drifted apart while this was three copy-pasted blocks.
+
+   `screen and` is load-bearing: A4 portrait is ~794 CSS px, so without it a
+   Ctrl+P of any of these tabs prints a stack of cards with no header row. */
+@media screen and (max-width: 1000px) {
+  .card-at-1000, .card-at-1000 tbody { display: block; }
+  .card-at-1000 thead { display: none; }
+  .card-at-1000 tbody tr {
+    display: grid;
+    gap: 9px 8px;
+    padding: 11px 12px;
+    border-top: 1px solid var(--hair);
+  }
+  .card-at-1000 tbody tr:first-child { border-top: 0; }
+  .card-at-1000 tbody td { display: block; padding: 0; border-top: 0; }
+  .card-at-1000 tbody td[data-label]::before {
+    content: attr(data-label);
+    display: block; margin-bottom: 2px;
+    font-size: 9.5px; font-weight: 800; letter-spacing: .4px; line-height: 14px;
+    text-transform: uppercase; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+}
+@media screen and (max-width: 1279px) {
+  .card-at-1280, .card-at-1280 tbody { display: block; }
+  .card-at-1280 thead { display: none; }
+  .card-at-1280 tbody tr {
+    display: grid;
+    gap: 9px 8px;
+    padding: 11px 12px;
+    border-top: 1px solid var(--hair);
+  }
+  .card-at-1280 tbody tr:first-child { border-top: 0; }
+  .card-at-1280 tbody td { display: block; padding: 0; border-top: 0; }
+  .card-at-1280 tbody td[data-label]::before {
+    content: attr(data-label);
+    display: block; margin-bottom: 2px;
+    font-size: 9.5px; font-weight: 800; letter-spacing: .4px; line-height: 14px;
+    text-transform: uppercase; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+}
+/* Shared card details that do not depend on which width switched it on. */
+@media screen and (max-width: 1279px) {
+  /* The row IS the card now, so the tap highlight belongs on it. Painted on
+     the cells it covered only the text boxes and left the 12px card padding
+     and the 8px gutters white – a tap lit up loose rectangles. */
+  .card-table tr.clickable:hover td { background: transparent; }
+  .card-table tr.clickable:hover { background: var(--sky-lightest); }
+  /* The card's headline, in all three. */
+  .card-table tbody td.card-name { font-size: 14.5px; }
+  /* A right-aligned number under a left-aligned heading reads as a stray. */
+  .card-table tbody td.num { text-align: left; }
+  /* Free text on a card has the width it has; nothing behind it to widen. */
+  .card-table .cell-clamp { max-width: none; }
+  /* An address has no break opportunity of its own, and one long enough to
+     outgrow the card would hand `.table-wrap` back the sideways scroll the
+     card exists to remove. */
+  .card-table .wrap-anywhere { overflow-wrap: anywhere; }
+  /* A chip pinned to the end of a fixed track cannot shrink (`.status-tag` is
+     nowrap), so it overflows towards the START – i.e. across the name beside
+     it. Statuses are user-named, so their width is unbounded: let the chip
+     wrap inside its own half instead. */
+  .card-table td.card-chip-end { justify-self: end; min-width: 0; }
+  .card-table td.card-chip-end > span {
+    max-width: 100%; white-space: normal; text-align: center;
+  }
+}
+
+/* ---------- Other Pilots: the card grid ---------- */
 /* Eight columns do not fit a phone. They never did – the table simply ended
    after the name and the rest lived behind a sideways scroll nobody finds, so
    on an iPhone the roster read as "base, TLC, name" and nothing else.
    The eight columns need 966px of room; measured, not guessed. So the switch
    sits at 1000px and not at a phone width: an iPad Air or Pro in portrait is
    820-834px wide, which is well above any phone breakpoint and still ~190px
-   short of the table – it would have gone on showing the cut-off table that
-   started all this. An iPad in landscape (1024) clears 966 and keeps the real
-   table.
+   short of the table. An iPad in landscape (1024) clears 966 and keeps the
+   real table.
    The four per-rating fields stay COLUMNS inside the card: stacking them
    would put the second rating's date under the first rating's type and undo
    the line-by-line alignment the whole table is built around. */
-@media (max-width: 1000px) {
-  .pilots-table, .pilots-table tbody { display: block; }
-  .pilots-table thead { display: none; }
+@media screen and (max-width: 1000px) {
   .pilots-table tbody tr {
-    display: grid;
     /* Column 1 carries both the base and the type, column 2 both the TLC and
        the date – so they are sized for "WP BCN"/"777/787" and for a full
        dd.mm.yyyy, not for whichever of the two happens to be shorter. */
@@ -897,16 +975,11 @@ textarea.input { resize: vertical; }
       'nm nm nm nm'
       'bs tl ex ex'
       'ty un va xp';
-    gap: 8px 8px;
-    padding: 11px 12px;
-    border-top: 1px solid var(--hair);
   }
-  .pilots-table tbody tr:first-child { border-top: 0; }
-  .pilots-table tbody td { display: block; padding: 0; border-top: 0; }
   /* The name may wrap here – it is the card's headline and has the full width.
      Kept on one line it would simply run past the edge, because the grid's
      column widths are fixed. */
-  .pilots-table td.c-name { grid-area: nm; font-size: 14.5px; white-space: normal; }
+  .pilots-table td.c-name { grid-area: nm; white-space: normal; }
   .pilots-table td.c-base { grid-area: bs; }
   .pilots-table td.c-tlc { grid-area: tl; }
   .pilots-table td.c-exp { grid-area: ex; }
@@ -914,15 +987,6 @@ textarea.input { resize: vertical; }
   .pilots-table td.c-until { grid-area: un; }
   .pilots-table td.c-valid { grid-area: va; }
   .pilots-table td.c-expired { grid-area: xp; }
-  /* The heading the row lost with the header row. One per cell, and the same
-     height in all four rating columns, so their lines still line up. */
-  .pilots-table tbody td[data-label]::before {
-    content: attr(data-label);
-    display: block;
-    font-size: 9.5px; font-weight: 800; letter-spacing: .4px; line-height: 14px;
-    text-transform: uppercase; color: var(--muted);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
   /* Boeing experience belongs to the person, not to a rating: it sits on the
      card's second line, next to base and TLC, and reads left to right. */
   .pilots-table td.c-exp, .pilots-table td.c-exp::before { text-align: left; }
@@ -930,13 +994,13 @@ textarea.input { resize: vertical; }
      card it is not one of them any more: they would just pad the line out. */
   .pilots-table td.c-exp .rating-line + .rating-line { display: none; }
   .pilots-table .c-name .muted { display: inline-block; margin-left: 8px; }
-  .pilots-table td.empty-row { grid-area: nm; }
+  .pilots-table td.empty-row { grid-area: nm; display: block; }
 }
 /* On a tablet the card has room to spare, and fractional columns spend it all:
    the two × columns grew past 200px each and the mark drifted so far from the
    heading above it that they stopped reading as one thing. Give the four
    fields what they need and park the slack in a fifth, empty track. */
-@media (min-width: 521px) and (max-width: 1000px) {
+@media screen and (min-width: 521px) and (max-width: 1000px) {
   .pilots-table tbody tr {
     grid-template-columns: 70px 96px 104px 132px minmax(0, 1fr);
     grid-template-areas:
@@ -946,51 +1010,35 @@ textarea.input { resize: vertical; }
   }
 }
 
-/* ---------- The trainer list on a phone / tablet ---------- */
+/* ---------- The trainer list: the card grid ---------- */
 /* Fourteen columns. On an iPhone four of them fitted and 863px sat behind a
    sideways scroll, which is the same complaint that turned Other Pilots into
    cards — only here it is the list the day is actually run from.
-   Same reasoning as .pilots-table above, but NOT the same number: measured,
-   these fourteen columns want 1234px where the eight of the roster wanted 966.
-   1280px is where they first fit — and it is where `.content` stops growing,
-   so above it nothing changes anyway. An iPad in landscape (1024px) is still
-   245px short and therefore gets cards too.
+   Measured, these fourteen columns want 1234px where the roster's eight
+   wanted 966. 1280px is where they first fit — and it is where `.content`
+   stops growing, so above it nothing changes anyway. An iPad in landscape
+   (1024px) is still 245px short and therefore gets cards too.
    What differs is the answer to "all fourteen on a card?": no. Fifty people
    with a free-text remark each would be an endless scroll of unequal blocks.
    Nine fields carry the card, the other five are read in the dialog that
    opens on tap — and are still in the table, the exports and the search. */
-@media (max-width: 1279px) {
-  .trainer-table, .trainer-table tbody { display: block; }
-  .trainer-table thead { display: none; }
+@media screen and (max-width: 1279px) {
   .trainer-table tbody tr {
-    display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
     grid-template-areas:
       'nm nm qu'
       'bs tl ro'
       'ft ac or'
       'st st st';
-    gap: 9px 8px;
-    padding: 11px 12px;
-    border-top: 1px solid var(--hair);
-  }
-  .trainer-table tbody tr:first-child { border-top: 0; }
-  .trainer-table tbody td { display: block; padding: 0; border-top: 0; }
-  .trainer-table tbody td[data-label]::before {
-    content: attr(data-label);
-    display: block;
-    font-size: 9.5px; font-weight: 800; letter-spacing: .4px; line-height: 14px;
-    text-transform: uppercase; color: var(--muted);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
   }
   /* The head: who, and what they are qualified as. The chip already carries a
      colour, so it needs no heading of its own. */
-  .trainer-table td.t-name { grid-area: nm; font-size: 14.5px; align-self: center; }
-  .trainer-table td.t-qual { grid-area: qu; justify-self: end; align-self: center; }
+  .trainer-table td.t-name { grid-area: nm; align-self: center; }
+  .trainer-table td.t-qual { grid-area: qu; align-self: center; }
   .trainer-table td.t-base { grid-area: bs; }
   .trainer-table td.t-tlc { grid-area: tl; }
   .trainer-table td.t-role { grid-area: ro; }
-  .trainer-table td.t-fte { grid-area: ft; text-align: left; }
+  .trainer-table td.t-fte { grid-area: ft; }
   .trainer-table td.t-ac { grid-area: ac; }
   .trainer-table td.t-ore { grid-area: or; }
   .trainer-table td.t-stage { grid-area: st; }
@@ -1002,15 +1050,12 @@ textarea.input { resize: vertical; }
   .trainer-table td.t-remark,
   .trainer-table td.t-note { display: none; }
   .trainer-table td.empty-row { grid-area: nm; display: block; }
-  /* The clamp exists to stop a long remark widening a column; on the card the
-     column is gone and the value has the width it has. */
-  .trainer-table .cell-clamp { max-width: none; }
 }
 /* Same lesson as the roster card: from a tablet up, thirds of 1000px are
    150px of air around a three-letter base code. Give the fields what they
    need, keep the qualification chip beside the name where it is read, and let
    the slack sit in a fourth, empty track. */
-@media (min-width: 521px) and (max-width: 1279px) {
+@media screen and (min-width: 521px) and (max-width: 1279px) {
   .trainer-table tbody tr {
     grid-template-columns: 150px 150px 170px minmax(0, 1fr);
     grid-template-areas:
@@ -1022,7 +1067,7 @@ textarea.input { resize: vertical; }
   .trainer-table td.t-qual { justify-self: start; }
 }
 
-/* ---------- The provider tables on a phone / tablet ---------- */
+/* ---------- The provider tables: the card grids ---------- */
 /* These two do fit from about 770px, so the complaint here is not the one the
    other tables had. It is the course chips: squeezed into a sixth of a phone
    screen, "Type Rating + Base Training" breaks over four lines and a single
@@ -1032,29 +1077,7 @@ textarea.input { resize: vertical; }
    chip lists the WHOLE width, where the same chip sits on one line.
    1000px, like the roster: an iPad in portrait (768-834px) is inside the
    width where the table technically fits and is still cramped. */
-@media (max-width: 1000px) {
-  .provider-table, .provider-table tbody,
-  .provider-cap-table, .provider-cap-table tbody { display: block; }
-  .provider-table thead, .provider-cap-table thead { display: none; }
-  .provider-table tbody tr, .provider-cap-table tbody tr {
-    display: grid;
-    gap: 9px 8px;
-    padding: 12px;
-    border-top: 1px solid var(--hair);
-  }
-  .provider-table tbody tr:first-child,
-  .provider-cap-table tbody tr:first-child { border-top: 0; }
-  .provider-table tbody td, .provider-cap-table tbody td { display: block; padding: 0; border-top: 0; }
-  .provider-table tbody td[data-label]::before,
-  .provider-cap-table tbody td[data-label]::before {
-    content: attr(data-label);
-    display: block; margin-bottom: 3px;
-    font-size: 9.5px; font-weight: 800; letter-spacing: .4px; line-height: 14px;
-    text-transform: uppercase; color: var(--muted);
-    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-  }
-  /* Name and status make the head line; the two short chip lists share the
-     next one; courses and the contact get the full width. */
+@media screen and (max-width: 1000px) {
   /* Two columns, not three with an auto track for the status: an auto track is
      sized by the longest status chip, so "Keine Vereinbarung" stole the width
      from the field headings one row below it and truncated them to
@@ -1068,8 +1091,8 @@ textarea.input { resize: vertical; }
       'ku ku'
       'co co';
   }
-  .provider-table td.pv-name { grid-area: nm; font-size: 14.5px; align-self: center; }
-  .provider-table td.pv-status { grid-area: st; justify-self: end; align-self: center; }
+  .provider-table td.pv-name { grid-area: nm; align-self: center; }
+  .provider-table td.pv-status { grid-area: st; align-self: center; }
   .provider-table td.pv-loc { grid-area: lo; }
   .provider-table td.pv-sim { grid-area: sv; }
   .provider-table td.pv-courses { grid-area: ku; }
@@ -1082,13 +1105,31 @@ textarea.input { resize: vertical; }
       'as sl'
       'ku ku';
   }
-  .provider-cap-table td.pc-name { grid-area: nm; font-size: 14.5px; }
+  .provider-cap-table td.pc-name { grid-area: nm; }
   .provider-cap-table td.pc-assigned { grid-area: as; }
   .provider-cap-table td.pc-slots { grid-area: sl; }
   .provider-cap-table td.pc-courses { grid-area: ku; }
-  /* A right-aligned number under a left-aligned heading reads as a stray. */
-  .provider-table tbody td.num, .provider-cap-table tbody td.num { text-align: left; }
-  .provider-table td.empty-row, .provider-cap-table td.empty-row { grid-area: nm; }
+}
+/* The same tablet lesson the other two cards already carry: halves of 1000px
+   put a three-letter ICAO chip alone in ~460px and throw the status chip that
+   far from the name it belongs to. Fixed tracks, slack in a filler column. */
+@media screen and (min-width: 521px) and (max-width: 1000px) {
+  .provider-table tbody tr {
+    grid-template-columns: minmax(0, 220px) 150px 160px minmax(0, 1fr);
+    grid-template-areas:
+      'nm st st .'
+      'lo sv sv .'
+      'ku ku ku ku'
+      'co co co co';
+  }
+  .provider-table td.pv-status { justify-self: start; }
+  .provider-cap-table tbody tr {
+    grid-template-columns: 150px 150px minmax(0, 1fr);
+    grid-template-areas:
+      'nm nm .'
+      'as sl .'
+      'ku ku ku';
+  }
 }
 
 /* ---------- Editable pick lists (settings) ---------- */
@@ -1170,6 +1211,12 @@ textarea.input { resize: vertical; }
 :root[data-theme='dark'] .data-table tr.clickable:hover td,
 :root[data-theme='dark'] .cell-assign:hover { background: #222a31; }
 :root[data-theme='dark'] .data-table th.sortable:hover { background: #2b333b; color: #E86FB0; }
+/* Card mode: the row is the card, so the tap highlight goes on the row. Stated
+   again for dark because the rule above outranks the light-mode card rule. */
+@media screen and (max-width: 1279px) {
+  :root[data-theme='dark'] .card-table tr.clickable:hover td { background: transparent; }
+  :root[data-theme='dark'] .card-table tr.clickable:hover { background: #222a31; }
+}
 :root[data-theme='dark'] .hbar-track,
 :root[data-theme='dark'] .pipeline-bar,
 :root[data-theme='dark'] .board-col { background: var(--panel2); }
