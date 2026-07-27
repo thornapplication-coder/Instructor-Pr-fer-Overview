@@ -28,6 +28,7 @@ import {
 } from './stats.js'
 import { stageName, targetsByMonth, monthLabel } from './alerts.js'
 import { courseEntries, courseMonths, monthTitle } from './courseCalendar.js'
+import { findRun, resolveAssignment } from './courses.js'
 
 const BURG = hexToRgb(BRAND_HEX.burg)
 const BURG_DARK = hexToRgb(BRAND_HEX.burgDark)
@@ -227,19 +228,29 @@ async function exportPlanningPdf(data, t, lang, opts) {
   const ctx = makeCtx(doc, autoTable, t('planning_title'), lang)
   const steps = data.assignmentSteps
   const rows = [...data.trainers].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+  // Resolved through the course date, like the screen: otherwise the PDF of a
+  // fully booked plan prints an empty grid.
   const cellLabel = (a) => {
     if (!a) return ''
     if (a.status === 'na') return 'n/a'
-    const p = data.providers.find((x) => x.id === a.providerId)
+    const r = resolveAssignment(a, findRun(data.courseRuns, a.courseId))
+    const p = data.providers.find((x) => x.id === r.providerId)
     if (p && p.name) return p.name
-    return a.location || ''
+    return r.location || ''
+  }
+  const spanLabel = (a) => {
+    const r = resolveAssignment(a, findRun(data.courseRuns, a.courseId))
+    if (!r.from) return ''
+    return r.to ? formatDate(r.from, lang) + ' – ' + formatDate(r.to, lang) : formatDate(r.from, lang)
   }
   // Untouched cells (no provider/location, default 'open') export as empty –
   // matching the on-screen "+ zuweisen" state – instead of " [offen]".
   const stepCell = (x, s) => {
     const a = x.assignments?.[s.id]
     if (!a) return ''
-    const lbl = cellLabel(a)
+    // Same fallback as the screen: a booked course with no provider named yet
+    // is a booking, not an empty cell.
+    const lbl = cellLabel(a) || spanLabel(a)
     if (!lbl) return ''
     if (a.status === 'na') return lbl
     const st = ASSIGNMENT_STATUS[a.status]
@@ -256,7 +267,7 @@ async function exportPlanningPdf(data, t, lang, opts) {
   })
   // Course calendar: one table per month, so the printout shows at a glance
   // when each trainer starts which course.
-  const entries = courseEntries(data.trainers, steps, data.providers)
+  const entries = courseEntries(data.trainers, steps, data.providers, data.courseRuns)
   const months = courseMonths(entries).filter((m) => m.items.length)
   if (months.length) {
     for (const m of months) {

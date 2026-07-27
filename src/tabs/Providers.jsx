@@ -7,6 +7,7 @@ import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
 import { emptyProvider, courseLabel, simVersionLabel } from '../data/providers.js'
 import { providerUtilization } from '../lib/stats.js'
+import { findRun, resolveAssignment } from '../lib/courses.js'
 
 function UtilBar({ value }) {
   if (value == null) return <span className="muted small">–</span>
@@ -25,10 +26,10 @@ function UtilBar({ value }) {
 export default function Providers() {
   const tint = useThemed()
   const { data, t, upsertProvider, deleteProvider, newId } = useStore()
-  const { providers, providerCourses, providerStatus, simVersions, trainers, assignmentSteps } = data
+  const { providers, providerCourses, providerStatus, simVersions, trainers, assignmentSteps, courseRuns } = data
   const util = useMemo(
-    () => providerUtilization(trainers, providers, assignmentSteps),
-    [trainers, providers, assignmentSteps]
+    () => providerUtilization(trainers, providers, assignmentSteps, courseRuns),
+    [trainers, providers, assignmentSteps, courseRuns]
   )
   const [q, setQ] = useState('')
   const [editing, setEditing] = useState(null)
@@ -222,8 +223,15 @@ export default function Providers() {
           onClose={() => setEditing(null)}
           onSave={(p) => { upsertProvider(p); setEditing(null) }}
           onDelete={(id) => {
+            // Resolved, not raw: a booking made through a course date carries no
+            // provider of its own, so counting the raw field would report "0
+            // assignments" and then quietly blank a course everyone is on.
             const assignedCount = trainers.reduce(
-              (n, tr) => n + Object.values(tr.assignments || {}).filter((x) => x && x.providerId === id).length,
+              (n, tr) =>
+                n +
+                Object.values(tr.assignments || {}).filter(
+                  (x) => x && resolveAssignment(x, findRun(courseRuns, x.courseId)).providerId === id
+                ).length,
               0
             )
             const msg =

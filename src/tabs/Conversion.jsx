@@ -9,20 +9,27 @@ import { useThemed } from '../lib/useThemed.js'
 import { qualLabel, isConversionQual, conversionTrainers, CONVERSION_QUALS } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { conversionFteSummary } from '../lib/stats.js'
+import { findRun, resolveAssignment } from '../lib/courses.js'
 import { trainerAlerts } from '../lib/alerts.js'
 import { formatDate, formatFte1 } from '../lib/format.js'
 
-function assignTarget(providers, a) {
+// Where a step happens. Resolved through the course date, so a card does not
+// go blank for the people who are properly booked onto a course.
+function assignTarget(providers, runs, a) {
   if (!a) return null
-  const p = providers.find((x) => x.id === a.providerId)
+  const r = resolveAssignment(a, findRun(runs, a.courseId))
+  const p = providers.find((x) => x.id === r.providerId)
   if (p && p.name) return p.name
-  return a.location || null
+  if (r.location) return r.location
+  // A course with no provider named yet is still a booking – returning null
+  // here dropped the chip and the card looked unplanned.
+  return r.from || null
 }
 
 export default function Conversion() {
   const tint = useThemed()
   const { data, t, lang, setConversion, setStages } = useStore()
-  const { trainers, stages, providers, quals, assignmentSteps } = data
+  const { trainers, stages, providers, quals, assignmentSteps, courseRuns } = data
   const fte1 = (v) => formatFte1(v, lang)
   const [q, setQ] = useState('')
   const [fBase, setFBase] = useState('')
@@ -171,7 +178,7 @@ export default function Conversion() {
                       </div>
                       {(() => {
                         const chips = assignmentSteps
-                          .map((stp) => ({ stp, label: assignTarget(providers, x.assignments?.[stp.id]) }))
+                          .map((stp) => ({ stp, label: assignTarget(providers, courseRuns, x.assignments?.[stp.id]) }))
                           .filter((c) => c.label)
                         return chips.length ? (
                           <div className="conv-assign">

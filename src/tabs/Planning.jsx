@@ -5,6 +5,8 @@ import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
 import CourseCalendar from '../components/CourseCalendar.jsx'
+import CourseRunManager from '../components/CourseRunManager.jsx'
+import { findRun, resolveAssignment, runsForStep, spanDays } from '../lib/courses.js'
 import { formatDate } from '../lib/format.js'
 import { ASSIGNMENT_STATUS, STAFF_TYPE } from '../data/pipeline.js'
 import { useThemed } from '../lib/useThemed.js'
@@ -31,25 +33,33 @@ function providersForStep(providers, step, courseDefs) {
   return matched.length ? matched : providers
 }
 
-function targetLabel(providers, assignment) {
-  if (!assignment) return null
-  const p = providers.find((x) => x.id === assignment.providerId)
+function targetLabel(providers, resolved) {
+  const p = providers.find((x) => x.id === resolved.providerId)
   if (p && p.name) return p.name
-  if (assignment.location) return assignment.location
+  if (resolved.location) return resolved.location
   return null
 }
 
-// What a cell shows: "n/a" when marked so, else provider/location, else null.
-function cellLabel(providers, a) {
+// What a cell shows: "n/a" when marked so, else provider/location – taken from
+// the chosen course date when there is one, so a cell never looks empty just
+// because the provider is recorded on the course rather than on the person.
+function cellLabel(providers, runs, a) {
   if (!a) return null
   if (a.status === 'na') return 'n/a'
-  return targetLabel(providers, a)
+  return targetLabel(providers, resolveAssignment(a, findRun(runs, a.courseId)))
+}
+
+// "03.03. – 20.03.2026", or just the start while no end is known.
+function spanText(resolved, lang) {
+  if (!resolved.from) return null
+  if (!resolved.to) return formatDate(resolved.from, lang)
+  return formatDate(resolved.from, lang) + ' – ' + formatDate(resolved.to, lang)
 }
 
 export default function Planning() {
   const tint = useThemed()
   const { data, t, lang, setAssignmentSteps } = useStore()
-  const { trainers, providers, assignmentSteps, quals } = data
+  const { trainers, providers, assignmentSteps, quals, courseRuns } = data
   const [q, setQ] = useState('')
   const [fBase, setFBase] = useState('')
   const [fStaff, setFStaff] = useState('')
@@ -57,6 +67,7 @@ export default function Planning() {
   const [fAircraft, setFAircraft] = useState('')
   const [editing, setEditing] = useState(null)
   const [manageSteps, setManageSteps] = useState(false)
+  const [manageCourses, setManageCourses] = useState(false)
   const [view, setView] = useState('table') // 'table' | 'calendar'
 
   const bases = useMemo(() => [...new Set(trainers.map((x) => x.base).filter(Boolean))].sort(), [trainers])
@@ -81,10 +92,10 @@ export default function Planning() {
       staff: (x) => t('staff_' + (x.staffType || 'internal'))
     }
     for (const s of assignmentSteps) {
-      a['step_' + s.id] = (x) => cellLabel(providers, x.assignments?.[s.id]) || ''
+      a['step_' + s.id] = (x) => cellLabel(providers, courseRuns, x.assignments?.[s.id]) || ''
     }
     return a
-  }, [assignmentSteps, providers, t])
+  }, [assignmentSteps, providers, courseRuns, t])
   const { sorted, sortKey, dir, toggle } = useSort(rows, accessors, 'name')
   const sp = { sortKey, dir, onSort: toggle }
 
@@ -131,6 +142,9 @@ export default function Planning() {
             {t('planning_viewCalendar')}
           </button>
         </div>
+        <button className="btn btn-ghost" onClick={() => setManageCourses(true)}>
+          🗓 {t('manageCourses')}
+        </button>
         <button className="btn btn-ghost" onClick={() => setManageSteps(true)}>
           ⚙ {t('manageSteps')}
         </button>
@@ -142,7 +156,7 @@ export default function Planning() {
       </p>
 
       {view === 'calendar' && (
-        <CourseCalendar trainers={sorted} steps={assignmentSteps} providers={providers} />
+        <CourseCalendar trainers={sorted} steps={assignmentSteps} providers={providers} runs={courseRuns} />
       )}
 
       {view === 'table' && (
@@ -181,16 +195,20 @@ export default function Planning() {
                   </td>
                   {assignmentSteps.map((s) => {
                     const a = x.assignments?.[s.id]
-                    const label = cellLabel(providers, a)
+                    const label = cellLabel(providers, courseRuns, a)
                     const st = ASSIGNMENT_STATUS[a?.status] || ASSIGNMENT_STATUS.open
+                    const span = a ? spanText(resolveAssignment(a, findRun(courseRuns, a.courseId)), lang) : null
                     return (
                       <td key={s.id}>
+                        {/* A booking onto a course date that has no provider yet
+                            still IS a booking – judged on the label alone it read
+                            as "+ zuweisen" and looked unassigned. */}
                         <button className="cell-assign" onClick={() => setEditing(x.id)}>
-                          {label ? (
+                          {label || span ? (
                             <>
                               <span className="assign-dot" style={{ background: tint(st.color) }} />
-                              <span className="assign-label">{label}</span>
-                              {a?.date && <span className="assign-date">{formatDate(a.date, lang)}</span>}
+                              {label && <span className="assign-label">{label}</span>}
+                              {span && <span className="assign-date">{span}</span>}
                             </>
                           ) : (
                             <span className="assign-empty">+ {t('assign')}</span>
@@ -220,22 +238,43 @@ export default function Planning() {
               trainer={live}
               providers={providers}
               steps={assignmentSteps}
+              runs={courseRuns}
               onClose={() => setEditing(null)}
             />
           ) : null
         })()}
+      {manageCourses && (
+        <Modal title={t('manageCourses')} onClose={() => setManageCourses(false)} wide
+          footer={<div className="foot-row"><div className="push-right">
+            <button className="btn btn-primary" onClick={() => setManageCourses(false)}>{t('close')}</button></div></div>}>
+          <CourseRunManager steps={assignmentSteps} providers={providers} trainers={trainers} />
+        </Modal>
+      )}
       {manageSteps && (
         <Modal title={t('manageSteps')} onClose={() => setManageSteps(false)}
           footer={<div className="foot-row"><p className="muted small">{t('dragHint')}</p>
             <div className="push-right"><button className="btn btn-primary" onClick={() => setManageSteps(false)}>{t('close')}</button></div></div>}>
-          <CategoryManager items={assignmentSteps} onChange={setAssignmentSteps} />
+          <p className="planning-note">{t('step_targetHint')}</p>
+          <CategoryManager
+            items={assignmentSteps}
+            onChange={setAssignmentSteps}
+            numField={{ key: 'targetDays', label: t('step_targetDays'), suffix: t('course_daysShort') }}
+          />
         </Modal>
       )}
     </div>
   )
 }
 
-function PlanningModal({ trainer, providers, steps, onClose }) {
+// One line in the course-date dropdown: period first, because that is what is
+// being chosen; the provider only tells the periods apart.
+function runOption(run, providers, lang) {
+  const where = targetLabel(providers, { providerId: run.providerId, location: run.location })
+  const span = spanText({ from: run.from, to: run.to }, lang)
+  return [span || '(?)', where].filter(Boolean).join(' · ')
+}
+
+function PlanningModal({ trainer, providers, steps, runs, onClose }) {
   // Its own themed resolver: this is a sibling of Planning(), not a nested
   // function, so the `tint` defined there is simply not in scope here. Reading
   // it threw on the first render of the dialog and blanked the whole app.
@@ -283,21 +322,74 @@ function PlanningModal({ trainer, providers, steps, onClose }) {
           const assigned = a.providerId && providers.find((p) => p.id === a.providerId)
           const opts =
             assigned && !stepOpts.some((p) => p.id === assigned.id) ? [...stepOpts, assigned] : stepOpts
+          const stepRuns = runsForStep(runs, s.id)
+          const run = findRun(runs, a.courseId)
+          const eff = resolveAssignment(a, run)
           return (
             <div className="assign-block" key={s.id} style={{ borderLeft: `4px solid ${tint(s.color)}` }}>
               <div className="assign-block-title">{s.label}</div>
               <div className="assign-grid">
-                <label className="field">
-                  <span className="field-label">{t('provider')}</span>
-                  <select className="input" value={a.providerId || ''} onChange={(e) => setStep(s.id, { providerId: e.target.value })}>
-                    <option value="">{t('noProvider')}</option>
-                    {[...opts].sort((x, y) => (x.name || '').localeCompare(y.name || '')).map((p) => (<option key={p.id} value={p.id}>{p.name || '(?)'}</option>))}
+                <label className="field span2">
+                  <span className="field-label">{t('courseDate')}</span>
+                  <select className="input" value={a.courseId || ''} onChange={(e) => setStep(s.id, { courseId: e.target.value })}>
+                    <option value="">{t('course_own')}</option>
+                    {stepRuns.map((r) => (
+                      <option key={r.id} value={r.id}>{runOption(r, providers, lang)}</option>
+                    ))}
                   </select>
                 </label>
-                <label className="field">
-                  <span className="field-label">{t('location')}</span>
-                  <input className="input" value={a.location || ''} onChange={(e) => setStep(s.id, { location: e.target.value })} />
-                </label>
+
+                {/* With a course chosen, provider, location and period belong to
+                    THAT course – repeating them per person is how the same
+                    course came to have three different end dates. Only the
+                    person's own deviation stays editable. */}
+                {run ? (
+                  <>
+                    <div className="field span2">
+                      <span className="field-label">{t('course_scheduled')}</span>
+                      <p className="assign-run">
+                        {[targetLabel(providers, { providerId: run.providerId, location: run.location }), spanText({ from: run.from, to: run.to }, lang)]
+                          .filter(Boolean)
+                          .join(' · ') || '–'}
+                        {spanDays(run.from, run.to) != null && (
+                          <span className="muted"> · {spanDays(run.from, run.to)} {t('course_daysShort')}</span>
+                        )}
+                      </p>
+                    </div>
+                    <label className="field">
+                      <span className="field-label">{t('course_ownFrom')}</span>
+                      <DateInput value={a.date || ''} onChange={(v) => setStep(s.id, { date: v })} />
+                    </label>
+                    <label className="field">
+                      <span className="field-label">{t('course_ownTo')}</span>
+                      <DateInput value={a.end || ''} onChange={(v) => setStep(s.id, { end: v })} />
+                    </label>
+                    {eff.overridden && <p className="field span2 warn-text small">{t('course_overridden')}</p>}
+                  </>
+                ) : (
+                  <>
+                    <label className="field">
+                      <span className="field-label">{t('provider')}</span>
+                      <select className="input" value={a.providerId || ''} onChange={(e) => setStep(s.id, { providerId: e.target.value })}>
+                        <option value="">{t('noProvider')}</option>
+                        {[...opts].sort((x, y) => (x.name || '').localeCompare(y.name || '')).map((p) => (<option key={p.id} value={p.id}>{p.name || '(?)'}</option>))}
+                      </select>
+                    </label>
+                    <label className="field">
+                      <span className="field-label">{t('location')}</span>
+                      <input className="input" value={a.location || ''} onChange={(e) => setStep(s.id, { location: e.target.value })} />
+                    </label>
+                    <label className="field">
+                      <span className="field-label">{t('course_from')}</span>
+                      <DateInput value={a.date || ''} onChange={(v) => setStep(s.id, { date: v })} />
+                    </label>
+                    <label className="field">
+                      <span className="field-label">{t('course_to')}</span>
+                      <DateInput value={a.end || ''} onChange={(v) => setStep(s.id, { end: v })} />
+                    </label>
+                  </>
+                )}
+
                 <label className="field">
                   <span className="field-label">{t('status')}</span>
                   {/* empty choice = back to default "open" so stored value and UI never diverge */}
@@ -311,10 +403,6 @@ function PlanningModal({ trainer, providers, steps, onClose }) {
                   </select>
                 </label>
                 <label className="field">
-                  <span className="field-label">{t('targetDate')}</span>
-                  <DateInput value={a.date || ''} onChange={(v) => setStep(s.id, { date: v })} />
-                </label>
-                <label className="field span2">
                   <span className="field-label">{t('note')}</span>
                   <input className="input" value={a.note || ''} onChange={(e) => setStep(s.id, { note: e.target.value })} />
                 </label>

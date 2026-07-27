@@ -818,6 +818,28 @@ textarea.input { resize: vertical; }
 .assign-block-title { font-weight: 800; color: var(--burg-dark); font-size: 13.5px; margin-bottom: 10px; }
 .assign-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
 .assign-grid .field.span2 { grid-column: 1 / -1; }
+/* What the chosen course date says. Read-only on purpose: it belongs to the
+   course, and editing it here would change it for everybody else too. */
+.assign-run {
+  margin: 0; padding: 7px 10px; font-size: 13px; font-weight: 700; color: var(--ink);
+  background: var(--panel2); border-radius: var(--radius-sm);
+}
+.assign-run .muted { font-weight: 600; }
+.warn-text { color: var(--amber); font-weight: 700; }
+
+/* ---------- Course dates ---------- */
+.course-table .input { min-width: 0; }
+.course-table td { vertical-align: middle; }
+.course-table .seat-input { width: 68px; text-align: right; }
+.seat-count { font-variant-numeric: tabular-nums; font-weight: 700; }
+/* Overbooking is a warning, never a block – a course really can take a ninth
+   person. Status red is correct here: it IS a status, not a category. */
+.seat-count.over {
+  color: #fff; background: var(--red); border-radius: 999px; padding: 1px 8px;
+}
+.catman-num { display: flex; align-items: center; gap: 5px; flex: none; }
+.catman-num .input { width: 66px; text-align: right; }
+.catman-num span { font-size: 12px; color: var(--muted); font-weight: 700; }
 
 /* ---------- Dark mode ---------- */
 :root[data-theme='dark'] {

@@ -549,6 +549,42 @@ const DICT = {
   manageProviderStatus: { de: 'Status bearbeiten', en: 'Edit statuses' },
   manageSteps: { de: 'Spalten bearbeiten', en: 'Edit columns' },
   dragHint: { de: 'Ziehen (⠿) oder Pfeile zum Sortieren · Farbe links', en: 'Drag (⠿) or arrows to reorder · colour on the left' },
+
+  // ---- course dates ("Kurstermine")
+  manageCourses: { de: 'Kurstermine', en: 'Course dates' },
+  courseDate: { de: 'Kurstermin', en: 'Course date' },
+  course_own: { de: '– eigener Zeitraum –', en: '– own period –' },
+  course_type: { de: 'Kursart', en: 'Course type' },
+  course_from: { de: 'Von', en: 'From' },
+  course_to: { de: 'Bis', en: 'To' },
+  course_days: { de: 'Tage', en: 'Days' },
+  course_daysShort: { de: 'T', en: 'd' },
+  course_seats: { de: 'Plätze', en: 'Seats' },
+  course_booked: { de: 'Belegt', en: 'Booked' },
+  course_add: { de: 'Kurstermin', en: 'Course date' },
+  course_scheduled: { de: 'Laut Kurstermin', en: 'As scheduled' },
+  course_ownFrom: { de: 'Abweichender Start', en: 'Own start' },
+  course_ownTo: { de: 'Abweichendes Ende', en: 'Own end' },
+  course_overridden: {
+    de: 'Weicht vom Kurstermin ab – für diese Person gilt der eingetragene Zeitraum.',
+    en: 'Differs from the course date – the period entered here applies to this person.'
+  },
+  course_badSpan: { de: 'Ende vor Beginn', en: 'End before start' },
+  course_overbooked: { de: 'Mehr Zuordnungen als Plätze', en: 'More bookings than seats' },
+  course_none: { de: 'Noch kein Kurstermin angelegt.', en: 'No course dates yet.' },
+  course_deleteConfirm: {
+    de: 'Diesem Kurstermin sind {n} Personen zugeordnet. Sie verlieren dadurch ihren Zeitraum. Wirklich löschen?',
+    en: '{n} people are booked onto this course date. They will lose their period. Delete anyway?'
+  },
+  course_hint: {
+    de: 'Ein Kurstermin ist ein konkreter Durchlauf: Kursart, Provider, Ort und Zeitraum. In der Planung werden Personen darauf gebucht – der Zeitraum wird also einmal getippt, nicht je Person.',
+    en: 'A course date is one concrete run: course type, provider, location and period. People are booked onto it in the planning grid, so the period is typed once, not per person.'
+  },
+  step_targetDays: { de: 'Soll-Dauer', en: 'Target duration' },
+  step_targetHint: {
+    de: 'Die Soll-Dauer je Kursart in Tagen (leer = keine Vorgabe). Sie ist die Vergleichslinie im Dauer-Diagramm.',
+    en: 'The target duration per course type in days (blank = none). It is the reference line in the duration chart.'
+  },
   categoriesEditableHint: {
     de: 'Balken oben, Werte im Diagramm – die Tabelle darunter entfällt. Berechtigungen/Phasen sind editierbar (umbenennen, Farbe).',
     en: 'Bars above with values in the chart – the duplicate table is gone. Qualifications/stages are editable (rename, colour).'

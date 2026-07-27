@@ -41,8 +41,11 @@ export default async function run(browser, baseUrl, shots) {
   ok(/^rgb/.test(border), 'each block carries its step colour (' + border + ')')
 
   // ---- 2. an assignment can actually be made -------------------------------
+  // Located by its label, not by position: the course-date picker is now the
+  // first select in the block, and with no course dates set up it has exactly
+  // one option – which used to make this read as "no providers".
   const firstBlock = blocks.first()
-  const provider = firstBlock.locator('select').first()
+  const provider = firstBlock.locator('.field', { hasText: 'Provider' }).locator('select').first()
   const options = await provider.locator('option').count()
   ok(options > 1, 'the provider list is populated (' + options + ' options)')
   const value = await provider.locator('option').nth(1).getAttribute('value')

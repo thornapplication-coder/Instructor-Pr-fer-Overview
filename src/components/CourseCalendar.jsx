@@ -6,14 +6,14 @@ import { shortName } from '../lib/format.js'
 // Compact month calendar of course starts: one card per month, a Monday-based
 // day grid, and a small chip per trainer/step. Designed to stay readable when
 // printed (months never break across pages).
-export default function CourseCalendar({ trainers, steps, providers }) {
+export default function CourseCalendar({ trainers, steps, providers, runs }) {
   const { t, lang } = useStore()
   // Rebuilt only when the underlying data changes, not on every parent render
   // (the Planung search box re-renders this on every keystroke).
   const months = useMemo(() => {
-    const entries = courseEntries(trainers, steps, providers)
+    const entries = courseEntries(trainers, steps, providers, runs)
     return { list: courseMonths(entries), count: entries.length }
-  }, [trainers, steps, providers])
+  }, [trainers, steps, providers, runs])
   const wd = WEEKDAYS[lang === 'de' ? 'de' : 'en']
 
   if (!months.list.length) {
@@ -67,7 +67,7 @@ export default function CourseCalendar({ trainers, steps, providers }) {
                         className="cal-chip"
                         key={j}
                         style={{ background: it.step.color }}
-                        title={`${it.trainer.name} · ${it.step.label}${it.where ? ' · ' + it.where : ''}`}
+                        title={`${it.trainer.name} · ${it.step.label}${it.where ? ' · ' + it.where : ''}${it.days ? ' · ' + it.days + ' d' : ''}`}
                       >
                         <b>{it.trainer.tlc || shortName(it.trainer.name)}</b>
                         <span className="cal-chip-step">{stepAbbrev(it.step.label)}</span>

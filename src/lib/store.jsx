@@ -17,6 +17,7 @@ import { useCloudSync } from './cloudSync.js'
 import { backfillStamps, stampChanges } from './merge.js'
 import { monthKey, progressSnapshot, upsertMonth } from './history.js'
 import { upsertMilestone } from './plan.js'
+import { normalizeCourseRun } from './courses.js'
 import { BRAND, migrateColors } from './palette.js'
 
 const STORAGE_KEY = 'ewl737:data:v1'
@@ -97,6 +98,9 @@ function freshData(lang = 'de') {
     stages: DEFAULT_STAGES.map((s) => ({ ...s })),
     quals: DEFAULT_QUALS.map((q) => ({ ...q })),
     assignmentSteps: ASSIGNMENT_STEPS.map((s) => ({ ...s })),
+    // Scheduled course dates. Empty on a fresh install: inventing a course
+    // nobody booked would put a made-up period into the duration figures.
+    courseRuns: [],
     providerCourses: DEFAULT_PROVIDER_COURSES.map((x) => ({ ...x })),
     providerStatus: DEFAULT_PROVIDER_STATUS.map((x) => ({ ...x })),
     simVersions: DEFAULT_SIM_VERSIONS.map((x) => ({ ...x })),
@@ -169,6 +173,11 @@ function normalize(obj) {
     assignmentSteps: Array.isArray(obj.assignmentSteps)
       ? obj.assignmentSteps.map((s) => ({ ...s }))
       : base.assignmentSteps,
+    // Drop records with no id: they cannot be merged, referenced by an
+    // assignment or deleted again, so they would sit there forever.
+    courseRuns: Array.isArray(obj.courseRuns)
+      ? obj.courseRuns.filter((r) => r && r.id).map(normalizeCourseRun)
+      : base.courseRuns,
     providerCourses: Array.isArray(obj.providerCourses)
       ? obj.providerCourses.map((x) => ({ ...x }))
       : base.providerCourses,
@@ -460,6 +469,39 @@ export function StoreProvider({ children }) {
             for (const [k, a] of Object.entries(tr.assignments)) {
               if (a && a.providerId === id) {
                 next[k] = { ...a, providerId: '' }
+                touched = true
+              } else next[k] = a
+            }
+            return touched ? { ...tr, assignments: next } : tr
+          }),
+          // Same reasoning for the course dates: a run pointing at a provider
+          // that no longer exists would print a blank where a name belongs.
+          courseRuns: d.courseRuns.map((r) => (r.providerId === id ? { ...r, providerId: '' } : r))
+        })),
+
+      // ---- course dates ("Kurstermine")
+      upsertCourseRun: (run) =>
+        patch((d) => {
+          const r = normalizeCourseRun({ ...run, id: run.id || newId('crs') })
+          const exists = d.courseRuns.some((x) => x.id === r.id)
+          return {
+            ...d,
+            courseRuns: exists ? d.courseRuns.map((x) => (x.id === r.id ? r : x)) : [...d.courseRuns, r]
+          }
+        }),
+      // Deleting a course must not leave assignments pointing at a record that
+      // is gone: those would silently lose their period and show as undated.
+      deleteCourseRun: (id) =>
+        patch((d) => ({
+          ...d,
+          courseRuns: d.courseRuns.filter((x) => x.id !== id),
+          trainers: d.trainers.map((tr) => {
+            if (!tr.assignments) return tr
+            let touched = false
+            const next = {}
+            for (const [k, a] of Object.entries(tr.assignments)) {
+              if (a && a.courseId === id) {
+                next[k] = { ...a, courseId: '' }
                 touched = true
               } else next[k] = a
             }

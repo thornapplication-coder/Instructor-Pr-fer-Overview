@@ -11,6 +11,36 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.27.0] – 2026-07-27
+
+- **Kurstermine.** Ein Kurstermin ist ein konkreter Durchlauf: Kursart,
+  Provider, Ort, Zeitraum *von–bis* und Plätze. Anzulegen unter *Planung →
+  🗓 Kurstermine*. Das ist der Datensatz, der bisher gefehlt hat — ein TR-Kurs
+  läuft vom 3. bis zum 20. März, und acht Leute sitzen darin. Der Zeitraum
+  gehört dem **Kurs**, nicht jedem der acht.
+- **Buchen statt tippen.** In der Planung wählt man je Schritt einen
+  Kurstermin. Provider, Ort und Zeitraum kommen dann von dort und sind nicht
+  mehr je Person editierbar — genau so kam derselbe Kurs zu drei verschiedenen
+  Enddaten.
+- **Abweichung je Person.** Wer später einsteigt oder früher raus ist, bekommt
+  einen eigenen Start und/oder ein eigenes Ende. Nur die abweichenden Felder
+  werden gesetzt; leer heißt „wie geplant". Der Dialog benennt die Abweichung.
+- **Plätze mit Warnung.** Mehr Zuordnungen als Plätze färbt die Zahl rot.
+  Gesperrt wird nichts: ein Kurs kann eine neunte Person aufnehmen, und ein
+  Editor, der die Eingabe verweigert, wird ohnehin über das Notizfeld umgangen.
+  Ohne Platzzahl gibt es keine Überbuchung.
+- **Nichts Bestehendes geht verloren.** Ein Eintrag ohne Kurstermin verhält
+  sich wie bisher — Provider, Ort und Datum direkt in der Zelle — und hat
+  zusätzlich ein Feld „Bis". Ein „n/a"-Schritt belegt keinen Platz.
+- **Soll-Dauer je Kursart** (Tage), einstellbar unter *Spalten bearbeiten*.
+  Sie hängt an der Kursart selbst, überlebt also eine Umbenennung.
+- Kalender, Provider-Auslastung, Board-Karten sowie PDF- und Excel-Export
+  lesen den **aufgelösten** Zeitraum. Ohne das wäre ausgerechnet die korrekt
+  gebuchte Person überall als „nicht zugewiesen" erschienen.
+- Das Löschen eines Kurstermins löst die Buchungen darauf; das Löschen eines
+  Providers räumt ihn auch aus den Kursterminen. Beides mit Rückfrage, wenn
+  Personen betroffen sind.
+
 ## [1.26.0] – 2026-07-25
 
 - **Ziele je Monat einzeln setzbar.** Die Karte „Umschulungs-Ziele" unter

@@ -1,6 +1,7 @@
 // Builds the "when does which trainer start which course" calendar for the
 // Planung tab (and its PDF/print output) from the per-trainer step assignments.
 // Pure functions – no DOM, no store – so they are easy to test and reuse.
+import { resolveAssignment } from './courses.js'
 
 function parseISO(d) {
   const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(d || ''))
@@ -15,10 +16,15 @@ export function monthKey(date) {
 
 // Flatten every dated assignment into one entry per trainer + step.
 // Steps marked "n/a" are skipped – nothing starts there.
-export function courseEntries(trainers, steps, providers) {
+//
+// `runs` are the course dates. An assignment that points at one has no dates
+// and no provider of its own, so without resolving it first the calendar would
+// go blank for exactly the people who are properly booked.
+export function courseEntries(trainers, steps, providers, runs) {
   const out = []
   // Index once: a linear find() per assignment is O(entries x providers).
   const byId = new Map((providers || []).map((p) => [p.id, p]))
+  const runById = new Map((runs || []).map((r) => [r.id, r]))
   const providerName = (id) => {
     const p = byId.get(id)
     return p && p.name ? p.name : ''
@@ -27,17 +33,20 @@ export function courseEntries(trainers, steps, providers) {
     for (const s of steps || []) {
       const a = tr.assignments?.[s.id]
       if (!a || a.status === 'na') continue
-      const date = parseISO(a.date)
+      const r = resolveAssignment(a, runById.get(a.courseId) || null)
+      const date = parseISO(r.from)
       if (!date) continue
       out.push({
         date,
-        iso: a.date,
+        iso: r.from,
+        end: r.to,
+        days: r.days,
         month: monthKey(date),
         day: date.getDate(),
         trainer: tr,
         step: s,
         status: a.status || 'open',
-        where: providerName(a.providerId) || a.location || ''
+        where: providerName(r.providerId) || r.location || ''
       })
     }
   }

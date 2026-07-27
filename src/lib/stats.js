@@ -2,6 +2,7 @@
 // "Statistik_Daten" tab so the numbers line up 1:1 with the source file.
 import { firstStageId, releasedStageId } from '../data/pipeline.js'
 import { isConversionQual } from '../data/qualifications.js'
+import { findRun, resolveAssignment } from './courses.js'
 
 // Resolve stage semantics positionally instead of by the literal ids
 // 'nominated'/'released' (stages are user-editable): first = not started, last =
@@ -280,7 +281,11 @@ export function capacityByQual(trainers, aircraftList, stages) {
 // Provider load vs. capacity. Demand = planning assignments pointing at each
 // provider that are still active (any status except "n/a" and "completed").
 // util = demand / slots (null when no slots number is set).
-export function providerUtilization(trainers, providers, steps) {
+// `runs` are the course dates: a booking made through one carries the provider
+// on the COURSE, not on the person. Without resolving that, every properly
+// booked trainer would count as no demand at all and the utilisation bars would
+// read empty for exactly the providers that are busiest.
+export function providerUtilization(trainers, providers, steps, runs) {
   const demand = new Map()
   const bump = (pid, step, entry) => {
     const d = demand.get(pid) || { total: 0, byStep: {}, people: [] }
@@ -292,9 +297,11 @@ export function providerUtilization(trainers, providers, steps) {
   for (const t of trainers) {
     for (const s of steps) {
       const a = t.assignments?.[s.id]
-      if (!a || !a.providerId) continue
+      if (!a) continue
       if (a.status === 'na' || a.status === 'done') continue
-      bump(a.providerId, s, { trainer: t, step: s, date: a.date || '', status: a.status || 'open' })
+      const r = resolveAssignment(a, findRun(runs, a.courseId))
+      if (!r.providerId) continue
+      bump(r.providerId, s, { trainer: t, step: s, date: r.from, status: a.status || 'open' })
     }
   }
   return providers

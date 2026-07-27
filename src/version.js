@@ -4,12 +4,37 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.26.0'
-export const APP_BUILD_DATE = '2026-07-25'
+export const APP_VERSION = '1.27.0'
+export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.27.0',
+    date: '2026-07-27',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neu: **Kurstermine**. Ein Kurstermin ist ein konkreter Durchlauf — Kursart, Provider, Ort, Zeitraum von–bis und Plätze. Anzulegen unter *Planung → 🗓 Kurstermine*.',
+        'In der Planung wird eine Person auf einen Kurstermin gebucht, statt Provider und Datum je Person einzutippen. Der Zeitraum wird damit einmal erfasst, nicht fünfzig Mal — und derselbe Kurs kann nicht mehr drei verschiedene Enddaten haben.',
+        'Weicht jemand ab (später eingestiegen, früher raus), lassen sich Start und Ende für diese eine Person überschreiben. Die Abweichung wird im Dialog ausdrücklich benannt.',
+        'Plätze je Kurstermin mit Warnung: mehr Zuordnungen als Plätze markiert die Zahl rot. Gesperrt wird nichts — ein Kurs kann eine neunte Person aufnehmen.',
+        'Bestehende Einträge bleiben unverändert: wer Provider und Datum direkt in der Zelle stehen hat, behält das. Ohne Kurstermin gibt es jetzt zusätzlich ein Feld „Bis“.',
+        'Soll-Dauer je Kursart (in Tagen), einzustellen unter *Spalten bearbeiten*. Sie ist die Vergleichslinie für die Dauer-Auswertung.',
+        'Kalender, Provider-Auslastung, Board-Karten sowie PDF- und Excel-Export lesen den aufgelösten Zeitraum — eine über einen Kurstermin gebuchte Person fällt nirgends mehr aus der Anzeige.'
+      ],
+      en: [
+        'New: **course dates**. A course date is one concrete run – course type, provider, location, period from–to and seats. Managed under *Planning → 🗓 Course dates*.',
+        'In the planning grid a person is booked onto a course date instead of typing a provider and a date per person. The period is recorded once, not fifty times – and the same course can no longer carry three different end dates.',
+        'Where somebody deviates (joined late, left early), their own start and end can override the course. The dialog says so explicitly.',
+        'Seats per course date with a warning: more bookings than seats turns the number red. Nothing is blocked – a course really can take a ninth person.',
+        'Existing entries are untouched: whoever has a provider and a date typed into the cell keeps them. Without a course date there is now an additional "To" field.',
+        'Target duration per course type (in days), set under *Edit columns*. It is the reference line for the duration analysis.',
+        'The calendar, provider utilisation, board cards and both the PDF and Excel exports read the resolved period – somebody booked through a course date no longer drops out of any view.'
+      ]
+    }
+  },
   {
     version: '1.26.0',
     date: '2026-07-25',

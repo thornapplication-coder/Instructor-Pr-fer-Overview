@@ -60,15 +60,19 @@ export const STAFF_TYPE = {
   external: { de: 'extern', en: 'external', color: CATEGORICAL[2] }
 }
 
+// `courseId` points at a course date (src/lib/courses.js); `date` and `end` are
+// this person's own start and end. Where a course is chosen, the person's own
+// dates are an OVERRIDE for it – blank simply means "as scheduled". Everything
+// stays optional, so records entered before course dates existed keep working.
+const EMPTY_STEP = { courseId: '', providerId: '', location: '', date: '', end: '', status: 'open', note: '' }
+
 export function emptyAssignments() {
   const a = {}
   for (const s of ASSIGNMENT_STEPS) {
-    a[s.id] = { providerId: '', location: '', date: '', status: 'open', note: '' }
+    a[s.id] = { ...EMPTY_STEP }
   }
   return a
 }
-
-const EMPTY_STEP = { providerId: '', location: '', date: '', status: 'open', note: '' }
 
 // Merge stored assignments onto the defaults WITHOUT dropping data stored under
 // user-added custom step columns: iterate the union of the default step ids and

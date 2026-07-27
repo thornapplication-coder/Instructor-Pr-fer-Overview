@@ -22,6 +22,9 @@ export const MERGE_LISTS = [
   'stages',
   'quals',
   'assignmentSteps',
+  // Course dates: one record per scheduled run of a course. Two devices adding
+  // DIFFERENT courses must both survive, which per-record merging gives.
+  'courseRuns',
   'providerCourses',
   'providerStatus',
   'simVersions',

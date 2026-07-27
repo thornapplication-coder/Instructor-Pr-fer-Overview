@@ -17,6 +17,7 @@ Commit-Nachrichten auf Englisch.
 | `src/lib/supabaseSync.js` | Supabase-Aufrufe (`pull`, `pushCas`, `createRow`, `pushOnUnload`). |
 | `src/lib/palette.js` | **Alle** Farben. Nirgends sonst ein Hex-Wert für Daten. |
 | `src/lib/history.js` | Monats-Verlauf: `monthKey`, `progressSnapshot`, `upsertMonth`, `historySeries`. |
+| `src/lib/courses.js` | Kurstermine: Zeitraum je Kurs, Auflösung Person↔Kurs (`resolveAssignment`), Plätze, Überschneidungen. |
 | `src/lib/plan.js` | Soll gegen Ist: Meilensteine, Ampel-Schwelle (`slackFor`), `planStatus`, `planFor`. |
 | `src/lib/i18n.js` | DE/EN, ein flaches Wörterbuch. |
 | `src/data/*.js` | Startdaten und Kategorien (Phasen, Berechtigungen, Provider, Piloten). |

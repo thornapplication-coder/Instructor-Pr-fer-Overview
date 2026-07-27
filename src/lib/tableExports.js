@@ -8,6 +8,7 @@ import { qualLabel } from '../data/qualifications.js'
 import { courseLabel, simVersionLabel } from '../data/providers.js'
 import { pilotStatusLabel, pilotRole } from '../data/pilots.js'
 import { formatDate } from './format.js'
+import { findRun, resolveAssignment } from './courses.js'
 
 const byName = (a, b) => (a.name || '').localeCompare(b.name || '')
 
@@ -45,21 +46,31 @@ export function exportTrainersExcel(data, t, lang) {
 }
 
 export function exportPlanningExcel(data, t, lang) {
-  const { trainers, providers, assignmentSteps, quals } = data
+  const { trainers, providers, assignmentSteps, quals, courseRuns } = data
   const rows = [...trainers].sort(byName)
+  // Resolved through the course date: a booking made that way carries no
+  // provider of its own, so the raw field would export a column of blanks.
   const cellLabel = (a) => {
     if (!a) return ''
     if (a.status === 'na') return 'n/a'
-    const p = providers.find((x) => x.id === a.providerId)
+    const r = resolveAssignment(a, findRun(courseRuns, a.courseId))
+    const p = providers.find((x) => x.id === r.providerId)
     if (p && p.name) return p.name
-    return a.location || ''
+    return r.location || ''
+  }
+  const spanLabel = (a) => {
+    const r = resolveAssignment(a, findRun(courseRuns, a.courseId))
+    if (!r.from) return ''
+    return r.to ? formatDate(r.from, lang) + ' – ' + formatDate(r.to, lang) : formatDate(r.from, lang)
   }
   // An untouched cell (no provider/location, default 'open' status) exports as
   // empty – matching the on-screen "+ zuweisen" state – instead of " [offen]".
   const stepCell = (x, s) => {
     const a = x.assignments?.[s.id]
     if (!a) return ''
-    const label = cellLabel(a)
+    // Falls back to the period: a course booking whose course has no provider
+    // named yet exported as an empty cell and read as "nothing planned".
+    const label = cellLabel(a) || spanLabel(a)
     if (!label) return ''
     if (a.status === 'na') return label
     const stDef = ASSIGNMENT_STATUS[a.status]

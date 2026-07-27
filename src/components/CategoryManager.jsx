@@ -5,7 +5,10 @@ import { useStore } from '../lib/store.jsx'
 // Reusable editor for an ordered list of categories: { id, label, color? }.
 // Supports rename, recolor, add, delete and reorder (drag & drop + arrows).
 // The list order is meaningful (used for sorting elsewhere).
-export default function CategoryManager({ items, onChange, hasColor = true, defaultColor = BRAND.burgundy }) {
+// `numField` (optional) adds one number input per row, e.g. the target duration
+// of a course type. It lives on the category itself so it travels with the
+// column: rename "TRI-Kurs" and its 10-day target follows.
+export default function CategoryManager({ items, onChange, hasColor = true, defaultColor = BRAND.burgundy, numField }) {
   const { t, newId } = useStore()
   const [drag, setDrag] = useState(null)
 
@@ -66,6 +69,20 @@ export default function CategoryManager({ items, onChange, hasColor = true, defa
               placeholder="…"
               onChange={(e) => update(i, { label: e.target.value })}
             />
+            {numField && (
+              <label className="catman-num">
+                <input
+                  className="input"
+                  type="number"
+                  min="0"
+                  value={it[numField.key] || ''}
+                  placeholder="–"
+                  aria-label={numField.label + ' ' + (it.label || '')}
+                  onChange={(e) => update(i, { [numField.key]: e.target.value === '' ? 0 : Number(e.target.value) })}
+                />
+                <span>{numField.suffix}</span>
+              </label>
+            )}
             <div className="catman-actions">
               <button className="mini-btn" disabled={i === 0} onClick={() => move(i, i - 1)} title="up">↑</button>
               <button className="mini-btn" disabled={i === items.length - 1} onClick={() => move(i, i + 1)} title="down">↓</button>
