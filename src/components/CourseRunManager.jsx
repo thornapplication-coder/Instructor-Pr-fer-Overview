@@ -2,6 +2,7 @@ import React, { useMemo } from 'react'
 import { useStore } from '../lib/store.jsx'
 import DateInput from './DateInput.jsx'
 import { emptyCourseRun, isOverbooked, seatUsage, spanDays } from '../lib/courses.js'
+import { providersForStep } from '../lib/providerMatch.js'
 
 // Editor for the course dates: one row per scheduled run of a course type.
 // Deliberately a flat table rather than a dialog per course – the whole point
@@ -70,7 +71,10 @@ export default function CourseRunManager({ steps, providers, trainers }) {
                   <td>
                     <select className="input" value={r.providerId} onChange={(e) => set(r, { providerId: e.target.value })}>
                       <option value="">{t('noProvider')}</option>
-                      {[...providers]
+                      {/* Same filter the assign dialog uses: a course of type
+                          "Examiner-Prüfung" offering a TR-only provider would
+                          bypass it for everybody booked onto that course. */}
+                      {[...providersForStep(providers, steps.find((s) => s.id === r.stepId) || {}, data.providerCourses)]
                         .sort((x, y) => (x.name || '').localeCompare(y.name || ''))
                         .map((p) => <option key={p.id} value={p.id}>{p.name || '(?)'}</option>)}
                     </select>

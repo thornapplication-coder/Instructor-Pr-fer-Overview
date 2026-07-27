@@ -24,11 +24,12 @@ import {
   capacityByBase,
   capacityByQual,
   capacityByAircraft,
-  providerUtilization
+  providerUtilization,
+  providerSlots
 } from './stats.js'
 import { stageName, targetsByMonth, monthLabel } from './alerts.js'
 import { courseEntries, courseMonths, monthTitle } from './courseCalendar.js'
-import { findRun, resolveAssignment } from './courses.js'
+import { findRun, resolveAssignment, seatUsage, spanDays, spanText } from './courses.js'
 
 const BURG = hexToRgb(BRAND_HEX.burg)
 const BURG_DARK = hexToRgb(BRAND_HEX.burgDark)
@@ -240,8 +241,7 @@ async function exportPlanningPdf(data, t, lang, opts) {
   }
   const spanLabel = (a) => {
     const r = resolveAssignment(a, findRun(data.courseRuns, a.courseId))
-    if (!r.from) return ''
-    return r.to ? formatDate(r.from, lang) + ' – ' + formatDate(r.to, lang) : formatDate(r.from, lang)
+    return spanText(r.from, r.to, lang)
   }
   // Untouched cells (no provider/location, default 'open') export as empty –
   // matching the on-screen "+ zuweisen" state – instead of " [offen]".
@@ -250,12 +250,15 @@ async function exportPlanningPdf(data, t, lang, opts) {
     if (!a) return ''
     // Same fallback as the screen: a booked course with no provider named yet
     // is a booking, not an empty cell.
-    const lbl = cellLabel(a) || spanLabel(a)
-    if (!lbl) return ''
-    if (a.status === 'na') return lbl
+    const lbl = cellLabel(a)
+    const span = spanLabel(a)
+    if (!lbl && !span) return ''
+    if (a.status === 'na') return lbl || 'n/a'
     const st = ASSIGNMENT_STATUS[a.status]
     const stl = st ? ` [${lang === 'de' ? st.de : st.en}]` : ''
-    return lbl + stl
+    // Name AND period: the screen shows both in the cell, and a PDF that drops
+    // the period is missing the thing the course dates exist for.
+    return [lbl, span].filter(Boolean).join('\n') + stl
   }
   table(ctx, {
     section: t('planning_title'),
@@ -295,6 +298,60 @@ async function exportPlanningPdf(data, t, lang, opts) {
   return finalize(doc, 'planung', opts)
 }
 
+// One table of course dates. Shared by the provider PDF (where the capacity it
+// is measured against lives) and by its own page.
+function courseDatesTable(ctx, data, t, lang) {
+  const runs = [...(data.courseRuns || [])].sort((a, b) => String(a.from).localeCompare(String(b.from)))
+  const used = seatUsage(data.trainers, data.assignmentSteps)
+  table(ctx, {
+    section: t('manageCourseDates'),
+    head: [t('course_type'), t('provider'), t('location'), t('course_from'), t('course_to'), t('course_days'), t('course_seats'), t('course_booked')],
+    body: runs.length
+      ? runs.map((r) => {
+          const st = data.assignmentSteps.find((x) => x.id === r.stepId)
+          const p = data.providers.find((x) => x.id === r.providerId)
+          const days = spanDays(r.from, r.to)
+          return [
+            st ? st.label : '-', p ? p.name : '-', r.location || '-',
+            r.from ? formatDate(r.from, lang) : '-', r.to ? formatDate(r.to, lang) : '-',
+            days == null ? '-' : String(days), r.seats ? String(r.seats) : '-', String(used.get(r.id) || 0)
+          ]
+        })
+      : [['-', t('course_none'), '', '', '', '', '', '']],
+    columnStyles: { 5: { halign: 'right' }, 6: { halign: 'right' }, 7: { halign: 'right' } }
+  })
+}
+
+async function exportCourseDatesPdf(data, t, lang, opts) {
+  const { jsPDF, autoTable } = await loadPdf()
+  const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
+  const ctx = makeCtx(doc, autoTable, t('manageCourseDates'), lang)
+  courseDatesTable(ctx, data, t, lang)
+  // Who is on each course – the attendee list is the other half of the record.
+  const runs = [...(data.courseRuns || [])].sort((a, b) => String(a.from).localeCompare(String(b.from)))
+  for (const r of runs) {
+    const people = data.trainers.filter((x) =>
+      data.assignmentSteps.some((s) => {
+        const a = x.assignments?.[s.id]
+        return a && a.courseId === r.id && a.status !== 'na'
+      })
+    ).sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+    if (!people.length) continue
+    const st = data.assignmentSteps.find((x) => x.id === r.stepId)
+    table(ctx, {
+      section: `${st ? st.label : ''} ${spanText(r.from, r.to, lang)} — ${people.length}`,
+      head: [t('f_tlc'), t('f_name'), t('f_base'), t('f_qual'), t('status')],
+      body: people.map((x) => {
+        const s2 = data.assignmentSteps.find((s3) => x.assignments?.[s3.id]?.courseId === r.id)
+        const a = s2 ? x.assignments[s2.id] : null
+        const stt = a && ASSIGNMENT_STATUS[a.status]
+        return [x.tlc || '', x.name || '', x.base || '', qualLabel(data.quals, x.qual), stt ? (lang === 'de' ? stt.de : stt.en) : '']
+      })
+    })
+  }
+  return finalize(doc, 'kurstermine', opts)
+}
+
 // --------------------------------------------------------------- Providers ---
 async function exportProvidersPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
@@ -309,16 +366,31 @@ async function exportProvidersPdf(data, t, lang, opts) {
       p.name || '', [...(p.courses || [])].map((c) => courseLabel(data.providerCourses, c)).sort().join(', '),
       [...(p.simVersions || [])].map((s) => simVersionLabel(data.simVersions, s)).sort().join(', '),
       [...(p.locations || [])].sort().join(', '),
-      p.contactPerson || '', p.slots ? String(p.slots) : '', statusLabel(p.status)
+      p.contactPerson || '', String(providerSlots(p, data.assignmentSteps).total || ''), statusLabel(p.status)
     ])
   })
-  const util = providerUtilization(data.trainers, data.providers, data.assignmentSteps)
+  const util = providerUtilization(data.trainers, data.providers, data.assignmentSteps, data.courseRuns)
   table(ctx, {
     section: t('prov_capacity'),
-    head: [t('p_name'), t('prov_assigned'), t('prov_slots'), t('prov_util')],
-    body: util.map((u) => [u.provider.name || '', String(u.demand), u.slots ? String(u.slots) : '-', u.util == null ? '-' : Math.round(u.util * 100) + '%']),
-    columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } }
+    // The per-course-type breakdown is the point of the capacity figure: a
+    // provider's total can look comfortable while the one course everybody
+    // needs is the bottleneck. A PDF without it hides exactly that.
+    head: [t('p_name'), t('p_courses'), t('prov_assigned'), t('prov_slots'), t('prov_util')],
+    body: util.map((u) => [
+      u.provider.name || '',
+      data.assignmentSteps
+        .filter((s2) => u.byStep[s2.id] || u.slotsByStep?.[s2.id])
+        .map((s2) => `${s2.label}: ${u.byStep[s2.id] || 0}${u.slotsByStep?.[s2.id] ? ' / ' + u.slotsByStep[s2.id] : ''}`)
+        .join('\n') || '-',
+      String(u.demand),
+      u.slots ? String(u.slots) : '-',
+      u.util == null ? '-' : Math.round(u.util * 100) + '%'
+    ]),
+    columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } }
   })
+
+  // Course dates: a whole data set that existed nowhere in any export.
+  courseDatesTable(ctx, data, t, lang)
   return finalize(doc, 'provider', opts)
 }
 
@@ -503,6 +575,7 @@ const EXPORTERS = {
   capacity: exportCapacityPdf,
   trainers: exportTrainersPdf,
   planning: exportPlanningPdf,
+  courseDates: exportCourseDatesPdf,
   providers: exportProvidersPdf,
   pilots: exportPilotsPdf
 }

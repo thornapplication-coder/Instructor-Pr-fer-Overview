@@ -2,12 +2,16 @@ import React, { useMemo } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { courseEntries, courseMonths, monthGrid, monthTitle, stepAbbrev, WEEKDAYS } from '../lib/courseCalendar.js'
 import { shortName } from '../lib/format.js'
+import { useThemed } from '../lib/useThemed.js'
 
 // Compact month calendar of course starts: one card per month, a Monday-based
 // day grid, and a small chip per trainer/step. Designed to stay readable when
 // printed (months never break across pages).
 export default function CourseCalendar({ trainers, steps, providers, runs }) {
   const { t, lang } = useStore()
+  // Themed like every other chart: painted raw, the step colours kept their
+  // light-mode step on a dark card while the same steps elsewhere flipped.
+  const tint = useThemed()
   // Rebuilt only when the underlying data changes, not on every parent render
   // (the Planung search box re-renders this on every keystroke).
   const months = useMemo(() => {
@@ -37,7 +41,7 @@ export default function CourseCalendar({ trainers, steps, providers, runs }) {
       <ul className="legend legend-wrap cal-legend">
         {steps.map((s) => (
           <li key={s.id}>
-            <span className="dot" style={{ background: s.color }} />
+            <span className="dot" style={{ background: tint(s.color) }} />
             <span className="legend-key">
               <b>{stepAbbrev(s.label)}</b> {s.label}
             </span>
@@ -66,7 +70,7 @@ export default function CourseCalendar({ trainers, steps, providers, runs }) {
                       <span
                         className="cal-chip"
                         key={j}
-                        style={{ background: it.step.color }}
+                        style={{ background: tint(it.step.color) }}
                         title={`${it.trainer.name} · ${it.step.label}${it.where ? ' · ' + it.where : ''}${it.days ? ' · ' + it.days + ' d' : ''}`}
                       >
                         <b>{it.trainer.tlc || shortName(it.trainer.name)}</b>

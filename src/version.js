@@ -4,12 +4,43 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.30.0'
+export const APP_VERSION = '1.31.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.31.0',
+    date: '2026-07-27',
+    type: 'minor',
+    changes: {
+      de: [
+        'Vier Kacheln sind aus dem Dashboard entfernt: „Fortschritt je Monat", „Soll gegen Ist", „Eingehende Trainer je Monat" und „Ø Dauer je Kursart".',
+        'Mit ihnen entfällt alles, was es nur für sie gab: die Monats-Zielsetzung unter „Kapazität", der Monats-Recorder, die Soll-Dauer je Kursart sowie die zugehörigen Bibliotheken, Texte, Stile und Tests. Es bleibt keine Einstellung stehen, die nirgends mehr wirkt.',
+        'Die Umschulungs-Pipeline ist jetzt ein Balkendiagramm: eine Zeile je Phase mit voll ausgeschriebenem Namen. Die Phasenfarben sind unverändert. Eine Phase bei null zeichnet keinen Balken mehr statt eines farbigen Stummels.',
+        'Exporte überarbeitet: Kurstermine haben jetzt ein eigenes PDF (samt Teilnehmerlisten je Kurs) und ein eigenes Excel-Blatt — die Daten kamen bisher in keinem Export vor.',
+        'Das Provider-PDF zählt Buchungen über Kurstermine jetzt mit (vorher las es die meistbeschäftigten Provider als „keine Nachfrage") und druckt die Kapazität je Kursart.',
+        'Planungs-PDF und -Excel drucken jetzt Name UND Zeitraum je Zelle, wie der Bildschirm.',
+        'Provider-Kapazität: die Kachel je Kursart zeigt jetzt, wie viele Monate der offene Bedarf braucht. Rot erst ab mehr als drei Monaten — „mehr als ein Monat" ist bei einem Phase-In der Normalfall und hätte alles markiert.',
+        'Farben vereinheitlicht: Captain/First Officer, Aircraft und ORE holen ihre Farbe überall aus derselben Quelle. First Officer war auf Karten blau und im Diagramm rosa, und die Rosa-Variante überschrieb versehentlich die Dunkelmodus-Stufe der Phasenfarben.',
+        'Behoben: Kalender-Farben im Dunkelmodus, das Datum in der Board-Kachel jetzt formatiert statt roh, Kurstermin wählen löscht den alten Provider-Eintrag der Person, Kurstermin-Provider werden wie im Zuweisungs-Dialog nach Kursart gefiltert.',
+        'Neu: eine Überschneidungs-Warnung im Zuweisungs-Dialog, wenn sich zwei gebuchte Zeiträume derselben Person überlappen.'
+      ],
+      en: [
+        'Four cards are gone from the dashboard: Progress per month, Plan vs. actual, Incoming trainers per month and Avg. duration by course type.',
+        'With them goes everything that existed only for them: the monthly milestone editor on the Capacity tab, the monthly recorder, the per-course-type target duration, and the matching libraries, strings, styles and tests. No setting is left that no longer does anything.',
+        'The conversion pipeline is a bar chart now: one row per stage with its full name. The stage colours are unchanged. A stage at zero draws no bar instead of a coloured stub.',
+        'Exports reworked: course dates now have their own PDF (with an attendee list per course) and their own Excel sheet - the data appeared in no export at all.',
+        'The provider PDF counts bookings made through a course date (it read the busiest providers as no demand) and prints the capacity per course type.',
+        'The planning PDF and Excel print the name AND the period per cell, like the screen.',
+        'Provider capacity: the per-course-type chip now says how many months the open backlog needs. Red only above three months - more than one month is the normal state of a phase-in and would have marked everything.',
+        'Colours unified: Captain/First Officer, aircraft and ORE take their colour from one source everywhere. First Officer was blue on a card and pink in a chart, and the pink variant was accidentally overwriting the stage ramp dark-mode step.',
+        'Fixed: calendar colours in dark mode; the board chip date is formatted rather than raw; choosing a course date clears the stale provider entry; course-date providers are filtered by course type like the assign dialog.',
+        'New: an overlap warning in the assign dialog when two booked periods for the same person run into each other.'
+      ]
+    }
+  },
   {
     version: '1.30.0',
     date: '2026-07-27',

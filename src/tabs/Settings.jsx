@@ -2,7 +2,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { CaptureContext } from '../lib/capture.js'
 import { downloadJson } from '../lib/format.js'
-import { exportTrainersExcel, exportPlanningExcel, exportProvidersExcel, exportPilotsExcel } from '../lib/tableExports.js'
+import { exportTrainersExcel, exportPlanningExcel, exportProvidersExcel, exportPilotsExcel, exportCourseDatesExcel } from '../lib/tableExports.js'
 import { exportPagePdf } from '../lib/pdfExport.js'
 import { parseTrainersFromArrayBuffer, mergeTrainerRecords } from '../lib/importExcel.js'
 import { parsePilotsFromArrayBuffer, mergePilotRecords } from '../lib/importPilots.js'
@@ -11,14 +11,17 @@ import { APP_VERSION, APP_BUILD_DATE, CHANGELOG } from '../version.js'
 import SyncCard from '../components/SyncCard.jsx'
 import { persistenceStatus } from '../lib/persistence.js'
 
-// Per-page export choices (order matches the tab bar). `excel` is the Excel
-// builder itself where a tabular export makes sense; every page offers PDF + Print.
+// Per-page export choices, in tab-bar order. Planung and the course dates are
+// VIEWS of the Umschulung tab rather than tabs of their own, so they follow it
+// here instead of sitting where a tab used to be. `excel` is the Excel builder
+// where a tabular export makes sense; every page offers PDF + Print.
 const EXPORT_PAGES = [
   { id: 'dashboard', key: 'tab_dashboard' },
-  { id: 'conversion', key: 'tab_conversion' },
-  { id: 'capacity', key: 'tab_capacity' },
   { id: 'trainers', key: 'tab_trainers', excel: exportTrainersExcel },
+  { id: 'conversion', key: 'tab_conversion' },
   { id: 'planning', key: 'tab_planning', excel: exportPlanningExcel },
+  { id: 'courseDates', key: 'manageCourseDates', excel: exportCourseDatesExcel },
+  { id: 'capacity', key: 'tab_capacity' },
   { id: 'providers', key: 'tab_providers', excel: exportProvidersExcel },
   { id: 'pilots', key: 'tab_pilots', excel: exportPilotsExcel }
 ]

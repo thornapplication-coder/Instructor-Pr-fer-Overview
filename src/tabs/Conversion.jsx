@@ -9,21 +9,24 @@ import { useThemed } from '../lib/useThemed.js'
 import { qualLabel, isConversionQual, conversionTrainers, CONVERSION_QUALS } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { conversionFteSummary } from '../lib/stats.js'
-import { finishForecast, findRun, resolveAssignment } from '../lib/courses.js'
+import { finishForecast, findRun, resolveAssignment, spanText } from '../lib/courses.js'
 import { trainerAlerts } from '../lib/alerts.js'
 import { formatDate, formatFte1 } from '../lib/format.js'
+import { AircraftTag, OreTag, RoleTag } from '../components/tags.jsx'
 
 // Where a step happens. Resolved through the course date, so a card does not
 // go blank for the people who are properly booked onto a course.
-function assignTarget(providers, runs, a) {
+function assignTarget(providers, runs, a, lang) {
   if (!a) return null
   const r = resolveAssignment(a, findRun(runs, a.courseId))
   const p = providers.find((x) => x.id === r.providerId)
   if (p && p.name) return p.name
   if (r.location) return r.location
   // A course with no provider named yet is still a booking – returning null
-  // here dropped the chip and the card looked unplanned.
-  return r.from || null
+  // here dropped the chip and the card looked unplanned. Formatted, not the raw
+  // ISO string: the target date right below it is formatted too, and two
+  // notations for the same kind of figure on one card is the FTE lesson again.
+  return spanText(r.from, r.to, lang) || null
 }
 
 export default function Conversion({ embedded }) {
@@ -167,22 +170,17 @@ export default function Conversion({ embedded }) {
                       </div>
                       <div className="conv-meta">
                         <span className="qual-tag sm">{qualLabel(quals, x.qual)}</span>
-                        <span
-                          className={'role-tag sm ' + (x.role === 'fo' ? 'role-fo' : 'role-captain')}
-                          title={t(x.role === 'fo' ? 'role_fo' : 'role_captain')}
-                        >
-                          {t(x.role === 'fo' ? 'role_foShort' : 'role_captainShort')}
-                        </span>
+                        <RoleTag role={x.role} sm />
                         <span className="chip-sm">{x.base}</span>
-                        {x.aircraft && <span className="ac-tag sm">{x.aircraft}</span>}
-                        <span className={'ore-tag ore-' + (x.ore || 'none')}>{x.ore || '–'}</span>
+                        {x.aircraft && <AircraftTag value={x.aircraft} sm />}
+                        <OreTag value={x.ore} sm />
                         <span className="staff-tag sm" style={{ '--tag': tint(STAFF_TYPE[x.staffType || 'internal'].color) }}>
                           {t('staff_' + (x.staffType || 'internal'))}
                         </span>
                       </div>
                       {(() => {
                         const chips = assignmentSteps
-                          .map((stp) => ({ stp, label: assignTarget(providers, courseRuns, x.assignments?.[stp.id]) }))
+                          .map((stp) => ({ stp, label: assignTarget(providers, courseRuns, x.assignments?.[stp.id], lang) }))
                           .filter((c) => c.label)
                         return chips.length ? (
                           <div className="conv-assign">

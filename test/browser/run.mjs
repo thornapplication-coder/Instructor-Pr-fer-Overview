@@ -13,13 +13,12 @@ const SUITES = [
   './board.test.mjs',
   './exports.test.mjs',
   './fte.test.mjs',
-  './trend.test.mjs',
-  './plan.test.mjs',
   './dates.test.mjs',
   './columns.test.mjs',
   './planning.test.mjs',
   './courses.test.mjs',
-  './capacity.test.mjs'
+  './capacity.test.mjs',
+  './exportsAll.test.mjs'
 ]
 
 const chromium = await loadChromium()

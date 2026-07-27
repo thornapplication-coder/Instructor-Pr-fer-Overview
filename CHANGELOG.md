@@ -11,6 +11,65 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.31.0] – 2026-07-27
+
+### Dashboard aufgeräumt
+
+- Entfernt: **„Fortschritt je Monat", „Soll gegen Ist", „Eingehende Trainer je
+  Monat"** und **„Ø Dauer je Kursart"**.
+- Mit ihnen entfällt **alles, was es nur für sie gab**: die Monats-Zielsetzung
+  unter *Kapazität*, der Monats-Recorder, die Soll-Dauer je Kursart, dazu
+  `plan.js`, `history.js`, die Dauer-Aggregationen in `courses.js`, die
+  Diagramm-Komponenten, Texte, Stile und Tests. Eine Einstellung, die nirgends
+  mehr wirkt, ist schlimmer als gar keine.
+- Die **Umschulungs-Pipeline ist ein Balkendiagramm**: eine Zeile je Phase, Name
+  voll ausgeschrieben (der gestapelte Balken musste jede leere Phase verstecken
+  — auf einer Pipeline ist genau das die Frage). Phasenfarben unverändert. Eine
+  Phase bei null zeichnet **keinen** Balken mehr statt eines farbigen Stummels.
+
+### Exporte
+
+- **Kurstermine haben jetzt ein eigenes PDF** — mit Teilnehmerliste je Kurs —
+  **und ein eigenes Excel-Blatt**. Die Daten kamen in keinem Export vor.
+- Das **Provider-PDF** zählt Buchungen über Kurstermine mit. Ohne den Parameter
+  las es ausgerechnet die meistbeschäftigten Provider als „keine Nachfrage".
+  Es druckt zusätzlich die **Kapazität je Kursart**.
+- **Planungs-PDF und -Excel** drucken **Name und Zeitraum** je Zelle, wie der
+  Bildschirm. Vorher fehlte der Zeitraum — also genau das, wofür es die
+  Kurstermine gibt.
+- Die Download-Liste in den Einstellungen folgt wieder der Reiterleiste.
+
+### Korrekturen
+
+- **Farbkollision behoben:** `ROLE_FO` war zeichengleich mit `STAGE_RAMP[0]`,
+  wodurch die Registrierung seiner Dunkelstufe die der Phasenfarben
+  überschrieb — im Dunkelmodus kippte die ordinale Reihe um. Captain/First
+  Officer sind jetzt zwei Kategorie-Slots, und Karten wie Diagramme holen
+  Rolle, Aircraft und ORE aus **einer** Quelle (`palette.js`).
+- Kalender-Chips und -Legende sind im **Dunkelmodus** korrekt gestuft.
+- Die Board-Kachel druckt das Datum **formatiert** statt roh („2026-03-03"
+  neben „03.03.2026" auf derselben Karte).
+- Einen Kurstermin zu wählen **löscht den eigenen Provider-Eintrag** der Person.
+  Sonst gewann ein Altwert weiter, und im Dialog gab es kein Feld mehr, ihn zu
+  entfernen.
+- Kurstermin-Provider werden **nach Kursart gefiltert**, wie im
+  Zuweisungs-Dialog.
+- Die Kachel je Kursart in der Provider-Kapazität nennt jetzt die **Monate**,
+  die der offene Bedarf braucht. Rot erst ab mehr als drei Monaten: „mehr als
+  ein Monat" ist bei einem Phase-In der Normalfall und hätte alles markiert.
+- **Neu: Überschneidungs-Warnung** im Zuweisungs-Dialog, wenn sich zwei
+  gebuchte Zeiträume derselben Person überlappen.
+
+### Tests
+
+- Neuer Wächter `test/imports.test.mjs`: ein Bezeichner, der irgendwo exportiert
+  und in einer Datei ohne Import benutzt wird, ist ein `ReferenceError`, den der
+  Build **nicht** findet — die App stirbt weiß. Das ist heute zweimal passiert
+  und beide Male erst im minutenlangen Browser-Lauf aufgefallen. Jetzt in einer
+  Sekunde.
+- Neuer Browser-Lauf `exportsAll`: alle acht PDFs und alle fünf Excel-Blätter
+  werden erzeugt und auf echten Inhalt geprüft.
+
 ## [1.30.0] – 2026-07-27
 
 - **Provider-Kapazität heißt jetzt „Plätze / Monat".** Die Zahl stand vorher

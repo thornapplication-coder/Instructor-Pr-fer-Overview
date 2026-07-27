@@ -172,90 +172,6 @@ button { font-family: inherit; }
 .kpi-hero .kpi-value { font-size: 34px; }
 .kpi-hero-metric + .kpi-hero-metric { border-left: 1px solid var(--hair); padding-left: 36px; }
 
-/* ---------- Trend columns ---------- */
-.trend-plot {
-  display: flex; align-items: flex-end; gap: 8px;
-  border-bottom: 1px solid var(--hair);
-}
-.trend-col { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; justify-content: flex-end; height: 100%; position: relative; }
-/* The plan line. Dashed and dark so it reads as a reference, not as data –
-   it sits ON the column rather than being part of the stack. */
-.trend-mark {
-  position: absolute; left: 0; right: 0; z-index: 1;
-  border-top: 2px dashed var(--ink); opacity: .85; pointer-events: none;
-  /* The line crosses both the pale "not started" band and the dark released
-     block, so a plain dark rule disappears on the very part it is meant to be
-     compared against. The halo is card-coloured and therefore flips with the
-     theme. */
-  filter: drop-shadow(0 1px 0 var(--white)) drop-shadow(0 -1px 0 var(--white));
-}
-/* The stack fills the column from the bottom; column-reverse would fight the
-   reversed series order, so the segments are simply laid out top-down. */
-.trend-stack { display: flex; flex-direction: column; justify-content: flex-end; height: 100%; }
-.trend-seg { width: 100%; display: flex; align-items: center; justify-content: center; overflow: hidden; }
-/* On the burgundy fills, so white with a soft dark shadow to survive both the
-   dark and the light step of the ramp. */
-.trend-seg-val {
-  font-size: 11px; font-weight: 700; color: #fff; white-space: nowrap;
-  text-shadow: 0 1px 2px rgba(0,0,0,.35); pointer-events: none;
-}
-/* Only the cap is rounded – the segments below it butt against each other, so
-   rounding them too would notch the column where two series meet. */
-.trend-seg:first-child { border-top-left-radius: 3px; border-top-right-radius: 3px; }
-.trend-tick {
-  margin-top: 6px; font-size: 10.5px; color: var(--muted); text-align: center;
-  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.trend .legend { margin-top: 12px; }
-.trend-empty { color: var(--muted); font-size: 13px; margin: 0; }
-
-/* ---------- Multi-line trend (durations) ---------- */
-.lines-plot { display: flex; gap: 8px; }
-.lines-axis {
-  display: flex; flex-direction: column; justify-content: space-between;
-  font-size: 10.5px; color: var(--muted); text-align: right;
-  white-space: nowrap; flex: none;
-}
-/* The dots are placed in percent of this box, so it has to be the whole plot
-   area and nothing else – any padding here shifts every point. */
-.lines-area {
-  position: relative; flex: 1 1 auto; min-width: 0; height: 100%;
-  border-bottom: 1px solid var(--hair); border-left: 1px solid var(--hair);
-}
-.lines-svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; }
-.lines-path { stroke-width: 2.5; stroke-linejoin: round; stroke-linecap: round; }
-/* The target: same colour as its course type, but dashed and thin, so it reads
-   as a reference rather than as a second measurement. */
-.lines-target { stroke-width: 1.5; stroke-dasharray: 5 4; opacity: .55; }
-/* The neutral 100 % reference. Ink, not a status colour: being above it is not
-   automatically bad – a course that finished early sits below it. */
-.lines-ref { stroke: var(--ink); stroke-width: 1.5; stroke-dasharray: 5 4; opacity: .5; }
-.lines-dot {
-  position: absolute; width: 8px; height: 8px; border-radius: 50%;
-  transform: translate(-50%, 50%); border: 2px solid var(--white);
-  box-sizing: content-box;
-}
-/* Absolutely placed, not an evenly divided flex row: the points sit at
-   i/(n-1) of the width, so a flex slot's centre is not under its own point. */
-.lines-ticks { position: absolute; top: 100%; left: 0; right: 0; height: 18px; }
-.lines-ticks span {
-  position: absolute; top: 5px; transform: translateX(-50%);
-  font-size: 10.5px; color: var(--muted); white-space: nowrap;
-}
-/* The outermost labels pull inwards so they cannot hang off the card. */
-.lines-ticks span:first-child { transform: none; }
-.lines-ticks span:last-child { transform: translateX(-100%); }
-.lines-plot { margin-bottom: 20px; }
-.lines .legend { margin-top: 12px; }
-
-/* ---------- Plan vs. actual ---------- */
-.plan-status { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; }
-.plan-dot { width: 16px; height: 16px; border-radius: 50%; flex: none; }
-.plan-verdict { font-size: 17px; font-weight: 800; color: var(--ink); }
-.plan-numbers { display: flex; gap: 22px; flex-wrap: wrap; margin-top: 14px; }
-.plan-num .kpi-value { font-size: 26px; }
-.plan-next { margin-top: 12px; }
-
 /* ---------- Cards & grids ---------- */
 .card {
   background: var(--white); border-radius: var(--radius); padding: 18px;
@@ -347,10 +263,9 @@ button { font-family: inherit; }
   display: inline-block; padding: 2px 8px; border-radius: 999px;
   font-size: 11.5px; font-weight: 800; color: #fff; letter-spacing: .3px;
 }
-.role-captain { background: #AF1E65; }
-/* Slot 4 of the categorical scale: white 11px text clears AA at 7.6:1, and it
-   stays distinct from the aircraft tag sitting next to it on a card. */
-.role-fo { background: #0250AE; }
+/* Filled from palette.js (ROLE_CPT / ROLE_FO) so the tag and the Captain/FO
+   donut cannot drift apart, and so both get their dark-mode step. */
+.role-tag { background: var(--tag, var(--burg)); }
 .role-tag.sm { font-size: 10.5px; padding: 1px 6px; }
 
 /* Controls that must never appear in the rasterized PDF capture. */
@@ -415,7 +330,12 @@ button { font-family: inherit; }
 .progress-ring-label { font-size: 12px; color: var(--muted); font-weight: 700; }
 
 .pipeline-row { display: flex; align-items: center; gap: 22px; flex-wrap: wrap; }
-.pipeline-flex { flex: 1; min-width: 220px; }
+.pipeline-flex { flex: 1; min-width: 260px; }
+/* Stage names are the labels here, and "SIM / Type Rating" does not fit the
+   90px a base code needs. They also wrap rather than truncate: a pipeline whose
+   stages read "Nominieru…" tells the reader nothing. */
+.pipeline-flex .hbar-row { grid-template-columns: minmax(0, 150px) 1fr 34px; }
+.pipeline-flex .hbar-label { white-space: normal; line-height: 1.2; }
 .pipeline-bar { display: flex; height: 30px; border-radius: 8px; overflow: hidden; background: var(--panel2); }
 .pipeline-seg { display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 12px; min-width: 22px; }
 .pipeline-empty { flex: 1; }
@@ -522,13 +442,14 @@ select.input { cursor: pointer; }
 .empty-row { text-align: center; color: var(--muted); padding: 30px !important; }
 
 .qual-tag { background: var(--burg); color: #fff; padding: 2px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 800; white-space: nowrap; }
-.ac-tag { display: inline-block; background: #e8f2fe; color: #1565c0; border: 1px solid #bcdcfb; padding: 1px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 800; white-space: nowrap; }
+/* Aircraft and ORE take their colour from palette.js through --tag, like the
+   staff and status tags. Hardcoded here they disagreed with the same
+   categories in the dashboard charts and had no dark-mode step. */
+.ac-tag { display: inline-block; background: color-mix(in srgb, var(--tag, var(--sky)) 16%, transparent); color: var(--tag, var(--sky)); border: 1px solid color-mix(in srgb, var(--tag, var(--sky)) 34%, transparent); padding: 1px 8px; border-radius: 6px; font-size: 11.5px; font-weight: 800; white-space: nowrap; }
 .ac-tag.sm { font-size: 10px; padding: 1px 6px; }
 .qual-tag.sm { font-size: 10.5px; padding: 1px 6px; }
 .ore-tag { display: inline-block; min-width: 22px; text-align: center; padding: 2px 7px; border-radius: 6px; font-size: 11.5px; font-weight: 800; }
-.ore-A { background: #f7dbe8; color: #8a1350; }
-.ore-B { background: #d6eff6; color: #045d76; }
-.ore-C { background: #e6f5f9; color: #045d76; }
+.ore-tag[style*='--tag'] { background: var(--tag); color: #fff; border-color: var(--tag); }
 .ore-Rente, .ore-none { background: var(--panel2); color: var(--muted); }
 
 .stage-badge { display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid var(--hair); border-radius: 999px; padding: 2px 9px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
@@ -982,9 +903,5 @@ textarea.input { resize: vertical; }
 }
 
 /* ---------- Plan window ---------- */
-.plan-window { display: flex; align-items: center; gap: 10px; margin: 10px 0 14px; }
-.plan-slider { flex: 1 1 auto; min-width: 0; accent-color: var(--burg); }
 /* Narrow cells: six of them plus a label have to fit the card without
    scrolling sideways, and a target is at most a two-digit headcount. */
-.plan-grid .plan-cell { padding: 6px 6px; text-align: right; min-width: 0; }
-.plan-grid th, .plan-grid td { white-space: nowrap; }

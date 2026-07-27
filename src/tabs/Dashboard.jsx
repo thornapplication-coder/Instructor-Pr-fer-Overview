@@ -1,10 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import KpiTile from '../components/KpiTile.jsx'
-import { Donut, NestedBars, HBars, ProgressRing, PipelineBar, StackedBars, TrendColumns, LineTrend, colorAt } from '../components/charts.jsx'
-import { historySeries, monthKey, monthLabelShort } from '../lib/history.js'
-import { planStatus, planFor, intakeByMonth, intakeFor, monthWindow } from '../lib/plan.js'
-import { monthLabel } from '../lib/alerts.js'
+import { Donut, NestedBars, HBars, ProgressRing, StackedBars, colorAt } from '../components/charts.jsx'
 import { useThemed } from '../lib/useThemed.js'
 import {
   headcount,
@@ -24,19 +21,11 @@ import {
 import { conversionProgress, STAFF_TYPE } from '../data/pipeline.js'
 import { qualLabel, conversionTrainers, CONVERSION_QUALS } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
-import { CATEGORICAL, MEASURE_WHOLE, MEASURE_PART, STATUS, BRAND, ROLE_CPT, ROLE_FO, stageRamp } from '../lib/palette.js'
-import { formatFte1, formatNum1 } from '../lib/format.js'
-import { deviationByMonth, durationByMonth, durationSummary, openEnded } from '../lib/courses.js'
+import { AC_COLORS, CATEGORICAL, MEASURE_WHOLE, MEASURE_PART, ORE_COLORS, STATUS, BRAND, ROLE_CPT, ROLE_FO } from '../lib/palette.js'
+import { formatFte1 } from '../lib/format.js'
 
-// ORE is a priority tier (A before B before C), so it reads as an ordinal ramp –
-// darker means more urgent.
-// Everything else here is identity and takes documented categorical slots.
-const ORE_RAMP = stageRamp(3)
-const ORE_COLORS = { A: ORE_RAMP[2], B: ORE_RAMP[1], C: ORE_RAMP[0] }
-const AC_COLORS = { A320: CATEGORICAL[0], B737: CATEGORICAL[1] }
-// One burgundy hue in two steps – see palette.js. The pair has to be the same
-// in the donut and in the stacked intake columns, or Captain would be two
-// different colours on one page.
+// ORE tiers and aircraft take their colours from palette.js, the same values
+// the tags on the board and in the tables use – two copies had already drifted.
 const ROLE_COLORS = { captain: ROLE_CPT, fo: ROLE_FO }
 
 function Card({ title, total, children }) {
@@ -116,7 +105,7 @@ function ReorderZone({ zone, items, className, editing, onReorder, t }) {
 export default function Dashboard() {
   const { data, t, lang, setDashboardOrder } = useStore()
   const tint = useThemed()
-  const { trainers, stages, quals: qualDefs, assignmentSteps, courseRuns } = data
+  const { trainers, stages, quals: qualDefs } = data
   const [editing, setEditing] = useState(false)
   const order = (data.dashboard && data.dashboard.order) || {}
   const total = trainers.length
@@ -124,7 +113,9 @@ export default function Dashboard() {
   const qualOrder = qualDefs.map((q) => q.id)
   const hc = headcount(trainers)
   // The conversion only applies to SEN / TRE / TRI / LTC (not SFI / TKI).
-  const convPool = conversionTrainers(trainers)
+  // Memoised: a fresh array every render makes it unequal to itself and defeats
+  // every useMemo below that lists it as a dependency.
+  const convPool = useMemo(() => conversionTrainers(trainers), [trainers])
   const cs = conversionSummary(convPool, stages)
   const fteS = conversionFteSummary(convPool, stages)
   const qualData = byQual(trainers, qualOrder).map((r) => ({ ...r, label: qualLabel(qualDefs, r.key) }))
@@ -160,84 +151,6 @@ export default function Dashboard() {
     [trainers, stages]
   )
   const fte1 = (v) => formatFte1(v, lang)
-
-  // Progress over time. The three series are stages of one journey, so they
-  // take one hue getting darker – released is the darkest and sits at the base
-  // of each column, where the reader watches it grow.
-  const trend = useMemo(() => historySeries(data.history), [data.history])
-  const TREND_RAMP = stageRamp(3)
-  const trendSeries = [
-    { key: 'released', label: t('kpi_released'), color: TREND_RAMP[2] },
-    { key: 'inProgress', label: t('kpi_inProgress'), color: TREND_RAMP[1] },
-    { key: 'notStarted', label: t('kpi_notStarted'), color: TREND_RAMP[0] }
-  ]
-
-  // Plan vs. actual. Measured against TODAY's released count rather than the
-  // recorded month, so the card reacts the moment somebody is released instead
-  // of waiting for the recorder.
-  const thisMonth = monthKey(new Date())
-  const plan = useMemo(() => planStatus(data.plan, cs.released, thisMonth), [data.plan, cs.released, thisMonth])
-  const PLAN_LEVEL = {
-    on_track: { color: STATUS.good, label: 'plan_onTrack' },
-    at_risk: { color: STATUS.warn, label: 'plan_atRisk' },
-    behind: { color: STATUS.critical, label: 'plan_behind' }
-  }
-
-  // Monthly intake: the conversion pool grouped by the month of its target
-  // date, split by cockpit role. Same two colours as the Captain/FO ring above
-  // – one thing, one colour, on one page.
-  // Six months at a time, walkable to the end of 2027. Months with nobody in
-  // them stay in the window as empty columns – a chart that silently skips the
-  // quiet months would make the pace look steadier than it is.
-  const [intakeAt, setIntakeAt] = useState(0)
-  const intakeAll = useMemo(() => intakeByMonth(convPool), [convPool])
-  const intakeWin = monthWindow(thisMonth, intakeAt, 6)
-  const intake = useMemo(() => {
-    const by = new Map(intakeAll.map((r) => [r.key, r]))
-    return intakeWin.months.map((m) => by.get(m) || { key: m, captain: 0, fo: 0, total: 0 })
-  }, [intakeAll, intakeWin.months.join()])
-  const intakeSeries = [
-    { key: 'captain', label: t('role_captain'), short: t('role_captainShort'), color: ROLE_COLORS.captain },
-    { key: 'fo', label: t('role_fo'), short: t('role_foShort'), color: ROLE_COLORS.fo }
-  ]
-
-  // How long a course type actually takes, month by month. Measured per COURSE
-  // (see courses.js): a course with twelve people on it happened once.
-  // Two readings of the same data – days answers "how long is a TRI course",
-  // percent answers "which course type is running over" across types whose
-  // natural lengths are nothing alike.
-  const [durMode, setDurMode] = useState('days')
-  const durSummary = useMemo(
-    () => durationSummary(convPool, assignmentSteps, courseRuns),
-    [convPool, assignmentSteps, courseRuns]
-  )
-  const durDays = useMemo(
-    () => durationByMonth(convPool, assignmentSteps, courseRuns),
-    [convPool, assignmentSteps, courseRuns]
-  )
-  const durPct = useMemo(
-    () => deviationByMonth(convPool, assignmentSteps, courseRuns),
-    [convPool, assignmentSteps, courseRuns]
-  )
-  const durOpen = useMemo(
-    () => openEnded(convPool, assignmentSteps, courseRuns),
-    [convPool, assignmentSteps, courseRuns]
-  )
-  const durRated = durSummary.filter((r) => r.target != null)
-  // "Is there anything to show at all" – independent of the current mode.
-  const durAny = durSummary.some((r) => r.avg != null)
-  const durData = durMode === 'days' ? durDays : durPct
-  const durRows = durMode === 'days' ? durSummary : durRated
-  // Only course types that actually have readings – an empty line in the legend
-  // reads as "zero days", which is not what "no course yet" means.
-  const durSeries = durRows
-    .filter((r) => durData.some((d) => d.values[r.id] != null))
-    .map((r) => ({
-      key: r.id,
-      label: r.label,
-      color: r.color,
-      target: durMode === 'days' ? r.target : null
-    }))
 
   const pipe = pipelineDistribution(convPool, stages)
   const overall =
@@ -376,7 +289,16 @@ export default function Dashboard() {
           <h2 className="card-title">{t('chart_pipeline')}</h2>
           <div className="pipeline-row">
             <ProgressRing value={overall} label={t('overallProgress')} />
-            <div className="pipeline-flex"><PipelineBar stages={pipe} /></div>
+            {/* One bar per stage rather than one stacked bar. The stacked
+                version had to hide any stage at zero, so the reader could not
+                see which stages are still empty – on a pipeline that is the
+                whole question. Colours are the stage ramp, unchanged. */}
+            <div className="pipeline-flex">
+              <HBars
+                data={pipe.map((st) => ({ key: st.id, label: st.label, count: st.count, color: st.color }))}
+                colorFn={(d) => d.color}
+              />
+            </div>
           </div>
         </section>
       )
@@ -392,190 +314,6 @@ export default function Dashboard() {
         </Card>
       )
     },
-    {
-      id: 'trend',
-      node: (
-        <Card title={t('chart_trend')} total={trend.length ? trend[trend.length - 1].total : null}>
-          {/* One month is a dot, not a development – say so instead of drawing
-              a single column that looks like a finished chart. */}
-          {trend.length < 2 ? (
-            <p className="trend-empty">{t('trend_empty')}</p>
-          ) : (
-            <>
-              <TrendColumns
-                data={trend}
-                series={trendSeries}
-                labelOf={(k) => monthLabelShort(k, lang)}
-                markOf={(k) => planFor(plan.series, k)}
-                markLabel={t('plan_line')}
-              />
-              <p className="stat-hint">
-                {t('trend_hint')}
-                {plan.series.length > 0 && ' ' + t('plan_line') + ': ' + t('trend_markHint')}
-              </p>
-            </>
-          )}
-        </Card>
-      )
-    },
-    {
-      id: 'planVsActual',
-      node: (
-        <Card title={t('chart_planVsActual')}>
-          {plan.level === 'none' ? (
-            <>
-              <p className="trend-empty">{t('plan_none')}</p>
-              {plan.next && (
-                <p className="stat-hint plan-next">
-                  {t('plan_next').replace('{n}', String(plan.next.released)).replace('{m}', monthLabel(plan.next.id, lang))}
-                </p>
-              )}
-            </>
-          ) : (
-            <>
-              <div className="plan-status">
-                <span className="plan-dot" style={{ background: tint(PLAN_LEVEL[plan.level].color) }} />
-                <span className="plan-verdict">{t(PLAN_LEVEL[plan.level].label)}</span>
-              </div>
-              <div className="plan-numbers">
-                <div className="plan-num">
-                  <div className="kpi-value">{plan.target}</div>
-                  <div className="kpi-label">{t('plan_targetDue').replace('{m}', monthLabel(plan.due.id, lang))}</div>
-                </div>
-                <div className="plan-num">
-                  <div className="kpi-value">{plan.actual}</div>
-                  <div className="kpi-label">{t('plan_actual')}</div>
-                </div>
-                <div className="plan-num">
-                  {/* One number, named for its sign: "Rückstand -2" would be a
-                      riddle, so being ahead is labelled as being ahead. */}
-                  <div className="kpi-value" style={{ color: tint(PLAN_LEVEL[plan.level].color) }}>
-                    {plan.gap > 0 ? plan.gap : plan.actual - plan.target}
-                  </div>
-                  <div className="kpi-label">{plan.gap > 0 ? t('plan_gap') : t('plan_ahead')}</div>
-                </div>
-              </div>
-              {plan.next && (
-                <p className="stat-hint plan-next">
-                  {t('plan_next').replace('{n}', String(plan.next.released)).replace('{m}', monthLabel(plan.next.id, lang))}
-                </p>
-              )}
-              <p className="stat-hint">{t('plan_slack')}</p>
-            </>
-          )}
-        </Card>
-      )
-    },
-    {
-      id: 'intake',
-      node: (
-        <Card title={t('chart_intake')} total={intake.reduce((n, r) => n + r.total, 0)}>
-          {intakeAll.length === 0 ? (
-            <p className="trend-empty">{t('intake_empty')}</p>
-          ) : (
-            <>
-              <div className="plan-window no-capture">
-                <button
-                  className="mini-btn"
-                  disabled={intakeWin.start === 0}
-                  onClick={() => setIntakeAt(intakeWin.start - 1)}
-                  aria-label={t('plan_earlier')}
-                  title={t('plan_earlier')}
-                >
-                  ‹
-                </button>
-                <input
-                  className="plan-slider"
-                  type="range"
-                  min="0"
-                  max={intakeWin.maxOffset}
-                  value={intakeWin.start}
-                  onChange={(e) => setIntakeAt(Number(e.target.value))}
-                  aria-label={t('plan_window')}
-                />
-                <button
-                  className="mini-btn"
-                  disabled={intakeWin.start >= intakeWin.maxOffset}
-                  onClick={() => setIntakeAt(intakeWin.start + 1)}
-                  aria-label={t('plan_later')}
-                  title={t('plan_later')}
-                >
-                  ›
-                </button>
-              </div>
-              <TrendColumns
-                data={intake}
-                series={intakeSeries}
-                labelOf={(k) => monthLabelShort(k, lang)}
-                markOf={(k) => intakeFor(plan.series, k)}
-                markLabel={t('plan_intake')}
-                // A flow, not a stock: each month is different people, so the
-                // legend may add them up.
-                legendMode="sum"
-                showValues
-              />
-              <p className="stat-hint">{t('intake_hint')}</p>
-            </>
-          )}
-        </Card>
-      )
-    },
-    {
-      id: 'duration',
-      node: (
-        <Card title={t('chart_duration')}>
-          {/* The switch is tied to "is there ANY duration data", never to the
-              current mode. Hung off the current mode, the percentage view with
-              no target duration set anywhere rendered its empty state – and
-              took the switch with it, so there was no way back to days. */}
-          {!durAny ? (
-            <p className="trend-empty">{t('dur_empty')}</p>
-          ) : (
-            <>
-              <div className="seg-toggle no-capture" role="group" aria-label={t('chart_duration')}>
-                {['days', 'pct'].map((m) => (
-                  <button
-                    key={m}
-                    className={'seg-btn' + (durMode === m ? ' active' : '')}
-                    aria-pressed={durMode === m}
-                    onClick={() => setDurMode(m)}
-                  >
-                    {t(m === 'days' ? 'dur_inDays' : 'dur_inPct')}
-                  </button>
-                ))}
-              </div>
-              {durSeries.length === 0 ? (
-                // Percent with no target set anywhere: say what is missing and
-                // where to set it, rather than drawing an empty grid.
-                <p className="trend-empty">{t('dur_noTargets')}</p>
-              ) : (
-                <LineTrend
-                  data={durData}
-                  series={durSeries}
-                  labelOf={(k) => monthLabelShort(k, lang)}
-                  unit={durMode === 'days' ? t('course_daysShort') : '%'}
-                  format={(v) => formatNum1(v, lang)}
-                  refLine={durMode === 'pct' ? { value: 100 } : null}
-                  legendValue={(s) => {
-                    const row = durRows.find((r) => r.id === s.key)
-                    if (!row || row.avg == null) return '–'
-                    return durMode === 'days'
-                      ? formatNum1(row.avg, lang) + ' ' + t('course_daysShort') + (row.target ? ' / ' + row.target : '')
-                      : row.pct + ' %'
-                  }}
-                />
-              )}
-              <p className="stat-hint">
-                {t('dur_hint')}
-                {durMode === 'pct' && durSeries.length > 0 && ' ' + t('dur_hintPct')}
-                {durMode === 'days' && durSummary.some((r) => r.target == null) && ' ' + t('dur_hintNoTarget')}
-                {durOpen > 0 && ' ' + t('dur_open').replace('{n}', String(durOpen))}
-              </p>
-            </>
-          )}
-        </Card>
-      )
-    }
   ]
 
   return (

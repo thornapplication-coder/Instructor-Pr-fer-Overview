@@ -12,6 +12,8 @@
 // Where both exist, the person's own value wins per field – that is how
 // "started two days late" is expressed without inventing a second course.
 
+import { formatDate } from './format.js'
+
 const DAY = 86400000
 
 // 'YYYY-MM-DD' -> epoch ms at UTC midnight, or null. Parsed by hand: the
@@ -44,6 +46,15 @@ export function spanDays(from, to) {
   if (a == null || b == null) return null
   const days = Math.round((b - a) / DAY) + 1
   return days > 0 ? days : null
+}
+
+// "03.03.2026 – 20.03.2026", or just the start while no end is known. One
+// implementation: the grid cell, the board chip, the PDF and the Excel export
+// all print the same period, and four private copies had already drifted (one
+// of them printed a raw ISO date).
+export function spanText(from, to, lang) {
+  if (!from) return ''
+  return to ? formatDate(from, lang) + ' – ' + formatDate(to, lang) : formatDate(from, lang)
 }
 
 export function emptyCourseRun(id) {
@@ -125,151 +136,6 @@ export function seatUsage(trainers, steps) {
 export function isOverbooked(run, usedCount) {
   const seats = Math.max(0, Math.round(Number(run && run.seats) || 0))
   return seats > 0 && usedCount > seats
-}
-
-// Everyone booked onto one course date, in roster order.
-export function attendees(trainers, steps, runId) {
-  const out = []
-  for (const tr of trainers || []) {
-    for (const s of steps || []) {
-      const a = tr.assignments?.[s.id]
-      if (a && a.courseId === runId && a.status !== 'na') out.push({ trainer: tr, step: s, assignment: a })
-    }
-  }
-  return out.sort((x, y) => (x.trainer.name || '').localeCompare(y.trainer.name || ''))
-}
-
-// The duration a course type is supposed to take, or null. Stored on the step
-// definition itself (Planung -> Schritte verwalten), so it travels with the
-// column and survives a rename.
-export function targetDays(step) {
-  const n = Number(step && step.targetDays)
-  return Number.isFinite(n) && n > 0 ? Math.round(n) : null
-}
-
-// ---------------------------------------------------------------- duration --
-//
-// One entry per COURSE, not per attendee. A course with twelve people on it
-// happened once and took as long as it took; counted per head it would decide
-// its month twelve times over and drown out every other course that month.
-// A booking with no course of its own is its own event – that is the only
-// sensible reading of a one-off.
-//
-// A step still running (a start, no end) is left out entirely rather than
-// counted as zero days, which would drag every average down towards nothing.
-export function courseEvents(trainers, steps, runs) {
-  const seen = new Set()
-  const out = []
-  for (const tr of trainers || []) {
-    for (const s of steps || []) {
-      const a = tr.assignments?.[s.id]
-      if (!a || a.status === 'na') continue
-      if (a.courseId) {
-        const key = s.id + '|' + a.courseId
-        if (seen.has(key)) continue
-        seen.add(key)
-        // The COURSE period, deliberately not this person's deviation: how long
-        // the course ran is a property of the course.
-        const run = findRun(runs, a.courseId)
-        const days = spanDays(run && run.from, run && run.to)
-        if (days == null) continue
-        out.push({ stepId: s.id, from: run.from, days, courseId: a.courseId })
-      } else {
-        const r = resolveAssignment(a, null)
-        if (r.days == null) continue
-        out.push({ stepId: s.id, from: r.from, days: r.days, courseId: '' })
-      }
-    }
-  }
-  return out
-}
-
-// Months on the x axis, one average per course type. Keyed by the month a
-// course STARTED in, so a course running over a month boundary stays in one
-// bucket instead of being split between two.
-export function durationByMonth(trainers, steps, runs) {
-  const byMonth = new Map()
-  for (const e of courseEvents(trainers, steps, runs)) {
-    const key = monthOf(e.from)
-    if (!key) continue
-    if (!byMonth.has(key)) byMonth.set(key, new Map())
-    const row = byMonth.get(key)
-    const cur = row.get(e.stepId) || { sum: 0, n: 0 }
-    cur.sum += e.days
-    cur.n += 1
-    row.set(e.stepId, cur)
-  }
-  return [...byMonth.entries()]
-    .sort((a, b) => a[0].localeCompare(b[0]))
-    .map(([key, row]) => {
-      const values = {}
-      const counts = {}
-      for (const s of steps || []) {
-        const cur = row.get(s.id)
-        // Rounded once, at the end – never by adding up rounded rows.
-        values[s.id] = cur ? Math.round((cur.sum / cur.n) * 10) / 10 : null
-        counts[s.id] = cur ? cur.n : 0
-      }
-      return { key, values, counts }
-    })
-}
-
-// The same numbers as a share of each course type's target, so types of very
-// different length become comparable on one axis. Only types that HAVE a target
-// appear – a percentage of nothing is not a number.
-export function deviationByMonth(trainers, steps, runs) {
-  const rated = (steps || []).filter((s) => targetDays(s) != null)
-  return durationByMonth(trainers, steps, runs).map((row) => {
-    const values = {}
-    const counts = {}
-    for (const s of rated) {
-      const v = row.values[s.id]
-      values[s.id] = v == null ? null : Math.round((v / targetDays(s)) * 100)
-      counts[s.id] = row.counts[s.id]
-    }
-    return { key: row.key, values, counts }
-  })
-}
-
-// One row per course type over the whole period: how many courses, how long on
-// average, against the target.
-export function durationSummary(trainers, steps, runs) {
-  const acc = new Map()
-  for (const e of courseEvents(trainers, steps, runs)) {
-    const cur = acc.get(e.stepId) || { sum: 0, n: 0 }
-    cur.sum += e.days
-    cur.n += 1
-    acc.set(e.stepId, cur)
-  }
-  return (steps || []).map((s) => {
-    const cur = acc.get(s.id) || { sum: 0, n: 0 }
-    const avg = cur.n ? Math.round((cur.sum / cur.n) * 10) / 10 : null
-    const target = targetDays(s)
-    return {
-      id: s.id,
-      label: s.label,
-      color: s.color,
-      n: cur.n,
-      avg,
-      target,
-      pct: avg != null && target ? Math.round((avg / target) * 100) : null
-    }
-  })
-}
-
-// Steps that have started but have no end yet. The honest caption under a chart
-// that would otherwise look like the whole truth.
-export function openEnded(trainers, steps, runs) {
-  let n = 0
-  for (const tr of trainers || []) {
-    for (const s of steps || []) {
-      const a = tr.assignments?.[s.id]
-      if (!a || a.status === 'na') continue
-      const r = resolveAssignment(a, findRun(runs, a.courseId))
-      if (dayValue(r.from) != null && dayValue(r.to) == null) n += 1
-    }
-  }
-  return n
 }
 
 // ------------------------------------------------------------ target date ---

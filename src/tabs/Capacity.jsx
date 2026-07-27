@@ -8,8 +8,6 @@ import { CONV_STATUS, stageLabel, firstStageId, releasedStageId } from '../data/
 import { qualLabel, conversionTrainers } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { formatDate, formatFte1 } from '../lib/format.js'
-import { planSeries, monthWindow } from '../lib/plan.js'
-import { monthKey } from '../lib/history.js'
 
 // One sortable capacity table (per base or per qualification). Qualification
 // rows default to the canonical rank (SEN → TRE → TRI → LTC → SFI → TKI).
@@ -183,96 +181,6 @@ function ConversionEditor({ trainers, stages, quals }) {
 // months without burying the near ones. Every month owns BOTH its numbers and
 // is edited in place – no "add" form, because a target you cannot see is a
 // target you forget to set.
-function PlanEditor() {
-  const { data, t, lang, setMilestone } = useStore()
-  const series = useMemo(() => planSeries(data.plan), [data.plan])
-  const byMonth = useMemo(() => new Map(series.map((p) => [p.id, p])), [series])
-  const [offset, setOffset] = useState(0)
-  const pool = useMemo(() => conversionTrainers(data.trainers).length, [data.trainers])
-
-  // The window starts at the current month: planning the past is not a thing.
-  const first = monthKey(new Date())
-  const { months, start, maxOffset } = monthWindow(first, offset, 6)
-
-  // '' clears the target; anything else is written as typed. The store guards
-  // no-ops, so a re-entered identical number does not stamp a record.
-  const set = (m, field, v) => setMilestone(m, { [field]: v === '' ? 0 : Number(v) })
-
-  return (
-    <section className="card">
-      <h3 className="card-title">{t('plan_title')}</h3>
-      <p className="planning-note">{t('plan_hint').replace('{n}', String(pool))}</p>
-
-      <div className="plan-window">
-        <button
-          className="mini-btn"
-          disabled={start === 0}
-          onClick={() => setOffset(start - 1)}
-          aria-label={t('plan_earlier')}
-          title={t('plan_earlier')}
-        >
-          ‹
-        </button>
-        <input
-          className="plan-slider"
-          type="range"
-          min="0"
-          max={maxOffset}
-          value={start}
-          onChange={(e) => setOffset(Number(e.target.value))}
-          aria-label={t('plan_window')}
-        />
-        <button
-          className="mini-btn"
-          disabled={start >= maxOffset}
-          onClick={() => setOffset(start + 1)}
-          aria-label={t('plan_later')}
-          title={t('plan_later')}
-        >
-          ›
-        </button>
-        <span className="muted small">{monthLabel(months[0], lang)} – {monthLabel(months[months.length - 1], lang)}</span>
-      </div>
-
-      <div className="table-wrap">
-        <table className="data-table compact plan-grid">
-          <thead>
-            <tr>
-              <th>{t('plan_month')}</th>
-              {months.map((m) => <th key={m} className="num">{monthLabel(m, lang)}</th>)}
-            </tr>
-          </thead>
-          <tbody>
-            {[
-              { field: 'released', label: t('plan_released') },
-              { field: 'intake', label: t('plan_intake') }
-            ].map((row) => (
-              <tr key={row.field}>
-                <td className="strong">{row.label}</td>
-                {months.map((m) => (
-                  <td key={m} className="num">
-                    <input
-                      className="input plan-cell"
-                      type="number"
-                      min="0"
-                      max={pool}
-                      value={byMonth.get(m)?.[row.field] || ''}
-                      placeholder="–"
-                      onChange={(e) => set(m, row.field, e.target.value)}
-                      aria-label={row.label + ' ' + monthLabel(m, lang)}
-                    />
-                  </td>
-                ))}
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
-      <p className="stat-hint">{t('plan_gridHint')}</p>
-    </section>
-  )
-}
-
 export default function Capacity() {
   const { data, t, lang } = useStore()
   const fte1 = (v) => formatFte1(v, lang)
@@ -303,8 +211,6 @@ export default function Capacity() {
       <CapTable title={t('capacity_byAircraft')} firstCol={t('f_aircraft')} cap={capAircraft} keyKind="aircraft" />
       <CapTable title={t('capacity_byBase')} firstCol={t('f_base')} cap={capBase} keyKind="base" />
 
-
-      <PlanEditor />
 
       <ConversionEditor trainers={convPool} stages={stages} quals={quals} />
 

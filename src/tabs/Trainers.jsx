@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import { AircraftTag, OreTag, RoleTag } from '../components/tags.jsx'
 import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
@@ -18,18 +19,6 @@ const ORES = ['A', 'B', 'C', '']
 
 // Cockpit role: everyone is a Captain unless explicitly marked First Officer.
 const roleOf = (x) => (x.role === 'fo' ? 'fo' : 'captain')
-
-function RoleTag({ role, t }) {
-  const fo = role === 'fo'
-  return (
-    <span
-      className={'role-tag ' + (fo ? 'role-fo' : 'role-captain')}
-      title={fo ? t('role_fo') : t('role_captain')}
-    >
-      {fo ? t('role_foShort') : t('role_captainShort')}
-    </span>
-  )
-}
 
 function ptToInput(pt) {
   if (pt === '' || pt === null || pt === undefined) return ''
@@ -240,14 +229,12 @@ export default function Trainers() {
                 <td>{x.base}</td>
                 <td className="mono">{x.tlc}</td>
                 <td className="strong">{x.name}</td>
-                <td><RoleTag role={roleOf(x)} t={t} /></td>
+                <td><RoleTag role={roleOf(x)} /></td>
                 <td className="num">{formatPartTime(x.partTime, lang)}</td>
                 <td className="num">{formatFte(x.fte)}</td>
-                <td><span className="ac-tag">{x.aircraft || '–'}</span></td>
+                <td><AircraftTag value={x.aircraft} /></td>
                 <td>
-                  <span className={classNames('ore-tag', 'ore-' + (x.ore || 'none'))}>
-                    {x.ore || '–'}
-                  </span>
+                  <OreTag value={x.ore} />
                 </td>
                 <td>
                   <span className="staff-tag" style={{ '--tag': tint((STAFF_TYPE[x.staffType || 'internal']).color) }}>

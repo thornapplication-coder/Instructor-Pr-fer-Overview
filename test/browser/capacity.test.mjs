@@ -89,10 +89,34 @@ export default async function run(browser, baseUrl, shots) {
   const cap = page.locator('.card').filter({ hasText: 'Kapazität & Auslastung' }).first()
   await cap.waitFor()
   await page.waitForTimeout(500)
-  const over = cap.locator('.type-tag.over')
-  ok(await over.count() >= 1, 'the course type whose demand beats its seats is flagged (' + (await over.count()) + ')')
-  ok((await over.first().innerText()).includes('/'),
-    'and the chip shows demand against capacity (' + (await over.first().innerText()).trim() + ')')
+  // Demand is the whole open backlog and the seats are a MONTHLY figure, so the
+  // chip reads as months. Four people against two seats a month is two months –
+  // normal for a phase-in, and deliberately NOT flagged: flagging "more than one
+  // month" would put a red mark on every provider forever.
+  const chip = cap.locator('.type-tag').first()
+  const chipText = (await chip.innerText()).trim()
+  ok(chipText.includes('/'), 'the chip shows demand against seats per month (' + chipText + ')')
+  ok(/\d+\s*Mon\./.test(chipText), 'and how many months that backlog needs (' + chipText + ')')
+  ok(await cap.locator('.type-tag.over').count() === 0, 'a two-month backlog is not flagged red')
+
+  // Raise the backlog past three months and it is.
+  await page.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    const p = d.providers.find((x) => x.slotsByStep && Object.values(x.slotsByStep).some(Boolean))
+    const step = d.assignmentSteps[0].id
+    let n = 0
+    d.trainers = d.trainers.map((t) =>
+      n++ < 20 ? { ...t, assignments: { ...t.assignments, [step]: { ...(t.assignments?.[step] || {}), providerId: p.id, status: 'booked' } } } : t
+    )
+    localStorage.setItem(K, JSON.stringify(d))
+  }, STORAGE_KEY)
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.locator('.tab', { hasText: 'Provider' }).first().click()
+  const cap2 = page.locator('.card').filter({ hasText: 'Kapazität & Auslastung' }).first()
+  await cap2.waitFor()
+  await page.waitForTimeout(500)
+  ok(await cap2.locator('.type-tag.over').count() >= 1,
+    'twenty people against two seats a month is flagged (' + (await cap2.locator('.type-tag.over').first().innerText()).trim() + ')')
 
   await cap.screenshot({ path: shots + '/prov-capacity.png' })
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))

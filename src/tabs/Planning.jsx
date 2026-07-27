@@ -6,32 +6,14 @@ import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
 import CourseCalendar from '../components/CourseCalendar.jsx'
 import CourseRunManager from '../components/CourseRunManager.jsx'
-import { findRun, resolveAssignment, runsForStep, spanDays } from '../lib/courses.js'
+import { providersForStep } from '../lib/providerMatch.js'
+import { conflictsFor, findRun, resolveAssignment, runsForStep, spanDays, spanText } from '../lib/courses.js'
 import { formatDate } from '../lib/format.js'
 import { ASSIGNMENT_STATUS, STAFF_TYPE } from '../data/pipeline.js'
 import { useThemed } from '../lib/useThemed.js'
 import { qualLabel } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 
-// Match providers to a planning step by the LABELS of their offered courses
-// (course entries store ids; custom courses have random ids, so ids must be
-// resolved against the course list first). "SIM only" counts as type rating.
-const STEP_COURSE_KW = { tr: ['type rating', 'sim'], tri: ['tri'], tre: ['tre'], lifus: ['lifus'] }
-function providersForStep(providers, step, courseDefs) {
-  const kws = STEP_COURSE_KW[step.id]
-  if (!kws) return providers
-  const labelOf = (id) => {
-    const c = (courseDefs || []).find((x) => x.id === id)
-    return String(c ? c.label : id).toLowerCase()
-  }
-  const matched = providers.filter((p) =>
-    (p.courses || []).some((cid) => {
-      const label = labelOf(cid)
-      return kws.some((kw) => label.includes(kw))
-    })
-  )
-  return matched.length ? matched : providers
-}
 
 function targetLabel(providers, resolved) {
   const p = providers.find((x) => x.id === resolved.providerId)
@@ -47,13 +29,6 @@ function cellLabel(providers, runs, a) {
   if (!a) return null
   if (a.status === 'na') return 'n/a'
   return targetLabel(providers, resolveAssignment(a, findRun(runs, a.courseId)))
-}
-
-// "03.03. – 20.03.2026", or just the start while no end is known.
-function spanText(resolved, lang) {
-  if (!resolved.from) return null
-  if (!resolved.to) return formatDate(resolved.from, lang)
-  return formatDate(resolved.from, lang) + ' – ' + formatDate(resolved.to, lang)
 }
 
 export default function Planning({ view: viewProp, embedded }) {
@@ -148,7 +123,7 @@ export default function Planning({ view: viewProp, embedded }) {
           </div>
         )}
         <button className="btn btn-ghost" onClick={() => setManageCourses(true)}>
-          🗓 {t('manageCourses')}
+          🗓 {t('manageCourseDates')}
         </button>
         <button className="btn btn-ghost" onClick={() => setManageSteps(true)}>
           ⚙ {t('manageSteps')}
@@ -202,7 +177,8 @@ export default function Planning({ view: viewProp, embedded }) {
                     const a = x.assignments?.[s.id]
                     const label = cellLabel(providers, courseRuns, a)
                     const st = ASSIGNMENT_STATUS[a?.status] || ASSIGNMENT_STATUS.open
-                    const span = a ? spanText(resolveAssignment(a, findRun(courseRuns, a.courseId)), lang) : null
+                    const r = a ? resolveAssignment(a, findRun(courseRuns, a.courseId)) : null
+                    const span = r ? spanText(r.from, r.to, lang) : ''
                     return (
                       <td key={s.id}>
                         {/* A booking onto a course date that has no provider yet
@@ -249,7 +225,7 @@ export default function Planning({ view: viewProp, embedded }) {
           ) : null
         })()}
       {manageCourses && (
-        <Modal title={t('manageCourses')} onClose={() => setManageCourses(false)} wide
+        <Modal title={t('manageCourseDates')} onClose={() => setManageCourses(false)} wide
           footer={<div className="foot-row"><div className="push-right">
             <button className="btn btn-primary" onClick={() => setManageCourses(false)}>{t('close')}</button></div></div>}>
           <CourseRunManager steps={assignmentSteps} providers={providers} trainers={trainers} />
@@ -259,12 +235,7 @@ export default function Planning({ view: viewProp, embedded }) {
         <Modal title={t('manageSteps')} onClose={() => setManageSteps(false)}
           footer={<div className="foot-row"><p className="muted small">{t('dragHint')}</p>
             <div className="push-right"><button className="btn btn-primary" onClick={() => setManageSteps(false)}>{t('close')}</button></div></div>}>
-          <p className="planning-note">{t('step_targetHint')}</p>
-          <CategoryManager
-            items={assignmentSteps}
-            onChange={setAssignmentSteps}
-            numField={{ key: 'targetDays', label: t('step_targetDays'), suffix: t('course_daysShort') }}
-          />
+          <CategoryManager items={assignmentSteps} onChange={setAssignmentSteps} />
         </Modal>
       )}
     </div>
@@ -275,7 +246,7 @@ export default function Planning({ view: viewProp, embedded }) {
 // being chosen; the provider only tells the periods apart.
 function runOption(run, providers, lang) {
   const where = targetLabel(providers, { providerId: run.providerId, location: run.location })
-  const span = spanText({ from: run.from, to: run.to }, lang)
+  const span = spanText(run.from, run.to, lang)
   return [span || '(?)', where].filter(Boolean).join(' · ')
 }
 
@@ -286,6 +257,7 @@ function PlanningModal({ trainer, providers, steps, runs, onClose }) {
   const tint = useThemed()
   const { data, t, lang, setAssignment, upsertTrainer } = useStore()
   const setStep = (stepId, changes) => setAssignment(trainer.id, stepId, changes)
+  const clashes = conflictsFor(trainer, steps, runs)
   const setStaff = (v) => upsertTrainer({ ...trainer, staffType: v })
   const courseDefs = data.providerCourses
 
@@ -317,6 +289,16 @@ function PlanningModal({ trainer, providers, steps, runs, onClose }) {
         </div>
       </div>
 
+      {/* The one thing the grid cannot show: two booked periods that run into
+          each other. A warning, not a block – a course really can be left early
+          to join the next one, and the planner is the one who knows. */}
+      {clashes.length > 0 && (
+        <p className="warn-text small" style={{ marginBottom: 12 }}>
+          ⚠ {t('course_clash')}{' '}
+          {clashes.map(([a, b]) => a.step.label + ' ↔ ' + b.step.label).join(' · ')}
+        </p>
+      )}
+
       <div className="assign-editor">
         {steps.map((s) => {
           const a = trainer.assignments?.[s.id] || {}
@@ -336,7 +318,17 @@ function PlanningModal({ trainer, providers, steps, runs, onClose }) {
               <div className="assign-grid">
                 <label className="field span2">
                   <span className="field-label">{t('courseDate')}</span>
-                  <select className="input" value={a.courseId || ''} onChange={(e) => setStep(s.id, { courseId: e.target.value })}>
+                  {/* Choosing a course clears the person's own provider and
+                      location: resolveAssignment gives those priority, so a
+                      leftover value from before would keep winning with no
+                      control left in the dialog to remove it. */}
+                  <select
+                    className="input"
+                    value={a.courseId || ''}
+                    onChange={(e) =>
+                      setStep(s.id, e.target.value ? { courseId: e.target.value, providerId: '', location: '' } : { courseId: '' })
+                    }
+                  >
                     <option value="">{t('course_own')}</option>
                     {stepRuns.map((r) => (
                       <option key={r.id} value={r.id}>{runOption(r, providers, lang)}</option>
@@ -353,7 +345,7 @@ function PlanningModal({ trainer, providers, steps, runs, onClose }) {
                     <div className="field span2">
                       <span className="field-label">{t('course_scheduled')}</span>
                       <p className="assign-run">
-                        {[targetLabel(providers, { providerId: run.providerId, location: run.location }), spanText({ from: run.from, to: run.to }, lang)]
+                        {[targetLabel(providers, { providerId: run.providerId, location: run.location }), spanText(run.from, run.to, lang)]
                           .filter(Boolean)
                           .join(' · ') || '–'}
                         {spanDays(run.from, run.to) != null && (

@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import { AircraftTag, OreTag, RoleTag } from '../components/tags.jsx'
 import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
@@ -13,15 +14,6 @@ import {
   isRatingOverdue,
   emptyPilot
 } from '../data/pilots.js'
-
-function RoleTag({ role, t }) {
-  const fo = role === 'fo'
-  return (
-    <span className={'role-tag ' + (fo ? 'role-fo' : 'role-captain')} title={fo ? t('role_fo') : t('role_captain')}>
-      {fo ? t('role_foShort') : t('role_captainShort')}
-    </span>
-  )
-}
 
 // Company line pilots (not trainers): who already holds a B737 rating, whose
 // rating lapsed, and who has Boeing experience without a current rating.
@@ -154,7 +146,7 @@ export default function Pilots() {
                     <td className="strong">{p.name || '–'}</td>
                     <td className="mono">{p.tlc || '–'}</td>
                     <td>{p.base || '–'}</td>
-                    <td><RoleTag role={pilotRole(p)} t={t} /></td>
+                    <td><RoleTag role={pilotRole(p)} /></td>
                     <td>
                       <span className="status-tag" style={{ background: pilotStatusColor(p.status) }}>
                         {pilotStatusLabel(p.status, lang)}

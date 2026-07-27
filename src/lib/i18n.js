@@ -107,61 +107,11 @@ const DICT = {
     en: 'The light bar is the headcount, the solid one the FTE within it. The light remainder is the part-time share.'
   },
   overallProgress: { de: 'Gesamtfortschritt', en: 'Overall progress' },
-  chart_trend: { de: 'Fortschritt je Monat', en: 'Progress per month' },
-  // ---- plan vs. actual
-  plan_title: { de: 'Umschulungs-Ziele (Soll)', en: 'Conversion milestones (plan)' },
-  plan_hint: {
-    de: 'Ein Ziel je Monat: wie viele bis Ende dieses Monats auf der 737 freigegeben sein sollen. Das Dashboard vergleicht es mit dem Ist-Stand. Der Umschulungs-Pool umfasst derzeit {n} Personen.',
-    en: 'One milestone per month: how many should be released on the 737 by the end of it. The dashboard compares that with reality. The conversion pool currently holds {n} people.'
-  },
-  plan_month: { de: 'Monat', en: 'Month' },
-  plan_released: { de: 'Freigegeben (Soll)', en: 'Released (plan)' },
-  plan_intake: { de: 'Trainer/Monat (Soll)', en: 'Trainers/month (plan)' },
-  plan_window: { de: 'Zeitfenster verschieben', en: 'Shift the time window' },
-  plan_earlier: { de: 'Einen Monat zurück', en: 'One month back' },
-  plan_later: { de: 'Einen Monat vor', en: 'One month forward' },
-  plan_gridHint: {
-    de: 'Jeder Monat hat sein eigenes Ziel – leer heißt „kein Ziel gesetzt", nicht „Ziel null". Der Regler schiebt das Sechs-Monats-Fenster bis Ende 2027.',
-    en: 'Every month has its own target – empty means "no target set", not "target zero". The slider moves the six-month window through to the end of 2027.'
-  },
-  chart_intake: { de: 'Eingehende Trainer je Monat', en: 'Incoming trainers per month' },
-  intake_hint: {
-    de: 'Je Säule ein Monat: wie viele Trainer laut Zieltermin in diesem Monat durch die Umschulung gehen, aufgeteilt in Captain und First Officer. Die gestrichelte Linie ist das Monatsziel aus „Umschulungs-Ziele" unter Kapazität.',
-    en: 'One column per month: how many trainers pass through the conversion that month according to their target date, split into Captain and First Officer. The dashed line is the monthly target from "Conversion milestones" on the Capacity tab.'
-  },
-  intake_empty: {
-    de: 'Noch keine Zieltermine gesetzt. Sobald unter „Kapazität" oder im Umschulungs-Board Zieltermine vergeben sind, erscheinen sie hier je Monat.',
-    en: 'No target dates set yet. As soon as target dates are assigned on the Capacity tab or the conversion board, they show up here by month.'
-  },
-  chart_planVsActual: { de: 'Soll gegen Ist', en: 'Plan vs. actual' },
-  plan_none: {
-    de: 'Noch kein Ziel gesetzt. Unter „Kapazität" lässt sich je Monat festlegen, wie viele bis dahin freigegeben sein sollen – dann steht hier, ob ihr auf Kurs seid.',
-    en: 'No milestone set yet. On the "Capacity" tab you can define per month how many should be released by then – this card will then say whether you are on course.'
-  },
-  plan_onTrack: { de: 'Im Plan', en: 'On track' },
-  plan_atRisk: { de: 'Knapp hinterher', en: 'Slightly behind' },
-  plan_behind: { de: 'Hinterher', en: 'Behind' },
   plan_targetDue: { de: 'Soll ({m})', en: 'Plan ({m})' },
-  plan_actual: { de: 'Ist (freigegeben)', en: 'Actual (released)' },
-  plan_gap: { de: 'Rückstand', en: 'Shortfall' },
-  plan_ahead: { de: 'Vorsprung', en: 'Ahead by' },
   plan_next: { de: 'Nächstes Ziel: {n} bis {m}', en: 'Next milestone: {n} by {m}' },
-  plan_slack: {
-    de: 'Gelb heißt: bis zu einem Zehntel des Ziels hinterher (mindestens eine Person). Darüber wird es rot.',
-    en: 'Amber means: behind by up to a tenth of the milestone (at least one person). Beyond that it turns red.'
-  },
-  plan_line: { de: 'Soll', en: 'Plan' },
-  trend_markHint: {
-    de: 'die gestrichelte Linie je Monat – dort sollte die dunkle Fläche stehen.',
-    en: 'the dashed line per month – that is where the dark block should reach.'
-  },
   trend_hint: {
     de: 'Je Säule ein Monat, von unten nach oben: freigegeben, in Umschulung, noch nicht gestartet. Der Verlauf wird ab sofort mitgeschrieben – jeder Monat hält den zuletzt bekannten Stand fest.',
     en: 'One column per month, bottom to top: released, in conversion, not started yet. The history is recorded from now on – each month keeps the last state known in it.'
-  },
-  trend_empty: {
-    de: 'Der Verlauf beginnt mit diesem Monat. Sobald ein zweiter Monat dazukommt, zeigt die Kachel die Entwicklung – rückwirkend lässt sie sich nicht rekonstruieren, weil bisher nur der jeweils aktuelle Stand gespeichert war.',
-    en: 'The history starts with this month. As soon as a second month is added, this card shows the development – it cannot be reconstructed retroactively, because only the current state was ever stored.'
   },
 
   // ---- dashboard sections + arrange mode
@@ -425,7 +375,8 @@ const DICT = {
     de: 'Offene Planungs-Zuweisungen je Provider gegen die Kapazität EINES Monats – über 100 % heißt: der offene Bedarf braucht länger als einen Monat. Kapazität im Bearbeiten-Dialog setzen, gesamt und je Kursart; Zeile antippen zum Bearbeiten.',
     en: 'Open planning assignments per provider against ONE month of capacity – above 100 % means the open demand needs longer than a month. Set the capacity in the edit dialog, overall and per course type; tap a row to edit.'
   },
-  prov_stepTag: { de: '{n} zugewiesen · {m} Plätze/Monat', en: '{n} assigned · {m} seats/month' },
+  prov_stepTag: { de: '{n} offen · {m} Plätze/Monat · rund {k} Monate', en: '{n} open · {m} seats/month · about {k} months' },
+  prov_months: { de: 'Mon.', en: 'mo.' },
   prov_assigned: { de: 'Zugewiesen', en: 'Assigned' },
   prov_slots: { de: 'Plätze / Monat', en: 'Seats / month' },
   prov_util: { de: 'Auslastung', en: 'Utilization' },
@@ -566,7 +517,7 @@ const DICT = {
   dragHint: { de: 'Ziehen (⠿) oder Pfeile zum Sortieren · Farbe links', en: 'Drag (⠿) or arrows to reorder · colour on the left' },
 
   // ---- course dates ("Kurstermine")
-  manageCourses: { de: 'Kurstermine', en: 'Course dates' },
+  manageCourseDates: { de: 'Kurstermine', en: 'Course dates' },
   courseDate: { de: 'Kurstermin', en: 'Course date' },
   course_own: { de: '– eigener Zeitraum –', en: '– own period –' },
   course_type: { de: 'Kursart', en: 'Course type' },
@@ -591,36 +542,13 @@ const DICT = {
     de: 'Diesem Kurstermin sind {n} Personen zugeordnet. Sie verlieren dadurch ihren Zeitraum. Wirklich löschen?',
     en: '{n} people are booked onto this course date. They will lose their period. Delete anyway?'
   },
+  course_clash: {
+    de: 'Überschneidung – diese Zeiträume laufen ineinander:',
+    en: 'Overlap – these periods run into each other:'
+  },
   course_hint: {
     de: 'Ein Kurstermin ist ein konkreter Durchlauf: Kursart, Provider, Ort und Zeitraum. In der Planung werden Personen darauf gebucht – der Zeitraum wird also einmal getippt, nicht je Person.',
     en: 'A course date is one concrete run: course type, provider, location and period. People are booked onto it in the planning grid, so the period is typed once, not per person.'
-  },
-  chart_duration: { de: 'Ø Dauer je Kursart', en: 'Avg. duration by course type' },
-  dur_inDays: { de: 'Tage', en: 'Days' },
-  dur_inPct: { de: '% vom Soll', en: '% of target' },
-  dur_empty: {
-    de: 'Noch keine abgeschlossenen Kurse. Sobald ein Kurstermin einen Zeitraum von–bis hat und jemand darauf gebucht ist, entsteht hier die Kurve.',
-    en: 'No completed courses yet. As soon as a course date has a period from–to and somebody is booked onto it, the curve appears here.'
-  },
-  dur_noTargets: {
-    de: 'Keine Kursart hat eine Soll-Dauer, deshalb gibt es nichts, wovon etwas abweichen könnte. Setzen unter Umschulung → Planung → Spalten bearbeiten.',
-    en: 'No course type has a target duration, so there is nothing for anything to deviate from. Set one under Conversion → Planning → Edit columns.'
-  },
-  dur_hint: {
-    de: 'Gezählt wird je Kurs, nicht je Kopf: ein Kurs mit zwölf Teilnehmern hat einmal stattgefunden. Der Monat ist der Kursbeginn.',
-    en: 'Counted per course, not per head: a course with twelve attendees happened once. The month is the course start.'
-  },
-  dur_hintPct: {
-    de: '100 % ist die Soll-Dauer der jeweiligen Kursart; nur Kursarten mit gesetztem Soll erscheinen.',
-    en: '100 % is the course type\'s target duration; only types with a target are shown.'
-  },
-  dur_hintNoTarget: {
-    de: 'Kursarten ohne Soll-Dauer haben keine Vergleichslinie (Planung → Spalten bearbeiten).',
-    en: 'Course types without a target duration have no reference line (Planning → Edit columns).'
-  },
-  dur_open: {
-    de: '{n} Kurse laufen noch (Start ohne Ende) und sind nicht mitgerechnet.',
-    en: '{n} courses are still running (a start with no end) and are not counted.'
   },
   target_partial: { de: '{n}/{m}', en: '{n}/{m}' },
   target_partialHint: {
@@ -634,11 +562,6 @@ const DICT = {
   target_okHint: {
     de: 'Der letzte gebuchte Kurs endet bis zum Zieltermin.',
     en: 'The last booked course ends by the target date.'
-  },
-  step_targetDays: { de: 'Soll-Dauer', en: 'Target duration' },
-  step_targetHint: {
-    de: 'Die Soll-Dauer je Kursart in Tagen (leer = keine Vorgabe). Sie ist die Vergleichslinie im Dauer-Diagramm.',
-    en: 'The target duration per course type in days (blank = none). It is the reference line in the duration chart.'
   },
   categoriesEditableHint: {
     de: 'Balken oben, Werte im Diagramm – die Tabelle darunter entfällt. Berechtigungen/Phasen sind editierbar (umbenennen, Farbe).',

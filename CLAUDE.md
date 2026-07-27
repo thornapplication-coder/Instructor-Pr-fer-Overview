@@ -16,9 +16,7 @@ Commit-Nachrichten auf Englisch.
 | `src/lib/cloudSync.js` | Sync-Ablauf: wann abgeglichen wird, Wiederholungen, Zustände. |
 | `src/lib/supabaseSync.js` | Supabase-Aufrufe (`pull`, `pushCas`, `createRow`, `pushOnUnload`). |
 | `src/lib/palette.js` | **Alle** Farben. Nirgends sonst ein Hex-Wert für Daten. |
-| `src/lib/history.js` | Monats-Verlauf: `monthKey`, `progressSnapshot`, `upsertMonth`, `historySeries`. |
 | `src/lib/courses.js` | Kurstermine: Zeitraum je Kurs, Auflösung Person↔Kurs (`resolveAssignment`), Plätze, Überschneidungen. |
-| `src/lib/plan.js` | Soll gegen Ist: Meilensteine, Ampel-Schwelle (`slackFor`), `planStatus`, `planFor`. |
 | `src/lib/i18n.js` | DE/EN, ein flaches Wörterbuch. |
 | `src/data/*.js` | Startdaten und Kategorien (Phasen, Berechtigungen, Provider, Piloten). |
 | `src/tabs/*.jsx` | Je Reiter eine Datei. `ConversionHub.jsx` fasst Board, Planung und Kalender unter einem Reiter zusammen. |
@@ -35,6 +33,11 @@ npm run build          # muss vor jedem Commit durchlaufen
 npm run test:browser   # nach dem Build: echter Browser, dauert einige Minuten
 npm run preview -- --port 4329
 ```
+
+**Ein Bezeichner ohne Import ist kein Build-Fehler.** Rollup löst Module auf,
+keine freien Variablen — `npm run build` bleibt grün und die App stirbt weiß auf
+genau dem Reiter, der ihn benutzt. `test/imports.test.mjs` fängt das in einer
+Sekunde ab; zweimal an einem Tag hat es sonst erst der Browser-Lauf gefunden.
 
 `npm run test:browser` startet die Vorschau selbst und fährt sie wieder herunter.
 Es prüft die Dinge, die es erst gerendert gibt: Kopfzeile und Zahnrad, Breite der
@@ -79,21 +82,8 @@ Kein Aufrufer setzt `_at` selbst.
 
 **`patch()` ist nie „umsonst".** Es setzt `dirtyRef`, hebt `updatedAt` und löst
 einen Cloud-Push aus — auch wenn die Mutation dasselbe zurückgibt. Wer aus
-einem Effekt heraus patcht (wie der Monats-Recorder in `store.jsx`), muss
-**vor** dem Aufruf prüfen, ob sich wirklich etwas ändert. `upsertMonth()` gibt
-dafür bewusst dieselbe Array-Referenz zurück, wenn nichts neu ist.
-
-**Der Verlauf kann nur nach vorn.** Im Bestand steht nirgends, *wann* jemand
-eine Phase erreicht hat — nur wo er heute steht. Vergangene Monate lassen sich
-deshalb nicht rekonstruieren; die Kachel „Fortschritt je Monat" sagt das, statt
-eine einzelne Säule wie ein fertiges Diagramm aussehen zu lassen.
-
-**Die Ampel misst gegen das zuletzt *fällige* Ziel**, nicht gegen das
-nächstgelegene (`planStatus` in `plan.js`). Sonst fiele ein verpasster Oktober
-im November aus der Anzeige. Der gelbe Spielraum ist ein Zehntel des Ziels,
-mindestens eine Person — keine feste Zahl, die bei kleinen und großen Zielen
-gleichermaßen falsch wäre. Statusfarben sind hier korrekt: es *ist* ein Status,
-verboten sind sie nur als Serien-/Kategoriefarbe.
+einem Effekt heraus patcht, muss **vor** dem Aufruf prüfen, ob sich wirklich
+etwas ändert.
 
 **FTE wird in Hundertsteln gerechnet, gerundet wird genau einmal.** Gruppenweise
 addiert kann Fließkomma knapp unter einer .x5-Grenze landen und andersherum

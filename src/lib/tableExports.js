@@ -8,7 +8,8 @@ import { qualLabel } from '../data/qualifications.js'
 import { courseLabel, simVersionLabel } from '../data/providers.js'
 import { pilotStatusLabel, pilotRole } from '../data/pilots.js'
 import { formatDate } from './format.js'
-import { findRun, resolveAssignment } from './courses.js'
+import { findRun, resolveAssignment, seatUsage, spanDays, spanText } from './courses.js'
+import { providerSlots } from './stats.js'
 
 const byName = (a, b) => (a.name || '').localeCompare(b.name || '')
 
@@ -60,8 +61,7 @@ export function exportPlanningExcel(data, t, lang) {
   }
   const spanLabel = (a) => {
     const r = resolveAssignment(a, findRun(courseRuns, a.courseId))
-    if (!r.from) return ''
-    return r.to ? formatDate(r.from, lang) + ' – ' + formatDate(r.to, lang) : formatDate(r.from, lang)
+    return spanText(r.from, r.to, lang)
   }
   // An untouched cell (no provider/location, default 'open' status) exports as
   // empty – matching the on-screen "+ zuweisen" state – instead of " [offen]".
@@ -70,12 +70,13 @@ export function exportPlanningExcel(data, t, lang) {
     if (!a) return ''
     // Falls back to the period: a course booking whose course has no provider
     // named yet exported as an empty cell and read as "nothing planned".
-    const label = cellLabel(a) || spanLabel(a)
-    if (!label) return ''
-    if (a.status === 'na') return label
+    const label = cellLabel(a)
+    const span = spanLabel(a)
+    if (!label && !span) return ''
+    if (a.status === 'na') return label || 'n/a'
     const stDef = ASSIGNMENT_STATUS[a.status]
     const stLbl = stDef ? ` [${lang === 'de' ? stDef.de : stDef.en}]` : ''
-    return label + stLbl
+    return [label, span].filter(Boolean).join(' · ') + stLbl
   }
   downloadExcel(
     'planung',
@@ -107,7 +108,15 @@ export function exportProvidersExcel(data, t, lang) {
       { label: t('p_contact'), value: (p) => p.contactPerson },
       { label: t('p_email'), value: (p) => p.email },
       { label: t('p_phone'), value: (p) => p.phone },
-      { label: t('p_slots'), value: (p) => p.slots || '' },
+      { label: t('p_slots'), value: (p) => providerSlots(p, data.assignmentSteps).total || '' },
+      {
+        label: t('p_slotsByStep'),
+        value: (p) =>
+          data.assignmentSteps
+            .filter((s2) => p.slotsByStep?.[s2.id])
+            .map((s2) => s2.label + ': ' + p.slotsByStep[s2.id])
+            .join(', ')
+      },
       { label: t('p_status'), value: (p) => statusLabel(p.status) }
     ],
     rows,
@@ -117,6 +126,33 @@ export function exportProvidersExcel(data, t, lang) {
 }
 
 // Other pilots (company line pilots, not trainers).
+// Course dates. Their own sheet rather than a column somewhere: a course is a
+// record in its own right, with a period, a capacity and a booked count.
+export function exportCourseDatesExcel(data, t, lang) {
+  const { courseRuns, providers, assignmentSteps, trainers } = data
+  const used = seatUsage(trainers, assignmentSteps)
+  const rows = [...(courseRuns || [])].sort((a, b) => String(a.from).localeCompare(String(b.from)))
+  const stepLabel = (id) => (assignmentSteps.find((x) => x.id === id) || {}).label || ''
+  const providerName = (id) => (providers.find((x) => x.id === id) || {}).name || ''
+  downloadExcel(
+    'kurstermine',
+    [
+      { label: t('course_type'), value: (r) => stepLabel(r.stepId) },
+      { label: t('provider'), value: (r) => providerName(r.providerId) },
+      { label: t('location'), value: (r) => r.location || '' },
+      { label: t('course_from'), value: (r) => (r.from ? formatDate(r.from, lang) : '') },
+      { label: t('course_to'), value: (r) => (r.to ? formatDate(r.to, lang) : '') },
+      { label: t('course_days'), value: (r) => spanDays(r.from, r.to) ?? '' },
+      { label: t('course_seats'), value: (r) => r.seats || '' },
+      { label: t('course_booked'), value: (r) => used.get(r.id) || 0 },
+      { label: t('note'), value: (r) => r.note || '' }
+    ],
+    rows,
+    t('manageCourseDates'),
+    lang
+  )
+}
+
 export function exportPilotsExcel(data, t, lang) {
   const rows = [...(data.otherPilots || [])].sort(byName)
   downloadExcel(

@@ -6,7 +6,7 @@ import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th } from '../components/sortable.jsx'
 import { emptyProvider, courseLabel, simVersionLabel } from '../data/providers.js'
-import { providerUtilization } from '../lib/stats.js'
+import { providerSlots, providerUtilization } from '../lib/stats.js'
 import { findRun, resolveAssignment } from '../lib/courses.js'
 
 function UtilBar({ value }) {
@@ -200,13 +200,26 @@ export default function Providers() {
                           .map((s) => {
                             const need = u.byStep[s.id] || 0
                             const cap = u.slotsByStep?.[s.id] || 0
+                            // Months, not a red flag on every row: `need` is the
+                            // whole open backlog and `cap` is a MONTHLY figure,
+                            // so "more than one month" is the normal state of a
+                            // phase-in and would mark everything.
+                            const months = cap > 0 && need > 0 ? Math.ceil(need / cap) : null
                             return (
                               <span
                                 key={s.id}
-                                className={'type-tag' + (cap > 0 && need > cap ? ' over' : '')}
-                                title={cap > 0 ? t('prov_stepTag').replace('{n}', String(need)).replace('{m}', String(cap)) : ''}
+                                className={'type-tag' + (months != null && months > 3 ? ' over' : '')}
+                                title={
+                                  cap > 0
+                                    ? t('prov_stepTag')
+                                        .replace('{n}', String(need))
+                                        .replace('{m}', String(cap))
+                                        .replace('{k}', months == null ? '0' : String(months))
+                                    : ''
+                                }
                               >
                                 {s.label}: {need}{cap > 0 ? ' / ' + cap : ''}
+                                {months != null && <b> · {months}&nbsp;{t('prov_months')}</b>}
                               </span>
                             )
                           })}
@@ -345,8 +358,9 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
   })
   // Which taxonomy list is being edited in-place ('courses' | 'sim' | 'status').
   const [manage, setManage] = useState(null)
-  const typedSlots = Math.max(0, Math.round(Number(p.slots) || 0))
-  const splitSum = (steps || []).reduce((n, st) => n + Math.max(0, Math.round(Number(p.slotsByStep?.[st.id]) || 0)), 0)
+  // From the helper, not re-derived: two copies of one rounding rule drift the
+  // moment either side changes how a seat count is coerced.
+  const slots = providerSlots(p, steps)
   const set = (k, v) => setP((s) => ({ ...s, [k]: v }))
   const toggleCourse = (id) =>
     setP((s) => {
@@ -500,10 +514,12 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
           </div>
           <p className="stat-hint">
             {t('p_slotsHint')}
-            {splitSum > 0 && ' ' + t('p_slotsSum').replace('{n}', String(splitSum))}
+            {slots.split > 0 && ' ' + t('p_slotsSum').replace('{n}', String(slots.split))}
           </p>
-          {typedSlots > 0 && splitSum > typedSlots && (
-            <p className="warn-text small">{t('p_slotsOver').replace('{n}', String(splitSum)).replace('{m}', String(typedSlots))}</p>
+          {slots.splitOver && (
+            <p className="warn-text small">
+              {t('p_slotsOver').replace('{n}', String(slots.split)).replace('{m}', String(Math.round(Number(p.slots) || 0)))}
+            </p>
           )}
         </Field>
         <Field label={t('p_notes')} span2>
