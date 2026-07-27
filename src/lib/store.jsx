@@ -146,6 +146,7 @@ function freshData(lang = 'de') {
     _oreNoRente: true,
     _capNotes: true,
     _pilotSeed: true,
+    _pilotSeed2: true,
     updatedAt: at
   }, at)
 }
@@ -235,6 +236,7 @@ function normalize(obj) {
     _oreNoRente: obj._oreNoRente === true,
     _capNotes: obj._capNotes === true,
     _pilotSeed: obj._pilotSeed === true,
+    _pilotSeed2: obj._pilotSeed2 === true,
     updatedAt: obj.updatedAt || nowIso()
   }
   // One-time: merge newly shipped default courses (e.g. "SIM only") into stored
@@ -296,6 +298,47 @@ function normalize(obj) {
   if (!result._pilotSeed) {
     if (!result.otherPilots.length) result.otherPilots = SEED_PILOTS.map((p) => withPilotDefaults({ ...p }))
     result._pilotSeed = true
+  }
+  // One-time: that first roster (1.33.0) went out with the wrong bases, no
+  // TLCs and no cockpit role, and _pilotSeed was already set – so the corrected
+  // list could never reach a device that had taken the wrong one. A blank TLC
+  // is what marks a record as still carrying it: every person on the corrected
+  // roster has a three-letter code, and nobody types an empty one. Records
+  // edited since keep whatever was typed.
+  //
+  // Stamped with NOW on purpose, unlike the other migrations here: an untouched
+  // record still carries the stamp of the day it was seeded, and a correction
+  // that keeps the old stamp ties with the wrong record in the cloud and comes
+  // back on the next pull.
+  if (!result._pilotSeed2) {
+    const at = nowIso()
+    const seedById = new Map(SEED_PILOTS.map((p) => [p.id, p]))
+    const blank = (p) => !String(p.tlc || '').trim()
+    // The first seed's own ids, and only those: a person added by hand gets a
+    // random suffix, and a TLC is optional on a record typed here – without
+    // this an added pilot with no TLC would be swept away with the rest.
+    const firstSeed = (p) => blank(p) && /^plt-\d{1,2}$/.test(p.id || '')
+    const buried = result._tomb.otherPilots || {}
+    if (result.otherPilots.length && result.otherPilots.every(firstSeed)) {
+      // Nothing was edited: take the corrected roster whole. It has one person
+      // fewer, and that delete needs a tombstone or the other device's copy
+      // would simply hand them back.
+      const live = new Set(SEED_PILOTS.map((p) => p.id))
+      const tomb = { ...buried }
+      result.otherPilots.forEach((p) => { if (p.id && !live.has(p.id)) tomb[p.id] = at })
+      if (Object.keys(tomb).length) result._tomb = { ...result._tomb, otherPilots: tomb }
+      // Somebody deleted stays deleted: re-adding them with a fresh stamp would
+      // undo the delete on every device.
+      result.otherPilots = SEED_PILOTS.filter((p) => !buried[p.id]).map((p) => withPilotDefaults({ ...p, _at: at }))
+    } else {
+      result.otherPilots = result.otherPilots.map((p) => {
+        const s = blank(p) ? seedById.get(p.id) : null
+        return s
+          ? withPilotDefaults({ ...p, base: s.base, tlc: s.tlc, role: s.role, boeingExp: s.boeingExp, ratings: s.ratings.map((r) => ({ ...r })), _at: at })
+          : p
+      })
+    }
+    result._pilotSeed2 = true
   }
   // One-time: move the stored category colours onto the documented palette.
   // Only entries still carrying their OLD shipped default are touched, so a

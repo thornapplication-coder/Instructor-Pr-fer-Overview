@@ -4,12 +4,31 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.34.0'
+export const APP_VERSION = '1.35.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.35.0',
+    date: '2026-07-27',
+    type: 'minor',
+    changes: {
+      de: [
+        'Other Pilots am Handy: acht Spalten passen nicht auf ein iPhone — die Tabelle hörte nach dem Namen auf, der Rest lag hinter einem seitlichen Scrollen, das niemand findet. Unter 780 px wird jede Zeile jetzt eine Karte: Name oben, darunter Base, TLC und Boeing Erfahrung, darunter Muster, Gültigkeit, Gültig und Abgelaufen — mit derselben Zeilenausrichtung wie am Rechner.',
+        'Jedes Feld trägt seine eigene Überschrift, weil die Kopfzeile auf der Karte fehlt.',
+        'Alle übrigen Tabellen zeigen am Rand einen Schatten, solange dahinter noch Spalten liegen — damit sichtbar ist, dass man sie seitlich schieben kann.',
+        'Die korrigierte Piloten-Liste (TLC, Base, Cockpit-Rolle) erreicht jetzt auch Geräte, die schon die erste Fassung bekommen hatten. Selbst eingetragene Datensätze bleiben unangetastet.'
+      ],
+      en: [
+        'Other Pilots on a phone: eight columns do not fit an iPhone — the table ended after the name and the rest sat behind a sideways scroll nobody finds. Below 780 px every row becomes a card: name on top, then base, TLC and Boeing experience, then type, validity, valid and expired — with the same line alignment as on the desktop.',
+        'Each field carries its own heading, because the card has no header row.',
+        'Every other table now shades its edge while there are still columns behind it, so it is visible that it can be pushed sideways.',
+        'The corrected pilot roster (TLC, base, cockpit role) now also reaches devices that had already taken the first one. Records edited by hand are left alone.'
+      ]
+    }
+  },
   {
     version: '1.34.0',
     date: '2026-07-27',

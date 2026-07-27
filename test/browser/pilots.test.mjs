@@ -121,5 +121,121 @@ export default async function run(browser, baseUrl, shots) {
 
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.close()
+
+  // ---- the phone -----------------------------------------------------------
+  // Eight columns do not fit 390 px. They used to run off the side behind a
+  // scroll nobody finds, so the roster read as "base, TLC, name" and stopped.
+  const phone = await browser.newPage({ viewport: { width: 390, height: 844 } })
+  await phone.goto(baseUrl, { waitUntil: 'networkidle' })
+  await phone.waitForSelector('.kpi-hero')
+  await phone.locator('.tab', { hasText: 'Other Pilots' }).first().click()
+  await phone.waitForSelector('.pilots-table')
+  await phone.waitForTimeout(500)
+
+  const jp = phone.locator('.pilots-table tbody tr').filter({ hasText: 'Altenhuber' }).first()
+  const boxes = {}
+  for (const c of ['c-base', 'c-tlc', 'c-name', 'c-type', 'c-until', 'c-exp', 'c-valid', 'c-expired']) {
+    boxes[c] = await jp.locator('td.' + c).evaluate((e) => {
+      const r = e.getBoundingClientRect()
+      return { w: Math.round(r.width), right: Math.round(r.right), top: Math.round(r.top) }
+    })
+  }
+  const shown = Object.entries(boxes).filter(([, b]) => b.w > 0 && b.right <= 391)
+  ok(shown.length === 8, 'all eight fields are on the screen (' + shown.length + '/8: ' +
+    Object.entries(boxes).map(([k, b]) => k + ' ' + b.right).join(', ') + ')')
+  const noScroll = await phone.evaluate(() => {
+    const w = document.querySelector('.table-wrap')
+    return {
+      page: document.documentElement.scrollWidth <= window.innerWidth + 1,
+      table: w.scrollWidth <= w.clientWidth + 1
+    }
+  })
+  ok(noScroll.page, 'and the page does not scroll sideways to show them')
+  ok(noScroll.table, 'nor does the table itself')
+
+  // Without the header row each cell has to name itself.
+  const label = await jp.locator('td.c-until').evaluate((e) => getComputedStyle(e, '::before').content)
+  ok(/ltigkeit/i.test(label), 'every field carries its own heading (' + label + ')')
+
+  // The card keeps what the table was built for: one line per rating, and the
+  // × level with the date it judges.
+  const top = (sel, i) => jp.locator(sel).nth(i).evaluate((e) => Math.round(e.getBoundingClientRect().top))
+  const pd2 = await top('td.c-until .rating-line', 1)
+  const pv2 = await top('td.c-valid .rating-line', 1)
+  ok(Math.abs(pv2 - pd2) <= 1, 'the marks stay level with their dates (' + pv2 + ' vs ' + pd2 + ')')
+  ok(boxes['c-name'].top < boxes['c-base'].top && boxes['c-base'].top < boxes['c-type'].top,
+    'name on top, then base/TLC, then the ratings')
+  await phone.screenshot({ path: shots + '/pilots-phone.png', fullPage: false })
+  await phone.close()
+
+  // ---- the roster correction reaches a device that has the old one ---------
+  // 1.33.0 shipped the roster with the wrong bases and no TLCs, and _pilotSeed
+  // was already set, so 1.34.0's corrected list could never replace it.
+  const old = await browser.newPage({ viewport: { width: 1400, height: 1000 } })
+  await old.goto(baseUrl, { waitUntil: 'networkidle' })
+  await old.waitForSelector('.kpi-hero')
+  await old.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    // Exactly the shape 1.33.0 left behind: no TLC, a wrong base, no role, and
+    // one person who is not on the corrected sheet.
+    d.otherPilots = d.otherPilots.map((p) => {
+      const { role, ...rest } = p
+      return { ...rest, tlc: '', base: 'VIE', _at: '2026-01-01T00:00:00.000Z' }
+    })
+    d.otherPilots.push({
+      id: 'plt-65', base: 'VIE', tlc: '', name: 'Wenninger-Weinzierl, Armin', ratings: [],
+      _at: '2026-01-01T00:00:00.000Z'
+    })
+    d._pilotSeed = true
+    delete d._pilotSeed2
+    localStorage.setItem(K, JSON.stringify(d))
+  }, STORAGE_KEY)
+  await old.reload({ waitUntil: 'networkidle' })
+  await old.locator('.tab', { hasText: 'Other Pilots' }).first().click()
+  await old.waitForSelector('.pilots-table')
+  await old.waitForTimeout(500)
+  const tlcs = (await old.locator('.pilots-table td.c-tlc').allInnerTexts()).map((x) => x.trim())
+  ok(tlcs.length === 64 && tlcs.every((x) => /^[A-Z0-9]{3}$/.test(x)),
+    'the corrected TLCs arrive on a device that still had the first roster (' + tlcs.length + ', e.g. ' + tlcs[0] + ')')
+  const basesShown = new Set((await old.locator('.pilots-table td.c-base').allInnerTexts()).map((x) => x.trim()))
+  ok(basesShown.size > 1, 'and the corrected bases with them (' + [...basesShown].join(' ') + ')')
+  const stamped = await old.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    return {
+      tomb: !!(d._tomb.otherPilots && d._tomb.otherPilots['plt-65']),
+      gone: !d.otherPilots.some((p) => p.id === 'plt-65'),
+      // A correction that keeps the old stamp ties in the cloud merge and comes
+      // straight back on the next pull.
+      fresh: d.otherPilots.every((p) => p._at > '2026-07-01')
+    }
+  }, STORAGE_KEY)
+  ok(stamped.gone, 'the person the corrected sheet does not have is dropped')
+  ok(stamped.tomb, 'with a tombstone, so the other device cannot hand them back')
+  ok(stamped.fresh, 'and every corrected record is stamped, so it wins the merge')
+
+  // An edited record is not overwritten: a TLC that was typed marks it as
+  // touched, and everything typed alongside it stays.
+  const edited = await old.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    const id = d.otherPilots[0].id
+    d.otherPilots = d.otherPilots.map((p) => (p.id === id ? { ...p, base: 'ARN' } : { ...p, tlc: '' }))
+    delete d._pilotSeed2
+    localStorage.setItem(K, JSON.stringify(d))
+    return id
+  }, STORAGE_KEY)
+  await old.reload({ waitUntil: 'networkidle' })
+  await old.locator('.tab', { hasText: 'Other Pilots' }).first().click()
+  await old.waitForSelector('.pilots-table')
+  await old.waitForTimeout(400)
+  const keptEdit = await old.evaluate(([K, id]) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    const p = d.otherPilots.find((x) => x.id === id)
+    const others = d.otherPilots.filter((x) => x.id !== id)
+    return { kept: !!p && p.base === 'ARN' && !!p.tlc, refilled: others.every((x) => /^[A-Z0-9]{3}$/.test(x.tlc)) }
+  }, [STORAGE_KEY, edited])
+  ok(keptEdit.kept, 'a record with a typed TLC keeps the base that was typed with it')
+  ok(keptEdit.refilled, 'while the untouched ones around it are still corrected')
+
+  await old.close()
   return fails
 }

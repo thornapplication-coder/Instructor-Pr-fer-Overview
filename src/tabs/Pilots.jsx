@@ -126,9 +126,13 @@ export default function Pilots() {
                     aria-label={p.name || ''}
                     onKeyDown={(e) => { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); setEditing({ ...p }) } }}
                   >
-                    <td>{p.base || '–'}</td>
-                    <td className="mono">{p.tlc || '–'}</td>
-                    <td className="strong nowrap">
+                    {/* Each cell carries its own heading. It is invisible while
+                        the table is a table; on a phone the row becomes a card,
+                        the header row is gone, and this is what names the
+                        value. */}
+                    <td className="c-base" data-label={t('f_base')}>{p.base || '–'}</td>
+                    <td className="c-tlc mono" data-label={t('f_tlc')}>{p.tlc || '–'}</td>
+                    <td className="c-name strong nowrap">
                       {p.name || '–'}
                       <div className="muted small"><RoleTag role={pilotRole(p)} sm /></div>
                     </td>
@@ -136,12 +140,12 @@ export default function Pilots() {
                         the × for "valid" sits on the SAME line as the date it
                         refers to. One × per person put the mark of the second
                         rating next to the first rating's date. */}
-                    <td>
+                    <td className="c-type" data-label={t('f_type')}>
                       {list.length
                         ? list.map((r) => <div key={r.id} className="rating-line">{r.type || '–'}</div>)
                         : <div className="rating-line">–</div>}
                     </td>
-                    <td>
+                    <td className="c-until" data-label={t('f_validity')}>
                       {list.length
                         ? list.map((r) => {
                             const rv = ratingValid(r)
@@ -158,18 +162,18 @@ export default function Pilots() {
                     </td>
                     {/* Boeing experience belongs to the PERSON, so it is marked
                         once, on the first line. */}
-                    <td className="center">
+                    <td className="c-exp center" data-label={t('f_boeingExp')}>
                       <div className="rating-line">{p.boeingExp ? '×' : ''}</div>
                       {list.slice(1).map((r) => <div key={r.id} className="rating-line" />)}
                     </td>
-                    <td className="center mark-ok">
+                    <td className="c-valid center mark-ok" data-label={t('f_valid')}>
                       {list.length
                         ? list.map((r) => (
                             <div key={r.id} className="rating-line">{ratingValid(r) === true ? '×' : ''}</div>
                           ))
                         : <div className="rating-line" />}
                     </td>
-                    <td className="center mark-bad">
+                    <td className="c-expired center mark-bad" data-label={t('f_expired')}>
                       {list.length
                         ? list.map((r) => (
                             <div key={r.id} className="rating-line">{ratingValid(r) === false ? '×' : ''}</div>

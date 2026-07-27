@@ -392,6 +392,23 @@ select.input { cursor: pointer; }
 
 /* ---------- Tables ---------- */
 .table-wrap { overflow-x: auto; border-radius: var(--radius); box-shadow: var(--shadow); border: 1px solid var(--hair); background: #fff; }
+/* A table that is wider than the phone just ends: nothing on screen says it
+   can be pushed sideways. These four layers say it. The two opaque ones are
+   attached to the CONTENT, so they travel with it and uncover the shadow
+   underneath exactly on the side that still has columns behind it — an edge
+   with nothing left to show stays clean. Pure CSS on purpose: no measuring, no
+   resize listener, and it is right again after every sort and filter. */
+.table-wrap {
+  background-image:
+    linear-gradient(to right, var(--white), rgba(255, 255, 255, 0)),
+    linear-gradient(to left, var(--white), rgba(255, 255, 255, 0)),
+    linear-gradient(to right, rgba(16, 24, 40, 0.16), rgba(16, 24, 40, 0)),
+    linear-gradient(to left, rgba(16, 24, 40, 0.16), rgba(16, 24, 40, 0));
+  background-position: 0 0, 100% 0, 0 0, 100% 0;
+  background-repeat: no-repeat;
+  background-size: 26px 100%, 26px 100%, 13px 100%, 13px 100%;
+  background-attachment: local, local, scroll, scroll;
+}
 .data-table { border-collapse: collapse; width: 100%; font-size: 13.5px; }
 .data-table th {
   text-align: left; background: var(--panel2); color: var(--muted);
@@ -845,6 +862,62 @@ textarea.input { resize: vertical; }
 .check-line input { width: 18px; height: 18px; accent-color: var(--burg); }
 @media (max-width: 700px) { .rating-row { grid-template-columns: 1fr 1fr; } }
 
+/* Eight columns do not fit a phone. They never did – the table simply ended
+   after the name and the rest lived behind a sideways scroll nobody finds, so
+   on an iPhone the roster read as "base, TLC, name" and nothing else.
+   Below 780px each row becomes a card instead.
+   The four per-rating fields stay COLUMNS inside that card: stacking them
+   would put the second rating's date under the first rating's type and undo
+   the line-by-line alignment the whole table is built around. */
+@media (max-width: 780px) {
+  .pilots-table, .pilots-table tbody { display: block; }
+  .pilots-table thead { display: none; }
+  .pilots-table tbody tr {
+    display: grid;
+    /* Column 1 carries both the base and the type, column 2 both the TLC and
+       the date – so they are sized for "WP BCN"/"777/787" and for a full
+       dd.mm.yyyy, not for whichever of the two happens to be shorter. */
+    grid-template-columns: 62px 78px minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'nm nm nm nm'
+      'bs tl ex ex'
+      'ty un va xp';
+    gap: 8px 8px;
+    padding: 11px 12px;
+    border-top: 1px solid var(--hair);
+  }
+  .pilots-table tbody tr:first-child { border-top: 0; }
+  .pilots-table tbody td { display: block; padding: 0; border-top: 0; }
+  /* The name may wrap here – it is the card's headline and has the full width.
+     Kept on one line it would simply run past the edge, because the grid's
+     column widths are fixed. */
+  .pilots-table td.c-name { grid-area: nm; font-size: 14.5px; white-space: normal; }
+  .pilots-table td.c-base { grid-area: bs; }
+  .pilots-table td.c-tlc { grid-area: tl; }
+  .pilots-table td.c-exp { grid-area: ex; }
+  .pilots-table td.c-type { grid-area: ty; }
+  .pilots-table td.c-until { grid-area: un; }
+  .pilots-table td.c-valid { grid-area: va; }
+  .pilots-table td.c-expired { grid-area: xp; }
+  /* The heading the row lost with the header row. One per cell, and the same
+     height in all four rating columns, so their lines still line up. */
+  .pilots-table tbody td[data-label]::before {
+    content: attr(data-label);
+    display: block;
+    font-size: 9.5px; font-weight: 800; letter-spacing: .4px; line-height: 14px;
+    text-transform: uppercase; color: var(--muted);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  /* Boeing experience belongs to the person, not to a rating: it sits on the
+     card's second line, next to base and TLC, and reads left to right. */
+  .pilots-table td.c-exp, .pilots-table td.c-exp::before { text-align: left; }
+  /* Its filler lines exist only to keep the rating columns level, and on the
+     card it is not one of them any more: they would just pad the line out. */
+  .pilots-table td.c-exp .rating-line + .rating-line { display: none; }
+  .pilots-table .c-name .muted { display: inline-block; margin-left: 8px; }
+  .pilots-table td.empty-row { grid-area: nm; }
+}
+
 /* ---------- Editable pick lists (settings) ---------- */
 /* Collapsed by default: twelve open list editors would bury the rest of the
    settings page, and most visits only touch one of them. */
@@ -901,7 +974,19 @@ textarea.input { resize: vertical; }
 :root[data-theme='dark'] .alert-row,
 :root[data-theme='dark'] .tl-head,
 :root[data-theme='dark'] .tl-chip,
-:root[data-theme='dark'] .color-input { background: var(--white); }
+/* background-COLOR, not the shorthand: `.table-wrap` paints its scroll hint as
+   a background-image, and the shorthand would reset it to none in dark mode. */
+:root[data-theme='dark'] .color-input { background-color: var(--white); }
+/* The scroll hint, restated for the dark surface: the mask has to fade to a
+   TRANSPARENT DARK, not to a transparent white, or the fade lightens the panel
+   on its way out – and a 16% black shadow is invisible on #171c22. */
+:root[data-theme='dark'] .table-wrap {
+  background-image:
+    linear-gradient(to right, var(--white), rgba(23, 28, 34, 0)),
+    linear-gradient(to left, var(--white), rgba(23, 28, 34, 0)),
+    linear-gradient(to right, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0)),
+    linear-gradient(to left, rgba(0, 0, 0, 0.5), rgba(0, 0, 0, 0));
+}
 :root[data-theme='dark'] .tl-col { background: var(--panel2); }
 :root[data-theme='dark'] .dl-chip.print { background: var(--white); color: var(--ink); border-color: var(--hair); }
 :root[data-theme='dark'] .dl-chip.print:hover { background: var(--panel2); }

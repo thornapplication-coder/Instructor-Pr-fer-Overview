@@ -11,6 +11,28 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.35.0] – 2026-07-27
+
+### Geändert
+- **Other Pilots am Handy.** Acht Spalten passen nicht auf ein iPhone: die
+  Tabelle hörte nach dem Namen auf, Muster, Gültigkeit, Boeing Erfahrung,
+  Gültig und Abgelaufen lagen hinter einem seitlichen Scrollen, das niemand
+  findet. Unter 780 px wird jede Zeile jetzt eine Karte — Name oben, darunter
+  Base, TLC und Boeing Erfahrung, darunter die vier Felder je Berechtigung.
+  Die vier bleiben nebeneinander stehende Spalten: untereinander gestapelt
+  stünde das Datum der zweiten Berechtigung unter dem Muster der ersten.
+- **Jedes Feld trägt seine eigene Überschrift.** Auf der Karte gibt es keine
+  Kopfzeile mehr, die es benennt.
+- **Seitlicher Scroll ist sichtbar.** Alle übrigen Tabellen zeigen am Rand
+  einen Schatten, solange dahinter noch Spalten liegen.
+
+### Behoben
+- **Die korrigierte Piloten-Liste erreicht jetzt auch alte Geräte.** 1.33.0 war
+  mit falschen Bases und ohne TLC ausgeliefert und hatte dabei das Flag
+  `_pilotSeed` gesetzt — die Korrektur aus 1.34.0 konnte ein Gerät, das die
+  erste Fassung schon hatte, nie mehr erreichen. Ein leeres TLC kennzeichnet
+  einen solchen Datensatz; selbst eingetragene bleiben unangetastet.
+
 ## [1.34.0] – 2026-07-27
 
 ### Other Pilots
