@@ -32,8 +32,8 @@ function CapTable({ title, firstCol, cap, keyKind, labelFor }) {
     <section className="card">
       <h3 className="card-title">{title}</h3>
       <div className="table-wrap">
-        <table className="data-table cap-table">
-          <thead>
+        <table className="data-table card-at-1000 cap-table" role="table">
+          <thead role="rowgroup">
             <tr>
               <Th label={firstCol} k="key" {...sp} />
               <Th label={t('cap_head')} k="headcount" className="num" {...sp} />
@@ -45,27 +45,33 @@ function CapTable({ title, firstCol, cap, keyKind, labelFor }) {
               ))}
             </tr>
           </thead>
-          <tbody>
+          <tbody role="rowgroup">
+            {/* Named cells and their own headings: inert while this is a
+                table, and what the card layout uses below 1000px. This one is
+                a grid of FIGURES, so the card is the row's key with its
+                numbers underneath, each keeping the column heading it had.
+                The aircraft columns are a user-editable list, so those cells
+                are placed by auto-flow rather than by named areas. */}
             {sorted.map((r) => (
-              <tr key={r.key}>
-                <td className="strong">{labelFor ? labelFor(r.key) : r.key}</td>
-                <td className="num">{r.headcount}</td>
-                <td className="num">{fte1(r.total)}</td>
-                <td className="num">{fte1(r.inConversion)}</td>
-                <td className="num strong avail">{fte1(r.available)}</td>
+              <tr key={r.key} role="row">
+                <td role="cell" className="cp-key card-name strong">{labelFor ? labelFor(r.key) : r.key}</td>
+                <td role="cell" className="cp-fig num" data-label={t('cap_head')}>{r.headcount}</td>
+                <td role="cell" className="cp-fig num" data-label={t('cap_total')}>{fte1(r.total)}</td>
+                <td role="cell" className="cp-fig num" data-label={t('cap_inConv')}>{fte1(r.inConversion)}</td>
+                <td role="cell" className="cp-fig num strong avail" data-label={t('cap_avail')}>{fte1(r.available)}</td>
                 {cap.aircraft.map((a) => (
-                  <td key={a} className="num">{fte1(r.ac[a])}</td>
+                  <td role="cell" key={a} className="cp-fig num" data-label={a}>{fte1(r.ac[a])}</td>
                 ))}
               </tr>
             ))}
-            <tr className="total-row">
-              <td className="strong">{t('total')}</td>
-              <td className="num">{cap.totals.headcount}</td>
-              <td className="num">{fte1(cap.totals.total)}</td>
-              <td className="num">{fte1(cap.totals.inConversion)}</td>
-              <td className="num strong avail">{fte1(cap.totals.available)}</td>
+            <tr className="total-row" role="row">
+              <td role="cell" className="cp-key card-name strong">{t('total')}</td>
+              <td role="cell" className="cp-fig num" data-label={t('cap_head')}>{cap.totals.headcount}</td>
+              <td role="cell" className="cp-fig num" data-label={t('cap_total')}>{fte1(cap.totals.total)}</td>
+              <td role="cell" className="cp-fig num" data-label={t('cap_inConv')}>{fte1(cap.totals.inConversion)}</td>
+              <td role="cell" className="cp-fig num strong avail" data-label={t('cap_avail')}>{fte1(cap.totals.available)}</td>
               {cap.aircraft.map((a) => (
-                <td key={a} className="num">{fte1(cap.totals.ac[a])}</td>
+                <td role="cell" key={a} className="cp-fig num" data-label={a}>{fte1(cap.totals.ac[a])}</td>
               ))}
             </tr>
           </tbody>
@@ -118,8 +124,8 @@ function ConversionEditor({ trainers, stages, quals }) {
         <span className="count-pill">{rows.length} {t('showing')}</span>
       </div>
       <div className="table-wrap">
-        <table className="data-table edit-table">
-          <thead>
+        <table className="data-table card-at-1000 edit-table" role="table">
+          <thead role="rowgroup">
             <tr>
               <th>{t('f_name')}</th>
               <th>{t('stage')}</th>
@@ -127,14 +133,14 @@ function ConversionEditor({ trainers, stages, quals }) {
               <th>{t('targetDate')}</th>
             </tr>
           </thead>
-          <tbody>
+          <tbody role="rowgroup">
             {rows.map((x) => (
-              <tr key={x.id}>
-                <td>
+              <tr key={x.id} role="row">
+                <td role="cell" className="ce-name card-name">
                   <div className="strong">{x.name}</div>
                   <div className="muted small">{x.base} · {qualLabel(quals, x.qual)}{x.aircraft ? ' · ' + x.aircraft : ''}</div>
                 </td>
-                <td>
+                <td role="cell" className="ce-stage" data-label={t('stage')}>
                   <select
                     className="input"
                     value={x.conv?.stage || firstId}
@@ -145,7 +151,7 @@ function ConversionEditor({ trainers, stages, quals }) {
                     ))}
                   </select>
                 </td>
-                <td>
+                <td role="cell" className="ce-status" data-label={t('status')}>
                   <select
                     className="input"
                     value={x.conv?.status || 'on_track'}
@@ -156,7 +162,7 @@ function ConversionEditor({ trainers, stages, quals }) {
                     ))}
                   </select>
                 </td>
-                <td>
+                <td role="cell" className="ce-date" data-label={t('targetDate')}>
                   <DateInput
                     value={x.conv?.target || ''}
                     onChange={(v) => setConversion(x.id, { target: v })}
@@ -165,7 +171,7 @@ function ConversionEditor({ trainers, stages, quals }) {
               </tr>
             ))}
             {rows.length === 0 && (
-              <tr><td colSpan={4} className="empty-row">{t('noTrainers')}</td></tr>
+              <tr role="row"><td role="cell" colSpan={4} className="empty-row">{t('noTrainers')}</td></tr>
             )}
           </tbody>
         </table>

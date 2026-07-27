@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.40.0'
+export const APP_VERSION = '1.41.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.41.0',
+    date: '2026-07-27',
+    type: 'minor',
+    changes: {
+      de: [
+        'Der Kapazitäts-Reiter als Karten am Handy und am iPad — der letzte, der noch Spalten versteckte (bis zu 423 px in den Zahlentabellen, 342 px im Bearbeiten-Teil). Je Zeile eine Karte: oben die Qualifikation, Base oder das Muster, darunter die Zahlen, jede mit ihrer Spaltenüberschrift.',
+        'Die Zahlen stehen zeilenweise bündig. Die längste Überschrift („In Umschulung") umbricht, statt zu „IN UMSCHULU…" abgeschnitten zu werden, und jede Überschrift reserviert zwei Zeilen — sonst rutscht eine umgebrochene ihre eigene Zahl unter die Nachbarn.',
+        'Mini-Knöpfe im Dunkelmodus: sie hatten Weiß fest verdrahtet und leuchteten als helle Kästchen auf fast schwarzer Seite. Betraf alle — Board-Pfeile, Listen-Editor, Löschen im Dialog. Jetzt Kartengrau mit hellem Magenta (Kontrast 6,0 statt 2,6).'
+      ],
+      en: [
+        'The capacity tab becomes cards on a phone and an iPad — the last one still hiding columns (up to 423px in the figure tables, 342px in the editor). One card per row: the qualification, base or type on top, then the figures, each with the heading its column carried.',
+        'The figures line up across each line. The longest heading wraps instead of being clipped to "IN UMSCHULU…", and every heading reserves two lines — otherwise a wrapped one drops its own figure below its neighbours.',
+        'Mini buttons in dark mode: they had white hard-coded and glowed as bright boxes on a near-black page. All of them — board arrows, list editors, the delete in each dialog. Now card grey with the lighter magenta (contrast 6.0 instead of 2.6).'
+      ]
+    }
+  },
   {
     version: '1.40.0',
     date: '2026-07-27',

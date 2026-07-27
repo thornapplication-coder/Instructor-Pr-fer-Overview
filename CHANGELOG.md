@@ -11,6 +11,36 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.41.0] – 2026-07-27
+
+### Geändert
+- **Der Kapazitäts-Reiter als Karten** am Handy und am iPad — der letzte, der
+  noch Spalten versteckte. Gemessen: die Zahlentabellen brauchen 745 px und der
+  Bearbeiten-Teil 664 px, am iPhone lagen 423 bzw. 342 px hinter dem seitlichen
+  Schieben. Je Zeile eine Karte: oben die Qualifikation, Base oder das Muster,
+  darunter die Zahlen, jede mit der Überschrift, die ihre Spalte trug. Die Zahl
+  der Aircraft-Spalten ist einstellbar, die Zellen werden deshalb automatisch
+  gesetzt.
+- Die Zahlen stehen **zeilenweise bündig**. Dafür umbricht die längste
+  Überschrift („In Umschulung") statt zu „IN UMSCHULU…" abgeschnitten zu werden,
+  und jede Überschrift reserviert zwei Zeilen — sonst rutscht eine umgebrochene
+  ihre eigene Zahl unter die Nachbarn, und eine Zahlentabelle, deren Zahlen
+  nicht auf einer Linie stehen, verfehlt ihren Zweck.
+
+### Behoben
+- **Mini-Knöpfe im Dunkelmodus.** `.mini-btn` hatte Weiß fest verdrahtet statt
+  `var(--white)` und leuchtete als helles Kästchen auf fast schwarzer Seite.
+  Betraf alle: die Pfeile im Board, die Listen-Editoren, das Löschen in jedem
+  Dialog. Jetzt Kartengrau, und das Burgunderrot weicht dem helleren Magenta,
+  das die Kartentitel schon verwenden — Kontrast 6,0:1 statt 2,6:1.
+
+### Geprüft, nichts gefunden
+- Die **Kalender-Ansicht** unter Umschulung war nie am Handy angesehen worden
+  (jeder Durchlauf landete auf dem Board). Sie ist auf 390 und 768 px sauber:
+  kein Überlauf, nichts verdeckt.
+- Die neuen Karten im **Dunkelmodus** ebenso: kein Überlauf, und die
+  Feldüberschriften kommen auf 6,7:1.
+
 ## [1.40.0] – 2026-07-27
 
 ### Neu

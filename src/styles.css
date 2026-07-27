@@ -538,7 +538,10 @@ select.input { cursor: pointer; }
 .conv-meta .chip-sm { font-size: 10.5px; padding: 1px 5px; }
 .conv-meta .ore-tag { min-width: 18px; padding: 1px 5px; font-size: 10.5px; }
 .conv-meta .qual-tag.sm, .conv-meta .role-tag.sm, .conv-meta .ac-tag.sm, .conv-meta .staff-tag.sm { padding: 1px 5px; }
-.mini-btn { border: 1px solid var(--hair); background: #fff; border-radius: 6px; width: 30px; height: 26px; font-size: 16px; line-height: 1; cursor: pointer; color: var(--burg); font-weight: 800; }
+/* `var(--white)`, not a literal: hard-coded #fff made every mini button a
+   bright white box on a near-black page in dark mode – the board's move
+   arrows, the list editors, the delete in each dialog, all of them. */
+.mini-btn { border: 1px solid var(--hair); background: var(--white); border-radius: 6px; width: 30px; height: 26px; font-size: 16px; line-height: 1; cursor: pointer; color: var(--burg); font-weight: 800; }
 .mini-btn:disabled { opacity: .3; cursor: default; }
 .mini-btn:not(:disabled):hover { background: var(--sky-lightest); }
 
@@ -1238,6 +1241,65 @@ textarea.input { resize: vertical; }
   }
 }
 
+/* ---------- The capacity tab: the card grids ---------- */
+/* Measured, the widest of the three figure tables wants 745px and the editor
+   below them 664px, so both fit from about 830px of window and neither does on
+   a phone or an iPad in portrait — 423px and 342px were hidden at 390px.
+   Same 1000px as the roster, which is also where an iPad in landscape (1024px)
+   still clears them comfortably.
+   The figure tables are a grid of NUMBERS, so the card is the row's key with
+   its figures underneath, each keeping the heading its column had. The number
+   of aircraft columns comes from a user-editable list, so those cells are laid
+   out by auto-flow rather than by named areas. */
+@media screen and (max-width: 1000px) {
+  .cap-table tbody tr { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .cap-table td.cp-key { grid-column: 1 / -1; }
+  /* Thirds of a phone are ~95px and "In Umschulung" wants ~85px plus its
+     ellipsis, so the shared clipping cut it to "IN UMSCHULU…". Let it wrap
+     instead: these cells are independent figures, and a two-line heading only
+     makes its grid row taller – the numbers stay level with each other. */
+  .cap-table tbody td[data-label]::before {
+    white-space: normal;
+    /* Two lines' worth whether the heading needs them or not: a wrapped
+       heading otherwise pushes its own figure a line lower than the ones
+       beside it, and a table of figures that do not line up is the one thing
+       this table must not be. */
+    min-height: 28px;
+  }
+  /* The totals row is the one you look for; keep it marked as its own block. */
+  .cap-table tbody tr.total-row { border-top: 2px solid var(--hair); }
+
+  /* The editor is a small form per person: who, then the three fields. */
+  .edit-table tbody tr {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'nm nm'
+      'st sa'
+      'dt dt';
+  }
+  .edit-table td.ce-name { grid-area: nm; }
+  .edit-table td.ce-stage { grid-area: st; }
+  .edit-table td.ce-status { grid-area: sa; }
+  /* Its own line: a date field plus its clear button does not go into half a
+     phone – the browser clips the date itself, as the course editor showed. */
+  .edit-table td.ce-date { grid-area: dt; }
+  /* The desktop rule gives every control a 130px floor to keep the columns
+     even; on a card the grid track already decides the width. */
+  .edit-table td select.input, .edit-table td input.input { min-width: 0; }
+  .edit-table td.empty-row { grid-column: 1 / -1; display: block; }
+}
+/* From a tablet up the figures have room for more than three per line, and the
+   editor's three fields fit on one. */
+@media screen and (min-width: 521px) and (max-width: 1000px) {
+  .cap-table tbody tr { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .edit-table tbody tr {
+    grid-template-columns: minmax(0, 1.2fr) minmax(0, 1fr) minmax(0, 1fr);
+    grid-template-areas:
+      'nm nm nm'
+      'st sa dt';
+  }
+}
+
 /* ---------- The provider tables: the card grids ---------- */
 /* These two do fit from about 770px, so the complaint here is not the one the
    other tables had. It is the course chips: squeezed into a sixth of a phone
@@ -1375,6 +1437,10 @@ textarea.input { resize: vertical; }
 :root[data-theme='dark'] .tl-col { background: var(--panel2); }
 :root[data-theme='dark'] .dl-chip.print { background: var(--white); color: var(--ink); border-color: var(--hair); }
 :root[data-theme='dark'] .dl-chip.print:hover { background: var(--panel2); }
+/* Burgundy on the dark surface is 2.6:1. The lighter magenta the card titles
+   already use is 6.0:1. `danger` keeps its own red, which is stepped for dark. */
+:root[data-theme='dark'] .mini-btn:not(.danger) { color: #E86FB0; }
+:root[data-theme='dark'] .mini-btn:not(:disabled):hover { background: var(--panel2); }
 :root[data-theme='dark'] .btn-ghost { color: var(--ink); }
 :root[data-theme='dark'] .input { color: var(--text); }
 :root[data-theme='dark'] .card-title { color: #E86FB0; }

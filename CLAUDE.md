@@ -20,6 +20,7 @@ Commit-Nachrichten auf Englisch.
 | `src/lib/i18n.js` | DE/EN, ein flaches Wörterbuch. |
 | `src/data/*.js` | Startdaten und Kategorien (Phasen, Berechtigungen, Provider, Piloten). |
 | `src/tabs/*.jsx` | Je Reiter eine Datei. `ConversionHub.jsx` fasst Board, Planung und Kalender unter einem Reiter zusammen. |
+| `src/components/sortable.jsx` | `useSort`, `Th` (Spaltenkopf) und `SortSelect` (die Sortierung in der Kartenansicht). |
 | `src/version.js` | Version **und** Changelog (wird in den Einstellungen angezeigt). |
 | `test/` | `npm test` – Zusammenführung, Abdeckungs-Wächter, FTE, Verlauf. Reines Node. |
 | `test/browser/` | `npm run test:browser` – Playwright gegen den echten Build. |
@@ -52,11 +53,67 @@ Der Lauf braucht mehrere Minuten (zwei PDF-Exporte, viele Neuladungen) — im
 Zweifel im Hintergrund starten. Aufräumen mit `fuser -k <port>/tcp`; **nie**
 `pkill` in einer verketteten Zeile, das trifft auch den eigenen Prozess.
 
+## Tabellen werden auf schmalen Schirmen zu Karten
+
+Sieben Tabellen klappen unterhalb einer gemessenen Breite in Karten um: eine
+Zeile wird ein Block, die Kopfzeile verschwindet, und jede Zelle zeichnet ihre
+eigene Überschrift aus `data-label`.
+
+**Die Breite wird gemessen, nicht geraten.** Jede Tabelle hört bei einer
+anderen Breite auf zu passen, und zweimal hat eine geschätzte Grenze genau die
+Geräte verfehlt, für die sie gedacht war. Vorgehen: die Kartenregeln im Browser
+abschalten, `wrap.scrollWidth` gegen `wrap.clientWidth` messen, *dann* die
+Grenze wählen. Gemessen (mit echten Daten, leere Tabellen messen zu schmal):
+
+| Tabelle | braucht | Umschaltpunkt | Markierungsklasse |
+|---|---|---|---|
+| `pilots-table`, `provider-table`, `provider-cap-table`, `planning-table`, `cap-table`, `edit-table` | 966 / 724 / – / 888 / 745 / 664 px | **1000 px** | `card-at-1000` |
+| `trainer-table` | 1234 px | **1280 px** | `card-at-1280` |
+| `course-table` | 818 px (im Dialog) | **900 px** | `card-at-900` |
+
+Das Gerüst steht **einmal je Umschaltpunkt** in `styles.css` (Abschnitt
+„Table → card"), die Rasterdefinition je Tabelle darunter. Die drei Gerüste
+sind absichtlich identisch und werden auseinander erzeugt — als sie von Hand
+kopiert waren, sind sie gedriftet (Kartenabstand 11 vs. 12 px).
+
+**Regeln, die dabei wehgetan haben:**
+
+- **`screen and` gehört an jede dieser Media-Queries.** A4 hochkant ist ~794 px,
+  also innerhalb jedes Umschaltpunkts — ohne das druckt Strg+P Karten ohne
+  Spaltenüberschriften. Der PDF-Export merkt es nicht, der baut eigene Tabellen.
+- **Geteilte Regeln gehören in den Block ihres eigenen Umschaltpunkts.** Eine
+  Regel für alle Karten in *einem* 1280-px-Block traf auch die 1000-px-Tabellen
+  in der Spanne dazwischen, wo die noch echte Tabellen sind: die Piloten-Liste
+  brauchte dadurch bei 1024 px 5 px zu viel.
+- **Ein Chip mit `white-space: nowrap` und `justify-self: end` läuft nach
+  LINKS über.** Selbst benannte Status sind beliebig lang; ohne `max-width` und
+  Umbruch malt der Chip über den Namen daneben. Rechtskanten-Messungen sehen
+  das nicht.
+- **Eine automatisch breite Spur nimmt ihre Breite vom längsten Inhalt** und
+  stiehlt sie den Feldüberschriften eine Zeile tiefer. Feste Spuren oder
+  gleiche Hälften.
+- **Leere Liste braucht ein „–".** Die Kartenüberschrift wird immer gezeichnet;
+  ohne Rückfall steht sie über nichts.
+- **Ab 521 px eine Tablet-Stufe.** Bruchteilige Spalten verteilen dort den
+  ganzen Platz und reißen Wert und Überschrift auseinander. Dreimal derselbe
+  Fund, dreimal dieselbe Antwort: feste Spurbreiten, Rest in eine leere Spur.
+- **Sortieren verschwindet mit der Kopfzeile.** `useSort().toggle` ist nur über
+  `Th` erreichbar. Jede Karten-Tabelle bekommt deshalb ein `<SortSelect>` mit
+  ihrem Umschaltpunkt.
+
 ## Regeln, die schon einmal wehgetan haben
 
 **Jeder Push ist eine neue Version.** `src/version.js` (APP_VERSION *und*
 CHANGELOG-Eintrag), `CHANGELOG.md`, `package.json`, `package-lock.json` — alle
 vier, sonst driften sie auseinander.
+
+**Eine Zusicherung, die nie fehlschlagen kann, ist schlimmer als keine.** Der
+Wächter gegen eine abgeschnittene Überschrift las den berechneten
+`::before`-Inhalt — den ändert `text-overflow` nie. Er war grün, egal was das
+Layout tat. Seither gilt: **jede neue Zusicherung wird gegengeprüft**, indem die
+Behebung im Browser rückgängig gemacht wird (`page.addStyleTag`) und der Wert
+sich messbar bewegen muss. Ebenso: ein Test, der auf leeren Daten läuft, meldet
+Erfolg für etwas, das es nicht gibt — erst prüfen, dass eine Zeile da ist.
 
 **Farben kommen aus `palette.js`.** Kategorien = Identität, Statusfarben
 (grün/amber/rot) sind reserviert und nie Serienfarbe, Phasen sind *ordinal*
@@ -165,3 +222,8 @@ ebenfalls gesperrt.
 ## Offen
 
 Nichts.
+
+Bewusst *nicht* umgestellt: das Umschulungs-Board scrollt am Handy seitwärts —
+bei einem Kanban-Board ist das richtig so, die Spalten *sind* die Phasen. Der
+Kalender und das Dashboard brauchten nie etwas, beide sind auf allen Breiten
+gemessen sauber.

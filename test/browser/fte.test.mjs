@@ -94,6 +94,77 @@ export default async function run(browser, baseUrl, shots) {
   ok(!/\d\.\d/.test(pill), 'and formats it with a comma (' + pill.trim() + ')')
 
   await page.screenshot({ path: shots + '/fte.png', fullPage: false })
+
+  // ---- the capacity tab on a phone and a tablet ---------------------------
+  // Measured, the widest figure table wants 745px and the editor 664px, so a
+  // phone hid 423px and 342px of them. Below 1000px each row is a card: the
+  // key, then its figures, each keeping the heading its column had.
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.locator('.tab', { hasText: 'Kapazität' }).first().click()
+  await page.waitForSelector('.cap-table')
+  await page.waitForTimeout(600)
+  const capCard = await page.evaluate(() => {
+    const tables = [...document.querySelectorAll('.cap-table')]
+    const ed = document.querySelector('.edit-table')
+    if (!tables.length || !ed) return { error: 'a capacity table is missing' }
+    const r = (el) => el.getBoundingClientRect()
+    const row = tables[0].querySelector('tbody tr')
+    const figs = [...row.querySelectorAll('.cp-fig')]
+    const edRow = ed.querySelector('tbody tr')
+    const dateEl = edRow && edRow.querySelector('.ce-date input')
+    return {
+      hidden: tables.map((t) => { const w = t.closest('.table-wrap'); return w.scrollWidth - w.clientWidth }),
+      editHidden: (() => { const w = ed.closest('.table-wrap'); return w.scrollWidth - w.clientWidth })(),
+      pageOverflow: document.documentElement.scrollWidth - window.innerWidth,
+      figures: figs.length,
+      // Every figure keeps the heading its column carried.
+      headed: figs.filter((f) => {
+        const c = getComputedStyle(f, '::before').content
+        return c && c !== 'none' && c !== '""'
+      }).length,
+      // Three to a line, and the lines are level – a wrapped heading must not
+      // drop its own figure below the ones beside it.
+      lineTops: figs.map((f) => Math.round(r(f).top)),
+      // The longest heading has to be readable, not clipped to "IN UMSCHULU…".
+      longestHeadingWraps: (() => {
+        const el = figs.find((f) => /UMSCHULUNG/i.test(getComputedStyle(f, '::before').content))
+        return el ? getComputedStyle(el, '::before').whiteSpace : 'not found'
+      })(),
+      keyFullWidth: r(row.querySelector('.cp-key')).width > r(row).width - 40,
+      dateWidth: dateEl ? Math.round(r(dateEl).width) : 0,
+      worstRight: Math.max(...[...row.querySelectorAll('td, td *')].map((e) => Math.round(r(e).right))),
+      rowRight: Math.round(r(row).right)
+    }
+  })
+  ok(!capCard.error, 'the capacity cards render' + (capCard.error ? ': ' + capCard.error : ''))
+  if (!capCard.error) {
+    ok(capCard.hidden.every((h) => h <= 1) && capCard.editHidden <= 1,
+      'none of the four capacity tables hides anything on a phone (' +
+      capCard.hidden.join('/') + ' + ' + capCard.editHidden + ')')
+    ok(capCard.pageOverflow <= 0, 'and the page does not scroll sideways (' + capCard.pageOverflow + ')')
+    ok(capCard.figures >= 6 && capCard.headed === capCard.figures,
+      'every figure keeps its column heading (' + capCard.headed + '/' + capCard.figures + ')')
+    ok(capCard.keyFullWidth, 'the row key is the card headline')
+    const firstLine = capCard.lineTops.slice(0, 3)
+    const secondLine = capCard.lineTops.slice(3, 6)
+    ok(new Set(firstLine).size === 1 && new Set(secondLine).size === 1,
+      'the figures line up across each line – a wrapped heading does not drop its own (' +
+      capCard.lineTops.join(', ') + ')')
+    ok(capCard.longestHeadingWraps === 'normal',
+      '  which is why the longest heading wraps rather than being clipped (' + capCard.longestHeadingWraps + ')')
+    ok(capCard.dateWidth >= 160, 'the target date is wide enough to show its date (' + capCard.dateWidth + 'px)')
+    ok(capCard.worstRight <= capCard.rowRight + 1, 'and nothing paints outside the card')
+  }
+  await page.setViewportSize({ width: 1500, height: 1000 })
+  await page.waitForTimeout(500)
+  const capDesk = await page.evaluate(() => {
+    const t = document.querySelector('.cap-table')
+    const w = t.closest('.table-wrap')
+    return { display: getComputedStyle(t).display, hidden: w.scrollWidth - w.clientWidth }
+  })
+  ok(capDesk.display === 'table' && capDesk.hidden === 0,
+    'and a desktop keeps the real tables (' + capDesk.display + ', ' + capDesk.hidden + 'px hidden)')
+
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.close()
   return fails
