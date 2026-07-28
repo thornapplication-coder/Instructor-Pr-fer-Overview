@@ -11,6 +11,7 @@ import { pilotRole, pilotValidity, ratingValid } from '../data/pilots.js'
 import { formatDate } from './format.js'
 import { findRun, resolveAssignment, seatUsage, spanDays, spanText } from './courses.js'
 import { providerSlots } from './stats.js'
+import { monthLabel } from './months.js'
 
 const byName = (a, b) => (a.name || '').localeCompare(b.name || '')
 
@@ -116,6 +117,25 @@ export function exportProvidersExcel(data, t, lang) {
             .filter((s2) => p.slotsByStep?.[s2.id])
             .map((s2) => s2.label + ': ' + p.slotsByStep[s2.id])
             .join(', ')
+      },
+      {
+        // The plan, not just the total: "40 seats" and "30 of them in 2027" are
+        // different facts, and the spreadsheet is where the second one gets
+        // pasted into a mail to the provider. Chronological, and only the
+        // months that hold something.
+        label: t('p_timeline'),
+        value: (p) =>
+          Object.keys(p.slotsByMonth || {})
+            .sort()
+            .map((m) => {
+              const cells = p.slotsByMonth[m] || {}
+              const parts = data.assignmentSteps
+                .filter((s2) => cells[s2.id])
+                .map((s2) => s2.label + ' ' + cells[s2.id])
+              return parts.length ? monthLabel(m, lang) + ': ' + parts.join(', ') : ''
+            })
+            .filter(Boolean)
+            .join(' · ')
       },
       { label: t('p_status'), value: (p) => statusLabel(p.status) }
     ],

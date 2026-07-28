@@ -25,9 +25,11 @@ import {
   capacityByQual,
   capacityByAircraft,
   providerUtilization,
-  providerSlots
+  providerSlots,
+  capacityByMonth
 } from './stats.js'
 import { stageName, targetsByMonth, monthLabel } from './alerts.js'
+import { capacityRange } from './months.js'
 import { labelOf } from '../data/lists.js'
 import { courseEntries, courseMonths, monthTitle } from './courseCalendar.js'
 import { findRun, resolveAssignment, seatUsage, spanDays, spanText } from './courses.js'
@@ -393,6 +395,30 @@ async function exportProvidersPdf(data, t, lang, opts) {
     ]),
     columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' } }
   })
+  // WHEN those seats fall. The two tables above are totals, and a printout that
+  // stops there says a provider has forty seats without saying that thirty of
+  // them are in 2027. Only the months that hold something are printed – a page
+  // of zeros is not worth the paper.
+  const capMonths = capacityRange(data.capacityFrom, data.capacityTo)
+  const byMonth = capacityByMonth(data.providers, data.assignmentSteps, capMonths)
+  const filled = byMonth.rows.filter((r) => r.total > 0)
+  if (filled.length) {
+    table(ctx, {
+      section: t('cap_timelineTitle'),
+      head: [t('p_month'), ...data.assignmentSteps.map((s) => s.label), t('total')],
+      body: [
+        ...filled.map((r) => [
+          monthLabel(r.month, lang),
+          ...data.assignmentSteps.map((s) => String(r.byStep[s.id] || '-')),
+          String(r.total)
+        ]),
+        [t('total'), ...data.assignmentSteps.map((s) => String(byMonth.totals.byStep[s.id] || '-')), String(byMonth.totals.total)]
+      ],
+      columnStyles: Object.fromEntries(
+        data.assignmentSteps.map((_, i) => [i + 1, { halign: 'right' }]).concat([[data.assignmentSteps.length + 1, { halign: 'right' }]])
+      )
+    })
+  }
 
   // Course dates: a whole data set that existed nowhere in any export.
   courseDatesTable(ctx, data, t, lang)

@@ -17,6 +17,7 @@ import { translate } from './i18n.js'
 import { useCloudSync } from './cloudSync.js'
 import { backfillStamps, stampChanges } from './merge.js'
 import { normalizeCourseRun } from './courses.js'
+import { isMonth, DEFAULT_CAPACITY_TO } from './months.js'
 import {
   defaultAircraftTypes,
   defaultAssignStatus,
@@ -89,16 +90,28 @@ function normalizeProvider(p) {
     locations: Array.isArray(p.locations) ? p.locations : p.location ? [p.location] : [],
     courses: Array.isArray(p.courses) ? p.courses : [],
     simVersions: Array.isArray(p.simVersions) ? p.simVersions : [],
-    // Whole seats only, and never negative. Values for course types that no
-    // longer exist are simply carried – deleting them here would lose the
-    // number if the column comes back under the same id.
-    slotsByStep:
-      p.slotsByStep && typeof p.slotsByStep === 'object' && !Array.isArray(p.slotsByStep)
+    slotsByStep: seatMap(p.slotsByStep),
+    // { 'YYYY-MM': { stepId: seats } }. Unusable month keys are dropped – they
+    // would sort into the middle of the timeline and never be editable, because
+    // the editor only ever offers real months. Months whose entries are all zero
+    // are kept: an explicit "nothing in March" is an answer, not an empty row.
+    slotsByMonth:
+      p.slotsByMonth && typeof p.slotsByMonth === 'object' && !Array.isArray(p.slotsByMonth)
         ? Object.fromEntries(
-            Object.entries(p.slotsByStep).map(([k, v]) => [k, Math.max(0, Math.round(Number(v) || 0))])
+            Object.entries(p.slotsByMonth)
+              .filter(([k]) => isMonth(k))
+              .map(([k, v]) => [k, seatMap(v)])
           )
         : {}
   }
+}
+
+// Whole seats only, and never negative. Values for course types that no longer
+// exist are simply carried – deleting them here would lose the number if the
+// column comes back under the same id.
+function seatMap(obj) {
+  if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return {}
+  return Object.fromEntries(Object.entries(obj).map(([k, v]) => [k, Math.max(0, Math.round(Number(v) || 0))]))
 }
 
 function freshData(lang = 'de') {
@@ -134,6 +147,11 @@ function freshData(lang = 'de') {
     otherPilots: SEED_PILOTS.map((p) => withPilotDefaults({ ...p })),
     conversionFrom: 'A320',
     conversionTo: 'B737',
+    // The window the provider capacity plan covers. An empty start means "the
+    // month we are in", so the plan follows the calendar without anybody having
+    // to edit it every January.
+    capacityFrom: '',
+    capacityTo: DEFAULT_CAPACITY_TO,
     dashboard: { order: {} },
     // Deletions, per merged list: { list: { id: iso } }. See merge.js.
     _tomb: {},
@@ -221,6 +239,10 @@ function normalize(obj) {
     otherPilots: Array.isArray(obj.otherPilots) ? obj.otherPilots.map(withPilotDefaults) : base.otherPilots,
     conversionFrom: obj.conversionFrom || 'A320',
     conversionTo: obj.conversionTo || 'B737',
+    // '' is a legitimate stored value for the start (= the current month), so it
+    // is kept rather than filled in; only a malformed one is discarded.
+    capacityFrom: isMonth(obj.capacityFrom) ? obj.capacityFrom : '',
+    capacityTo: isMonth(obj.capacityTo) ? obj.capacityTo : DEFAULT_CAPACITY_TO,
     dashboard:
       obj.dashboard && typeof obj.dashboard === 'object' && obj.dashboard.order && typeof obj.dashboard.order === 'object'
         ? { order: obj.dashboard.order }
@@ -607,6 +629,14 @@ export function StoreProvider({ children }) {
       setAssignmentSteps: (assignmentSteps) => patch((d) => ({ ...d, assignmentSteps })),
       setConversionAircraft: (from, to) =>
         patch((d) => ({ ...d, conversionFrom: from, conversionTo: to })),
+      // Guarded BEFORE the call, not inside the mutation: patch() dirties the
+      // store and schedules a cloud push whatever the mutation returns, and a
+      // month field fires on every keystroke while a year is being typed.
+      setCapacityRange: (from, to) => {
+        const d = dataRef.current
+        if (d.capacityFrom === from && d.capacityTo === to) return
+        patch((x) => ({ ...x, capacityFrom: from, capacityTo: to }))
+      },
       setProviderCourses: (providerCourses) => patch((d) => ({ ...d, providerCourses })),
       setProviderStatus: (providerStatus) => patch((d) => ({ ...d, providerStatus })),
       setSimVersions: (simVersions) => patch((d) => ({ ...d, simVersions })),

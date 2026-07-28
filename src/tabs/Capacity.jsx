@@ -1,8 +1,9 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import DateInput from '../components/DateInput.jsx'
-import { capacityByBase, capacityByQual, capacityByAircraft, conversionFteSummary, qualRankIndex } from '../lib/stats.js'
+import { capacityByBase, capacityByQual, capacityByAircraft, conversionFteSummary, qualRankIndex, capacityByMonth } from '../lib/stats.js'
 import { targetsByMonth, monthLabel, stageName } from '../lib/alerts.js'
+import { capacityRange } from '../lib/months.js'
 import { useSort, Th } from '../components/sortable.jsx'
 import { CONV_STATUS, stageLabel, firstStageId, releasedStageId } from '../data/pipeline.js'
 import { qualLabel, conversionTrainers } from '../data/qualifications.js'
@@ -180,6 +181,88 @@ function ConversionEditor({ trainers, stages, quals }) {
   )
 }
 
+/**
+ * What the providers offer, month by month.
+ *
+ * Rows are months and columns are course types – not the other way round, and
+ * not providers across the top. The question this answers is "which month runs
+ * short", so the months have to be readable down one axis; with eighteen months
+ * as columns the table is wider than any screen and turns into a card that
+ * cannot be compared. The provider picker gives back the per-provider view
+ * without a second table.
+ *
+ * Every month of the window gets a row, including the empty ones. A timeline
+ * that omits its gaps is a list, and the gaps are the point.
+ */
+function ProviderMonths({ providers, steps }) {
+  const { t, lang } = useStore()
+  const { data } = useStore()
+  const [who, setWho] = useState('')
+  const months = useMemo(
+    () => capacityRange(data.capacityFrom, data.capacityTo),
+    [data.capacityFrom, data.capacityTo]
+  )
+  const picked = useMemo(() => (who ? providers.filter((p) => p.id === who) : providers), [providers, who])
+  const { rows, totals } = useMemo(() => capacityByMonth(picked, steps, months), [picked, steps, months])
+  const empty = totals.total === 0
+
+  return (
+    <section className="card">
+      <h3 className="card-title">{t('cap_timelineTitle')}</h3>
+      <p className="muted small">{t('cap_timelineHint')}</p>
+      <div className="toolbar no-print" style={{ marginTop: 6 }}>
+        <select className="input" value={who} onChange={(e) => setWho(e.target.value)} aria-label={t('cap_allProviders')}>
+          <option value="">{t('cap_allProviders')}</option>
+          {[...providers]
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+            .map((p) => (
+              <option key={p.id} value={p.id}>{p.name || '–'}</option>
+            ))}
+        </select>
+      </div>
+      {months.length === 0 ? (
+        <p className="warn-text small">{t('set_capacityBad')}</p>
+      ) : empty ? (
+        <p className="muted small">{t('cap_noSlots')}</p>
+      ) : (
+        <div className="table-wrap">
+          <table className="data-table card-at-1000 pm-table" role="table">
+            <thead>
+              <tr>
+                <th scope="col">{t('p_month')}</th>
+                {steps.map((s) => (
+                  <th scope="col" key={s.id} className="num">{s.label}</th>
+                ))}
+                <th scope="col" className="num">{t('total')}</th>
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((r) => (
+                <tr key={r.month} role="row" className={r.total === 0 ? 'pm-empty' : ''}>
+                  <td role="cell" className="pm-month card-name strong">{monthLabel(r.month, lang)}</td>
+                  {steps.map((s) => (
+                    <td role="cell" key={s.id} className="pm-fig num" data-label={s.label}>
+                      {r.byStep[s.id] || '–'}
+                    </td>
+                  ))}
+                  <td role="cell" className="pm-fig pm-sum num strong" data-label={t('total')}>{r.total || '–'}</td>
+                </tr>
+              ))}
+              <tr className="total-row" role="row">
+                <td role="cell" className="pm-month card-name strong">{t('total')}</td>
+                {steps.map((s) => (
+                  <td role="cell" key={s.id} className="pm-fig num" data-label={s.label}>{totals.byStep[s.id] || '–'}</td>
+                ))}
+                <td role="cell" className="pm-fig pm-sum num strong" data-label={t('total')}>{totals.total}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
+  )
+}
+
 // Conversion milestones and monthly intake targets.
 //
 // A six-month window rather than one long list: the planner works a couple of
@@ -190,7 +273,7 @@ function ConversionEditor({ trainers, stages, quals }) {
 export default function Capacity() {
   const { data, t, lang } = useStore()
   const fte1 = (v) => formatFte1(v, lang)
-  const { trainers, stages, quals } = data
+  const { trainers, stages, quals, providers, assignmentSteps } = data
   // Conversion-specific views (editor, timeline, FTE pills) only cover the
   // qualifications that actually convert; the capacity tables cover everyone.
   const convPool = useMemo(() => conversionTrainers(trainers), [trainers])
@@ -217,6 +300,8 @@ export default function Capacity() {
       <CapTable title={t('capacity_byAircraft')} firstCol={t('f_aircraft')} cap={capAircraft} keyKind="aircraft" />
       <CapTable title={t('capacity_byBase')} firstCol={t('f_base')} cap={capBase} keyKind="base" />
 
+
+      <ProviderMonths providers={providers} steps={assignmentSteps} />
 
       <ConversionEditor trainers={convPool} stages={stages} quals={quals} />
 

@@ -281,11 +281,16 @@ export function capacityByQual(trainers, aircraftList, stages) {
 // Provider load vs. capacity. Demand = planning assignments pointing at each
 // provider that are still active (any status except "n/a" and "completed").
 // util = demand / slots (null when no slots number is set).
-// Seats a provider can take PER MONTH, overall and per course type.
 //
-// The overall figure is typed, because that is the contract ("we have eight
-// slots a month"). Where it is not typed the breakdown stands in for it, so the
-// same number never has to be entered twice.
+// Seats a provider can take IN TOTAL over the planning window, overall and per
+// course type. Not per month: the months are not alike, and one rate per
+// provider could not say "four type ratings in November, none in December".
+// That distribution is `providerMonths()` below; these two are the agreed total
+// it is measured against.
+//
+// The overall figure is typed, because that is the contract ("we have forty
+// seats with them"). Where it is not typed the breakdown stands in for it, so
+// the same number never has to be entered twice.
 export function providerSlots(provider, steps) {
   const byStep = {}
   let sum = 0
@@ -296,6 +301,91 @@ export function providerSlots(provider, steps) {
   }
   const typed = Math.max(0, Math.round(Number(provider?.slots) || 0))
   return { total: typed > 0 ? typed : sum, byStep, split: sum, splitOver: typed > 0 && sum > typed }
+}
+
+const seatsOf = (v) => Math.max(0, Math.round(Number(v) || 0))
+
+/**
+ * One provider's monthly plan, read as rows.
+ *
+ * `months` decides what comes back, so the caller – the configured window, or
+ * the dialog's own list of filled months – is the only thing that has to know
+ * which months matter. A month with no entry is still a row, at zero: a
+ * timeline that silently omits its empty months is a list, and the gaps are
+ * exactly what a planner is looking for.
+ */
+export function providerMonths(provider, steps, months) {
+  const stepIds = (steps || []).map((s) => s.id)
+  return (months || []).map((month) => {
+    const stored = provider?.slotsByMonth?.[month] || {}
+    const byStep = {}
+    let total = 0
+    for (const id of stepIds) {
+      const n = seatsOf(stored[id])
+      byStep[id] = n
+      total += n
+    }
+    return { month, byStep, total }
+  })
+}
+
+/**
+ * The monthly plan summed across providers – the timeline the capacity tab
+ * draws. `providers` is already filtered by the caller, so "all of them" and
+ * "just TUI" are the same code path.
+ */
+export function capacityByMonth(providers, steps, months) {
+  const stepIds = (steps || []).map((s) => s.id)
+  const rows = (months || []).map((month) => {
+    const byStep = Object.fromEntries(stepIds.map((id) => [id, 0]))
+    let total = 0
+    for (const p of providers || []) {
+      const stored = p?.slotsByMonth?.[month] || {}
+      for (const id of stepIds) {
+        const n = seatsOf(stored[id])
+        byStep[id] += n
+        total += n
+      }
+    }
+    return { month, byStep, total }
+  })
+  const totals = { byStep: Object.fromEntries(stepIds.map((id) => [id, 0])), total: 0 }
+  for (const r of rows) {
+    for (const id of stepIds) totals.byStep[id] += r.byStep[id]
+    totals.total += r.total
+  }
+  return { rows, totals }
+}
+
+/**
+ * Does the month-by-month plan promise more than the agreed total?
+ *
+ * A warning, never a block – the same rule the seat count on a course date
+ * follows. A provider really can find one more slot, and an app that refuses
+ * the entry just gets worked around in a notes field. Reported per course type
+ * AND overall, because either can be over on its own: four course types each
+ * inside their own figure can still break the grand total.
+ *
+ * `months` is what gets counted. The dialog passes the provider's OWN months,
+ * not the configured window: a month that fell outside the window still holds
+ * seats somebody typed, it is still shown (and flagged), and leaving it out of
+ * the sum would report a plan that adds up while the stored one does not.
+ */
+export function providerPlanCheck(provider, steps, months) {
+  const slots = providerSlots(provider, steps)
+  const rows = providerMonths(provider, steps, months)
+  const planned = {}
+  let plannedTotal = 0
+  for (const s of steps || []) planned[s.id] = 0
+  for (const r of rows) {
+    for (const s of steps || []) planned[s.id] += r.byStep[s.id]
+    plannedTotal += r.total
+  }
+  // Only a typed figure can be exceeded. Where nothing is typed the plan IS the
+  // figure, and a plan cannot contradict itself.
+  const overSteps = (steps || []).filter((s) => slots.byStep[s.id] > 0 && planned[s.id] > slots.byStep[s.id])
+  const typedTotal = seatsOf(provider?.slots)
+  return { planned, plannedTotal, overSteps, overTotal: typedTotal > 0 && plannedTotal > typedTotal, typedTotal }
 }
 
 // `runs` are the course dates: a booking made through one carries the provider

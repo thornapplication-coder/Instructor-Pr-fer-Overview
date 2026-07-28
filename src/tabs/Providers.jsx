@@ -6,8 +6,9 @@ import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th, SortSelect } from '../components/sortable.jsx'
 import { emptyProvider, courseLabel, simVersionLabel } from '../data/providers.js'
-import { providerSlots, providerUtilization } from '../lib/stats.js'
+import { providerSlots, providerUtilization, providerPlanCheck } from '../lib/stats.js'
 import { findRun, resolveAssignment } from '../lib/courses.js'
+import { capacityRange, monthLabel, isMonth } from '../lib/months.js'
 
 export default function Providers() {
   const tint = useThemed()
@@ -224,26 +225,28 @@ export default function Providers() {
                           .map((s) => {
                             const need = u.byStep[s.id] || 0
                             const cap = u.slotsByStep?.[s.id] || 0
-                            // Months, not a red flag on every row: `need` is the
-                            // whole open backlog and `cap` is a MONTHLY figure,
-                            // so "more than one month" is the normal state of a
-                            // phase-in and would mark everything.
-                            const months = cap > 0 && need > 0 ? Math.ceil(need / cap) : null
+                            // Both figures are totals over the whole window now,
+                            // so they compare directly: short is short. The old
+                            // "how many months" reading died with the monthly
+                            // rate – WHEN the seats fall is the timeline's job,
+                            // and dividing by an average invented capacity in
+                            // the months that have none.
+                            const short = cap > 0 && need > cap ? need - cap : null
                             return (
                               <span
                                 key={s.id}
-                                className={'type-tag' + (months != null && months > 3 ? ' over' : '')}
+                                className={'type-tag' + (short != null ? ' over' : '')}
                                 title={
                                   cap > 0
-                                    ? t('prov_stepTag')
+                                    ? (short != null ? t('prov_stepTagOver') : t('prov_stepTag'))
                                         .replace('{n}', String(need))
                                         .replace('{m}', String(cap))
-                                        .replace('{k}', months == null ? '0' : String(months))
+                                        .replace('{k}', String(short || 0))
                                     : ''
                                 }
                               >
                                 {s.label}: {need}{cap > 0 ? ' / ' + cap : ''}
-                                {months != null && <b> · {months}&nbsp;{t('prov_months')}</b>}
+                                {short != null && <b> · −{short}</b>}
                               </span>
                             )
                           })}
@@ -361,6 +364,126 @@ function MultiPick({ value, options, labelOf, placeholder, tagClass, onChange })
   )
 }
 
+/**
+ * Seats per month, per course type – the provider's actual plan.
+ *
+ * Sparse by design: only the months that hold something get a row, added
+ * through the picker. The dense alternative (every month of the window, always
+ * on screen) is eighteen rows of mostly zeros per provider, and on a phone that
+ * buries the three months that matter.
+ *
+ * Months already used drop out of the picker, so the same month cannot be
+ * entered twice – two November rows would each look authoritative and only one
+ * of them could survive the save.
+ */
+function MonthPlan({ value, steps, months, onChange }) {
+  const { t, lang } = useStore()
+  const [pick, setPick] = useState('')
+  // Months outside the configured window stay listed while they hold data:
+  // silently hiding a number somebody typed is how a plan quietly loses a
+  // course. They are flagged, and can be removed like any other row.
+  const rows = Object.keys(value || {}).filter(isMonth).sort()
+  const free = months.filter((m) => !(m in (value || {})))
+
+  const setCell = (month, stepId, raw) => {
+    const n = raw === '' ? 0 : Math.max(0, Math.round(Number(raw) || 0))
+    onChange({ ...(value || {}), [month]: { ...((value || {})[month] || {}), [stepId]: n } })
+  }
+  const removeMonth = (month) => {
+    const next = { ...(value || {}) }
+    delete next[month]
+    onChange(next)
+  }
+
+  return (
+    <div className="month-plan">
+      {rows.length === 0 ? (
+        <p className="muted small">{t('p_noMonths')}</p>
+      ) : (
+        <div className="table-wrap">
+          <table className="data-table compact card-at-900 month-table" role="table">
+            <thead>
+              <tr>
+                <th scope="col">{t('p_month')}</th>
+                {steps.map((s) => (
+                  <th scope="col" key={s.id} className="num">{s.label}</th>
+                ))}
+                <th scope="col" className="num">{t('total')}</th>
+                <th scope="col" aria-label={t('p_removeMonth')} />
+              </tr>
+            </thead>
+            <tbody>
+              {rows.map((m) => {
+                const cells = (value || {})[m] || {}
+                const sum = steps.reduce((n, s) => n + Math.max(0, Math.round(Number(cells[s.id]) || 0)), 0)
+                const outside = !months.includes(m)
+                return (
+                  <tr key={m} role="row">
+                    <td role="cell" className="mp-month card-name strong">
+                      {monthLabel(m, lang)}
+                      {outside && <span className="warn-text small" title={t('p_monthOutside')}> !</span>}
+                    </td>
+                    {steps.map((s) => (
+                      <td role="cell" key={s.id} className="mp-cell num" data-label={s.label}>
+                        <input
+                          className="input"
+                          type="number"
+                          min="0"
+                          step="1"
+                          placeholder="–"
+                          value={cells[s.id] || ''}
+                          aria-label={monthLabel(m, lang) + ' – ' + s.label}
+                          onChange={(e) => setCell(m, s.id, e.target.value)}
+                        />
+                      </td>
+                    ))}
+                    <td role="cell" className="mp-sum num strong" data-label={t('total')}>{sum || '–'}</td>
+                    <td role="cell" className="mp-del">
+                      <button
+                        type="button"
+                        className="mini-btn danger"
+                        title={t('p_removeMonth')}
+                        aria-label={t('p_removeMonth') + ' – ' + monthLabel(m, lang)}
+                        onClick={() => removeMonth(m)}
+                      >
+                        ✕
+                      </button>
+                    </td>
+                  </tr>
+                )
+              })}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {free.length === 0 ? (
+        <p className="muted small">{t('p_monthFull')}</p>
+      ) : (
+        <div className="month-add">
+          <select className="input" value={pick} onChange={(e) => setPick(e.target.value)} aria-label={t('p_month')}>
+            <option value="">{t('p_month')}…</option>
+            {free.map((m) => (
+              <option key={m} value={m}>{monthLabel(m, lang)}</option>
+            ))}
+          </select>
+          <button
+            type="button"
+            className="btn btn-ghost"
+            disabled={!pick}
+            onClick={() => {
+              if (!pick) return
+              onChange({ ...(value || {}), [pick]: {} })
+              setPick('')
+            }}
+          >
+            + {t('p_addMonth')}
+          </button>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // Small "⚙" next to a field label that opens the list editor for that field
 // inside this same dialog (no nested modal).
 function ManageLink({ onClick, title }) {
@@ -372,7 +495,7 @@ function ManageLink({ onClick, title }) {
 }
 
 function ProviderForm({ provider, providerCourses, providerStatus, simVersions, steps, onClose, onSave, onDelete, isNew }) {
-  const { t, setProviderCourses, setProviderStatus, setSimVersions } = useStore()
+  const { t, data, setProviderCourses, setProviderStatus, setSimVersions } = useStore()
   const [p, setP] = useState({
     ...provider,
     courses: provider.courses || [],
@@ -384,6 +507,15 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
   // From the helper, not re-derived: two copies of one rounding rule drift the
   // moment either side changes how a seat count is coerced.
   const slots = providerSlots(p, steps)
+  // Memoised on the two settings, not rebuilt per render: a fresh array would
+  // make the month picker rebuild on every keystroke in any field of the dialog.
+  const months = useMemo(
+    () => capacityRange(data.capacityFrom, data.capacityTo),
+    [data.capacityFrom, data.capacityTo]
+  )
+  // Checked against the provider's OWN months, so a month that fell out of the
+  // window still counts – it is still stored and still shown.
+  const plan = providerPlanCheck(p, steps, Object.keys(p.slotsByMonth || {}))
   const set = (k, v) => setP((s) => ({ ...s, [k]: v }))
   const toggleCourse = (id) =>
     setP((s) => {
@@ -413,6 +545,11 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
 
   // Sub-view: edit one of the selectable lists without leaving the dialog, so
   // the half-filled provider form is preserved behind it.
+  // xwide, not wide: the month table is Monat + one column per course type +
+  // sum + delete, and the card breakpoint is on the VIEWPORT, not on the dialog.
+  // A 720px dialog on a desktop therefore keeps the real table and simply hides
+  // the right of it – the course-date dialog lost its delete button to exactly
+  // that, at every window size, for two releases.
   if (manage) {
     const m = MANAGERS[manage]
     return (
@@ -438,7 +575,7 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
     <Modal
       title={isNew ? t('addProvider') : t('editProvider')}
       onClose={onClose}
-      wide
+      xwide
       footer={
         <div className="foot-row">
           {!isNew && <button className="btn btn-danger" onClick={() => onDelete(p.id)}>{t('delete')}</button>}
@@ -542,6 +679,30 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
           {slots.splitOver && (
             <p className="warn-text small">
               {t('p_slotsOver').replace('{n}', String(slots.split)).replace('{m}', String(Math.round(Number(p.slots) || 0)))}
+            </p>
+          )}
+        </Field>
+        <Field label={t('p_timeline')} span2>
+          <p className="stat-hint">{t('p_timelineHint')}</p>
+          <MonthPlan
+            value={p.slotsByMonth || {}}
+            steps={steps}
+            months={months}
+            onChange={(v) => set('slotsByMonth', v)}
+          />
+          {plan.overSteps.map((s) => (
+            <p className="warn-text small" key={s.id}>
+              {t('p_planOverStep')
+                .replace('{s}', s.label)
+                .replace('{n}', String(plan.planned[s.id]))
+                .replace('{m}', String(slots.byStep[s.id]))}
+            </p>
+          ))}
+          {plan.overTotal && (
+            <p className="warn-text small">
+              {t('p_planOverTotal')
+                .replace('{n}', String(plan.plannedTotal))
+                .replace('{m}', String(plan.typedTotal))}
             </p>
           )}
         </Field>

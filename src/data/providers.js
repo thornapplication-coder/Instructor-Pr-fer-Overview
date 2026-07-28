@@ -58,12 +58,23 @@ export function emptyProvider(id) {
     phone: '',
     website: '',
     price: '',
-    // Seats the provider can take PER MONTH. `slots` is the overall figure,
-    // `slotsByStep` the same thing broken down by course type ({stepId: n}) -
-    // a provider that runs six type ratings a month may only run two TRI
-    // courses, and a single total hides exactly that.
+    // Seats the provider can take IN TOTAL over the planning window. `slots` is
+    // the overall figure, `slotsByStep` the same thing broken down by course
+    // type ({stepId: n}) - a provider that runs six type ratings may only run
+    // two TRI courses, and a single total hides exactly that.
+    //
+    // A monthly rate is deliberately NOT what these hold any more: the months
+    // are not alike. "Four type ratings in November 2026, two in December, six
+    // in March 2027" cannot be said with one number per provider, and spreading
+    // an average over the year invented capacity in the months that have none.
+    // The real distribution lives in `slotsByMonth` below; these two stay as the
+    // agreed total the distribution is checked against.
     slots: '',
     slotsByStep: {},
+    // The plan itself: { 'YYYY-MM': { [stepId]: seats } }. Sparse on purpose -
+    // only the months a provider actually offers something are stored, so a
+    // three-course year is three entries rather than twenty-four empty ones.
+    slotsByMonth: {},
     status: '',
     notes: ''
   }

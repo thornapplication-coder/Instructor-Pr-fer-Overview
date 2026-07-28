@@ -11,6 +11,42 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.42.0] – 2026-07-28
+
+### Geändert
+- **Provider-Plätze sind eine Gesamtzahl, keine Monatsrate.** „Plätze / Monat"
+  hieß im Kern: jeder Monat ist gleich. Die Monate sind aber nicht gleich — vier
+  Type Ratings im November 2026, zwei im Dezember, sechs im März 2027 — und eine
+  Rate konnte das nicht ausdrücken. Sie durch die Zahl der Personen zu teilen
+  hat außerdem Kapazität in Monaten erfunden, die keine haben.
+- Die Auslastungs-Chips rechnen deshalb nicht mehr in Monate um. Bedarf und
+  Plätze sind jetzt beides Gesamtzahlen und werden direkt verglichen; fehlen
+  Plätze, steht dort, wie viele.
+
+### Neu
+- **Zeitleiste im Anbieter-Dialog.** Je Monat eine Zeile, je Kursart ein Feld,
+  dazu die Summe. Bewusst nur die Monate, in denen es etwas gibt: alle achtzehn
+  immer anzuzeigen wäre je Anbieter eine Wand aus Nullen und würde am Handy die
+  drei Monate begraben, um die es geht. Ein bereits eingetragener Monat fällt
+  aus der Auswahl — zwei November-Zeilen sähen beide verbindlich aus, und nur
+  eine könnte das Speichern überleben.
+- **Warnung, kein Riegel.** Verteilt die Zeitleiste mehr, als bei „Plätze
+  insgesamt" steht, sagt die App das — je Kursart und in Summe. Gesperrt wird
+  nichts, dieselbe Regel wie bei den Plätzen eines Kurstermins: ein Anbieter
+  findet auch mal einen Platz mehr, und eine App, die die Eingabe verweigert,
+  wird über das Notizfeld umgangen.
+- **„Provider-Plätze je Monat" im Kapazitäts-Reiter.** Monate untereinander,
+  Kursarten nebeneinander — nicht andersherum: die Frage ist „welcher Monat wird
+  eng", und mit achtzehn Monaten als Spalten ist die Tabelle breiter als jeder
+  Bildschirm. Über die Anbieter-Auswahl bekommt man die Einzelsicht, ohne eine
+  zweite Tabelle. Leere Monate bleiben als graue Zeile stehen; eine Zeitleiste,
+  die ihre Lücken weglässt, ist eine Liste.
+- **Zeitraum in den Einstellungen**, voreingestellt bis Ende 2027. Start leer
+  lassen heißt „ab dem laufenden Monat", dann wandert das Fenster von allein
+  mit. Ein Ende vor dem Anfang wird benannt, statt eine leere Tabelle zu zeigen.
+- Zeitleiste und Gesamtzahlen stehen im **PDF** und in der **Excel-Ausgabe** —
+  „40 Plätze" und „30 davon erst 2027" sind zwei verschiedene Aussagen.
+
 ## [1.41.0] – 2026-07-27
 
 ### Geändert

@@ -360,11 +360,11 @@ const DICT = {
   p_phone: { de: 'Telefon', en: 'Phone' },
   p_website: { de: 'Website', en: 'Website' },
   p_price: { de: 'Preis / Konditionen', en: 'Price / terms' },
-  p_slots: { de: 'Plätze / Monat (gesamt)', en: 'Seats / month (total)' },
-  p_slotsByStep: { de: 'Plätze / Monat je Kursart', en: 'Seats / month per course type' },
+  p_slots: { de: 'Plätze insgesamt', en: 'Seats in total' },
+  p_slotsByStep: { de: 'Plätze insgesamt je Kursart', en: 'Seats in total per course type' },
   p_slotsHint: {
-    de: 'Wie viele Personen der Provider pro Monat in der jeweiligen Kursart aufnehmen kann. Leer heißt „nicht angegeben", nicht „null".',
-    en: 'How many people the provider can take per month in each course type. Blank means "not stated", not "zero".'
+    de: 'Wie viele Personen der Provider insgesamt in der jeweiligen Kursart aufnehmen kann. Leer heißt „nicht angegeben", nicht „null". Auf welche Monate sich das verteilt, steht in der Zeitleiste darunter.',
+    en: 'How many people the provider can take in total in each course type. Blank means "not stated", not "zero". Which months they fall in is set in the timeline below.'
   },
   p_slotsSum: { de: 'Aufteilung ergibt {n}.', en: 'The breakdown adds up to {n}.' },
   p_slotsOver: {
@@ -377,15 +377,70 @@ const DICT = {
   },
   p_status: { de: 'Status', en: 'Status' },
   p_notes: { de: 'Notizen', en: 'Notes' },
+
+  // ---- provider capacity timeline (seats per month)
+  p_timeline: { de: 'Zeitleiste – Plätze je Monat', en: 'Timeline – seats per month' },
+  p_timelineHint: {
+    de: 'Die Monate sind nicht gleich: 4 Type Ratings im November, keins im Dezember. Trage nur die Monate ein, in denen es etwas gibt – der Rest bleibt leer. Der Zeitraum steht in den Einstellungen.',
+    en: 'The months are not alike: 4 type ratings in November, none in December. Enter only the months that hold something – the rest stays empty. The window is set in the settings.'
+  },
+  p_addMonth: { de: 'Monat', en: 'month' },
+  p_noMonths: {
+    de: 'Noch kein Monat eingetragen. Die Gesamtzahlen oben gelten dann ohne Zeitbezug.',
+    en: 'No month entered yet. The totals above then carry no timing.'
+  },
+  p_monthFull: {
+    de: 'Alle Monate des Zeitraums sind eingetragen. Zeitraum in den Einstellungen ändern.',
+    en: 'Every month in the window is listed. Change the window in the settings.'
+  },
+  p_month: { de: 'Monat', en: 'Month' },
+  p_monthOutside: {
+    de: 'Dieser Monat liegt außerhalb des eingestellten Zeitraums. Er zählt weiter mit – ausgeblendet würde eine getippte Zahl still verschwinden.',
+    en: 'This month is outside the configured window. It still counts – hiding it would make a typed figure vanish silently.'
+  },
+  p_planOverStep: {
+    de: 'Die Zeitleiste verteilt mehr, als bei {s} insgesamt steht ({n} statt {m}). Nur ein Hinweis – gesperrt wird nichts.',
+    en: 'The timeline distributes more than the {s} total allows ({n} instead of {m}). A hint only – nothing is blocked.'
+  },
+  p_planOverTotal: {
+    de: 'Die Zeitleiste verteilt {n} Plätze, insgesamt angegeben sind {m}. Nur ein Hinweis – gesperrt wird nichts.',
+    en: 'The timeline distributes {n} seats while the total says {m}. A hint only – nothing is blocked.'
+  },
+  p_removeMonth: { de: 'Monat entfernen', en: 'Remove month' },
+  cap_timelineTitle: { de: 'Provider-Plätze je Monat', en: 'Provider seats per month' },
+  cap_timelineHint: {
+    de: 'Was die Provider je Monat anbieten, aus dem Anbieter-Dialog. Der Zeitraum lässt sich in den Einstellungen ändern.',
+    en: 'What the providers offer per month, from the provider dialog. The window can be changed in the settings.'
+  },
+  cap_allProviders: { de: 'Alle Anbieter', en: 'All providers' },
+  cap_noSlots: {
+    de: 'Für diesen Zeitraum ist noch nichts eingetragen. Plätze je Monat setzt du im Provider-Reiter – Zeile antippen, dann Zeitleiste.',
+    en: 'Nothing entered for this window yet. Set seats per month in the Providers tab – tap a row, then the timeline.'
+  },
+  set_capacityRange: { de: 'Kapazitäts-Zeitraum', en: 'Capacity window' },
+  set_capacityRangeHint: {
+    de: 'Welche Monate die Provider-Zeitleiste abdeckt. Start leer lassen heißt „ab dem laufenden Monat" – dann wandert der Zeitraum von allein mit.',
+    en: 'Which months the provider timeline covers. Leaving the start empty means "from the current month" – the window then moves along on its own.'
+  },
+  set_from: { de: 'Von', en: 'From' },
+  set_to: { de: 'Bis', en: 'To' },
+  set_capacityFromPlaceholder: { de: 'laufender Monat', en: 'current month' },
+  set_capacityBad: {
+    de: 'Das Ende liegt vor dem Anfang – die Zeitleiste bleibt leer, bis das stimmt.',
+    en: 'The end is before the start – the timeline stays empty until that is fixed.'
+  },
   prov_capacity: { de: 'Kapazität & Auslastung', en: 'Capacity & utilization' },
   prov_capacityHint: {
-    de: 'Offene Planungs-Zuweisungen je Provider und die Plätze, die er pro Monat anbietet. Je Kursart steht dabei, wie viele Monate der offene Bedarf braucht. Kapazität im Bearbeiten-Dialog setzen; Zeile antippen zum Bearbeiten.',
-    en: 'Open planning assignments per provider and the seats it offers per month. Per course type it says how many months the open demand needs. Set the capacity in the edit dialog; tap a row to edit.'
+    de: 'Offene Planungs-Zuweisungen je Provider und die Plätze, die er insgesamt anbietet. Je Kursart steht der offene Bedarf gegen die Plätze derselben Kursart. Wann die Plätze liegen, steht in der Zeitleiste im Bearbeiten-Dialog; Zeile antippen.',
+    en: 'Open planning assignments per provider and the seats it offers in total. Per course type the open demand stands against the seats of that same course type. When those seats fall is in the timeline in the edit dialog; tap a row.'
   },
-  prov_stepTag: { de: '{n} offen · {m} Plätze/Monat · rund {k} Monate', en: '{n} open · {m} seats/month · about {k} months' },
-  prov_months: { de: 'Mon.', en: 'mo.' },
+  prov_stepTag: { de: '{n} offen · {m} Plätze insgesamt', en: '{n} open · {m} seats in total' },
+  prov_stepTagOver: {
+    de: '{n} offen · nur {m} Plätze insgesamt – {k} zu wenig',
+    en: '{n} open · only {m} seats in total – {k} short'
+  },
   prov_assigned: { de: 'Zugewiesen', en: 'Assigned' },
-  prov_slots: { de: 'Plätze / Monat', en: 'Seats / month' },
+  prov_slots: { de: 'Plätze', en: 'Seats' },
 
   // ---- staff type & planning / assignments
   f_staffType: { de: 'Zugehörigkeit', en: 'Affiliation' },

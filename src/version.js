@@ -4,12 +4,37 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.41.0'
+export const APP_VERSION = '1.42.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.42.0',
+    date: '2026-07-28',
+    type: 'minor',
+    changes: {
+      de: [
+        'Provider-Plätze sind jetzt eine Gesamtzahl, keine Monatsrate mehr. „Plätze / Monat" hieß: jeder Monat gleich. Die Monate sind aber nicht gleich — 4 Type Ratings im November 2026, 2 im Dezember, 6 im März 2027 — und eine Rate konnte das nicht sagen.',
+        'Neu im Anbieter-Dialog: eine Zeitleiste. Je Monat eine Zeile, je Kursart ein Feld. Nur die Monate, in denen es etwas gibt — über „+ Monat" hinzugefügt, ein bereits eingetragener Monat verschwindet aus der Auswahl.',
+        'Verteilt die Zeitleiste mehr, als bei „Plätze insgesamt" steht, sagt die App das — je Kursart und in Summe. Ein Hinweis, kein Riegel: ein Anbieter findet auch mal einen Platz mehr.',
+        'Neu im Kapazitäts-Reiter: „Provider-Plätze je Monat". Monate untereinander, Kursarten nebeneinander, wahlweise alle Anbieter oder einer. Leere Monate bleiben als graue Zeile stehen — die Lücke ist die Information.',
+        'Der Zeitraum steht in den Einstellungen, voreingestellt bis Ende 2027. Start leer heißt „ab dem laufenden Monat", dann wandert er von allein mit.',
+        'Die Auslastungs-Chips im Provider-Reiter rechnen nicht mehr in Monate um: Bedarf und Plätze sind jetzt beides Gesamtzahlen und werden direkt verglichen. Fehlen Plätze, steht dort, wie viele.',
+        'Zeitleiste und Gesamtzahlen stehen im PDF und in der Excel-Ausgabe.'
+      ],
+      en: [
+        'Provider seats are a total now, not a monthly rate. "Seats / month" meant every month alike. The months are not alike — 4 type ratings in November 2026, 2 in December, 6 in March 2027 — and a rate could not say that.',
+        'New in the provider dialog: a timeline. One row per month, one field per course type. Only the months that hold something, added through "+ month"; a month already listed drops out of the picker.',
+        'If the timeline distributes more than the "seats in total" figure allows, the app says so — per course type and overall. A hint, not a block: a provider really can find one more slot.',
+        'New in the capacity tab: "Provider seats per month". Months down the side, course types across, all providers or one. Empty months stay as a dimmed row — the gap is the information.',
+        'The window is set in the settings, defaulting to the end of 2027. An empty start means "from the current month", so it moves along on its own.',
+        'The utilisation chips in the provider tab no longer convert to months: demand and seats are both totals and compare directly. Where seats are short, it says by how many.',
+        'The timeline and the totals are in the PDF and the Excel export.'
+      ]
+    }
+  },
   {
     version: '1.41.0',
     date: '2026-07-27',

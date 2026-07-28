@@ -1,14 +1,20 @@
-// Provider capacity: seats PER MONTH, overall and per course type.
+// Provider capacity: seats IN TOTAL, overall and per course type, plus the
+// month-by-month plan that says when those seats actually fall.
 //
 // The free-text "Kapazität / Konditionen" field is gone; whatever was typed
 // there moves into the notes rather than being deleted. What replaces it is a
 // number that can actually be measured against demand - and a breakdown, because
 // a provider's total can look comfortable while the one course everybody needs
 // is the bottleneck.
+//
+// The figures used to be a MONTHLY rate. They are totals now: the months are
+// not alike ("4 type ratings in November 2026, 2 in December, 6 in March 2027"),
+// and one rate per provider could not say that. Dividing demand by an average
+// invented capacity in the months that have none.
 import { reporter, STORAGE_KEY } from './harness.mjs'
 
 export default async function run(browser, baseUrl, shots) {
-  const { ok, fails } = reporter('provider capacity – per month, per course type')
+  const { ok, fails } = reporter('provider capacity – totals, and the monthly plan')
   const page = await browser.newPage({ viewport: { width: 1500, height: 1000 } })
   const errs = []
   page.on('pageerror', (e) => errs.push(String(e)))
@@ -35,14 +41,17 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForTimeout(400)
   const heads = (await page.locator('.data-table th').allInnerTexts()).map((x) => x.trim().toUpperCase())
   ok(!heads.some((h) => h.includes('KONDITIONEN')), 'and the column is gone from the table (' + heads.join(' | ') + ')')
-  ok(heads.some((h) => h.includes('PLÄTZE / MONAT')), 'the capacity column says per month (' + heads.join(' | ') + ')')
+  ok(heads.some((h) => h.trim() === 'PLÄTZE' || h.startsWith('PLÄTZE\n')),
+    'the capacity column no longer claims to be a monthly rate (' + heads.join(' | ') + ')')
+  ok(!heads.some((h) => h.includes('/ MONAT')), 'and nothing else in the header does either')
 
   // ---- 2. the dialog takes a total and a breakdown -------------------------
   await page.locator('.data-table tbody tr').first().click()
   await page.waitForSelector('.modal')
   await page.waitForTimeout(400)
   const modal = page.locator('.modal')
-  ok((await modal.innerText()).includes('Plätze / Monat (gesamt)'), 'the overall field says per month')
+  ok((await modal.innerText()).includes('Plätze insgesamt'), 'the overall field is a total')
+  ok(!(await modal.innerText()).includes('Plätze / Monat'), 'and the dialog no longer says "/ Monat" anywhere')
   const cells = modal.locator('.slot-cell')
   ok(await cells.count() >= 4, 'one field per course type (' + (await cells.count()) + ')')
   const labels = (await cells.locator('.slot-name').allInnerTexts()).map((x) => x.trim())
@@ -65,7 +74,10 @@ export default async function run(browser, baseUrl, shots) {
   await page.locator('.data-table tbody tr').first().click()
   await page.waitForSelector('.modal')
   await page.waitForTimeout(400)
-  await page.locator('.modal .field', { hasText: 'Plätze / Monat (gesamt)' }).locator('input').fill('3')
+  // getByLabel with exact, not a substring filter: ".field containing 'Plätze
+  // insgesamt'" also matches "Plätze insgesamt je Kursart" and would fill the
+  // first course-type box instead, quietly testing nothing.
+  await page.getByLabel('Plätze insgesamt', { exact: true }).fill('3')
   await page.waitForTimeout(400)
   ok((await page.locator('.modal').innerText()).includes('übersteigt die Gesamtkapazität'),
     'a breakdown promising more than the total is called out')
@@ -89,24 +101,26 @@ export default async function run(browser, baseUrl, shots) {
   const cap = page.locator('.card').filter({ hasText: 'Kapazität & Auslastung' }).first()
   await cap.waitFor()
   await page.waitForTimeout(500)
-  // Demand is the whole open backlog and the seats are a MONTHLY figure, so the
-  // chip reads as months. Four people against two seats a month is two months –
-  // normal for a phase-in, and deliberately NOT flagged: flagging "more than one
-  // month" would put a red mark on every provider forever.
+  // Both figures are totals now, so they compare directly: four people against
+  // two seats is two seats short, and that IS the flag. Under the old monthly
+  // reading the same pair was "two months" and deliberately unflagged - which is
+  // the point of re-checking it here rather than deleting the assertion.
   const chip = cap.locator('.type-tag').first()
   const chipText = (await chip.innerText()).trim()
-  ok(chipText.includes('/'), 'the chip shows demand against seats per month (' + chipText + ')')
-  ok(/\d+\s*Mon\./.test(chipText), 'and how many months that backlog needs (' + chipText + ')')
-  ok(await cap.locator('.type-tag.over').count() === 0, 'a two-month backlog is not flagged red')
+  ok(chipText.includes('/'), 'the chip shows demand against the seats of that course type (' + chipText + ')')
+  ok(!/Mon\./.test(chipText), 'and no longer converts it into months (' + chipText + ')')
+  ok(chipText.includes('−2'), 'it names the shortfall instead (' + chipText + ')')
+  ok(await cap.locator('.type-tag.over').count() >= 1, 'four people against two seats is flagged')
 
-  // Raise the backlog past three months and it is.
+  // Give the provider enough seats and the flag goes. Without this the "flagged"
+  // assertion above passes on a chip that is red whatever the numbers say.
   await page.evaluate((K) => {
     const d = JSON.parse(localStorage.getItem(K))
-    const p = d.providers.find((x) => x.slotsByStep && Object.values(x.slotsByStep).some(Boolean))
     const step = d.assignmentSteps[0].id
-    let n = 0
-    d.trainers = d.trainers.map((t) =>
-      n++ < 20 ? { ...t, assignments: { ...t.assignments, [step]: { ...(t.assignments?.[step] || {}), providerId: p.id, status: 'booked' } } } : t
+    d.providers = d.providers.map((p) =>
+      p.slotsByStep && Object.values(p.slotsByStep).some(Boolean)
+        ? { ...p, slots: 40, slotsByStep: { ...p.slotsByStep, [step]: 10 } }
+        : p
     )
     localStorage.setItem(K, JSON.stringify(d))
   }, STORAGE_KEY)
@@ -115,8 +129,9 @@ export default async function run(browser, baseUrl, shots) {
   const cap2 = page.locator('.card').filter({ hasText: 'Kapazität & Auslastung' }).first()
   await cap2.waitFor()
   await page.waitForTimeout(500)
-  ok(await cap2.locator('.type-tag.over').count() >= 1,
-    'twenty people against two seats a month is flagged (' + (await cap2.locator('.type-tag.over').first().innerText()).trim() + ')')
+  const chip2 = (await cap2.locator('.type-tag').first().innerText()).trim()
+  ok(await cap2.locator('.type-tag.over').count() === 0,
+    'four people against ten seats is not flagged (' + chip2 + ')')
 
   await cap.screenshot({ path: shots + '/prov-capacity.png' })
 
@@ -287,6 +302,172 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForTimeout(400)
   const back = await page.evaluate(() => getComputedStyle(document.querySelector('.provider-table')).display)
   ok(back === 'table', 'and a desktop keeps the real table (' + back + ')')
+
+  // ---- 5. the monthly plan: entering it -----------------------------------
+  //
+  // The window is pinned to fixed months so the assertions do not drift with
+  // the calendar. Left at the default it starts at "the month we are in", and
+  // an expectation of "November 2026 is offered" would quietly stop being true.
+  await page.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    d.capacityFrom = '2026-11'
+    d.capacityTo = '2027-12'
+    localStorage.setItem(K, JSON.stringify(d))
+  }, STORAGE_KEY)
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.locator('.tab', { hasText: 'Provider' }).first().click()
+  await page.waitForSelector('.provider-table')
+  await page.waitForTimeout(400)
+  await page.locator('.provider-table tbody tr').first().click()
+  await page.waitForSelector('.modal')
+  await page.waitForTimeout(400)
+  const dlg = page.locator('.modal')
+  ok((await dlg.innerText()).includes('Zeitleiste'), 'the dialog has a timeline')
+  ok((await dlg.locator('.month-table').count()) === 0, 'with no months until one is added')
+
+  const picker = dlg.locator('.month-add select')
+  const offered = await picker.locator('option').allInnerTexts()
+  ok(offered.length === 15, 'the picker offers every month of the window (' + (offered.length - 1) + ' + placeholder)')
+  ok(offered.some((o) => o.includes('Nov') && o.includes('2026')), 'starting at the configured start (' + offered[1] + ')')
+  ok(offered[offered.length - 1].includes('2027'), 'and ending at the configured end (' + offered[offered.length - 1] + ')')
+
+  // By value, not by label: the month label is locale-formatted ("Nov 2026" or
+  // "Nov. 2026" depending on the ICU build) and matching on it makes the test
+  // fail for a reason that has nothing to do with the feature.
+  const addMonth = async (value) => {
+    await picker.selectOption(value)
+    await dlg.locator('.month-add .btn').click()
+    await page.waitForTimeout(200)
+  }
+  await addMonth('2026-11')
+  await addMonth('2026-12')
+  ok(await dlg.locator('.month-table tbody tr').count() === 2, 'two months, two rows')
+  // The month just added must leave the picker, or the same month can be
+  // entered twice and only one of the two rows survives the save.
+  const stillFree = await picker.locator('option').evaluateAll((os) => os.map((o) => o.value))
+  ok(!stillFree.includes('2026-11'), 'a month that is listed drops out of the picker')
+  ok(stillFree.includes('2027-03'), '  while the ones not used stay (' + stillFree.length + ' left)')
+
+  // Rows are chronological, so nth(0) is November – no label matching needed.
+  // "TUI: 4 type ratings in November 2026, 2 in December" – the user's example.
+  const monthRow = (i) => dlg.locator('.month-table tbody tr').nth(i)
+  await monthRow(0).locator('.mp-cell input').first().fill('4')
+  await monthRow(1).locator('.mp-cell input').first().fill('2')
+  await page.waitForTimeout(300)
+  ok((await monthRow(0).locator('.mp-sum').innerText()).trim() === '4', 'the row adds itself up')
+
+  // 4 + 2 = 6 type ratings against the 10 set earlier: inside, so no warning.
+  ok(!(await dlg.innerText()).includes('verteilt mehr'), 'a plan inside the totals says nothing')
+  await monthRow(0).locator('.mp-cell input').first().fill('40')
+  await page.waitForTimeout(300)
+  ok((await dlg.innerText()).includes('verteilt mehr'), 'a plan over the course-type total is called out')
+  ok(await monthRow(0).locator('.mp-cell input').first().isEnabled(),
+    'and nothing is disabled – a warning, not a block')
+  await monthRow(0).locator('.mp-cell input').first().fill('4')
+  await page.waitForTimeout(300)
+  ok(!(await dlg.innerText()).includes('verteilt mehr'), '  and the warning goes when the plan fits again')
+
+  await dlg.locator('.btn-primary', { hasText: 'Speichern' }).click()
+  await page.waitForTimeout(600)
+  const plan = await page.evaluate((K) =>
+    JSON.parse(localStorage.getItem(K)).providers.find((p) => p.slotsByMonth && Object.keys(p.slotsByMonth).length),
+    STORAGE_KEY)
+  ok(!!plan, 'the plan reached storage')
+  ok(plan && plan.slotsByMonth['2026-11'] && Object.values(plan.slotsByMonth['2026-11'])[0] === 4,
+    'with the month as a key, not a date (' + JSON.stringify(plan && plan.slotsByMonth) + ')')
+
+  // ---- 6. the overview in the capacity tab --------------------------------
+  await page.locator('.tab', { hasText: 'Kapazität' }).first().click()
+  await page.waitForSelector('.pm-table')
+  await page.waitForTimeout(400)
+  const pm = await page.evaluate(() => {
+    const t2 = document.querySelector('.pm-table')
+    const rows2 = [...t2.querySelectorAll('tbody tr')]
+    const body = rows2.filter((r) => !r.classList.contains('total-row'))
+    const totalRow = t2.querySelector('tbody tr.total-row')
+    const firstFig = (r) => r.querySelector('.pm-fig')
+    return {
+      months: body.length,
+      empties: body.filter((r) => r.classList.contains('pm-empty')).length,
+      nov: (body[0].querySelector('.pm-month').innerText || '').trim(),
+      novFirst: (firstFig(body[0]).innerText || '').trim(),
+      total: (totalRow.querySelector('.pm-sum').innerText || '').trim(),
+      hidden: t2.closest('.table-wrap').scrollWidth - t2.closest('.table-wrap').clientWidth
+    }
+  })
+  ok(pm.months === 14, 'the overview covers the whole window, not just the filled months (' + pm.months + ')')
+  // The gaps are the information: a month with nothing in it still gets a row.
+  ok(pm.empties === 12, 'and the empty months are present, dimmed (' + pm.empties + ' of ' + pm.months + ')')
+  ok(pm.nov.includes('Nov'), 'it starts at the configured start (' + pm.nov + ')')
+  ok(pm.novFirst === '4', 'November shows the four type ratings that were typed (' + pm.novFirst + ')')
+  ok(pm.total === '6', 'and the total row adds the months up (' + pm.total + ')')
+  ok(pm.hidden <= 1, 'nothing hides behind a sideways scroll on a desktop (' + pm.hidden + ')')
+
+  // The provider picker gives the per-provider view without a second table.
+  // Picking one that has no plan must empty it – otherwise the filter is
+  // decoration and the "all providers" figure is what is always drawn.
+  ok(await page.locator('.pm-table').count() === 1, 'the overview is one table, not one per provider')
+  const emptyProv = await page.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    const p = d.providers.find((x) => !x.slotsByMonth || !Object.keys(x.slotsByMonth).length)
+    return p ? p.id : ''
+  }, STORAGE_KEY)
+  await page.locator('.card').filter({ hasText: 'Provider-Plätze je Monat' }).locator('select').selectOption(emptyProv)
+  await page.waitForTimeout(400)
+  const filtered = page.locator('.card').filter({ hasText: 'Provider-Plätze je Monat' }).first()
+  ok(await filtered.locator('.pm-table').count() === 0,
+    'a provider with no plan shows none of the others\' seats')
+  ok((await filtered.innerText()).includes('noch nichts eingetragen'), '  and says why the table is gone')
+  await filtered.locator('select').selectOption('')
+  await page.waitForTimeout(400)
+  ok(await page.locator('.pm-table').count() === 1, 'and "all providers" brings it back')
+
+  // ---- 7. the overview as a card on a phone -------------------------------
+  await page.setViewportSize({ width: 390, height: 844 })
+  await page.waitForTimeout(500)
+  const pmPhone = await page.evaluate(() => {
+    const t2 = document.querySelector('.pm-table')
+    const row = [...t2.querySelectorAll('tbody tr')].find((r) => !r.classList.contains('total-row'))
+    const wrap = t2.closest('.table-wrap')
+    const figs = [...row.querySelectorAll('.pm-fig')]
+    const r = (el) => el.getBoundingClientRect()
+    return {
+      display: getComputedStyle(t2).display,
+      hidden: wrap.scrollWidth - wrap.clientWidth,
+      pageOverflow: document.documentElement.scrollWidth - window.innerWidth,
+      // Every figure keeps the heading its column carried, or the card is a row
+      // of unlabelled numbers.
+      labelled: figs.filter((f) => f.getAttribute('data-label')).length,
+      figs: figs.length,
+      monthFullWidth: Math.round(r(row.querySelector('.pm-month')).width) >= Math.round(r(row).width) - 26,
+      worstRight: Math.max(...[...row.querySelectorAll('td, td *')].map((e) => Math.round(r(e).right))),
+      cardRight: Math.round(r(row).right)
+    }
+  })
+  ok(pmPhone.display === 'block', 'the overview becomes cards on a phone (' + pmPhone.display + ')')
+  ok(pmPhone.hidden <= 1 && pmPhone.pageOverflow <= 0,
+    'with nothing behind a sideways scroll (' + pmPhone.hidden + ' / ' + pmPhone.pageOverflow + ')')
+  ok(pmPhone.labelled === pmPhone.figs,
+    'every figure keeps its column heading (' + pmPhone.labelled + '/' + pmPhone.figs + ')')
+  ok(pmPhone.monthFullWidth, 'the month is the card headline, across the full width')
+  ok(pmPhone.worstRight <= pmPhone.cardRight + 1, 'and nothing paints outside the card')
+  await page.screenshot({ path: shots + '/prov-months-phone.png' })
+
+  // ---- 8. a reversed window says so instead of drawing nothing ------------
+  await page.setViewportSize({ width: 1500, height: 1000 })
+  await page.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    d.capacityFrom = '2027-12'
+    d.capacityTo = '2026-11'
+    localStorage.setItem(K, JSON.stringify(d))
+  }, STORAGE_KEY)
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.locator('.tab', { hasText: 'Kapazität' }).first().click()
+  await page.waitForTimeout(600)
+  const badWindow = page.locator('.card').filter({ hasText: 'Provider-Plätze je Monat' }).first()
+  ok((await badWindow.innerText()).includes('Ende liegt vor dem Anfang'),
+    'an end before its start explains itself rather than showing an empty table')
+  ok(await badWindow.locator('.pm-table').count() === 0, 'and draws no table at all')
 
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.close()

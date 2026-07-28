@@ -12,6 +12,7 @@ import SyncCard from '../components/SyncCard.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { EDITABLE_LISTS } from '../data/lists.js'
 import { persistenceStatus } from '../lib/persistence.js'
+import { capacityRange } from '../lib/months.js'
 
 // Per-page export choices, in tab-bar order. Planung and the course dates are
 // VIEWS of the Umschulung tab rather than tabs of their own, so they follow it
@@ -36,7 +37,7 @@ function fmtBytes(n) {
 }
 
 export default function Settings() {
-  const { data, t, lang, setLang, exportData, importData, resetData, setTrainers, setPilots, setList, saveError } = useStore()
+  const { data, t, lang, setLang, exportData, importData, resetData, setTrainers, setPilots, setList, setCapacityRange, saveError } = useStore()
   const captureTabImage = useContext(CaptureContext)
   const fileRef = useRef(null)
   const xlsRef = useRef(null)
@@ -178,6 +179,38 @@ export default function Settings() {
             </button>
           ))}
         </div>
+      </section>
+
+      <section className="card">
+        <h3 className="card-title">{t('set_capacityRange')}</h3>
+        <p className="muted small">{t('set_capacityRangeHint')}</p>
+        <div className="range-row">
+          <label className="field">
+            <span className="field-label">{t('set_from')}</span>
+            <input
+              className="input"
+              type="month"
+              value={data.capacityFrom || ''}
+              placeholder={t('set_capacityFromPlaceholder')}
+              onChange={(e) => setCapacityRange(e.target.value, data.capacityTo)}
+            />
+          </label>
+          <label className="field">
+            <span className="field-label">{t('set_to')}</span>
+            <input
+              className="input"
+              type="month"
+              value={data.capacityTo || ''}
+              onChange={(e) => setCapacityRange(data.capacityFrom, e.target.value)}
+            />
+          </label>
+        </div>
+        {/* Said here rather than only where the timeline is empty: this is the
+            page that can put it right, and an empty table three tabs away does
+            not explain itself. */}
+        {capacityRange(data.capacityFrom, data.capacityTo).length === 0 && (
+          <p className="warn-text small">{t('set_capacityBad')}</p>
+        )}
       </section>
 
       <section className="card downloads-card">

@@ -1241,6 +1241,58 @@ textarea.input { resize: vertical; }
   }
 }
 
+/* ---------- Provider capacity: seats per month ---------- */
+/* The month row is Monat + one number per course type + sum + delete. The
+   course types are user-editable, so the columns cannot be named: they are laid
+   out by auto-flow and only the fixed ends are placed. */
+.month-table td .input { min-width: 0; width: 100%; text-align: right; }
+.month-table td.mp-cell { min-width: 74px; }
+.month-table td.mp-sum { font-variant-numeric: tabular-nums; }
+.month-add { display: flex; gap: 8px; align-items: center; margin-top: 8px; }
+.month-add .input { max-width: 220px; }
+/* Same breakpoint as the course-date editor, and for the same reason: this is
+   the other table living inside an `xwide` dialog, and below ~900px of window
+   the dialog cannot be 940px wide any more. */
+@media screen and (max-width: 899px) {
+  .month-table tbody tr { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .month-table td.mp-month { grid-column: 1 / -1; }
+  /* The sum and the ✕ end the card on one line, whatever the number of course
+     types before them – an odd count would otherwise leave the ✕ alone on a
+     line of its own. */
+  .month-table td.mp-sum { grid-column: 1; }
+  .month-table td.mp-del { grid-column: 2; justify-self: end; align-self: end; }
+  .month-add { flex-wrap: wrap; }
+  .month-add .input { max-width: none; flex: 1 1 160px; }
+}
+@media screen and (min-width: 521px) and (max-width: 899px) {
+  .month-table tbody tr { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .month-table td.mp-sum { grid-column: auto; }
+  .month-table td.mp-del { grid-column: 3; }
+}
+
+/* The read-only monthly overview in the capacity tab. Months down the side,
+   course types across – so "which month runs short" reads down one column. */
+.pm-table td.pm-fig, .pm-table th.num { font-variant-numeric: tabular-nums; }
+/* A month with nothing in it is still a row: the gap is the information. It is
+   dimmed rather than hidden so the eye skips it without losing the sequence. */
+.pm-table tbody tr.pm-empty td { color: var(--muted); }
+.pm-table tbody tr.pm-empty td.pm-month { font-weight: 700; }
+.range-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
+.range-row .field { flex: 1 1 180px; min-width: 0; }
+@media screen and (max-width: 1000px) {
+  /* Same card shape as the figure tables one section up: the month is the
+     headline, the numbers sit under it with the heading their column carried.
+     The course types are user-editable, so the cells flow rather than being
+     placed by name. */
+  .pm-table tbody tr { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .pm-table td.pm-month { grid-column: 1 / -1; }
+  .pm-table tbody td[data-label]::before { white-space: normal; min-height: 28px; }
+  .pm-table tbody tr.total-row { border-top: 2px solid var(--hair); }
+}
+@media screen and (min-width: 521px) and (max-width: 1000px) {
+  .pm-table tbody tr { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+}
+
 /* ---------- The capacity tab: the card grids ---------- */
 /* Measured, the widest of the three figure tables wants 745px and the editor
    below them 664px, so both fit from about 830px of window and neither does on
