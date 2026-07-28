@@ -409,13 +409,13 @@ const DICT = {
   p_removeMonth: { de: 'Monat entfernen', en: 'Remove month' },
   cap_timelineTitle: { de: 'Provider-Plätze je Monat', en: 'Provider seats per month' },
   cap_timelineHint: {
-    de: 'Was die Provider je Monat anbieten, aus dem Anbieter-Dialog. Der Zeitraum lässt sich in den Einstellungen ändern.',
-    en: 'What the providers offer per month, from the provider dialog. The window can be changed in the settings.'
+    de: 'Ein Balken je Monat, aufgeteilt nach Kursart — aus den Zeitleisten der Anbieter. Leere Monate bleiben stehen, damit man die Lücken sieht. Der Zeitraum lässt sich in den Einstellungen ändern.',
+    en: 'One bar per month, split by course type – from the providers’ timelines. Empty months stay in place so the gaps are visible. The window can be changed in the settings.'
   },
   cap_allProviders: { de: 'Alle Anbieter', en: 'All providers' },
   cap_noSlots: {
-    de: 'Für diesen Zeitraum ist noch nichts eingetragen. Plätze je Monat setzt du im Provider-Reiter – Zeile antippen, dann Zeitleiste.',
-    en: 'Nothing entered for this window yet. Set seats per month in the Providers tab – tap a row, then the timeline.'
+    de: 'Für diesen Zeitraum ist noch nichts eingetragen. Zeile oben antippen, dann im Dialog unter „Zeitleiste" die Monate setzen.',
+    en: 'Nothing entered for this window yet. Tap a row above, then set the months under "Timeline" in the dialog.'
   },
   set_capacityRange: { de: 'Kapazitäts-Zeitraum', en: 'Capacity window' },
   set_capacityRangeHint: {
@@ -431,8 +431,8 @@ const DICT = {
   },
   prov_capacity: { de: 'Kapazität & Auslastung', en: 'Capacity & utilization' },
   prov_capacityHint: {
-    de: 'Offene Planungs-Zuweisungen je Provider und die Plätze, die er insgesamt anbietet. Je Kursart steht der offene Bedarf gegen die Plätze derselben Kursart. Wann die Plätze liegen, trägst du in der Zeitleiste im Bearbeiten-Dialog ein (Zeile antippen); die Übersicht über alle Anbieter steht oben im Reiter „Kapazität".',
-    en: 'Open planning assignments per provider and the seats it offers in total. Per course type the open demand stands against the seats of that same course type. When those seats fall is entered in the timeline in the edit dialog (tap a row); the overview across all providers is at the top of the "Capacity" tab.'
+    de: 'Offene Planungs-Zuweisungen je Provider und die Plätze, die er insgesamt anbietet. Je Kursart steht der offene Bedarf gegen die Plätze derselben Kursart. Wann die Plätze liegen, trägst du in der Zeitleiste im Bearbeiten-Dialog ein (Zeile antippen) — die Grafik oben zeigt es für alle Anbieter zusammen.',
+    en: 'Open planning assignments per provider and the seats it offers in total. Per course type the open demand stands against the seats of that same course type. When those seats fall is entered in the timeline in the edit dialog (tap a row) — the chart above shows it for all providers together.'
   },
   prov_stepTag: { de: '{n} offen · {m} Plätze insgesamt', en: '{n} open · {m} seats in total' },
   prov_stepTagOver: {

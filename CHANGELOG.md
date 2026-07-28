@@ -11,19 +11,29 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
-## [1.42.1] – 2026-07-28
+## [1.43.0] – 2026-07-28
 
-### Behoben
-- **„Provider-Plätze je Monat" war nicht auffindbar.** Der Abschnitt stand ganz
-  unten im Kapazitäts-Reiter. Gemessen: am iPhone **2776 px** weit unten, also
-  3,3 Bildschirmlängen — hinter drei FTE-Tabellen, die am Handy jeweils zu einem
-  Stapel Karten werden; am Rechner 1161 px. Wer die Zahlen eingetragen hatte und
-  danach das Ergebnis suchte, fand schlicht nichts. Der Abschnitt steht jetzt
-  oben: 402 px am Handy, 265 px am Rechner.
-- Das ist auch die richtige Stelle: es ist der einzige Abschnitt des Reiters,
-  der von den **Anbietern** handelt und nicht von den eigenen Leuten.
-- Der Hinweis über „Kapazität & Auslastung" im Provider-Reiter nennt jetzt beide
-  Orte — wo die Monatszahlen eingetragen werden und wo die Übersicht steht.
+### Geändert
+- **Die Monatsübersicht ist eine Grafik und steht unter der Provider-Liste.**
+  Ein Balken je Monat, aufgeteilt nach Kursart, in den Farben, die die Kursarten
+  auch auf dem Board und im Planungsraster tragen. Rechts die Summe des Monats,
+  in der Legende die Summe je Kursart. Gestapelt, nicht nebeneinander: die erste
+  Frage ist, wie viel ein Monat insgesamt hergibt, die Aufteilung die zweite.
+- **Sie war vorher nicht auffindbar.** Als Zahlentabelle stand sie ganz unten im
+  Kapazitäts-Reiter — gemessen **2776 px** weit unten am iPhone, also 3,3
+  Bildschirmlängen hinter drei FTE-Tabellen, die dort jeweils zu einem Stapel
+  Karten werden; am Rechner 1161 px. Wer die Zahlen im Anbieter-Dialog eingetragen
+  hatte und danach das Ergebnis suchte, fand schlicht nichts. Jetzt 1381 px am
+  Handy und 500 px am Rechner — im selben Reiter, in dem die Zahlen entstehen,
+  direkt unter den Anbietern, die sie beschreiben.
+- **Leere Monate behalten ihre Zeile.** In der Tabelle war das eine graue Zeile;
+  in der Grafik ist es eine Lücke in der Achse — und genau die ist der Zweck
+  einer Zeitleiste: man sieht ohne eine einzige Zahl, dass November und Dezember
+  die Last tragen und das Frühjahr leer ist.
+- Der Zeitraum kommt weiter aus den Einstellungen. Ein Ende vor dem Anfang wird
+  benannt, statt eine leere Grafik zu zeichnen.
+- Der Testlauf misst jetzt die **Position** des Abschnitts, nicht nur seine
+  Existenz — sonst wandert er beim nächsten Umbau wieder nach unten.
 
 ## [1.42.0] – 2026-07-28
 

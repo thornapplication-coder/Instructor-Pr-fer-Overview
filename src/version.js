@@ -4,26 +4,28 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.42.1'
+export const APP_VERSION = '1.43.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
   {
-    version: '1.42.1',
+    version: '1.43.0',
     date: '2026-07-28',
-    type: 'patch',
+    type: 'minor',
     changes: {
       de: [
-        'Die Übersicht „Provider-Plätze je Monat" stand ganz unten im Kapazitäts-Reiter und war praktisch nicht auffindbar: am Handy 2776 px weit unten — 3,3 Bildschirmlängen hinter drei FTE-Tabellen, die dort jeweils zu einem Stapel Karten werden. Sie steht jetzt oben (402 px am Handy, 265 px am Rechner).',
-        'Passt auch inhaltlich besser: sie ist der einzige Abschnitt des Reiters, der von den Anbietern handelt und nicht von den eigenen Leuten.',
-        'Der Hinweis über der Anbieter-Auslastung sagt jetzt, wo die Monatsübersicht liegt — dort trägt man die Zahlen ein und sucht sie danach.'
+        'Die Monatsübersicht ist jetzt eine Grafik und steht direkt unter der Provider-Liste: ein Balken je Monat, aufgeteilt nach Kursart, in den Farben, die die Kursarten auch auf dem Board tragen. Rechts die Summe des Monats, unten die Summe je Kursart.',
+        'Vorher war sie eine Zahlentabelle ganz unten im Kapazitäts-Reiter — gemessen 2776 px weit unten am Handy, also 3,3 Bildschirmlängen hinter drei FTE-Tabellen. Wer die Zahlen eingetragen hatte und das Ergebnis suchte, fand nichts. Jetzt 1381 px am Handy und 500 px am Rechner, im selben Reiter, in dem die Zahlen entstehen.',
+        'Leere Monate bleiben als Zeile stehen. In einer Tabelle war das eine graue Zeile, in der Grafik ist es eine Lücke in der Achse — und genau die soll man sehen.',
+        'Der Zeitraum kommt weiter aus den Einstellungen; ein Ende vor dem Anfang wird benannt, statt eine leere Grafik zu zeichnen.'
       ],
       en: [
-        'The "Provider seats per month" overview sat at the very bottom of the capacity tab and was effectively unfindable: 2776px down on a phone – 3.3 screens behind three FTE tables that each become a stack of cards there. It is at the top now (402px on a phone, 265px on a desktop).',
-        'It also belongs there: it is the only section on that tab about the providers rather than about our own people.',
-        'The hint above the provider utilisation now says where the monthly overview lives – that is where the figures are entered and then looked for.'
+        'The monthly overview is a chart now, directly under the provider list: one bar per month, split by course type, in the colours those course types carry on the board. The month total is on the right, the per-course totals in the legend.',
+        'It used to be a number table at the very bottom of the capacity tab — measured 2776px down on a phone, 3.3 screens behind three FTE tables. Someone who entered the figures and went looking for the result found nothing. It is 1381px down on a phone and 500px on a desktop now, in the same tab the figures are created in.',
+        'Empty months keep their row. In a table that was a dimmed line; in a chart it is a gap in the axis — which is the thing worth seeing.',
+        'The window still comes from the settings; an end before its start is named rather than drawing an empty chart.'
       ]
     }
   },

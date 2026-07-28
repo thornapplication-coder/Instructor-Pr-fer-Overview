@@ -376,95 +376,83 @@ export default async function run(browser, baseUrl, shots) {
   ok(plan && plan.slotsByMonth['2026-11'] && Object.values(plan.slotsByMonth['2026-11'])[0] === 4,
     'with the month as a key, not a date (' + JSON.stringify(plan && plan.slotsByMonth) + ')')
 
-  // ---- 6. the overview in the capacity tab --------------------------------
-  await page.locator('.tab', { hasText: 'Kapazität' }).first().click()
-  await page.waitForSelector('.pm-table')
-  await page.waitForTimeout(400)
-  const pm = await page.evaluate(() => {
-    const t2 = document.querySelector('.pm-table')
-    const rows2 = [...t2.querySelectorAll('tbody tr')]
-    const body = rows2.filter((r) => !r.classList.contains('total-row'))
-    const totalRow = t2.querySelector('tbody tr.total-row')
-    const firstFig = (r) => r.querySelector('.pm-fig')
+  // ---- 6. the chart, under the providers ----------------------------------
+  //
+  // It began as a number table at the bottom of the capacity tab. Measured
+  // there it sat 2776px down on a phone - 3.3 screens behind three FTE tables
+  // that each become a stack of cards - and was reported as simply missing.
+  // It is a chart now, directly under the provider list it describes.
+  await page.locator('.tab', { hasText: 'Provider' }).first().click()
+  await page.waitForSelector('.prov-months')
+  await page.waitForTimeout(500)
+  const chart = await page.evaluate(() => {
+    const c = document.querySelector('.prov-months')
+    const cards = [...document.querySelectorAll('.tab-pane > .card')]
+    const capCard = cards.find((x) => (x.querySelector('.card-title') || {}).innerText?.includes('Auslastung'))
+    const labels = [...c.querySelectorAll('.hbar-label')].map((l) => l.innerText.trim())
+    const vals = [...c.querySelectorAll('.hbar-val')].map((v) => v.innerText.trim())
+    const clipped = [...c.querySelectorAll('.hbar-label')].filter((l) => l.scrollWidth > l.clientWidth + 1)
     return {
-      months: body.length,
-      empties: body.filter((r) => r.classList.contains('pm-empty')).length,
-      nov: (body[0].querySelector('.pm-month').innerText || '').trim(),
-      novFirst: (firstFig(body[0]).innerText || '').trim(),
-      total: (totalRow.querySelector('.pm-sum').innerText || '').trim(),
-      hidden: t2.closest('.table-wrap').scrollWidth - t2.closest('.table-wrap').clientWidth
+      top: Math.round(c.getBoundingClientRect().top + window.scrollY),
+      beforeCapacity: !!capCard && (c.compareDocumentPosition(capCard) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0,
+      rows: labels.length,
+      first: labels[0], last: labels[labels.length - 1],
+      firstVal: vals[0],
+      segs: c.querySelectorAll('.hbar-seg').length,
+      clipped: clipped.length,
+      legend: (c.querySelector('.stacked-legend') || {}).innerText?.replace(/\n/g, ' ') || 'none',
+      total: (c.querySelector('.card-total') || {}).innerText || ''
     }
   })
-  // Where it sits, not just that it exists. Put last it landed 2776px down on a
-  // phone – 3.3 screens behind three FTE tables that each become a stack of
-  // cards – and "I cannot see a timeline" is the correct reading of that.
-  const place = await page.evaluate(() => {
-    const cards = [...document.querySelectorAll('.tab-pane .card')]
-    const title = (c) => (c.querySelector('.card-title') || {}).innerText || ''
-    const i = cards.findIndex((c) => title(c).includes('Provider-Plätze'))
-    const firstFte = cards.findIndex((c) => title(c).includes('FTE-Kapazität'))
-    return { i, firstFte, top: Math.round(cards[i].getBoundingClientRect().top + window.scrollY) }
-  })
-  ok(place.i === 0, 'the monthly overview is the first card on the tab (index ' + place.i + ')')
-  ok(place.i < place.firstFte, '  ahead of the FTE tables, not behind them')
-  ok(place.top < 700, '  and reachable without scrolling past three tables (' + place.top + 'px down)')
+  ok(chart.rows === 14, 'one bar per month of the window, empty ones included (' + chart.rows + ')')
+  ok(chart.first.includes('Nov'), 'starting at the configured start (' + chart.first + ')')
+  ok(chart.last.includes('2027'), 'and ending at the configured end (' + chart.last + ')')
+  ok(chart.clipped === 0, 'no month label is clipped by its track (' + chart.clipped + ' clipped)')
+  ok(chart.firstVal === '4', 'November carries the four type ratings that were typed (' + chart.firstVal + ')')
+  ok(chart.segs === 2, 'only the two months with something get a coloured segment (' + chart.segs + ')')
+  ok(chart.legend.includes('Type Rating 6'), 'the legend adds the course type up across months (' + chart.legend + ')')
+  ok(chart.total.includes('6'), 'and the card says the overall total (' + chart.total + ')')
+  // Placement is the fix, so placement is measured. Directly under the list,
+  // ahead of the utilisation card - not at the far end of a long tab.
+  ok(chart.beforeCapacity, 'it sits above the utilisation card, not after it')
+  ok(chart.top < 700, '  and within reach on a desktop (' + chart.top + 'px down)')
 
-  ok(pm.months === 14, 'the overview covers the whole window, not just the filled months (' + pm.months + ')')
-  // The gaps are the information: a month with nothing in it still gets a row.
-  ok(pm.empties === 12, 'and the empty months are present, dimmed (' + pm.empties + ' of ' + pm.months + ')')
-  ok(pm.nov.includes('Nov'), 'it starts at the configured start (' + pm.nov + ')')
-  ok(pm.novFirst === '4', 'November shows the four type ratings that were typed (' + pm.novFirst + ')')
-  ok(pm.total === '6', 'and the total row adds the months up (' + pm.total + ')')
-  ok(pm.hidden <= 1, 'nothing hides behind a sideways scroll on a desktop (' + pm.hidden + ')')
-
-  // The provider picker gives the per-provider view without a second table.
-  // Picking one that has no plan must empty it – otherwise the filter is
-  // decoration and the "all providers" figure is what is always drawn.
-  ok(await page.locator('.pm-table').count() === 1, 'the overview is one table, not one per provider')
+  // The provider picker gives the per-provider view. Picking one with no plan
+  // must empty it - otherwise the filter is decoration.
   const emptyProv = await page.evaluate((K) => {
     const d = JSON.parse(localStorage.getItem(K))
     const p = d.providers.find((x) => !x.slotsByMonth || !Object.keys(x.slotsByMonth).length)
     return p ? p.id : ''
   }, STORAGE_KEY)
-  await page.locator('.card').filter({ hasText: 'Provider-Plätze je Monat' }).locator('select').selectOption(emptyProv)
+  const chartCard = page.locator('.prov-months')
+  await chartCard.locator('select').selectOption(emptyProv)
   await page.waitForTimeout(400)
-  const filtered = page.locator('.card').filter({ hasText: 'Provider-Plätze je Monat' }).first()
-  ok(await filtered.locator('.pm-table').count() === 0,
-    'a provider with no plan shows none of the others\' seats')
-  ok((await filtered.innerText()).includes('noch nichts eingetragen'), '  and says why the table is gone')
-  await filtered.locator('select').selectOption('')
+  ok(await chartCard.locator('.hbar-seg').count() === 0, 'a provider with no plan shows none of the others\' seats')
+  ok((await chartCard.innerText()).includes('noch nichts eingetragen'), '  and says why the chart is gone')
+  await chartCard.locator('select').selectOption('')
   await page.waitForTimeout(400)
-  ok(await page.locator('.pm-table').count() === 1, 'and "all providers" brings it back')
+  ok(await chartCard.locator('.hbar-seg').count() === 2, 'and "all providers" brings it back')
 
-  // ---- 7. the overview as a card on a phone -------------------------------
+  // ---- 7. the chart on a phone --------------------------------------------
   await page.setViewportSize({ width: 390, height: 844 })
   await page.waitForTimeout(500)
-  const pmPhone = await page.evaluate(() => {
-    const t2 = document.querySelector('.pm-table')
-    const row = [...t2.querySelectorAll('tbody tr')].find((r) => !r.classList.contains('total-row'))
-    const wrap = t2.closest('.table-wrap')
-    const figs = [...row.querySelectorAll('.pm-fig')]
+  const chartPhone = await page.evaluate(() => {
+    const c = document.querySelector('.prov-months')
+    const labels = [...c.querySelectorAll('.hbar-label')]
     const r = (el) => el.getBoundingClientRect()
     return {
-      display: getComputedStyle(t2).display,
-      hidden: wrap.scrollWidth - wrap.clientWidth,
+      clipped: labels.filter((l) => l.scrollWidth > l.clientWidth + 1).length,
       pageOverflow: document.documentElement.scrollWidth - window.innerWidth,
-      // Every figure keeps the heading its column carried, or the card is a row
-      // of unlabelled numbers.
-      labelled: figs.filter((f) => f.getAttribute('data-label')).length,
-      figs: figs.length,
-      monthFullWidth: Math.round(r(row.querySelector('.pm-month')).width) >= Math.round(r(row).width) - 26,
-      worstRight: Math.max(...[...row.querySelectorAll('td, td *')].map((e) => Math.round(r(e).right))),
-      cardRight: Math.round(r(row).right)
+      worstRight: Math.max(...[...c.querySelectorAll('.hbar-row, .hbar-row *')].map((e) => Math.round(r(e).right))),
+      cardRight: Math.round(r(c).right),
+      top: Math.round(r(c).top + window.scrollY)
     }
   })
-  ok(pmPhone.display === 'block', 'the overview becomes cards on a phone (' + pmPhone.display + ')')
-  ok(pmPhone.hidden <= 1 && pmPhone.pageOverflow <= 0,
-    'with nothing behind a sideways scroll (' + pmPhone.hidden + ' / ' + pmPhone.pageOverflow + ')')
-  ok(pmPhone.labelled === pmPhone.figs,
-    'every figure keeps its column heading (' + pmPhone.labelled + '/' + pmPhone.figs + ')')
-  ok(pmPhone.monthFullWidth, 'the month is the card headline, across the full width')
-  ok(pmPhone.worstRight <= pmPhone.cardRight + 1, 'and nothing paints outside the card')
+  ok(chartPhone.clipped === 0, 'a month label still fits its track on a phone (' + chartPhone.clipped + ' clipped)')
+  ok(chartPhone.pageOverflow <= 0, 'and the page does not scroll sideways (' + chartPhone.pageOverflow + ')')
+  ok(chartPhone.worstRight <= chartPhone.cardRight + 1, 'nothing paints outside the card')
+  ok(chartPhone.top < 1800,
+    '  and it is reachable without three screens of scrolling (' + chartPhone.top + 'px down)')
   await page.screenshot({ path: shots + '/prov-months-phone.png' })
 
   // ---- 8. a reversed window says so instead of drawing nothing ------------
@@ -476,12 +464,13 @@ export default async function run(browser, baseUrl, shots) {
     localStorage.setItem(K, JSON.stringify(d))
   }, STORAGE_KEY)
   await page.reload({ waitUntil: 'networkidle' })
-  await page.locator('.tab', { hasText: 'Kapazität' }).first().click()
+  await page.locator('.tab', { hasText: 'Provider' }).first().click()
+  await page.waitForSelector('.prov-months')
   await page.waitForTimeout(600)
-  const badWindow = page.locator('.card').filter({ hasText: 'Provider-Plätze je Monat' }).first()
+  const badWindow = page.locator('.prov-months')
   ok((await badWindow.innerText()).includes('Ende liegt vor dem Anfang'),
-    'an end before its start explains itself rather than showing an empty table')
-  ok(await badWindow.locator('.pm-table').count() === 0, 'and draws no table at all')
+    'an end before its start explains itself rather than drawing nothing')
+  ok(await badWindow.locator('.hbar-row').count() === 0, 'and draws no bars at all')
 
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.close()

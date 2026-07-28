@@ -6,9 +6,10 @@ import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th, SortSelect } from '../components/sortable.jsx'
 import { emptyProvider, courseLabel, simVersionLabel } from '../data/providers.js'
-import { providerSlots, providerUtilization, providerPlanCheck } from '../lib/stats.js'
+import { providerSlots, providerUtilization, providerPlanCheck, capacityByMonth } from '../lib/stats.js'
 import { findRun, resolveAssignment } from '../lib/courses.js'
 import { capacityRange, monthLabel, isMonth } from '../lib/months.js'
+import { StackedBars, colorAt } from '../components/charts.jsx'
 
 export default function Providers() {
   const tint = useThemed()
@@ -172,6 +173,12 @@ export default function Providers() {
           </table>
         </div>
       )}
+
+      {/* Directly under the provider list. It lived at the bottom of the
+          capacity tab first and was measured 2776px down on a phone – nobody
+          found it. Here it is under the providers it describes, and the last
+          section stays the one you scroll to on purpose. */}
+      {providers.length > 0 && <ProviderMonthsChart providers={providers} steps={assignmentSteps} />}
 
       {providers.length > 0 && (
         <section className="card" style={{ marginTop: 18 }}>
@@ -361,6 +368,65 @@ function MultiPick({ value, options, labelOf, placeholder, tagClass, onChange })
         ))}
       </select>
     </div>
+  )
+}
+
+/**
+ * The monthly plan as a picture, under the providers it belongs to.
+ *
+ * One bar per month, split by course type, over the whole configured window –
+ * empty months included. In a table the empty months were a dimmed row; in a
+ * chart they are a gap in the axis, which is what a timeline is for: you see
+ * that November and December carry the load and that the spring is empty
+ * without reading a single number.
+ *
+ * Stacked, not grouped: the question is how much a month holds altogether, and
+ * the split is the second question. The colours are the planning steps' own, so
+ * a course type is the same colour here, on the board and in the planning grid.
+ */
+function ProviderMonthsChart({ providers, steps }) {
+  const { t, lang, data } = useStore()
+  const [who, setWho] = useState('')
+  const months = useMemo(
+    () => capacityRange(data.capacityFrom, data.capacityTo),
+    [data.capacityFrom, data.capacityTo]
+  )
+  const picked = useMemo(() => (who ? providers.filter((p) => p.id === who) : providers), [providers, who])
+  const { rows, totals } = useMemo(() => capacityByMonth(picked, steps, months), [picked, steps, months])
+  // Prefixed series keys: a step id is user-editable, and one called "label"
+  // would otherwise overwrite the row's own label on the spread below.
+  const series = steps.map((s, i) => ({ key: 's_' + s.id, label: s.label, color: s.color || colorAt(i) }))
+  const chartRows = rows.map((r) => ({
+    key: r.month,
+    label: monthLabel(r.month, lang),
+    ...Object.fromEntries(steps.map((s) => ['s_' + s.id, r.byStep[s.id] || 0]))
+  }))
+
+  return (
+    <section className="card prov-months" style={{ marginTop: 18 }}>
+      <div className="card-head">
+        <h3 className="card-title">{t('cap_timelineTitle')}</h3>
+        {totals.total > 0 && <span className="card-total">{t('total')}: {totals.total}</span>}
+      </div>
+      <p className="muted small">{t('cap_timelineHint')}</p>
+      <div className="toolbar no-print" style={{ marginTop: 6 }}>
+        <select className="input" value={who} onChange={(e) => setWho(e.target.value)} aria-label={t('cap_allProviders')}>
+          <option value="">{t('cap_allProviders')}</option>
+          {[...providers]
+            .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+            .map((p) => (
+              <option key={p.id} value={p.id}>{p.name || '–'}</option>
+            ))}
+        </select>
+      </div>
+      {months.length === 0 ? (
+        <p className="warn-text small">{t('set_capacityBad')}</p>
+      ) : totals.total === 0 ? (
+        <p className="muted small">{t('cap_noSlots')}</p>
+      ) : (
+        <StackedBars data={chartRows} series={series} />
+      )}
+    </section>
   )
 }
 

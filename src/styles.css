@@ -1270,28 +1270,11 @@ textarea.input { resize: vertical; }
   .month-table td.mp-del { grid-column: 3; }
 }
 
-/* The read-only monthly overview in the capacity tab. Months down the side,
-   course types across – so "which month runs short" reads down one column. */
-.pm-table td.pm-fig, .pm-table th.num { font-variant-numeric: tabular-nums; }
-/* A month with nothing in it is still a row: the gap is the information. It is
-   dimmed rather than hidden so the eye skips it without losing the sequence. */
-.pm-table tbody tr.pm-empty td { color: var(--muted); }
-.pm-table tbody tr.pm-empty td.pm-month { font-weight: 700; }
+/* The monthly plan as a chart, under the providers it belongs to. The label
+   track is a grid column, not a flex basis – overriding it with `flex` does
+   nothing at all, which is why this is measured in the browser run. */
 .range-row { display: flex; gap: 12px; flex-wrap: wrap; margin-top: 8px; }
 .range-row .field { flex: 1 1 180px; min-width: 0; }
-@media screen and (max-width: 1000px) {
-  /* Same card shape as the figure tables one section up: the month is the
-     headline, the numbers sit under it with the heading their column carried.
-     The course types are user-editable, so the cells flow rather than being
-     placed by name. */
-  .pm-table tbody tr { grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .pm-table td.pm-month { grid-column: 1 / -1; }
-  .pm-table tbody td[data-label]::before { white-space: normal; min-height: 28px; }
-  .pm-table tbody tr.total-row { border-top: 2px solid var(--hair); }
-}
-@media screen and (min-width: 521px) and (max-width: 1000px) {
-  .pm-table tbody tr { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-}
 
 /* ---------- The capacity tab: the card grids ---------- */
 /* Measured, the widest of the three figure tables wants 745px and the editor
