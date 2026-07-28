@@ -296,12 +296,16 @@ export default function Capacity() {
         <span className="fte-pill fte-total">FTE {t('total')}: <b>{fte1(fteS.total)}</b></span>
       </div>
 
+      {/* Above the three FTE tables, not below them. Measured after it was put
+          last: 2776px down on a phone – 3.3 screens – because each FTE table
+          becomes a stack of cards there. It is also the only section on this tab
+          about the PROVIDERS rather than about our own people, so burying it
+          among them was wrong twice over. */}
+      <ProviderMonths providers={providers} steps={assignmentSteps} />
+
       <CapTable title={t('capacity_byQual')} firstCol={t('f_qual')} cap={capQual} keyKind="qual" labelFor={(k) => qualLabel(quals, k)} />
       <CapTable title={t('capacity_byAircraft')} firstCol={t('f_aircraft')} cap={capAircraft} keyKind="aircraft" />
       <CapTable title={t('capacity_byBase')} firstCol={t('f_base')} cap={capBase} keyKind="base" />
-
-
-      <ProviderMonths providers={providers} steps={assignmentSteps} />
 
       <ConversionEditor trainers={convPool} stages={stages} quals={quals} />
 

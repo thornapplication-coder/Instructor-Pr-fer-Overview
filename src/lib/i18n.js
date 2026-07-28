@@ -431,8 +431,8 @@ const DICT = {
   },
   prov_capacity: { de: 'Kapazität & Auslastung', en: 'Capacity & utilization' },
   prov_capacityHint: {
-    de: 'Offene Planungs-Zuweisungen je Provider und die Plätze, die er insgesamt anbietet. Je Kursart steht der offene Bedarf gegen die Plätze derselben Kursart. Wann die Plätze liegen, steht in der Zeitleiste im Bearbeiten-Dialog; Zeile antippen.',
-    en: 'Open planning assignments per provider and the seats it offers in total. Per course type the open demand stands against the seats of that same course type. When those seats fall is in the timeline in the edit dialog; tap a row.'
+    de: 'Offene Planungs-Zuweisungen je Provider und die Plätze, die er insgesamt anbietet. Je Kursart steht der offene Bedarf gegen die Plätze derselben Kursart. Wann die Plätze liegen, trägst du in der Zeitleiste im Bearbeiten-Dialog ein (Zeile antippen); die Übersicht über alle Anbieter steht oben im Reiter „Kapazität".',
+    en: 'Open planning assignments per provider and the seats it offers in total. Per course type the open demand stands against the seats of that same course type. When those seats fall is entered in the timeline in the edit dialog (tap a row); the overview across all providers is at the top of the "Capacity" tab.'
   },
   prov_stepTag: { de: '{n} offen · {m} Plätze insgesamt', en: '{n} open · {m} seats in total' },
   prov_stepTagOver: {

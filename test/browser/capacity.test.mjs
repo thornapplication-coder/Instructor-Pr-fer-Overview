@@ -395,6 +395,20 @@ export default async function run(browser, baseUrl, shots) {
       hidden: t2.closest('.table-wrap').scrollWidth - t2.closest('.table-wrap').clientWidth
     }
   })
+  // Where it sits, not just that it exists. Put last it landed 2776px down on a
+  // phone – 3.3 screens behind three FTE tables that each become a stack of
+  // cards – and "I cannot see a timeline" is the correct reading of that.
+  const place = await page.evaluate(() => {
+    const cards = [...document.querySelectorAll('.tab-pane .card')]
+    const title = (c) => (c.querySelector('.card-title') || {}).innerText || ''
+    const i = cards.findIndex((c) => title(c).includes('Provider-Plätze'))
+    const firstFte = cards.findIndex((c) => title(c).includes('FTE-Kapazität'))
+    return { i, firstFte, top: Math.round(cards[i].getBoundingClientRect().top + window.scrollY) }
+  })
+  ok(place.i === 0, 'the monthly overview is the first card on the tab (index ' + place.i + ')')
+  ok(place.i < place.firstFte, '  ahead of the FTE tables, not behind them')
+  ok(place.top < 700, '  and reachable without scrolling past three tables (' + place.top + 'px down)')
+
   ok(pm.months === 14, 'the overview covers the whole window, not just the filled months (' + pm.months + ')')
   // The gaps are the information: a month with nothing in it still gets a row.
   ok(pm.empties === 12, 'and the empty months are present, dimmed (' + pm.empties + ' of ' + pm.months + ')')

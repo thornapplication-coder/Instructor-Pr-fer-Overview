@@ -11,6 +11,20 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.42.1] – 2026-07-28
+
+### Behoben
+- **„Provider-Plätze je Monat" war nicht auffindbar.** Der Abschnitt stand ganz
+  unten im Kapazitäts-Reiter. Gemessen: am iPhone **2776 px** weit unten, also
+  3,3 Bildschirmlängen — hinter drei FTE-Tabellen, die am Handy jeweils zu einem
+  Stapel Karten werden; am Rechner 1161 px. Wer die Zahlen eingetragen hatte und
+  danach das Ergebnis suchte, fand schlicht nichts. Der Abschnitt steht jetzt
+  oben: 402 px am Handy, 265 px am Rechner.
+- Das ist auch die richtige Stelle: es ist der einzige Abschnitt des Reiters,
+  der von den **Anbietern** handelt und nicht von den eigenen Leuten.
+- Der Hinweis über „Kapazität & Auslastung" im Provider-Reiter nennt jetzt beide
+  Orte — wo die Monatszahlen eingetragen werden und wo die Übersicht steht.
+
 ## [1.42.0] – 2026-07-28
 
 ### Geändert
