@@ -9,8 +9,9 @@ import { results as courses } from './courses.test.mjs'
 import { results as capacity } from './capacity.test.mjs'
 import { results as imports } from './imports.test.mjs'
 import { results as pilots } from './pilots.test.mjs'
+import { results as seniority } from './seniority.test.mjs'
 
-const fails = [...merge.fails, ...coverage.fails, ...fte.fails, ...exports.fails, ...ore.fails, ...courses.fails, ...capacity.fails, ...imports.fails, ...pilots.fails]
+const fails = [...merge.fails, ...coverage.fails, ...fte.fails, ...exports.fails, ...ore.fails, ...courses.fails, ...capacity.fails, ...imports.fails, ...pilots.fails, ...seniority.fails]
 console.log('')
 if (fails.length) {
   console.log(`FAILED – ${fails.length} check(s):`)

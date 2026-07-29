@@ -435,6 +435,14 @@ select.input { cursor: pointer; }
 }
 .sort-arrow { font-size: 9px; opacity: .6; }
 .data-table th.active .sort-arrow { opacity: 1; }
+/* The "arrows both ways" mark on a column that is NOT sorted is decoration; the
+   up/down on the one that is carries information. Fifteen idle marks cost the
+   trainer table 83px of width - measured, exactly the amount by which fifteen
+   columns overflowed the 1280px content area once seniority joined them.
+   Dropped rather than revealed on hover: a header that grows under the pointer
+   shifts every column beside it. The header is still a button, and `aria-sort`
+   still tells a screen reader what is sorted and which way. */
+.data-table th[aria-sort='none'] .sort-arrow { display: none; }
 .data-table td { padding: 10px 12px; border-top: 1px solid var(--hair); vertical-align: middle; }
 .data-table tr.clickable { cursor: pointer; }
 /* Compact variant for the trainer list: 13 columns, so the padding is what
@@ -1123,7 +1131,7 @@ textarea.input { resize: vertical; }
       'nm nm qu'
       'bs tl ro'
       'ft ac or'
-      'st st st';
+      'se st st';
   }
   /* The head: who, and what they are qualified as. The chip already carries a
      colour, so it needs no heading of its own. */
@@ -1136,6 +1144,10 @@ textarea.input { resize: vertical; }
   .trainer-table td.t-ac { grid-area: ac; }
   .trainer-table td.t-ore { grid-area: or; }
   .trainer-table td.t-stage { grid-area: st; }
+  /* Company seniority. It shares the last line with the conversion phase
+     rather than taking one of its own - a date and a badge fit side by side,
+     and a fifth line on fifty cards is fifty times the scroll. */
+  .trainer-table td.t-sen { grid-area: se; }
   /* Read in the dialog instead. `display: none` and not a smaller font: half a
      free-text note is worse than none, because it reads as the whole note. */
   .trainer-table td.t-pt,
@@ -1156,7 +1168,7 @@ textarea.input { resize: vertical; }
       'nm nm qu .'
       'bs tl ro .'
       'ft ac or .'
-      'st st st .';
+      'se st st .';
   }
   .trainer-table td.t-qual { justify-self: start; }
 }

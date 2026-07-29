@@ -12,6 +12,7 @@ import { DEFAULT_STAGES, ASSIGNMENT_STEPS, mergeAssignments, releasedStageId, fi
 import { DEFAULT_QUALS, normalizeQual } from '../data/qualifications.js'
 import { withPilotDefaults } from '../data/pilots.js'
 import { SEED_PILOTS } from '../data/pilotsSeed.js'
+import { SENIORITY_BY_TLC } from '../data/senioritySeed.js'
 import { fteFromPartTime, normalizeAuthority } from './format.js'
 import { translate } from './i18n.js'
 import { useCloudSync } from './cloudSync.js'
@@ -65,6 +66,10 @@ function withConvDefaults(trainer, firstStage) {
     // Free-text notes. Nothing derives from this – unlike `remark`, which the
     // "Funktion" chart counts – so it can hold whatever the planner needs.
     note: typeof trainer.note === 'string' ? trainer.note : '',
+    // Company seniority, ISO like every other date here. Free to stay empty:
+    // three people on the roster are not in the company list at all, and a
+    // guessed date would be worse than a blank one - it would sort.
+    seniority: typeof trainer.seniority === 'string' ? trainer.seniority : '',
     conv: {
       stage: stage0,
       status: 'on_track',
@@ -123,7 +128,12 @@ function freshData(lang = 'de') {
     schema: SCHEMA,
     lang,
     theme: 'light',
-    trainers: SEED_TRAINERS.map((t) => withConvDefaults({ ...t })),
+    // Seniority comes from the company list, not from the trainer sheet, so it
+    // is folded in here. A fresh install never runs the migration below -
+    // loadData() returns freshData() directly - so without this the column
+    // would be empty on every new device while an existing one had it.
+    // `...t` last: a value already on the record outranks the lookup.
+    trainers: SEED_TRAINERS.map((t) => withConvDefaults({ seniority: SENIORITY_BY_TLC[t.tlc] || '', ...t })),
     providers: SEED_PROVIDERS.map((p) => ({ ...p })),
     stages: DEFAULT_STAGES.map((s) => ({ ...s })),
     quals: DEFAULT_QUALS.map((q) => ({ ...q })),
@@ -165,6 +175,7 @@ function freshData(lang = 'de') {
     _capNotes: true,
     _pilotSeed: true,
     _pilotSeed2: true,
+    _senioritySeed: true,
     updatedAt: at
   }, at)
 }
@@ -259,6 +270,7 @@ function normalize(obj) {
     _capNotes: obj._capNotes === true,
     _pilotSeed: obj._pilotSeed === true,
     _pilotSeed2: obj._pilotSeed2 === true,
+    _senioritySeed: obj._senioritySeed === true,
     updatedAt: obj.updatedAt || nowIso()
   }
   // One-time: merge newly shipped default courses (e.g. "SIM only") into stored
@@ -361,6 +373,20 @@ function normalize(obj) {
       })
     }
     result._pilotSeed2 = true
+  }
+  // One-time: fill the seniority date from the company list (Stand 03.07.2026).
+  //
+  // Only people already on the trainer list, matched by TLC, and only where the
+  // field is still empty - a date typed by hand outranks the document, and the
+  // three trainers the document does not contain stay blank rather than being
+  // guessed at. Nobody is ever added: this is a lookup, not an import.
+  if (!result._senioritySeed) {
+    const at = nowIso()
+    result.trainers = result.trainers.map((t) => {
+      const d = SENIORITY_BY_TLC[String(t.tlc || '').toUpperCase()]
+      return d && !String(t.seniority || '').trim() ? { ...t, seniority: d, _at: at } : t
+    })
+    result._senioritySeed = true
   }
   // One-time: move the stored category colours onto the documented palette.
   // Only entries still carrying their OLD shipped default are touched, so a

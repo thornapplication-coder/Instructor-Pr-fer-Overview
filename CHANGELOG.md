@@ -11,6 +11,42 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.44.0] – 2026-07-29
+
+### Neu
+- **Spalte „Seniorität" bei den Trainern**, gefüllt aus der Firmenliste
+  *Seniority_Cockpit_all_bases* (Stand 03.07.2026). Sortierbar, im Dialog
+  änderbar, in der Excel- und der PDF-Ausgabe.
+- **Nur die Leute, die in der App stehen.** Das Dokument führt 416 Cockpit-Crew;
+  davon sind 47 unserer 50 dort zu finden. Der Abgleich ist ein Nachschlagewerk,
+  kein Import: es wird niemand angelegt, und ein bereits eingetragenes Datum
+  gewinnt gegen das Dokument.
+- **Drei bleiben leer** (Essbauer, Beverage, Hüsser) — sie stehen nicht in der
+  Liste. Ein geratenes Datum wäre schlimmer als keines: es sieht nicht falsch
+  aus, es sortiert sich nur an die falsche Stelle. Beim Sortieren stehen leere
+  Felder deshalb hinten, nicht vorn.
+- **Zwei wurden von Hand zugeordnet**, weil App und Firmenliste sie verschieden
+  schreiben (ein Buchstabe im Nachnamen, „Joe"/„Jose"). Base und Funktion
+  stimmen in beiden Fällen überein, und beide sind der einzige Träger ihres
+  Nachnamens in der Liste. Ein Test hält beide Zuordnungen fest.
+
+### Geändert
+- **Der Sortierpfeil steht nur noch auf der Spalte, nach der sortiert wird.**
+  Auf allen übrigen war er Zierde und kostete gemessen **83 px** — genau der
+  Betrag, um den die fünfzehn Spalten sonst über die Breite der Seite
+  hinausgelaufen wären (1317 px gebraucht, 1234 px vorhanden). Bewusst ganz weg
+  statt beim Überfahren eingeblendet: eine Kopfzeile, die unter dem Zeiger
+  wächst, verschiebt jede Spalte daneben. Die Kopfzeile bleibt ein Knopf, und
+  `aria-sort` sagt einem Screenreader weiterhin, wonach und wie sortiert ist.
+
+### Geprüft
+- iPhone (390), iPad hoch (820 und 834), iPad quer (1024) und der Rechner: das
+  Datum steht auf der Karte mit seiner Überschrift, in derselben Zeile wie die
+  Umschulungs-Phase — keine zusätzliche Kartenzeile. Nirgends etwas hinter
+  seitlichem Schieben, nirgends ein Überlauf.
+- Am iPad bekam die Spalte zunächst die ganze freie Spur (460 px für ein Datum);
+  sie sitzt jetzt in einer 150 px breiten.
+
 ## [1.43.0] – 2026-07-28
 
 ### Geändert

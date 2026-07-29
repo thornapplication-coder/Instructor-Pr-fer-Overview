@@ -265,6 +265,7 @@ const DICT = {
   f_sim: { de: 'SIM-Sessions', en: 'SIM sessions' },
   f_lifus: { de: 'LIFUS-Legs', en: 'LIFUS legs' },
   f_ore: { de: 'ORE A–C', en: 'ORE A–C' },
+  f_seniority: { de: 'Seniorität', en: 'Seniority' },
   f_ltc: { de: 'LTC seit', en: 'LTC since' },
   f_tri: { de: 'TRI seit', en: 'TRI since' },
   f_tre: { de: 'TRE seit', en: 'TRE since' },

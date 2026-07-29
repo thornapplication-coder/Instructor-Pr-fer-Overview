@@ -211,16 +211,17 @@ async function exportTrainersPdf(data, t, lang, opts) {
   const rows = [...data.trainers].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
   table(ctx, {
     // Same column order as the on-screen table: the two free-text columns last.
-    head: [t('f_qual'), t('f_base'), t('f_tlc'), t('f_name'), t('f_role'), t('f_partTime'), t('f_fte'), t('f_aircraft'), t('f_ore'), t('f_staffType'), t('f_authority'), t('f_conversion'), t('f_remark'), t('f_note')],
+    head: [t('f_qual'), t('f_base'), t('f_tlc'), t('f_name'), t('f_role'), t('f_seniority'), t('f_partTime'), t('f_fte'), t('f_aircraft'), t('f_ore'), t('f_staffType'), t('f_authority'), t('f_conversion'), t('f_remark'), t('f_note')],
     body: rows.map((x) => [
       qualLabel(data.quals, x.qual), x.base || '', x.tlc || '', x.name || '',
       t(x.role === 'fo' ? 'role_foShort' : 'role_captainShort'),
+      x.seniority ? formatDate(x.seniority, lang) : '',
       formatPartTime(x.partTime, lang), formatFte(x.fte), x.aircraft || '', x.ore || '',
       t('staff_' + (x.staffType || 'internal')), x.authority || '',
       stageLabel(data.stages.find((s) => s.id === x.conv?.stage)),
       x.remark || '', x.note || ''
     ]),
-    columnStyles: { 3: { cellWidth: 110 }, 12: { cellWidth: 80 }, 13: { cellWidth: 80 } }
+    columnStyles: { 3: { cellWidth: 110 }, 13: { cellWidth: 80 }, 14: { cellWidth: 80 } }
   })
   return finalize(doc, 'trainer', opts)
 }

@@ -98,6 +98,10 @@ export default function Trainers() {
       tlc: (x) => x.tlc,
       name: (x) => x.name,
       role: (x) => (roleOf(x) === 'captain' ? 0 : 1), // Captains first
+      // Earliest date = most senior, so plain ascending is the useful order.
+      // A blank sorts LAST rather than to the top: three people are not in the
+      // company list at all, and an empty field is not "most senior".
+      seniority: (x) => x.seniority || '9999-12-31',
       remark: (x) => x.remark || '',
       note: (x) => x.note || '',
       fte: (x) => (typeof x.fte === 'number' ? x.fte : 1),
@@ -121,6 +125,7 @@ export default function Trainers() {
       role: 'captain',
       remark: '',
       note: '',
+      seniority: '',
       partTime: 'VZ',
       fte: 1,
       aircraft: 'A320',
@@ -189,6 +194,7 @@ export default function Trainers() {
             { k: 'base', label: t('f_base') },
             { k: 'fte', label: t('f_fte') },
             { k: 'ore', label: t('f_ore') },
+            { k: 'seniority', label: t('f_seniority') },
             { k: 'stage', label: t('f_conversion') }
           ]}
         />
@@ -217,6 +223,7 @@ export default function Trainers() {
               <Th label={t('f_tlc')} k="tlc" {...p} />
               <Th label={t('f_name')} k="name" {...p} />
               <Th label={t('f_role')} k="role" {...p} />
+              <Th label={t('f_seniority')} k="seniority" {...p} />
               <Th label={t('f_partTime')} k="fte" className="num" {...p} />
               <Th label={t('f_fte')} k="fte" className="num" {...p} />
               <Th label={t('f_aircraft')} k="aircraft" {...p} />
@@ -255,6 +262,7 @@ export default function Trainers() {
                 <td role="cell" className="t-tlc mono" data-label={t('f_tlc')}>{x.tlc}</td>
                 <td role="cell" className="t-name card-name strong">{x.name}</td>
                 <td role="cell" className="t-role" data-label={t('f_role')}><RoleTag role={roleOf(x)} /></td>
+                <td role="cell" className="t-sen" data-label={t('f_seniority')}>{x.seniority ? formatDate(x.seniority, lang) : '–'}</td>
                 <td role="cell" className="t-pt num" data-label={t('f_partTime')}>{formatPartTime(x.partTime, lang)}</td>
                 <td role="cell" className="t-fte num" data-label={t('f_fte')}>{formatFte(x.fte)}</td>
                 <td role="cell" className="t-ac" data-label={t('f_aircraft')}><AircraftTag value={x.aircraft} /></td>
@@ -428,6 +436,12 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
         <Field label={t('f_authority')} span2>
           <input className="input" list="authList" value={f.authority} onChange={(e) => set('authority', e.target.value)} />
           <datalist id="authList">{authorities.map((a) => <option key={a} value={a} />)}</datalist>
+        </Field>
+
+        {/* Company seniority, not a trainer qualification - hence its own line
+            above the "trainer since" block rather than a fourth date in it. */}
+        <Field label={t('f_seniority')}>
+          <DateInput value={f.seniority || ''} onChange={(v) => set('seniority', v)} />
         </Field>
 
         <div className="form-sep span2">{t('f_trainerSince')}</div>

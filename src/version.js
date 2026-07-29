@@ -4,12 +4,35 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.43.0'
+export const APP_VERSION = '1.44.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.44.0',
+    date: '2026-07-29',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neue Spalte „Seniorität" bei den Trainern, gefüllt aus der Firmenliste (Stand 03.07.2026). Sortierbar, im Dialog änderbar, in Excel und PDF.',
+        'Nur die Leute, die in der App stehen: das Dokument führt 416 Cockpit-Crew, davon sind 47 unserer 50 dort zu finden. Es ist ein Nachschlagewerk, kein Import — es wird niemand angelegt, und ein selbst eingetragenes Datum gewinnt.',
+        'Drei Trainer stehen nicht in der Liste (Essbauer, Beverage, Hüsser) und bleiben leer. Ein geratenes Datum wäre schlimmer als keines: es sieht nicht falsch aus, es sortiert sich nur an die falsche Stelle. Beim Sortieren stehen leere Felder deshalb hinten, nicht vorn.',
+        'Zwei wurden von Hand zugeordnet, weil App und Firmenliste sie unterschiedlich schreiben (ein Buchstabe im Nachnamen, „Joe"/„Jose"). Base und Funktion stimmen in beiden Fällen überein.',
+        'Der Sortierpfeil steht nur noch auf der Spalte, nach der wirklich sortiert wird. Auf den übrigen war er Zierde und kostete gemessen 83 px — genau der Betrag, um den die fünfzehn Spalten sonst über die Seitenbreite hinausgelaufen wären.',
+        'Geprüft auf iPhone (390), iPad hoch (820 und 834) und iPad quer (1024): das Datum steht auf der Karte, mit seiner Überschrift, in derselben Zeile wie die Umschulungs-Phase — keine zusätzliche Kartenzeile, nichts verdeckt.'
+      ],
+      en: [
+        'New "Seniority" column on the trainers, filled from the company list (as of 03.07.2026). Sortable, editable in the dialog, in the Excel and PDF exports.',
+        'Only the people already in the app: the document lists 416 cockpit crew, 47 of our 50 among them. It is a lookup, not an import - nobody is added, and a date typed by hand wins.',
+        'Three trainers are not in the list (Essbauer, Beverage, Huesser) and stay blank. A guessed date would be worse than none: it does not look wrong, it just sorts into the wrong place. Blanks therefore sort last, not first.',
+        'Two were matched by hand because the app and the company list spell them differently (one letter in a surname, "Joe"/"Jose"). Base and rank agree in both cases.',
+        'The sort mark now appears only on the column actually being sorted. On the others it was decoration and cost a measured 83px - exactly the amount by which fifteen columns would otherwise have run past the page width.',
+        'Checked on iPhone (390), iPad portrait (820 and 834) and iPad landscape (1024): the date is on the card, with its heading, on the same line as the conversion phase - no extra card line, nothing hidden.'
+      ]
+    }
+  },
   {
     version: '1.43.0',
     date: '2026-07-28',

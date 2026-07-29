@@ -67,7 +67,7 @@ export default async function run(browser, baseUrl, shots) {
       return { top: Math.round(r.top), right: Math.round(r.right) }
     }
     return {
-      shown: ['.t-name', '.t-qual', '.t-base', '.t-tlc', '.t-role', '.t-fte', '.t-ac', '.t-ore', '.t-stage']
+      shown: ['.t-name', '.t-qual', '.t-base', '.t-tlc', '.t-role', '.t-fte', '.t-ac', '.t-ore', '.t-stage', '.t-sen']
         .filter((s) => box(s)),
       hidden: ['.t-pt', '.t-staff', '.t-auth', '.t-remark', '.t-note'].filter((s) => !box(s)),
       worstRight: Math.max(...['.t-name', '.t-qual', '.t-base', '.t-role', '.t-ore', '.t-stage']
@@ -77,7 +77,7 @@ export default async function run(browser, baseUrl, shots) {
       bodyTop: box('.t-base').top
     }
   })
-  ok(seen.shown.length === 9, 'nine fields carry the card (' + seen.shown.length + ')')
+  ok(seen.shown.length === 10, 'ten fields carry the card (' + seen.shown.length + ')')
   ok(seen.hidden.length === 5, 'and the five free-text/rare ones step aside for the dialog (' + seen.hidden.length + ')')
   ok(seen.worstRight <= 391, 'nothing runs off the side (worst right edge ' + seen.worstRight + ')')
   ok(Math.abs(seen.headTop - seen.qualTop) <= 12, 'name and qualification share the head line')
@@ -96,8 +96,19 @@ export default async function run(browser, baseUrl, shots) {
     heads: document.querySelectorAll('.trainer-table thead th').length,
     hidden: (() => { const w = document.querySelector('.table-wrap'); return w.scrollWidth - w.clientWidth })()
   }))
-  ok(wide.display === 'table' && wide.heads === 14, 'a desktop keeps the real table with all fourteen columns (' + wide.heads + ')')
+  ok(wide.display === 'table' && wide.heads === 15, 'a desktop keeps the real table with all fifteen columns (' + wide.heads + ')')
   ok(wide.hidden === 0, '  and it fits (' + wide.hidden + 'px hidden)')
+  // It only fits because the idle sort marks are gone. Fifteen of them cost
+  // 83px - measured by putting them back at runtime, which is the whole reason
+  // this assertion is here rather than a bare "it fits".
+  await page.addStyleTag({ content: ".data-table th[aria-sort='none'] .sort-arrow { display: inline !important }" })
+  await page.waitForTimeout(300)
+  const withArrows = await page.evaluate(() => { const w = document.querySelector('.table-wrap'); return w.scrollWidth - w.clientWidth })
+  ok(withArrows > 60, '  and it would not with a mark on every idle column (' + withArrows + 'px hidden)')
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.locator('.tab', { hasText: 'Trainer' }).first().click()
+  await page.waitForSelector('.trainer-table')
+  await page.waitForTimeout(400)
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.waitForTimeout(300)
   // The compact variant must not leak into the other tables.
@@ -192,6 +203,59 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForSelector('.nbars')
   await page.waitForTimeout(400)
   await baseCard.screenshot({ path: shots + '/headfte.png' })
+  // ---- seniority, on every screen it has to survive ------------------------
+  //
+  // The date comes from the company seniority list (Stand 03.07.2026) and is
+  // read into the roster we already have - a lookup, never an import. Checked
+  // at the four widths that actually exist on the desks and in the bags.
+  //
+  // Back to the Trainer tab first: the block above ends on the Dashboard, and
+  // querying `.trainer-table` there returns null rather than failing an
+  // assertion – it takes the whole run down with a TypeError.
+  await page.locator('.tab', { hasText: 'Trainer' }).first().click()
+  await page.waitForSelector('.trainer-table')
+  await page.waitForTimeout(400)
+  for (const [label, w, h] of [['iPhone', 390, 844], ['iPad portrait', 820, 1180],
+                               ['iPad Pro portrait', 834, 1194], ['iPad landscape', 1024, 768]]) {
+    await page.setViewportSize({ width: w, height: h })
+    await page.waitForTimeout(450)
+    const r = await page.evaluate(() => {
+      const t = document.querySelector('.trainer-table')
+      const wrap = t.closest('.table-wrap')
+      const row = t.querySelector('tbody tr')
+      const sen = row.querySelector('.t-sen')
+      const stage = row.querySelector('.t-stage')
+      const rect = (e) => e.getBoundingClientRect()
+      const cells = [...row.querySelectorAll('td')].filter((c) => getComputedStyle(c).display !== 'none')
+      return {
+        shown: !!sen && getComputedStyle(sen).display !== 'none',
+        text: sen ? sen.innerText.trim() : '',
+        label: sen ? getComputedStyle(sen, '::before').content : 'none',
+        width: sen ? Math.round(rect(sen).width) : 0,
+        sameLine: sen && stage ? Math.abs(Math.round(rect(sen).top) - Math.round(rect(stage).top)) <= 4 : false,
+        hidden: wrap.scrollWidth - wrap.clientWidth,
+        pageOverflow: document.documentElement.scrollWidth - window.innerWidth,
+        worstRight: Math.max(...cells.map((c) => Math.round(rect(c).right))),
+        cardRight: Math.round(rect(row).right)
+      }
+    })
+    ok(r.shown, label + ': the seniority date is on the card')
+    ok(/^\d{2}\.\d{2}\.\d{4}$/.test(r.text), label + ': and it is a real date, not the ISO string (' + r.text + ')')
+    ok(r.label !== 'none' && r.label.toLowerCase().includes('senior'),
+      label + ': carrying the heading its column had (' + r.label + ')')
+    // It shares the last line with the conversion phase. A fifth line on fifty
+    // cards is fifty times the scroll, so this placement is the point.
+    ok(r.sameLine, label + ': sharing the last line with the phase, not adding one')
+    ok(r.hidden <= 1 && r.pageOverflow <= 0,
+      label + ': nothing hides behind a sideways scroll (' + r.hidden + ' / ' + r.pageOverflow + ')')
+    ok(r.worstRight <= r.cardRight + 1, label + ': and nothing paints outside the card')
+    // A tablet must not hand the date the whole slack track: 460px of box for a
+    // ten-character date was what the first cut did.
+    ok(r.width <= 200, label + ': the date gets a date-sized box (' + r.width + 'px)')
+  }
+  await page.setViewportSize({ width: 1440, height: 1000 })
+  await page.waitForTimeout(400)
+
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.close()
   return fails
