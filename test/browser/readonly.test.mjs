@@ -96,7 +96,8 @@ export default async function run(browser, baseUrl, shots) {
   ok(drag === 'false', 'a card on the board cannot be picked up (draggable=' + drag + ')')
 
   // ---- 5. the settings keep what only reads -------------------------------
-  await page.locator('.tab', { hasText: 'Einstellungen' }).first().click()
+  // The settings are the gear in the header, not a tab.
+  await page.locator('.topbar-right button[aria-label="Einstellungen"]').click()
   await page.waitForSelector('.settings')
   await page.waitForTimeout(500)
   const settings = await page.evaluate(() => {
