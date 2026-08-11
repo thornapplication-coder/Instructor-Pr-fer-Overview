@@ -499,7 +499,13 @@ export function StoreProvider({ children }) {
   // device is looking at somebody else's shared state. Kept in a ref as well,
   // because `patch` is built inside a memo that must not be rebuilt on every
   // auth tick - a new api object would remount half the app.
-  const readOnly = !!sync.readOnly
+  // Also settable per device: `localStorage['ewl737:viewOnly'] = '1'`. It is how
+  // the browser checks reach this mode at all - the sandbox cannot talk to the
+  // cloud - and it doubles as a way to hand somebody a machine that cannot
+  // change anything. It only ever ADDS the restriction, never lifts one.
+  const readOnly = !!sync.readOnly || (() => {
+    try { return localStorage.getItem('ewl737:viewOnly') === '1' } catch (_) { return false }
+  })()
   const readOnlyRef = useRef(readOnly)
   readOnlyRef.current = readOnly
 

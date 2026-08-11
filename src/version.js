@@ -4,12 +4,33 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.44.0'
+export const APP_VERSION = '1.45.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.45.0',
+    date: '2026-07-29',
+    type: 'minor',
+    changes: {
+      de: [
+        'Der Link lässt sich weitergeben: Wer ihn öffnet, sieht den aktuellen Stand — ohne Konto, ohne Anmeldung, und er aktualisiert sich von allein (beim Öffnen, beim Zurückwechseln zur App und alle 2 Minuten).',
+        'Ändern kann weiterhin nur, wer angemeldet ist. Die Sperre sitzt an der einen Stelle, durch die alle Daten in die App kommen — kein Bildschirm kann halb geschützt sein, und ein Knopf, den jemand zu verstecken vergisst, kann nichts ausrichten.',
+        'Sichtbar statt kaputt: Besucher bekommen ein Band „Nur-Lese-Ansicht" mit dem Stand-Zeitpunkt, und die Schaltflächen zum Anlegen, Speichern und Löschen sind weg. Suche, Filter, Sortierung, das Öffnen eines Datensatzes und alle PDF- und Excel-Ausgaben bleiben.',
+        'Nichts ändert sich, solange in der Datenbank kein Datensatz als geteilt markiert ist — die Nur-Lese-Ansicht schaltet sich erst ein, wenn wirklich ein geteilter Stand gefunden wurde. Wer die App bisher rein lokal benutzt, merkt nichts.',
+        'Die dafür nötige Datenbank-Regel liegt als supabase/migrations/0002_shared_read.sql bei. Sie erlaubt anonym ausschließlich Lesen; eine Schreibregel gibt es nicht.'
+      ],
+      en: [
+        'The link can be handed on: whoever opens it sees the current state - no account, no sign-in - and it refreshes on its own (on load, on returning to the app, and every 2 minutes).',
+        'Changing it still requires a sign-in. The block sits at the single place all data enters the app, so no screen can be half-protected and a control somebody forgets to hide can do nothing.',
+        'Visible rather than broken: visitors get a "view only" band with the timestamp, and the add, save and delete controls are gone. Search, filters, sorting, opening a record and every PDF and Excel export stay.',
+        'Nothing changes while no row in the database is flagged as shared - view-only switches on only once a shared state was actually found. Anyone using the app purely locally notices nothing.',
+        'The database rule ships as supabase/migrations/0002_shared_read.sql. It grants anonymous SELECT only; there is no write policy.'
+      ]
+    }
+  },
   {
     version: '1.44.0',
     date: '2026-07-29',

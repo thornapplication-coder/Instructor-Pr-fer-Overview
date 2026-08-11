@@ -11,6 +11,38 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.45.0] – 2026-07-29
+
+### Neu
+- **Der Link lässt sich weitergeben.** Wer ihn öffnet, sieht den aktuellen
+  Stand — ohne Konto und ohne Anmeldung. Er hält sich selbst frisch: beim
+  Öffnen, beim Zurückwechseln zur App und alle zwei Minuten.
+- **Ändern kann nur, wer angemeldet ist.** Die Sperre sitzt in `patch()`, der
+  einen Stelle, durch die sämtliche Daten in die App kommen. Damit kann kein
+  Bildschirm halb geschützt sein, und ein Bedienelement, das jemand zu
+  verstecken vergisst, richtet nichts aus. `importData` und `resetData` sind
+  eigens abgesichert, weil sie nicht durch `patch()` laufen.
+- **Sichtbar statt kaputt.** Besucher sehen ein Band „Nur-Lese-Ansicht" mit dem
+  Stand-Zeitpunkt. Die Schaltflächen zum Anlegen, Speichern und Löschen sind
+  weg, ebenso das Ziehen auf dem Board, das Anordnen im Dashboard und die
+  Einstellungs-Abschnitte für Import, Zurücksetzen und Listen. Erhalten bleibt
+  alles, was nur liest: Suche, Filter, Sortierung, das Öffnen eines Datensatzes
+  und sämtliche PDF- und Excel-Ausgaben.
+- **Die Datenbank-Regel** liegt als `supabase/migrations/0002_shared_read.sql`
+  bei: eine Spalte `shared` und eine `select`-Regel für die anonyme Rolle.
+  Eine Schreibregel gibt es bewusst nicht — die bestehenden Regeln prüfen alle
+  `auth.uid() = user_id`, was anonym nie zutrifft.
+
+### Wichtig
+- **Solange kein Datensatz als geteilt markiert ist, ändert sich nichts.** Die
+  Nur-Lese-Ansicht schaltet sich erst ein, wenn tatsächlich ein geteilter Stand
+  gefunden wurde — nicht schon dann, wenn niemand angemeldet ist. Wer die App
+  rein lokal benutzt, merkt von dieser Version nichts.
+- Der anon-Schlüssel steckt wie jeder „publishable key" im JavaScript der Seite.
+  Ein markierter Datensatz ist damit für **jeden lesbar, der die Seite
+  erreicht** — nicht nur für die, denen der Link gegeben wurde. Der SQL-Kommentar
+  sagt das an Ort und Stelle noch einmal.
+
 ## [1.44.0] – 2026-07-29
 
 ### Neu

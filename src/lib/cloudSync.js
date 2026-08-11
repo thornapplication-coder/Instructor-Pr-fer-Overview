@@ -46,6 +46,12 @@ export function useCloudSync(data, applyRemote) {
   // milliseconds of EVERY load, and acting on that null would read the shared
   // row over a signed-in device's own data.
   const [authReady, setAuthReady] = useState(false)
+  // Whether a shared row was actually found. Viewer mode hangs off THIS, not
+  // merely off "no session": without it, every device that is not signed in
+  // would go read-only the moment this shipped - including one being used
+  // purely locally, and including every install made before the database
+  // policy exists. No shared row, nothing changes.
+  const [sharedSeen, setSharedSeen] = useState(false)
 
   // The server timestamp we last observed, and the local updatedAt we last
   // pushed. Both survive a reload so a restart cannot resurrect a stale write.
@@ -282,7 +288,8 @@ export function useCloudSync(data, applyRemote) {
         if (!alive) return
         // No shared row is not an error: the policy may simply not be in place,
         // and then the app stays on its local copy exactly as before.
-        if (!shared) { setState('signedOut'); return }
+        if (!shared) { setSharedSeen(false); setState('signedOut'); return }
+        setSharedSeen(true)
         // Only when the server actually moved. Re-applying an identical blob
         // every two minutes would re-render the whole app for nothing.
         if (shared.remoteAt !== remoteAt.current) {
@@ -310,6 +317,9 @@ export function useCloudSync(data, applyRemote) {
     }
   }, [authReady, user, online])
 
+  // Signing in ends viewer mode immediately, without waiting for a pull.
+  useEffect(() => { if (user) setSharedSeen(false) }, [user])
+
   const disconnect = useCallback(async () => {
     await signOut()
     setRemoteAt(null)
@@ -328,7 +338,7 @@ export function useCloudSync(data, applyRemote) {
     // Nobody signed in, but the cloud is configured: this device is a viewer of
     // the shared state and must not be able to change it. The store turns this
     // into a hard block; the UI uses it to take the write controls away.
-    readOnly: cloudConfigured && authReady && !user,
+    readOnly: cloudConfigured && authReady && !user && sharedSeen,
     error,
     online,
     lastSyncedAt,
