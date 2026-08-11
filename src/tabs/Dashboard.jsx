@@ -103,7 +103,7 @@ function ReorderZone({ zone, items, className, editing, onReorder, t }) {
 }
 
 export default function Dashboard() {
-  const { data, t, lang, setDashboardOrder } = useStore()
+  const { data, t, lang, setDashboardOrder, readOnly } = useStore()
   const tint = useThemed()
   const { trainers, stages, quals: qualDefs } = data
   const [editing, setEditing] = useState(false)
@@ -321,12 +321,14 @@ export default function Dashboard() {
       <div className="toolbar no-print">
         <h2 className="pane-title">Dashboard</h2>
         <span className="push-right" />
-        <button
-          className={'btn no-capture ' + (editing ? 'btn-primary' : 'btn-ghost')}
-          onClick={() => setEditing((v) => !v)}
-        >
-          {editing ? '✓ ' + t('dashDone') : '⠿ ' + t('dashArrange')}
-        </button>
+        {!readOnly && (
+          <button
+            className={'btn no-capture ' + (editing ? 'btn-primary' : 'btn-ghost')}
+            onClick={() => setEditing((v) => !v)}
+          >
+            {editing ? '✓ ' + t('dashDone') : '⠿ ' + t('dashArrange')}
+          </button>
+        )}
       </div>
       {editing && <p className="planning-note no-capture">{t('dashArrangeHint')}</p>}
 

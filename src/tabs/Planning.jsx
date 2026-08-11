@@ -276,7 +276,7 @@ function PlanningModal({ trainer, providers, steps, runs, statusList, onClose })
   // function, so the `tint` defined there is simply not in scope here. Reading
   // it threw on the first render of the dialog and blanked the whole app.
   const tint = useThemed()
-  const { data, t, lang, setAssignment, upsertTrainer } = useStore()
+  const { data, t, lang, setAssignment, upsertTrainer, readOnly } = useStore()
   const setStep = (stepId, changes) => setAssignment(trainer.id, stepId, changes)
   const clashes = conflictsFor(trainer, steps, runs)
   const setStaff = (v) => upsertTrainer({ ...trainer, staffType: v })

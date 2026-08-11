@@ -37,7 +37,7 @@ function fmtBytes(n) {
 }
 
 export default function Settings() {
-  const { data, t, lang, setLang, exportData, importData, resetData, setTrainers, setPilots, setList, setCapacityRange, saveError } = useStore()
+  const { data, t, lang, setLang, exportData, importData, resetData, setTrainers, setPilots, setList, setCapacityRange, saveError, readOnly } = useStore()
   const captureTabImage = useContext(CaptureContext)
   const fileRef = useRef(null)
   const xlsRef = useRef(null)
@@ -181,7 +181,7 @@ export default function Settings() {
         </div>
       </section>
 
-      <section className="card">
+      {!readOnly && <section className="card">
         <h3 className="card-title">{t('set_capacityRange')}</h3>
         <p className="muted small">{t('set_capacityRangeHint')}</p>
         <div className="range-row">
@@ -211,7 +211,7 @@ export default function Settings() {
         {capacityRange(data.capacityFrom, data.capacityTo).length === 0 && (
           <p className="warn-text small">{t('set_capacityBad')}</p>
         )}
-      </section>
+      </section>}
 
       <section className="card downloads-card">
         <h3 className="card-title">{t('downloads')}</h3>
@@ -237,7 +237,7 @@ export default function Settings() {
         {pdfMsg && <p className={'inline-msg ' + (pdfMsg.ok ? 'ok' : 'err')}>{pdfMsg.text}</p>}
       </section>
 
-      <section className="card">
+      {!readOnly && <section className="card">
         <h3 className="card-title">{t('lists_title')}</h3>
         <p className="muted small">{t('lists_hint')}</p>
         <div className="lists-grid">
@@ -258,7 +258,7 @@ export default function Settings() {
             </details>
           ))}
         </div>
-      </section>
+      </section>}
 
       <section className="card safety-card">
         <h3 className="card-title">{t('dataSafety')}</h3>
@@ -275,7 +275,7 @@ export default function Settings() {
         <button className="btn btn-primary" onClick={doExport}>{t('backupNow')}</button>
       </section>
 
-      <section className="card">
+      {!readOnly && <section className="card">
         <h3 className="card-title">{t('dataMgmt')}</h3>
         <p className="muted small">{t('lastSaved')}: {lastSavedStr}</p>
         {saveError && <p className="inline-msg err">⚠ {t('saveErr')}</p>}
@@ -301,9 +301,9 @@ export default function Settings() {
         {msg && (
           <p className={'inline-msg ' + (msg.ok ? 'ok' : 'err')}>{msg.text}</p>
         )}
-      </section>
+      </section>}
 
-      <section className="card">
+      {!readOnly && <section className="card">
         <h3 className="card-title">{t('xlsImport_title')}</h3>
         <p className="muted small">{t('xlsImport_hint')}</p>
         <div className="btn-row">
@@ -322,9 +322,9 @@ export default function Settings() {
           />
         </div>
         {xlsMsg && <p className={'inline-msg ' + (xlsMsg.ok ? 'ok' : 'err')}>{xlsMsg.text}</p>}
-      </section>
+      </section>}
 
-      <section className="card">
+      {!readOnly && <section className="card">
         <h3 className="card-title">{t('pilotsImport_title')}</h3>
         <p className="muted small">{t('pilotsImport_hint')}</p>
         <div className="btn-row">
@@ -343,7 +343,7 @@ export default function Settings() {
           />
         </div>
         {pilotMsg && <p className={'inline-msg ' + (pilotMsg.ok ? 'ok' : 'err')}>{pilotMsg.text}</p>}
-      </section>
+      </section>}
 
       <SyncCard />
 

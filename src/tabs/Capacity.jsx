@@ -84,7 +84,7 @@ function CapTable({ title, firstCol, cap, keyKind, labelFor }) {
 // Inline editor for phase / status / target date per person. Drives the
 // timeline below and the alerts on the dashboard.
 function ConversionEditor({ trainers, stages, quals }) {
-  const { t, lang, setConversion } = useStore()
+  const { t, lang, setConversion, readOnly } = useStore()
   const [q, setQ] = useState('')
   const [fBase, setFBase] = useState('')
   const [hideDone, setHideDone] = useState(false)
@@ -143,6 +143,7 @@ function ConversionEditor({ trainers, stages, quals }) {
                 <td role="cell" className="ce-stage" data-label={t('stage')}>
                   <select
                     className="input"
+                    disabled={readOnly}
                     value={x.conv?.stage || firstId}
                     onChange={(e) => setConversion(x.id, { stage: e.target.value })}
                   >
@@ -154,6 +155,7 @@ function ConversionEditor({ trainers, stages, quals }) {
                 <td role="cell" className="ce-status" data-label={t('status')}>
                   <select
                     className="input"
+                    disabled={readOnly}
                     value={x.conv?.status || 'on_track'}
                     onChange={(e) => setConversion(x.id, { status: e.target.value })}
                   >
@@ -164,6 +166,7 @@ function ConversionEditor({ trainers, stages, quals }) {
                 </td>
                 <td role="cell" className="ce-date" data-label={t('targetDate')}>
                   <DateInput
+                    disabled={readOnly}
                     value={x.conv?.target || ''}
                     onChange={(v) => setConversion(x.id, { target: v })}
                   />

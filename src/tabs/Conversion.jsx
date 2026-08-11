@@ -31,7 +31,7 @@ function assignTarget(providers, runs, a, lang) {
 
 export default function Conversion({ embedded }) {
   const tint = useThemed()
-  const { data, t, lang, setConversion, setStages } = useStore()
+  const { data, t, lang, setConversion, setStages, readOnly } = useStore()
   const { trainers, stages, providers, quals, assignmentSteps, courseRuns, aircraftTypes, oreTiers, convStatus } = data
   const fte1 = (v) => formatFte1(v, lang)
   const [q, setQ] = useState('')
@@ -152,7 +152,10 @@ export default function Conversion({ embedded }) {
                     <div
                       className={'conv-card' + (dragId === x.id ? ' dragging' : '') + (al.level ? ' alert-' + al.level : '')}
                       key={x.id}
-                      draggable
+                      /* Dragging a card writes the new phase the moment it
+                         lands, so for a viewer it is switched off at the
+                         source rather than letting the store swallow it. */
+                      draggable={!readOnly}
                       onDragStart={(e) => {
                         setDragId(x.id)
                         // Firefox aborts a drag whose data store is empty, so set data.
@@ -254,7 +257,7 @@ export default function Conversion({ embedded }) {
 }
 
 function ConvDetail({ trainer, stages, statusList, onClose, onSave }) {
-  const { t, lang } = useStore()
+  const { t, lang, readOnly } = useStore()
   const [c, setC] = useState({ ...trainer.conv })
   const set = (k, v) => setC((s) => ({ ...s, [k]: v }))
   return (
@@ -265,7 +268,7 @@ function ConvDetail({ trainer, stages, statusList, onClose, onSave }) {
         <div className="foot-row">
           <div className="push-right">
             <button className="btn btn-ghost" onClick={onClose}>{t('cancel')}</button>
-            <button className="btn btn-primary" onClick={() => onSave(c)}>{t('save')}</button>
+            {!readOnly && <button className="btn btn-primary" onClick={() => onSave(c)}>{t('save')}</button>}
           </div>
         </div>
       }

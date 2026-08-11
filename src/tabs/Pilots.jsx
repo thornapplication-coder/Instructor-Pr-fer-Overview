@@ -15,7 +15,7 @@ import { emptyPilot, emptyRating, normalizeTlc, pilotRole, pilotValidity, rating
 // the table is drawn. A stored flag would be wrong the morning after it was
 // written, on a list whose only job is to say who may fly what now.
 export default function Pilots() {
-  const { data, t, lang, upsertPilot, deletePilot, newId } = useStore()
+  const { data, t, lang, upsertPilot, deletePilot, newId, readOnly } = useStore()
   const { otherPilots, bases, pilotTypes } = data
   const [q, setQ] = useState('')
   const [fBase, setFBase] = useState('')
@@ -103,7 +103,7 @@ export default function Pilots() {
           </button>
         )}
         <span className="push-right" />
-        <button className="btn btn-primary" onClick={addPilot}>+ {t('addPilot')}</button>
+        {!readOnly && <button className="btn btn-primary" onClick={addPilot}>+ {t('addPilot')}</button>}
       </div>
 
       <p className="planning-note">{t('pilot_ratingsHint')}</p>
@@ -112,7 +112,7 @@ export default function Pilots() {
         <div className="empty-state">
           <div className="empty-icon">✈️</div>
           <p>{t('pilots_none')}</p>
-          <button className="btn btn-primary" onClick={addPilot}>+ {t('addPilot')}</button>
+          {!readOnly && <button className="btn btn-primary" onClick={addPilot}>+ {t('addPilot')}</button>}
         </div>
       ) : (
         <div className="table-wrap">
@@ -219,7 +219,7 @@ export default function Pilots() {
 }
 
 function PilotForm({ pilot, bases, types, onClose, onSave, onDelete }) {
-  const { t, lang, newId } = useStore()
+  const { t, lang, newId, readOnly } = useStore()
   const [p, setP] = useState({ ...pilot, ratings: [...(pilot.ratings || [])] })
   const set = (k, v) => setP((s) => ({ ...s, [k]: v }))
   const isNew = !!pilot._isNew
@@ -243,10 +243,10 @@ function PilotForm({ pilot, bases, types, onClose, onSave, onDelete }) {
       wide
       footer={
         <div className="foot-row">
-          {!isNew && <button className="btn btn-danger" onClick={() => onDelete(p.id)}>{t('delete')}</button>}
+          {!readOnly && !isNew && <button className="btn btn-danger" onClick={() => onDelete(p.id)}>{t('delete')}</button>}
           <div className="push-right">
             <button className="btn btn-ghost" onClick={onClose}>{t('cancel')}</button>
-            <button className="btn btn-primary" onClick={submit}>{t('save')}</button>
+            {!readOnly && <button className="btn btn-primary" onClick={submit}>{t('save')}</button>}
           </div>
         </div>
       }

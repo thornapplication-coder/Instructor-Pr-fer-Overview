@@ -13,7 +13,7 @@ import { StackedBars, colorAt } from '../components/charts.jsx'
 
 export default function Providers() {
   const tint = useThemed()
-  const { data, t, upsertProvider, deleteProvider, newId } = useStore()
+  const { data, t, upsertProvider, deleteProvider, newId, readOnly } = useStore()
   const { providers, providerCourses, providerStatus, simVersions, trainers, assignmentSteps, courseRuns } = data
   const util = useMemo(
     () => providerUtilization(trainers, providers, assignmentSteps, courseRuns),
@@ -84,7 +84,7 @@ export default function Providers() {
           ]}
         />
         <span className="push-right" />
-        <button className="btn btn-primary" onClick={() => setEditing(emptyProvider(newId('prov')))}>+ {t('addProvider')}</button>
+        {!readOnly && <button className="btn btn-primary" onClick={() => setEditing(emptyProvider(newId('prov')))}>+ {t('addProvider')}</button>}
       </div>
 
       {rows.length === 0 ? (
@@ -443,7 +443,7 @@ function ProviderMonthsChart({ providers, steps }) {
  * of them could survive the save.
  */
 function MonthPlan({ value, steps, months, onChange }) {
-  const { t, lang } = useStore()
+  const { t, lang, readOnly } = useStore()
   const [pick, setPick] = useState('')
   // Months outside the configured window stay listed while they hold data:
   // silently hiding a number somebody typed is how a plan quietly loses a
@@ -493,6 +493,7 @@ function MonthPlan({ value, steps, months, onChange }) {
                       <td role="cell" key={s.id} className="mp-cell num" data-label={s.label}>
                         <input
                           className="input"
+                          disabled={readOnly}
                           type="number"
                           min="0"
                           step="1"
@@ -505,7 +506,7 @@ function MonthPlan({ value, steps, months, onChange }) {
                     ))}
                     <td role="cell" className="mp-sum num strong" data-label={t('total')}>{sum || '–'}</td>
                     <td role="cell" className="mp-del">
-                      <button
+                      {!readOnly && <button
                         type="button"
                         className="mini-btn danger"
                         title={t('p_removeMonth')}
@@ -513,7 +514,7 @@ function MonthPlan({ value, steps, months, onChange }) {
                         onClick={() => removeMonth(m)}
                       >
                         ✕
-                      </button>
+                      </button>}
                     </td>
                   </tr>
                 )
@@ -522,11 +523,11 @@ function MonthPlan({ value, steps, months, onChange }) {
           </table>
         </div>
       )}
-      {free.length === 0 ? (
+      {readOnly ? null : free.length === 0 ? (
         <p className="muted small">{t('p_monthFull')}</p>
       ) : (
         <div className="month-add">
-          <select className="input" value={pick} onChange={(e) => setPick(e.target.value)} aria-label={t('p_month')}>
+          <select className="input" disabled={readOnly} value={pick} onChange={(e) => setPick(e.target.value)} aria-label={t('p_month')}>
             <option value="">{t('p_month')}…</option>
             {free.map((m) => (
               <option key={m} value={m}>{monthLabel(m, lang)}</option>
@@ -561,7 +562,7 @@ function ManageLink({ onClick, title }) {
 }
 
 function ProviderForm({ provider, providerCourses, providerStatus, simVersions, steps, onClose, onSave, onDelete, isNew }) {
-  const { t, data, setProviderCourses, setProviderStatus, setSimVersions } = useStore()
+  const { t, data, readOnly, setProviderCourses, setProviderStatus, setSimVersions } = useStore()
   const [p, setP] = useState({
     ...provider,
     courses: provider.courses || [],
@@ -644,21 +645,23 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
       xwide
       footer={
         <div className="foot-row">
-          {!isNew && <button className="btn btn-danger" onClick={() => onDelete(p.id)}>{t('delete')}</button>}
+          {!readOnly && !isNew && <button className="btn btn-danger" onClick={() => onDelete(p.id)}>{t('delete')}</button>}
           <div className="push-right">
-            <button className="btn btn-ghost" onClick={onClose}>{t('cancel')}</button>
-            <button
-              className="btn btn-primary"
-              onClick={() => {
-                if (!(p.name || '').trim()) {
-                  window.alert(t('providerNameRequired'))
-                  return
-                }
-                onSave(p)
-              }}
-            >
-              {t('save')}
-            </button>
+            <button className="btn btn-ghost" onClick={onClose}>{readOnly ? t('close') : t('cancel')}</button>
+            {!readOnly && (
+              <button
+                className="btn btn-primary"
+                onClick={() => {
+                  if (!(p.name || '').trim()) {
+                    window.alert(t('providerNameRequired'))
+                    return
+                  }
+                  onSave(p)
+                }}
+              >
+                {t('save')}
+              </button>
+            )}
           </div>
         </div>
       }

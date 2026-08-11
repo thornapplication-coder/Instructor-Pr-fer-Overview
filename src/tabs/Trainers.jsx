@@ -49,7 +49,7 @@ function StageBadge({ trainer, stages }) {
 
 export default function Trainers() {
   const tint = useThemed()
-  const { data, t, lang, upsertTrainer, deleteTrainer, newId, setQuals } = useStore()
+  const { data, t, lang, upsertTrainer, deleteTrainer, newId, setQuals, readOnly } = useStore()
   const { trainers, stages, quals } = data
   const qualColor = (id) => (quals.find((qq) => qq.id === id) || {}).color || OVERFLOW
   const [q, setQ] = useState('')
@@ -205,9 +205,9 @@ export default function Trainers() {
         <button className="btn btn-ghost" onClick={() => setManageQuals(true)}>
           ⚙ {t('manageQuals')}
         </button>
-        <button className="btn btn-primary" onClick={startAdd}>
+        {!readOnly && <button className="btn btn-primary" onClick={startAdd}>
           + {t('addTrainer')}
-        </button>
+        </button>}
       </div>
 
       <div className="table-wrap">
@@ -322,7 +322,7 @@ export default function Trainers() {
 }
 
 function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSave, onDelete }) {
-  const { t, lang } = useStore()
+  const { t, lang, readOnly } = useStore()
   const [f, setF] = useState({ ...trainer, partTimeInput: ptToInput(trainer.partTime) })
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }))
   // Changing part-time pre-fills FTE (still editable afterwards).
@@ -354,14 +354,16 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
       wide
       footer={
         <div className="foot-row">
-          {!f._isNew && (
+          {/* A viewer may open the record to read the fields the card leaves
+              out; what goes away is every way to change it. */}
+          {!readOnly && !f._isNew && (
             <button className="btn btn-danger" onClick={() => onDelete(f.id)}>
               {t('delete')}
             </button>
           )}
           <div className="push-right">
-            <button className="btn btn-ghost" onClick={onClose}>{t('cancel')}</button>
-            <button className="btn btn-primary" onClick={submit}>{t('save')}</button>
+            <button className="btn btn-ghost" onClick={onClose}>{readOnly ? t('close') : t('cancel')}</button>
+            {!readOnly && <button className="btn btn-primary" onClick={submit}>{t('save')}</button>}
           </div>
         </div>
       }
