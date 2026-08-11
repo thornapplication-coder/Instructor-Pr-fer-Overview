@@ -2,6 +2,7 @@ import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { requestPersistence } from './lib/persistence.js'
 import { CaptureContext } from './lib/capture.js'
 import TopBar from './components/TopBar.jsx'
+import ReadOnlyBanner from './components/ReadOnlyBanner.jsx'
 import UpdatePrompt from './components/UpdatePrompt.jsx'
 import Dashboard from './tabs/Dashboard.jsx'
 import Trainers from './tabs/Trainers.jsx'
@@ -102,6 +103,7 @@ export default function App() {
       <div className="app">
         <TopBar tabs={TABS} active={active} onSelect={openTab} />
         <main className="content">
+          <ReadOnlyBanner />
           <Current />
         </main>
         <footer className="app-footer">

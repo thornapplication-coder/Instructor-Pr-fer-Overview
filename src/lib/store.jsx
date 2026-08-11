@@ -495,8 +495,20 @@ export function StoreProvider({ children }) {
     document.documentElement.setAttribute('data-theme', theme)
   }, [theme])
 
+  // Viewer mode: the cloud is configured and nobody is signed in, so this
+  // device is looking at somebody else's shared state. Kept in a ref as well,
+  // because `patch` is built inside a memo that must not be rebuilt on every
+  // auth tick - a new api object would remount half the app.
+  const readOnly = !!sync.readOnly
+  const readOnlyRef = useRef(readOnly)
+  readOnlyRef.current = readOnly
+
   const api = useMemo(() => {
     const patch = (mut) => {
+      // The single choke point, so the block is complete: every mutation in the
+      // app goes through here. Refusing at the source means no screen can be
+      // half-guarded, and a control somebody forgets to hide can do nothing.
+      if (readOnlyRef.current) return
       dirtyRef.current = true
       setData((d) => {
         const next = typeof mut === 'function' ? mut(d) : mut
@@ -689,6 +701,9 @@ export function StoreProvider({ children }) {
       // the payload was accepted so the UI can show a real error. Also runs the
       // one-time provider prefill (loadData does; importData used to skip it).
       importData: (obj) => {
+        // Guarded like patch(): import does not go through it, so without this
+        // a viewer could replace the shared state with a file from disk.
+        if (readOnlyRef.current) return false
         if (!obj || typeof obj !== 'object' || !Array.isArray(obj.trainers)) return false
         dirtyRef.current = true
         setData(seedMissingProviders(normalize(obj)))
@@ -697,7 +712,9 @@ export function StoreProvider({ children }) {
 
       exportData: () => data,
 
+      readOnly,
       resetData: () => {
+        if (readOnlyRef.current) return
         dirtyRef.current = true
         setData(freshData(data.lang))
       }

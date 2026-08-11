@@ -7,6 +7,7 @@ import {
   onAuthChange,
   pull,
   pushCas,
+  pullPublic,
   pushOnUnload,
   signOut
 } from './supabaseSync.js'
@@ -40,6 +41,11 @@ export function useCloudSync(data, applyRemote) {
   const [lastSyncedAt, setLastSyncedAt] = useState(null)
   const [error, setError] = useState(null)
   const [online, setOnline] = useState(() => (typeof navigator === 'undefined' ? true : navigator.onLine))
+  // Whether the first auth answer is in. Everything that branches on "is there
+  // a user" has to wait for it: `user` is null for the first few hundred
+  // milliseconds of EVERY load, and acting on that null would read the shared
+  // row over a signed-in device's own data.
+  const [authReady, setAuthReady] = useState(false)
 
   // The server timestamp we last observed, and the local updatedAt we last
   // pushed. Both survive a reload so a restart cannot resurrect a stale write.
@@ -84,13 +90,15 @@ export function useCloudSync(data, applyRemote) {
         authRef.current = { userId: s?.user?.id || null, token: s?.access_token || null }
         setUser(s?.user || null)
         setState(s?.user ? 'syncing' : 'signedOut')
+        setAuthReady(true)
       })
-      .catch(() => {})
+      .catch(() => { if (alive) setAuthReady(true) })
     onAuthChange((u, session) => {
       if (!alive) return
       authRef.current = { userId: u?.id || null, token: session?.access_token || null }
       setUser(u)
       setState(u ? 'syncing' : 'signedOut')
+      setAuthReady(true)
       if (!u) { setRemoteAt(null); setPushedAt(null); setLastSyncedAt(null) }
     }).then((fn) => { cancel = fn })
     return () => { alive = false; if (cancel) cancel() }
@@ -252,6 +260,56 @@ export function useCloudSync(data, applyRemote) {
     }
   }, [user, sync])
 
+  // ---- viewer: not signed in, read the shared row ---------------------------
+  //
+  // This is the "everyone with the link sees the current state" path. It only
+  // ever READS: there is no anon write policy on the table, so the database
+  // refuses a write even if something here tried one.
+  //
+  // Deliberately its own effect rather than a branch inside sync(): that
+  // function carries the compare-and-swap and the retry that protect a signed-in
+  // device's writes, and none of it applies to a reader.
+  useEffect(() => {
+    if (!cloudConfigured || !authReady || user || !online) return
+    let alive = true
+    const tick = async () => {
+      // Shares the busy latch with sync() so the two can never apply a blob
+      // over each other while auth is changing.
+      if (!alive || busy.current) return
+      busy.current = true
+      try {
+        const shared = await pullPublic()
+        if (!alive) return
+        // No shared row is not an error: the policy may simply not be in place,
+        // and then the app stays on its local copy exactly as before.
+        if (!shared) { setState('signedOut'); return }
+        // Only when the server actually moved. Re-applying an identical blob
+        // every two minutes would re-render the whole app for nothing.
+        if (shared.remoteAt !== remoteAt.current) {
+          applyRef.current(shared.blob)
+          setRemoteAt(shared.remoteAt)
+        }
+        setLastSyncedAt(new Date().toISOString())
+        setState('viewing')
+      } catch (e) {
+        if (alive) { setError(e?.message || String(e)); setState('error') }
+      } finally {
+        busy.current = false
+      }
+    }
+    tick()
+    const id = setInterval(tick, SYNC_INTERVAL)
+    // Phones freeze timers in a backgrounded tab, so coming back is its own
+    // reason to re-read - otherwise the screen shows this morning's numbers.
+    const onVis = () => { if (document.visibilityState === 'visible') tick() }
+    document.addEventListener('visibilitychange', onVis)
+    return () => {
+      alive = false
+      clearInterval(id)
+      document.removeEventListener('visibilitychange', onVis)
+    }
+  }, [authReady, user, online])
+
   const disconnect = useCallback(async () => {
     await signOut()
     setRemoteAt(null)
@@ -266,6 +324,11 @@ export function useCloudSync(data, applyRemote) {
     cloudConfigured,
     state,
     user,
+    authReady,
+    // Nobody signed in, but the cloud is configured: this device is a viewer of
+    // the shared state and must not be able to change it. The store turns this
+    // into a hard block; the UI uses it to take the write controls away.
+    readOnly: cloudConfigured && authReady && !user,
     error,
     online,
     lastSyncedAt,

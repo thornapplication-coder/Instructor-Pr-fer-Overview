@@ -93,6 +93,34 @@ export async function pull(user) {
   return { blob: data.data, remoteAt: data.updated_at }
 }
 
+// The shared row, read WITHOUT a session.
+//
+// This is the "everyone with the link sees the current state" path. It needs a
+// database policy that lets the anon role read rows flagged `shared` (see
+// supabase/migrations/0002_shared_read.sql); without it this simply returns
+// null and the app falls back to its local copy, which is why no caller treats
+// an empty result as an error.
+//
+// Read-only by construction: there is no matching write policy for anon, so a
+// visitor could not push even if the client tried. The protection is the
+// database's, not this function's.
+export async function pullPublic() {
+  const c = await getClient()
+  if (!c) return null
+  const { data, error } = await c
+    .from(TABLE)
+    .select('data, updated_at')
+    .eq('shared', true)
+    // Newest first and one row only: the flag is meant for a single row, but a
+    // second one flipped by accident must not make the result arbitrary.
+    .order('updated_at', { ascending: false })
+    .limit(1)
+    .maybeSingle()
+  if (error) throw error
+  if (!data) return null
+  return { blob: data.data, remoteAt: data.updated_at }
+}
+
 // Compare-and-swap write. The update only applies while the row still carries
 // the timestamp we read a moment ago, so a device that wrote between our pull
 // and our push cannot be silently replaced by our (now stale) copy: we return

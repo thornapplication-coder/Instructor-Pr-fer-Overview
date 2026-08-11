@@ -12,7 +12,10 @@ const KEYS = {
   offline: 'sync_offline',
   syncing: 'sync_syncing',
   synced: 'sync_synced',
-  error: 'sync_error'
+  error: 'sync_error',
+  // Reading somebody else's shared state. Green, not grey: it is a working
+  // connection, just a one-way one.
+  viewing: 'sync_viewing'
 }
 
 export default function SyncBadge() {
@@ -22,11 +25,12 @@ export default function SyncBadge() {
   const { state, lastSyncedAt } = sync
   // "syncing" counts as green but pulses: a routine background sync must not
   // flash the dot red every couple of seconds.
-  const ok = state === 'synced' || state === 'syncing'
+  const ok = state === 'synced' || state === 'syncing' || state === 'viewing'
   const when = lastSyncedAt ? new Date(lastSyncedAt) : null
   const timeStr =
     when && !isNaN(when) ? when.toLocaleTimeString(lang === 'de' ? 'de-DE' : 'en-GB', { hour: '2-digit', minute: '2-digit' }) : ''
-  const label = t(KEYS[state] || KEYS.signedOut) + (state === 'synced' && timeStr ? ' · ' + timeStr : '')
+  const label = t(KEYS[state] || KEYS.signedOut) +
+    ((state === 'synced' || state === 'viewing') && timeStr ? ' · ' + timeStr : '')
 
   return (
     <span

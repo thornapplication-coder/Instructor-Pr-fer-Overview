@@ -127,6 +127,16 @@ const DICT = {
     en: 'No Supabase project is configured. The app works fully locally; backup/export on this page remains the way to secure your data.'
   },
   sync_signedOut: { de: 'Nicht angemeldet', en: 'Not signed in' },
+  sync_viewing: { de: 'Nur lesen', en: 'View only' },
+  ro_banner: {
+    de: 'Nur-Lese-Ansicht — du siehst den aktuellen Stand, kannst ihn aber nicht ändern.',
+    en: 'View only – you are seeing the current state but cannot change it.'
+  },
+  ro_bannerAt: { de: 'Stand: {t}', en: 'As of {t}' },
+  ro_bannerHint: {
+    de: 'Zum Bearbeiten in den Einstellungen anmelden.',
+    en: 'Sign in under Settings to make changes.'
+  },
   sync_offline: { de: 'Offline', en: 'Offline' },
   sync_syncing: { de: 'Synchronisiert …', en: 'Syncing …' },
   sync_synced: { de: 'Synchron', en: 'In sync' },
