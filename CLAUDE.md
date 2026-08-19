@@ -244,6 +244,26 @@ anlegen** — weitere Geräte melden sich mit dem bestehenden Konto an. Ein
 zusätzlicher Benutzer geht nur über das Supabase-Dashboard (*Authentication →
 Users → Add user*) oder indem die Option kurz wieder eingeschaltet wird.
 
+## Startprüfung
+
+`.claude/hooks/session-start.sh` läuft vor jeder Sitzung: holen, alles
+Vorhandene in einen Stash, **nur vorspulen**, dann `npm install`.
+
+Der Grund steht im Skript ausführlich. Kurz: Sitzungen haben wiederholt auf
+einem Abbild vom 27.07. begonnen (`93fde92`, 1.35.1) samt der damals halb
+bearbeiteten Dateien. Das Reflog springt dort von jenem Commit direkt auf heute
+— die Versionen dazwischen sind in anderen Containern entstanden und dort nie
+angekommen. Für sich genommen nur veraltet; gefährlich wird es, weil der Stand
+wie „unversicherte Änderungen" aussieht und ein Commit darauf achtzehn
+Versionen zurückwirft.
+
+**Nie `reset --hard`, nie `push --force` als Reparatur.** Stash ist
+wiederherstellbar, `merge --ff-only` kann keinen Commit verlieren und
+verweigert, wenn der Branch eigene Arbeit trägt.
+
+Wer das von Hand braucht:
+`git stash push -u && git fetch origin <branch> && git merge --ff-only origin/<branch>`
+
 ## Umgebung
 
 Aus dieser Sandbox sind `*.supabase.co` und `*.github.io` durch den Proxy

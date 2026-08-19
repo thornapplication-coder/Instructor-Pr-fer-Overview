@@ -18,10 +18,25 @@ export default async function run(browser, baseUrl, shots) {
   page.on('pageerror', (e) => errs.push(String(e)))
 
   // Everything the page fetches, from the very first request.
+  //
+  // "Nothing at all" would be the wrong bar: the app really does call its own
+  // Supabase project on load - that is the cloud sync, and the shared-link
+  // viewer reads through the same path while signed out. The first cut of this
+  // check forbade every foreign request and passed only because it happened to
+  // look before the sync fired. So the rule is by HOST: our own origin and the
+  // one configured backend are expected; anything else is a third party this
+  // app has no business talking to.
+  // The backend is matched by host rather than imported from cloudConfig.js:
+  // that module reads `import.meta.env`, which exists only inside Vite, so
+  // plain node cannot load it. A *.supabase.co host is this app's own backend
+  // by construction - anything else is a third party.
+  const ours = (u) => u.startsWith(baseUrl) || /^https:\/\/[a-z0-9-]+\.supabase\.co\//.test(u)
   const foreign = []
   page.on('request', (r) => {
     const u = r.url()
-    if (!u.startsWith(baseUrl) && !u.startsWith('data:') && !u.startsWith('blob:')) foreign.push(u)
+    if (u.startsWith('data:') || u.startsWith('blob:')) return
+    if (ours(u)) return
+    foreign.push(u)
   })
 
   await page.goto(baseUrl, { waitUntil: 'networkidle' })
@@ -29,7 +44,13 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForTimeout(1200)
 
   ok(foreign.length === 0,
-    'the page fetches nothing from anywhere else (' + (foreign.slice(0, 3).join(', ') || 'no foreign request') + ')')
+    'the page asks nobody but itself and its own backend (' +
+    (foreign.slice(0, 3).join(', ') || 'no third-party request') + ')')
+  // Named explicitly as well as covered by the rule above: this is the one the
+  // whole change is about, and a future "just this once" CDN link should trip a
+  // check that says so by name.
+  ok(!foreign.some((u) => /googleapis|gstatic/.test(u)),
+    '  and Google in particular is not asked for the typeface any more')
 
   const font = await page.evaluate(async () => {
     await document.fonts.ready

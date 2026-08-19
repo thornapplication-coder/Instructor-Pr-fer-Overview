@@ -4,12 +4,27 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.53.0'
+export const APP_VERSION = '1.54.0'
 export const APP_BUILD_DATE = '2026-08-19'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.54.0',
+    date: '2026-08-19',
+    type: 'minor',
+    changes: {
+      de: [
+        'Wartung: Eine Startprüfung bringt den Arbeitsstand vor jeder Sitzung auf den Stand des Servers. Sitzungen sind wiederholt auf einem alten Abbild vom 27.07. gestartet — Stand 1.35.1 — was für sich genommen nur veraltet ist; gefährlich wurde es dadurch, dass es wie „unversicherte Änderungen" aussah und ein Commit darauf die App um achtzehn Versionen zurückgeworfen hätte.',
+        'Die Prüfung holt, legt Vorhandenes in einen Stash (nichts wird gelöscht) und spult nur vorwärts. Echte lokale Arbeit bleibt unangetastet: ein Vorspulen kann keinen Commit überschreiben, und wenn es nicht geht, sagt sie es und lässt alles stehen.'
+      ],
+      en: [
+        'Housekeeping: a start-up check brings the workspace up to the server state before each session. Sessions repeatedly began on an old image from 27 July - v1.35.1 - which on its own is merely stale; what made it dangerous is that it looked like "uncommitted changes", and committing them would have rolled the app back eighteen versions.',
+        'The check fetches, puts anything present into a stash (nothing is discarded) and only fast-forwards. Genuine local work is left alone: a fast-forward cannot overwrite a commit, and where it cannot run it says so and changes nothing.'
+      ]
+    }
+  },
   {
     version: '1.53.0',
     date: '2026-08-19',

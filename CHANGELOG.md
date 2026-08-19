@@ -11,6 +11,39 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.54.0] – 2026-08-19
+
+### Neu
+- **Startprüfung (`.claude/hooks/session-start.sh`).** Sitzungen für dieses
+  Repository haben wiederholt auf einer Platte begonnen, die auf dem 27.07.
+  eingefroren war — Commit `93fde92`, Version 1.35.1 — samt der Dateien, die in
+  jenem Moment halb bearbeitet waren. Das Reflog auf so einer Platte springt von
+  jenem Commit direkt auf den heutigen Tag: die achtzehn Versionen dazwischen
+  sind in anderen Containern entstanden, wurden gepusht und dort nie gesehen.
+  Es ist also kein abgedrifteter Checkout, sondern ein altes Abbild, das erneut
+  eingehängt wird.
+- Für sich genommen ist das nur veraltet. Gefährlich ist die zweite Hälfte: der
+  Arbeitsstand sieht dann aus wie „ein Branch mit unversicherten Änderungen",
+  und die naheliegende Reaktion — committen — hätte die App um achtzehn
+  Versionen zurückgeworfen und über echte Arbeit gepusht.
+- Die Prüfung macht deshalb genau die eine Reparatur, die immer richtig ist:
+  holen, alles Vorhandene in einen **Stash** (wiederherstellbar, nie gelöscht)
+  und **nur vorspulen**. Ein Vorspulen kann keine Historie umschreiben und
+  keinen Commit verlieren; trägt der Branch echte eigene Arbeit, verweigert es
+  und meldet das, statt etwas zu erzwingen. Danach `npm install`.
+- Nachgewiesen an einem nachgebauten Fall: Klon auf `93fde92` zurückgesetzt,
+  halbfertige Dateien angelegt → Stash gelegt, auf 1.53.0 vorgespult,
+  Abhängigkeiten bereit. Der Stash steht danach unter `git stash list`.
+
+### Behoben
+- **Die neue Schrift-Prüfung war zu streng und zeitabhängig.** Sie verbot jede
+  fremde Anfrage und lief nur deshalb grün, weil sie zufällig vor dem ersten
+  Cloud-Abgleich nachsah. Die App ruft ihr eigenes Supabase-Projekt beim Start
+  wirklich auf — das ist der Sync, und der Nur-Lese-Link liest über denselben
+  Weg. Geprüft wird jetzt nach **Host**: die eigene Adresse und das eigene
+  Backend sind erwartet, alles andere nicht — und Google wird zusätzlich beim
+  Namen genannt.
+
 ## [1.53.0] – 2026-08-19
 
 ### Geändert
