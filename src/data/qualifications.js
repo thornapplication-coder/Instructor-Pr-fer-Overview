@@ -53,6 +53,17 @@ export function isConversionQual(qual) {
 // place in any conversion figure. Kept as a predicate of its own because two
 // places ask the question and "internal unless it says otherwise" is the rule
 // the whole app reads staffType by.
+// The two qualification grades that say "external" in their own name. They are
+// not conversion qualifications, so nothing counts them - but the trainer dialog
+// also has no business ASKING about a conversion for somebody on one of them.
+export const EXTERNAL_QUALS = ['TREX', 'TRIX']
+
+// Is a conversion a question for this person at all? Both ways of being
+// external answer no: the affiliation and the qualification itself.
+export function convertsAtAll(trainer) {
+  return isInternal(trainer) && !EXTERNAL_QUALS.includes(String(trainer?.qual || '').trim())
+}
+
 export function isInternal(trainer) {
   return (trainer?.staffType || 'internal') !== 'external'
 }

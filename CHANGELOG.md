@@ -11,6 +11,18 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.48.0] – 2026-08-19
+
+### Geändert
+- **Kein Umschulungs-Block mehr bei „extern".** Im Trainer-Dialog verschwindet
+  der ganze Abschnitt — Phase, Status, Zieltermin, Notiz — sobald jemand auf
+  „extern" steht oder die Qualifikation „TRE extern" / „TRI extern" trägt.
+  Seit 1.47.0 liest keine Ansicht diese Werte für Externe mehr; sie weiter
+  abzufragen hieße, zum Ausfüllen von Feldern einzuladen, deren Inhalt nirgends
+  ankommt.
+- Gelöscht wird nichts: Wer zurück auf „intern" stellt, bekommt die Werte wieder
+  zu sehen — ein Fehlklick kostet also auch hier nichts.
+
 ## [1.47.0] – 2026-07-29
 
 ### Geändert

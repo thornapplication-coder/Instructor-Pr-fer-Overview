@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.47.0'
+export const APP_VERSION = '1.48.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.48.0',
+    date: '2026-08-19',
+    type: 'minor',
+    changes: {
+      de: [
+        'Bei „extern" ist der Umschulungs-Block im Trainer-Dialog nicht mehr da — weder Phase noch Status, Zieltermin oder Notiz. Nach etwas zu fragen, das seit der letzten Version keine Ansicht mehr liest, wäre eine Einladung, Zahlen einzutragen, die nirgends ankommen.',
+        'Dasselbe gilt für die Qualifikationen „TRE extern" und „TRI extern".',
+        'Die Werte werden dabei nicht gelöscht: Wer zurück auf „intern" stellt, sieht sie wieder.'
+      ],
+      en: [
+        'For an external trainer the conversion block is gone from the dialog - no phase, status, target date or note. Asking for something that no view has read since the last version would invite figures that go nowhere.',
+        'The same holds for the "TRE extern" and "TRI extern" qualifications.',
+        'Nothing is cleared: switching back to internal brings the values back.'
+      ]
+    }
+  },
   {
     version: '1.47.0',
     date: '2026-07-29',

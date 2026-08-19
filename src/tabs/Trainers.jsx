@@ -9,7 +9,7 @@ import { formatPartTime, formatDate, classNames, fteFromPartTime, formatFte } fr
 import { CONV_STATUS, STAFF_TYPE, stageLabel, stageIndex } from '../data/pipeline.js'
 import { OVERFLOW } from '../lib/palette.js'
 import { useThemed } from '../lib/useThemed.js'
-import { qualIndex, qualLabel } from '../data/qualifications.js'
+import { qualIndex, qualLabel, convertsAtAll } from '../data/qualifications.js'
 import { labelOf } from '../data/lists.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 
@@ -491,6 +491,11 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
           <DateInput value={f.treDate} onChange={(v) => set('treDate', v)} />
         </Field>
 
+        {/* No conversion block for somebody who is not converted. Asking for a
+            phase, a status and a target date that no view anywhere reads would
+            be an invitation to fill in numbers that go nowhere. The values are
+            not cleared - switching back to internal brings them back. */}
+        {convertsAtAll(f) && <>
         <div className="form-sep span2">{t('f_conversion')}</div>
         <Field label={t('stage')}>
           <select
@@ -531,6 +536,7 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
             onChange={(e) => set('conv', { ...f.conv, note: e.target.value })}
           />
         </Field>
+        </>}
       </div>
     </Modal>
   )

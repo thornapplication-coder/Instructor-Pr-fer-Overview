@@ -90,6 +90,18 @@ export default async function run(browser, baseUrl, shots) {
   const coOpts = (await co.locator('option').allInnerTexts()).map((x) => x.trim()).filter(Boolean)
   ok(coOpts.join(',') === 'TUI,SunExpress,Others', 'with the three companies (' + coOpts.join(', ') + ')')
 
+  // And the conversion block goes: asking an external trainer for a phase, a
+  // status and a target date would invite numbers that no view anywhere reads.
+  ok(!(await modal.innerText()).includes('Zieltermin'),
+    'an external trainer is not asked about a conversion at all')
+  ok((await modal.locator('.form-sep', { hasText: 'Umschulung' }).count()) === 0,
+    '  the whole section is gone, not just disabled')
+  await staff.selectOption('internal')
+  await page.waitForTimeout(300)
+  ok((await modal.innerText()).includes('Zieltermin'), 'back on internal the section returns')
+  await staff.selectOption('external')
+  await page.waitForTimeout(300)
+
   // It has to survive the save, and it has to reach the table.
   await modal.locator('.field', { hasText: 'Name' }).first().locator('input').fill('Testperson, Extern')
   await co.selectOption('TUI')
@@ -210,6 +222,22 @@ export default async function run(browser, baseUrl, shots) {
   const capKeys = await page.locator('.cap-table tbody .cp-key').allInnerTexts()
   ok(capKeys.some((x) => x.includes('TRE extern')) && capKeys.some((x) => x.includes('TRI extern')),
     'they still count as capacity, in their own rows (' + capKeys.join(', ') + ')')
+
+  // The external GRADES hide it for the same reason, without a rule of their own.
+  await page.locator('.trainer-table tbody tr').first().click()
+  await page.waitForSelector('.modal')
+  await page.waitForTimeout(400)
+  const q2 = page.locator('.modal .field', { hasText: 'Qualifikation' }).locator('select').first()
+  await q2.selectOption('TRIX')
+  await page.waitForTimeout(300)
+  ok(!(await page.locator('.modal').innerText()).includes('Zieltermin'),
+    'somebody on "TRI extern" is not asked either')
+  await q2.selectOption('TRI')
+  await page.waitForTimeout(300)
+  ok((await page.locator('.modal').innerText()).includes('Zieltermin'),
+    '  and a plain TRI still is – so the section is tied to the grade, not removed')
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(300)
 
   // ---- 6. and on a phone card you can SEE that somebody is external ---------
   await page.setViewportSize({ width: 390, height: 844 })
