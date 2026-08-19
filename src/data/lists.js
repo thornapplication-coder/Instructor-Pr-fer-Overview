@@ -58,6 +58,13 @@ export function defaultStaffTypes(lang) {
   return fromMap(STAFF_TYPE, ['internal', 'external'], lang)
 }
 
+// Which company an EXTERNAL trainer belongs to. Free to grow: unlike the staff
+// types themselves, no branch in the app reads these ids - they are a label on
+// a person, so the list is the user's.
+export function defaultExtCompanies() {
+  return ['TUI', 'SunExpress', 'Others'].map((id) => ({ id, label: id }))
+}
+
 // Every list the settings page offers, in the order it shows them.
 // `key`      – where it lives in the store (and in MERGE_LISTS)
 // `locked`   – ids drive behaviour: rename and recolour only
@@ -75,7 +82,8 @@ export const EDITABLE_LISTS = [
   { key: 'simVersions', labelKey: 'list_simVersions', hasColor: false },
   { key: 'convStatus', labelKey: 'list_convStatus', locked: true },
   { key: 'assignStatus', labelKey: 'list_assignStatus', locked: true },
-  { key: 'staffTypes', labelKey: 'list_staffTypes', locked: true }
+  { key: 'staffTypes', labelKey: 'list_staffTypes', locked: true },
+  { key: 'extCompanies', labelKey: 'list_extCompanies', hint: 'list_extCompaniesHint', hasColor: false }
 ]
 
 // Look-ups used wherever a stored id has to become something a reader sees.

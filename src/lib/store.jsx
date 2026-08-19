@@ -26,7 +26,8 @@ import {
   defaultOreTiers,
   defaultBases,
   defaultPilotTypes,
-  defaultStaffTypes
+  defaultStaffTypes,
+  defaultExtCompanies
 } from '../data/lists.js'
 import { BRAND, migrateColors } from './palette.js'
 
@@ -70,6 +71,10 @@ function withConvDefaults(trainer, firstStage) {
     // three people on the roster are not in the company list at all, and a
     // guessed date would be worse than a blank one - it would sort.
     seniority: typeof trainer.seniority === 'string' ? trainer.seniority : '',
+    // Which company an external trainer comes from. Only meaningful together
+    // with staffType 'external'; kept rather than cleared when somebody is
+    // switched back to internal, so switching by accident loses nothing.
+    extCompany: typeof trainer.extCompany === 'string' ? trainer.extCompany : '',
     conv: {
       stage: stage0,
       status: 'on_track',
@@ -154,6 +159,7 @@ function freshData(lang = 'de') {
     bases: defaultBases(),
     pilotTypes: defaultPilotTypes(),
     staffTypes: defaultStaffTypes(lang),
+    extCompanies: defaultExtCompanies(),
     otherPilots: SEED_PILOTS.map((p) => withPilotDefaults({ ...p })),
     conversionFrom: 'A320',
     conversionTo: 'B737',
@@ -176,6 +182,7 @@ function freshData(lang = 'de') {
     _pilotSeed: true,
     _pilotSeed2: true,
     _senioritySeed: true,
+    _qualExtra: true,
     updatedAt: at
   }, at)
 }
@@ -247,6 +254,7 @@ function normalize(obj) {
     bases: Array.isArray(obj.bases) ? obj.bases.map((x) => ({ ...x })) : base.bases,
     pilotTypes: Array.isArray(obj.pilotTypes) ? obj.pilotTypes.map((x) => ({ ...x })) : base.pilotTypes,
     staffTypes: Array.isArray(obj.staffTypes) ? obj.staffTypes.map((x) => ({ ...x })) : base.staffTypes,
+    extCompanies: Array.isArray(obj.extCompanies) ? obj.extCompanies.map((x) => ({ ...x })) : base.extCompanies,
     otherPilots: Array.isArray(obj.otherPilots) ? obj.otherPilots.map(withPilotDefaults) : base.otherPilots,
     conversionFrom: obj.conversionFrom || 'A320',
     conversionTo: obj.conversionTo || 'B737',
@@ -271,6 +279,7 @@ function normalize(obj) {
     _pilotSeed: obj._pilotSeed === true,
     _pilotSeed2: obj._pilotSeed2 === true,
     _senioritySeed: obj._senioritySeed === true,
+    _qualExtra: obj._qualExtra === true,
     updatedAt: obj.updatedAt || nowIso()
   }
   // One-time: merge newly shipped default courses (e.g. "SIM only") into stored
@@ -387,6 +396,16 @@ function normalize(obj) {
       return d && !String(t.seniority || '').trim() ? { ...t, seniority: d, _at: at } : t
     })
     result._senioritySeed = true
+  }
+  // One-time: add the two non-trainer qualifications at the END of the list.
+  // Appended, never inserted: this list's ORDER is the ranking every chart and
+  // every sort uses, and a reordering somebody made by hand has to survive.
+  // Matched by id, so a renamed entry is left alone rather than duplicated.
+  if (!result._qualExtra) {
+    const have = new Set(result.quals.map((q) => q.id))
+    const add = DEFAULT_QUALS.filter((q) => (q.id === 'NOTR' || q.id === 'EIS') && !have.has(q.id))
+    if (add.length) result.quals = [...result.quals, ...add.map((q) => ({ ...q }))]
+    result._qualExtra = true
   }
   // One-time: move the stored category colours onto the documented palette.
   // Only entries still carrying their OLD shipped default are touched, so a

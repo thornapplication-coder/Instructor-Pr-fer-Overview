@@ -558,8 +558,26 @@ select.input { cursor: pointer; }
 .empty-icon { font-size: 40px; }
 
 /* ---------- Modal ---------- */
-.modal-backdrop { position: fixed; inset: 0; background: rgba(16,24,40,.5); display: flex; align-items: center; justify-content: center; padding: 18px; z-index: 100; }
-.modal { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow-lg); width: 100%; max-width: 480px; max-height: 92vh; display: flex; flex-direction: column; }
+/* Sized and positioned from `visualViewport` (see Modal.jsx), because on iOS the
+   keyboard shrinks neither the layout viewport nor `dvh` - only that. Without
+   it a dialog keeps its full height behind the keyboard and the footer, with
+   Save in it, is unreachable the moment you type in a field near the bottom.
+   The var fallbacks keep the old behaviour where the API is missing.
+   The safe-area inset stops the header sliding under the status bar clock. */
+.modal-backdrop {
+  position: fixed; left: 0; right: 0;
+  top: var(--vv-top, 0px);
+  height: var(--vv-h, 100%);
+  background: rgba(16,24,40,.5);
+  display: flex; align-items: center; justify-content: center;
+  padding: max(18px, env(safe-area-inset-top)) 18px max(18px, env(safe-area-inset-bottom));
+  z-index: 100;
+}
+.modal { background: #fff; border-radius: var(--radius); box-shadow: var(--shadow-lg); width: 100%; max-width: 480px; max-height: 100%; display: flex; flex-direction: column; min-height: 0; }
+/* The footer must never be the thing that gets scrolled away: the body takes
+   the slack, the head and the foot keep their height. */
+.modal-head, .modal-foot { flex: none; }
+.modal-body { flex: 1 1 auto; min-height: 0; }
 .modal-wide { max-width: 720px; }
 /* One dialog is an editor with nine columns: measured, its table wants 818px,
    which the 720px `wide` never gave it. The delete button sat behind a

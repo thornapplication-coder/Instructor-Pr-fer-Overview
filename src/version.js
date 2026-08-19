@@ -4,12 +4,31 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.45.0'
+export const APP_VERSION = '1.46.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.46.0',
+    date: '2026-07-29',
+    type: 'minor',
+    changes: {
+      de: [
+        'Am iPhone war der Speichern-Knopf nicht mehr erreichbar, sobald die Tastatur aufging: iOS verkleinert dabei weder das Fenster noch „dvh", nur den sichtbar gebliebenen Bereich — der Dialog behielt seine volle Höhe und die Fußzeile lag unter der Tastatur. Er richtet sich jetzt nach dem tatsächlich sichtbaren Bereich; die Felder scrollen, Kopf- und Fußzeile bleiben stehen. Nebenbei rutscht die Überschrift nicht mehr unter die Uhr.',
+        'ORE ist bei neuen Einträgen leer statt „C". Eine vorausgefüllte Priorität ist eine Behauptung, die niemand aufgestellt hat — und das ORE-Diagramm zählt sie mit.',
+        'Bei „extern" lässt sich jetzt die Firma angeben: TUI, SunExpress, Others. Sie erscheint nur, wenn jemand auf extern steht, steht in der Liste neben dem Chip, und ist in Excel und PDF dabei. Die Auswahl ist in den Einstellungen erweiterbar.',
+        'Zwei neue Qualifikationen ganz am Ende der Liste: „No Trainer" und „EIS Pilot". Ans Ende, weil die Reihenfolge dieser Liste die Rangfolge ist, nach der jede Auswertung sortiert.'
+      ],
+      en: [
+        'On an iPhone the Save button became unreachable as soon as the keyboard appeared: iOS shrinks neither the layout viewport nor "dvh" for it, only the visible area — so the dialog kept its full height and the footer sat under the keyboard. It now sizes itself from what is actually visible; the fields scroll, the head and the footer stay. The title no longer slides under the clock either.',
+        'ORE starts empty on a new record instead of "C". A pre-filled priority is a claim nobody made — and the ORE chart counts it.',
+        '"External" can now say which company: TUI, SunExpress, Others. It appears only for an external trainer, shows next to the chip in the list, and is in the Excel and PDF exports. The list is extensible in the settings.',
+        'Two more qualifications, at the very end: "No Trainer" and "EIS Pilot". At the end because the order of that list IS the ranking every view sorts by.'
+      ]
+    }
+  },
   {
     version: '1.45.0',
     date: '2026-07-29',

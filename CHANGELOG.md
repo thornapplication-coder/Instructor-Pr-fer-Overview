@@ -11,6 +11,38 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.46.0] – 2026-07-29
+
+### Behoben
+- **Der Speichern-Knopf war am iPhone nicht mehr erreichbar, sobald die Tastatur
+  aufging.** iOS verkleinert dafür weder das Layout-Fenster noch `dvh` — nur den
+  `visualViewport`. Ein in `vh` bemessener Dialog behielt also seine volle Höhe,
+  und seine Fußzeile mit Speichern und Löschen lag unter der Tastatur: Man
+  konnte in ein Feld tippen und das Getippte danach nicht sichern. Der Dialog
+  bemisst und positioniert sich jetzt nach dem tatsächlich sichtbaren Bereich.
+  Die Felder scrollen, Kopf- und Fußzeile behalten ihre Höhe.
+- Dabei mitgenommen: Die Überschrift lag auf dem iPhone unter der Statusleiste
+  (die Uhr stand im Titel). Der Dialog hält jetzt den Sicherheitsabstand ein.
+
+### Geändert
+- **ORE ist bei neuen Einträgen leer**, nicht mehr „C". Eine vorausgefüllte
+  Priorität ist eine Behauptung, die niemand aufgestellt hat — und das
+  ORE-Diagramm zählt jeden Wert mit, der dasteht.
+
+### Neu
+- **Firma bei externen Trainern.** Steht jemand auf „extern", fragt der Dialog
+  nach der Firma: TUI, SunExpress oder Others. Bei internen erscheint die Frage
+  gar nicht erst. In der Liste steht sie neben dem Chip, in Excel und PDF ist
+  sie eine eigene Spalte. Die Auswahl ist in den Einstellungen erweiterbar —
+  an diesen Einträgen hängt keine Logik.
+  Beim Zurückschalten auf „intern" wird der Wert **nicht** gelöscht, damit ein
+  Fehlklick nichts kostet.
+- **Zwei neue Qualifikationen:** „No Trainer" und „EIS Pilot", ganz am Ende der
+  Liste. Am Ende, weil die Reihenfolge dieser Liste die Rangfolge ist, nach der
+  jede Tabelle und jedes Diagramm sortiert — und keine der beiden ist eine
+  Trainer-Stufe. Bestehende Installationen bekommen sie angehängt; eine von Hand
+  geänderte Reihenfolge oder Farbe bleibt unangetastet.
+
 ## [1.45.0] – 2026-07-29
 
 ### Neu

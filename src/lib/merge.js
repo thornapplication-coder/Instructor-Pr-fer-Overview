@@ -37,7 +37,8 @@ export const MERGE_LISTS = [
   'assignStatus',
   'bases',
   'pilotTypes',
-  'staffTypes'
+  'staffTypes',
+  'extCompanies'
 ]
 
 // A tombstone older than this is dropped. It has to outlive any plausible

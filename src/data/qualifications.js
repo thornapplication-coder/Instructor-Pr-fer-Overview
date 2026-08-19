@@ -9,7 +9,11 @@ export const DEFAULT_QUALS = [
   { id: 'TRI',     label: 'TRI',     color: CATEGORICAL[2] },
   { id: 'LTC',     label: 'LTC',     color: CATEGORICAL[3] },
   { id: 'SFI',     label: 'SFI',     color: CATEGORICAL[4] },
-  { id: 'TKI',     label: 'TKI',     color: CATEGORICAL[5] }
+  { id: 'TKI',     label: 'TKI',     color: CATEGORICAL[5] },
+  // Last on purpose: the order of this list IS the ranking used for sorting and
+  // for every chart's row order, and neither of these two is a trainer grade.
+  { id: 'NOTR',    label: 'No Trainer', color: CATEGORICAL[6] },
+  { id: 'EIS',     label: 'EIS Pilot',  color: CATEGORICAL[7] }
 ]
 
 // Map legacy / imported qualification strings onto the canonical ids.

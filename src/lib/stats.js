@@ -21,7 +21,7 @@ function stageResolver(stages) {
   return { firstId, releasedId, stageOf }
 }
 
-const QUAL_ORDER = ['SEN', 'TRE', 'TRI', 'LTC', 'SFI', 'TKI']
+const QUAL_ORDER = ['SEN', 'TRE', 'TRI', 'LTC', 'SFI', 'TKI', 'NOTR', 'EIS']
 export const BASE_ORDER = ['PMI', 'VIE', 'SZG', 'PRG', 'ARN']
 const ORE_ORDER = ['A', 'B', 'C']
 
@@ -267,7 +267,7 @@ export function qualGroup(q) {
 
 // Canonical qualification ranking, highest first (spec): the order used
 // everywhere qualifications are shown or sorted.
-export const QUAL_RANK = ['SEN', 'TRE', 'TRI', 'LTC', 'SFI', 'TKI']
+export const QUAL_RANK = ['SEN', 'TRE', 'TRI', 'LTC', 'SFI', 'TKI', 'NOTR', 'EIS']
 
 export function qualRankIndex(key) {
   const i = QUAL_RANK.indexOf(key)

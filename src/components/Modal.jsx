@@ -5,6 +5,7 @@ const FOCUSABLE =
 
 export default function Modal({ title, onClose, children, footer, wide, xwide }) {
   const ref = useRef(null)
+  const backdropRef = useRef(null)
   const lastFocused = useRef(null)
   // Callers pass a fresh arrow on every render, so keep the latest handler in a
   // ref instead of in the effect's dep list: re-running the effect per render
@@ -12,6 +13,37 @@ export default function Modal({ title, onClose, children, footer, wide, xwide })
   // writes to the store (planning notes, category labels, …).
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
+
+  // Keep the dialog inside what is ACTUALLY visible.
+  //
+  // On iOS the on-screen keyboard does not shrink the layout viewport, and it
+  // does not shrink `dvh` either - only `visualViewport` knows about it. A
+  // dialog sized in `vh` therefore keeps its full height behind the keyboard,
+  // and its footer (Save, Delete) sits under it, unreachable: typing into a
+  // field near the bottom left no way to save what was typed.
+  //
+  // So the backdrop is told the real numbers and positions itself over them.
+  // Falls back to the window when visualViewport is missing, which is exactly
+  // the old behaviour.
+  useEffect(() => {
+    const node = backdropRef.current
+    if (!node) return
+    const vv = typeof window !== 'undefined' ? window.visualViewport : null
+    const apply = () => {
+      const h = vv ? vv.height : window.innerHeight
+      const top = vv ? vv.offsetTop : 0
+      node.style.setProperty('--vv-h', h + 'px')
+      node.style.setProperty('--vv-top', top + 'px')
+    }
+    apply()
+    if (!vv) return
+    vv.addEventListener('resize', apply)
+    vv.addEventListener('scroll', apply)
+    return () => {
+      vv.removeEventListener('resize', apply)
+      vv.removeEventListener('scroll', apply)
+    }
+  }, [])
 
   useEffect(() => {
     lastFocused.current = document.activeElement
@@ -42,7 +74,7 @@ export default function Modal({ title, onClose, children, footer, wide, xwide })
   }, [])
 
   return (
-    <div className="modal-backdrop" onMouseDown={onClose}>
+    <div className="modal-backdrop" ref={backdropRef} onMouseDown={onClose}>
       <div
         ref={ref}
         tabIndex={-1}

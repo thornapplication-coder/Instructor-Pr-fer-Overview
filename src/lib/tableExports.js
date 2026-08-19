@@ -29,6 +29,12 @@ export function exportTrainersExcel(data, t, lang) {
       { label: t('f_name'), value: (x) => x.name },
       { label: t('f_role'), value: (x) => t(x.role === 'fo' ? 'role_fo' : 'role_captain') },
       { label: t('f_seniority'), value: (x) => (x.seniority ? formatDate(x.seniority, lang) : '') },
+      {
+        label: t('f_extCompany'),
+        // Only where it means something: a company on an internal trainer would
+        // read as a fact rather than as a leftover.
+        value: (x) => (x.staffType === 'external' ? labelOf(data.extCompanies, x.extCompany, '') : '')
+      },
       { label: t('f_partTime'), value: (x) => formatPartTime(x.partTime, lang) },
       { label: t('f_fte'), value: (x) => formatFte(x.fte) },
       { label: t('f_aircraft'), value: (x) => x.aircraft },

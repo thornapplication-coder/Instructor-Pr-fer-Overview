@@ -10,6 +10,7 @@ import { CONV_STATUS, STAFF_TYPE, stageLabel, stageIndex } from '../data/pipelin
 import { OVERFLOW } from '../lib/palette.js'
 import { useThemed } from '../lib/useThemed.js'
 import { qualIndex, qualLabel } from '../data/qualifications.js'
+import { labelOf } from '../data/lists.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 
 const ORE_RANK = { A: 0, B: 1, C: 2 }
@@ -129,8 +130,12 @@ export default function Trainers() {
       partTime: 'VZ',
       fte: 1,
       aircraft: 'A320',
-      ore: 'C',
+      // Empty, not 'C'. A pre-filled priority is a claim nobody made, and the
+      // ORE chart counts whatever is there - so the default used to invent a
+      // C for every person somebody added.
+      ore: '',
       staffType: 'internal',
+      extCompany: '',
       ltcDate: '',
       triDate: '',
       treDate: '',
@@ -273,6 +278,9 @@ export default function Trainers() {
                   <span className="staff-tag" style={{ '--tag': tint((STAFF_TYPE[x.staffType || 'internal']).color) }}>
                     {t('staff_' + (x.staffType || 'internal'))}
                   </span>
+                  {x.staffType === 'external' && x.extCompany && (
+                    <span className="muted small ext-co"> {labelOf(data.extCompanies, x.extCompany)}</span>
+                  )}
                 </td>
                 <td role="cell" className="t-auth muted small" data-label={t('f_authority')}>{x.authority || '–'}</td>
                 <td role="cell" className="t-stage" data-label={t('f_conversion')}><StageBadge trainer={x} stages={stages} /></td>
@@ -322,7 +330,8 @@ export default function Trainers() {
 }
 
 function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSave, onDelete }) {
-  const { t, lang, readOnly } = useStore()
+  const { t, lang, readOnly, data } = useStore()
+  const extCompanies = data.extCompanies || []
   const [f, setF] = useState({ ...trainer, partTimeInput: ptToInput(trainer.partTime) })
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }))
   // Changing part-time pre-fills FTE (still editable afterwards).
@@ -435,6 +444,17 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
             <option value="internal">{t('staff_internal')}</option>
           </select>
         </Field>
+        {/* Only for an external trainer: an "from which company" on somebody
+            who is ours is a question with no answer. The value is NOT cleared
+            when the type flips back, so a mis-click loses nothing. */}
+        {f.staffType === 'external' && (
+          <Field label={t('f_extCompany')}>
+            <select className="input" value={f.extCompany || ''} onChange={(e) => set('extCompany', e.target.value)}>
+              <option value=""></option>
+              {extCompanies.map((c) => <option key={c.id} value={c.id}>{c.label}</option>)}
+            </select>
+          </Field>
+        )}
         <Field label={t('f_authority')} span2>
           <input className="input" list="authList" value={f.authority} onChange={(e) => set('authority', e.target.value)} />
           <datalist id="authList">{authorities.map((a) => <option key={a} value={a} />)}</datalist>
