@@ -144,14 +144,58 @@ function decodeText(bytes) {
   return s
 }
 
+// The app's own .xls export is an HTML table (see lib/exports.js - that is what
+// gives Excel the branded header and the colours). Re-importing it used to fail
+// with "check your column headers", about a file this app wrote itself: the
+// bytes start with a BOM, so `isSpreadsheetBinary` said "not a workbook", and
+// the CSV parser then read the whole markup as one line.
+//
+// Reading the table back is the right half to change. Emitting bare CSV instead
+// would fix the round trip by making every export worse to open.
+function looksLikeHtmlTable(text) {
+  return /<table[\s>]/i.test(text.slice(0, 4000))
+}
+
+// Deliberately small: this parses OUR OWN generated markup, not the web. It
+// takes <tr>/<td|th> in order, undoes the four entities `esc` writes, and keeps
+// text only - no attributes, no nesting, nothing executed.
+function parseHtmlTableRows(text) {
+  const rows = []
+  const unescape = (v) => v
+    .replace(/<[^>]*>/g, '')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&amp;/g, '&')
+    .replace(/&nbsp;/g, ' ')
+    .trim()
+  const trRe = /<tr[^>]*>([\s\S]*?)<\/tr>/gi
+  let tr
+  while ((tr = trRe.exec(text))) {
+    const cells = []
+    const tdRe = /<(t[dh])[^>]*>([\s\S]*?)<\/\1>/gi
+    let td
+    while ((td = tdRe.exec(tr[1]))) cells.push(unescape(td[2]))
+    if (cells.length) rows.push(cells)
+  }
+  return rows
+}
+
 // Minimal RFC-4180-ish CSV parser (handles quotes and , or ; delimiters). We
 // parse CSV ourselves rather than via SheetJS so German dd.mm.yyyy dates and
 // decimal-comma values ("0,8") stay as raw strings for toISO / toPartTime,
 // instead of being US-fuzzy-parsed (day/month swapped, "0,8" -> 8).
 function parseCsvRows(text) {
-  const nl = text.indexOf('\n')
-  const firstLine = nl >= 0 ? text.slice(0, nl) : text
-  const delim = firstLine.split(';').length > firstLine.split(',').length ? ';' : ','
+  // Sniff the delimiter over the first lines that HAVE one, not over line 1.
+  // Line 1 of every export is the brand banner, which contains neither - so the
+  // sniff always answered "," and a German Excel, which writes ";", produced a
+  // single column and zero records.
+  const lines = text.split('\n').slice(0, 8)
+  let semi = 0
+  let comma = 0
+  for (const l of lines) { semi += l.split(';').length - 1; comma += l.split(',').length - 1 }
+  const delim = semi > comma ? ';' : ','
   const rows = []
   let row = []
   let field = ''
@@ -192,7 +236,10 @@ function readWorkbookGuarded(XLSX, buf) {
 
 async function sheetToRows(buf) {
   const bytes = new Uint8Array(buf)
-  if (!isSpreadsheetBinary(bytes)) return parseCsvRows(decodeText(bytes))
+  if (!isSpreadsheetBinary(bytes)) {
+    const text = decodeText(bytes)
+    return looksLikeHtmlTable(text) ? parseHtmlTableRows(text) : parseCsvRows(text)
+  }
   const XLSX = await import('xlsx')
   const wb = readWorkbookGuarded(XLSX, buf)
   const sheet = wb.Sheets[wb.SheetNames[0]]

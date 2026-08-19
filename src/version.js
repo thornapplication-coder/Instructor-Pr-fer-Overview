@@ -4,12 +4,33 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.56.0'
+export const APP_VERSION = '1.57.0'
 export const APP_BUILD_DATE = '2026-08-19'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.57.0',
+    date: '2026-08-19',
+    type: 'minor',
+    changes: {
+      de: [
+        'Der Piloten-Export löscht beim Wiedereinlesen keine Berechtigungen mehr. Die Spalte heißt im Export „Gültigkeit" — genau dieser Name fehlte in der Erkennungsliste des Imports. Ohne Datum entsteht keine Berechtigung, also kam der Reiter leer zurück, mit der Meldung „Import erfolgreich". Die englische Fassung war nie betroffen, die deutsche immer.',
+        'Mehrere Berechtigungen je Person überstehen den Weg jetzt auch. Der Export schreibt eine Zeile je Berechtigung und lässt in den Folgezeilen Name und Kürzel leer; für den Import sahen die aus wie Leerzeilen und flogen raus. Aus drei Berechtigungen wurde eine.',
+        'Der eigene Excel-Export lässt sich überhaupt wieder einlesen. Die .xls-Datei ist in Wahrheit eine HTML-Tabelle — daher der farbige Kopf beim Öffnen in Excel — und der Import hielt sie für eine CSV-Datei und las die ganze Auszeichnung als eine Zeile. Jetzt wird die Tabelle gelesen; der Export bleibt so hübsch wie er war.',
+        'Beim Umweg über „Speichern unter → CSV" wird das Trennzeichen nicht mehr aus der Banner-Zeile geraten. Die enthält weder Komma noch Semikolon, also fiel die Wahl immer auf Komma — und ein deutsches Excel schreibt Semikolon.',
+        'Ein Kurstermin mit vertauschten Datumsangaben färbt die Zielprüfung nicht mehr grün. Stand das Ende vor dem Beginn, entstand daraus ein Fertig-Datum in der Vergangenheit und jede Person auf diesem Kurs bekam „Ziel gehalten". Jetzt zählt der Kurs als unbekannt, und die Aussage wird zurückgehalten statt geschönt.'
+      ],
+      en: [
+        'The pilots export no longer wipes ratings when read back. The export names the column "Gültigkeit" - and that exact spelling was missing from the importer\'s alias list. No date means no rating, so the tab came back empty, reporting "Import erfolgreich". The English export was never affected; the German one always was.',
+        'Several ratings per person survive the trip too. The export writes one line per rating and leaves name and code blank on the continuation lines; to the importer those looked like blank rows and were dropped. Three ratings became one.',
+        'The app\'s own Excel export can be re-imported at all. The .xls file is really an HTML table - that is what gives Excel the coloured header - and the importer took it for a CSV and read the whole markup as one line. It now reads the table; the export stays as it was.',
+        'Going via "Save as → CSV" no longer sniffs the delimiter from the banner line. That line holds neither comma nor semicolon, so the answer was always comma - and a German Excel writes semicolons.',
+        'A course date typed backwards no longer turns the target check green. With the end before the start it produced a finish date in the past, and every person on that course was told "target met". The course now counts as unknown and the verdict is held back rather than flattered.'
+      ]
+    }
+  },
   {
     version: '1.56.0',
     date: '2026-08-19',

@@ -11,6 +11,44 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.57.0] – 2026-08-19
+
+### Behoben
+- **Der Piloten-Export hat beim Wiedereinlesen jede Musterberechtigung
+  gelöscht.** `exportPilotsExcel` schreibt die Ablaufspalte als
+  `f_validity` = „**Gültigkeit**"; die Alias-Liste in `importPilots.js` kannte
+  `gültig bis`, `ablaufdatum`, `expiry` — diesen einen Namen nicht. Ohne Datum
+  entsteht `ratings: []`, also kam der ganze Reiter leer zurück, quittiert mit
+  „Import erfolgreich". Die englische Beschriftung stand in der Liste, das
+  deutsche Original nicht: betroffen war genau die Fassung, die benutzt wird.
+- **Mehrere Berechtigungen je Person gingen zusätzlich verloren.** Der Export
+  schreibt eine Zeile je Berechtigung und lässt Name/TLC in den Folgezeilen
+  leer (`first: i === 0`); der Import verwarf Zeilen ohne beides als Leerzeile.
+  Die Zeilen werden jetzt erst gelesen und danach zu Personen gefaltet: eine
+  Identität trägt weiter, bis eine neue kommt.
+- **Der eigene Excel-Export war nicht einlesbar.** Die `.xls` ist eine
+  HTML-Tabelle (`lib/exports.js` — daher der gebrandete Kopf in Excel), beginnt
+  mit einem BOM und fiel deshalb in den CSV-Zweig, der die gesamte Auszeichnung
+  als eine Zeile las. Der Leser erkennt die Tabelle jetzt und liest sie aus.
+  Bewusst so herum: den Export auf nacktes CSV umzustellen hätte den Rundlauf
+  repariert, indem er jede Datei schlechter zu öffnen macht.
+- **Das CSV-Trennzeichen wurde aus der Banner-Zeile geraten.** Zeile 1 jedes
+  Exports ist der Markenkopf und enthält weder `,` noch `;`, also lautete die
+  Antwort immer `,` — und ein deutsches Excel schreibt `;`. Gesnifft wird jetzt
+  über die ersten acht Zeilen.
+- **Ein rückwärts getippter Kurstermin färbte die Zielprüfung grün.**
+  `finishForecast` las `r.to` ohne den Zeitraum zu prüfen, also entstand aus
+  „Ende vor Beginn" ein Fertig-Datum in der Vergangenheit und **jede** Person
+  auf diesem Kurs bekam den grünen Haken „Ziel gehalten". `conflictsFor` zwei
+  Blöcke tiefer prüft mit demselben `days == null` korrekt. Ein kaputter
+  Zeitraum zählt jetzt nicht als bekanntes Ende, `complete` wird falsch, und
+  die Aussage wird zurückgehalten.
+
+### Neu
+- `test/importRoundTrip.test.mjs`: baut die echten Export-Bytes und schickt sie
+  durch den echten Importer. Beide Fehler oben wären damit am ersten Tag
+  aufgefallen — für keinen der beiden Importpfade gab es bis jetzt einen Test.
+
 ## [1.56.0] – 2026-08-19
 
 ### Geändert

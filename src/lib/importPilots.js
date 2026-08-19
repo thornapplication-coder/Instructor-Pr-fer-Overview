@@ -10,9 +10,16 @@ const PILOT_ALIASES = {
   base: ['base', 'standort', 'homebase'],
   role: ['position', 'rolle', 'rolle (cockpit)', 'role', 'role (cockpit)', 'funktion cockpit', 'cockpit'],
   type: ['type', 'muster', 'rating', 'type rating', 'typerating'],
+  // 'gültigkeit' is what THIS APP writes (exportPilotsExcel, column f_validity).
+  // It was missing, so the app's own export re-imported with no date at all -
+  // and a pilot with no date is a pilot with no ratings. Exporting the tab and
+  // reading it back wiped every type rating on the roster and reported
+  // "Import erfolgreich". The English label ('expiry') was in the list, so only
+  // the German export - the one actually in use - was destructive.
   b737Until: [
-    'gültig bis', 'gueltig bis', 'abgelaufen', 'abgelaufen am', 'ablauf', 'ablaufdatum',
-    'valid until', 'expiry', 'expires', 'expiry date', 'b737 bis', 'datum'
+    'gültigkeit', 'gueltigkeit', 'gültig bis', 'gueltig bis', 'abgelaufen',
+    'abgelaufen am', 'ablauf', 'ablaufdatum', 'valid until', 'expiry', 'expires',
+    'expiry date', 'validity', 'b737 bis', 'datum'
   ],
   remark: ['anmerkung', 'bemerkung', 'remark', 'note', 'notiz', 'kommentar']
 }
@@ -29,29 +36,64 @@ function toRole(v) {
 // Free text -> one of the three B737 standings. Falls back to null so the
 // caller can derive the status from the date instead.
 // A rating date in the past means the rating lapsed, in the future that it is
-export function parsePilotsFromArrayBuffer(buf, today) {
-  return parseRecordsFromArrayBuffer(buf, PILOT_ALIASES, (rec) => {
+// One person can occupy SEVERAL rows.
+//
+// That is the shape of the roster spreadsheet and the shape this app exports:
+// one line per rating, and the continuation lines carry the rating only - name,
+// TLC, base and role are left blank because they would just repeat. Read row by
+// row, a continuation line looks like a blank row and was thrown away, so a
+// pilot with three ratings came back with one. Combined with the missing
+// 'gültigkeit' alias, they came back with none.
+//
+// So the rows are read first and folded into people afterwards: an identity
+// carries forward until a new one appears, and every rating found under it
+// belongs to that person.
+export async function parsePilotsFromArrayBuffer(buf, today) {
+  const rows = await parseRecordsFromArrayBuffer(buf, PILOT_ALIASES, (rec) => {
     const str = (v) => (v == null ? '' : String(v).trim())
-    const name = str(rec.name)
-    const tlc = str(rec.tlc)
-    if (!name && !tlc) return null // blank row
-    const until = /^\d{4}-\d{2}-\d{2}$/.test(toISO(rec.b737Until)) ? toISO(rec.b737Until) : ''
-    const out = {
-      name,
-      tlc,
+    const iso = toISO(rec.b737Until)
+    const until = /^\d{4}-\d{2}-\d{2}$/.test(iso) ? iso : ''
+    const type = str(rec.type)
+    const row = {
+      name: str(rec.name),
+      tlc: str(rec.tlc),
       base: str(rec.base),
-      role: toRole(rec.role) || 'captain',
-      // Explicit status wins; otherwise derive it from the date; otherwise
-      // treat the row as Boeing experience without a rating.
-      // The importer feeds withPilotDefaults(), which turns a single date into
-      // one 737 rating. A sheet with several types per person is entered in the
-      // dialog rather than guessed at from repeated rows here.
-      ratings: until ? [{ id: '', type: rec.type || '737', until }] : [],
-      boeingExp: !until,
-      remark: str(rec.remark)
+      role: toRole(rec.role),
+      remark: str(rec.remark),
+      rating: until || type ? { id: '', type: type || '737', until } : null
     }
-    return out
+    // A row with neither an identity nor a rating carries nothing at all.
+    if (!row.name && !row.tlc && !row.rating) return null
+    return row
   })
+
+  const people = []
+  let current = null
+  for (const row of rows) {
+    const isNewPerson = !!(row.name || row.tlc)
+    if (isNewPerson || !current) {
+      current = {
+        name: row.name,
+        tlc: row.tlc,
+        base: row.base,
+        role: row.role || 'captain',
+        ratings: [],
+        remark: row.remark
+      }
+      people.push(current)
+    } else {
+      // A continuation line may still carry a field the first line left empty.
+      if (row.base && !current.base) current.base = row.base
+      if (row.remark && !current.remark) current.remark = row.remark
+    }
+    // Only a rating with a real date is one; a bare type with no expiry is
+    // what the export writes for somebody who holds none.
+    if (row.rating && row.rating.until) current.ratings.push(row.rating)
+  }
+
+  // No rating and no date means Boeing experience without a current type -
+  // the same reading the single-row form had.
+  return people.map((p) => ({ ...p, boeingExp: p.ratings.length === 0 }))
 }
 
 // Merge imported records into the existing list. Matched by TLC, else by name;

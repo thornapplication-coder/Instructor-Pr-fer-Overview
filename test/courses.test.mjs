@@ -190,3 +190,32 @@ console.log('\nCourse dates – does the target date hold?')
   const noTarget = finishForecast({ assignments: { tr: { courseId: 'c1' } } }, STEPS, RUNS)
   ok(noTarget.over === null, 'and no target date means no verdict either')
 }
+
+
+console.log('\nA period typed backwards is not a finish date')
+{
+  // The one that hurt: end before start. `finishForecast` read `to` on its own,
+  // so it produced a date in the past, `over` came out hugely negative, and the
+  // board drew a green "target met" chip for EVERY person on that course.
+  const steps = [{ id: 'tr' }, { id: 'tri' }]
+  const runs = [
+    { id: 'c1', stepId: 'tr', from: '2026-03-03', to: '2026-01-20' }, // typo: ends before it starts
+    { id: 'c2', stepId: 'tri', from: '2026-05-04', to: '2026-05-15' }
+  ]
+  const trainer = {
+    conv: { target: '2026-06-30' },
+    assignments: { tr: { courseId: 'c1', status: 'booked' }, tri: { courseId: 'c2', status: 'booked' } }
+  }
+  const f = finishForecast(trainer, steps, runs)
+  ok(f.to === '2026-05-15', 'the forecast comes from the sound course, not the broken one (' + f.to + ')')
+  ok(f.known === 1 && f.of === 2, 'the broken period does not count as a known end (' + f.known + ' of ' + f.of + ')')
+  ok(f.complete === false, 'so the verdict is held back rather than flattering (complete=' + f.complete + ')')
+  ok(f.over != null && f.over < 0, 'and what it does say is measured against the real date (' + f.over + ')')
+
+  // With ONLY the broken course there is nothing to forecast from at all.
+  const alone = finishForecast(
+    { conv: { target: '2026-06-30' }, assignments: { tr: { courseId: 'c1', status: 'booked' } } },
+    [{ id: 'tr' }], runs)
+  ok(alone.to === '' && alone.over === null && alone.complete === false,
+    'a single broken course forecasts nothing at all, instead of a date in the past')
+}

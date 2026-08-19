@@ -151,7 +151,18 @@ export function finishForecast(trainer, steps, runs) {
     if (a && a.status === 'na') continue
     relevant += 1
     const r = resolveAssignment(a, findRun(runs, a?.courseId))
-    const v = dayValue(r.to)
+    // The PERIOD has to hold, not just the end date.
+    //
+    // This read `r.to` on its own, so a course whose end was typed before its
+    // start still produced a finish date - one in the past - and every person
+    // booked onto it got a green "target met" chip. conflictsFor two blocks
+    // down already guards with the same `days == null`; this one did not, and
+    // it is the one that renders a verdict.
+    //
+    // A broken period is not a known end: it drops out of `known`, so
+    // `complete` turns false and the UI holds back the verdict instead of
+    // flattering it.
+    const v = r.days == null ? null : dayValue(r.to)
     if (v == null) continue
     known += 1
     if (last == null || v > last.v) last = { v, iso: r.to }
