@@ -139,6 +139,10 @@ export default async function run(browser, baseUrl, shots) {
     return { conv: conv.length }
   }, STORAGE_KEY)
   await page.reload({ waitUntil: 'networkidle' })
+  // The app restores the open tab from the address, and we are on Trainer here -
+  // so wait for something that always exists, then go where the figure lives.
+  await page.waitForSelector('.topbar')
+  await page.locator('.tab', { hasText: 'Dashboard' }).first().click()
   await page.waitForSelector('.kpi-hero')
   await page.waitForTimeout(700)
 
@@ -187,6 +191,10 @@ export default async function run(browser, baseUrl, shots) {
     return conv.length
   }, STORAGE_KEY)
   await page.reload({ waitUntil: 'networkidle' })
+  // The app restores the open tab from the address, and we are on Trainer here -
+  // so wait for something that always exists, then go where the figure lives.
+  await page.waitForSelector('.topbar')
+  await page.locator('.tab', { hasText: 'Dashboard' }).first().click()
   await page.waitForSelector('.kpi-hero')
   await page.waitForTimeout(700)
   const scope2 = (await page.locator('.kpi-sub').first().innerText()).trim()
