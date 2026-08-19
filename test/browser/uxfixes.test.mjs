@@ -462,6 +462,55 @@ export default async function run(browser, baseUrl, shots) {
   await page.locator('.modal .modal-foot .btn-ghost').first().click()
   await page.waitForTimeout(300)
 
+  // ---- 11. filters that survive the tab, and say that they did -----------
+  //
+  // The list is fourteen screens long, so re-typing the search after every
+  // glance at another tab was a real tax. Keeping it is only half the change:
+  // a list that silently opens filtered is worse than one that forgets, so the
+  // notice is part of the same check.
+  await page.locator('.tab', { hasText: 'Trainer' }).first().click()
+  await page.waitForSelector('.trainer-table tbody tr')
+  await page.waitForTimeout(600)
+  const allRows = await page.locator('.trainer-table tbody tr').count()
+  await page.locator('.toolbar .search').first().fill('Kubiak')
+  await page.waitForTimeout(700)
+  const narrowed = await page.locator('.trainer-table tbody tr').count()
+  ok(narrowed < allRows, 'the search narrows the list (' + narrowed + ' of ' + allRows + ')')
+
+  const note = page.locator('.filter-note')
+  ok(await note.count() === 1, '  and says so, where the counter is')
+  const noteText = (await note.first().innerText()).replace(/\n/g, ' ')
+  ok(/\d/.test(noteText), '  naming how much is hidden ("' + noteText + '")')
+
+  await page.locator('.tab', { hasText: 'Dashboard' }).first().click()
+  await page.waitForSelector('.kpi-hero')
+  await page.waitForTimeout(500)
+  await page.locator('.tab', { hasText: 'Trainer' }).first().click()
+  await page.waitForSelector('.trainer-table')
+  await page.waitForTimeout(700)
+  ok((await page.locator('.toolbar .search').first().inputValue()) === 'Kubiak',
+    'a glance at another tab and back keeps the search')
+  ok((await page.locator('.trainer-table tbody tr').count()) === narrowed, '  and the list with it')
+
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.waitForSelector('.trainer-table')
+  await page.waitForTimeout(800)
+  ok((await page.locator('.toolbar .search').first().inputValue()) === 'Kubiak', '  a reload keeps it too')
+
+  await page.locator('.filter-note button').first().click()
+  await page.waitForTimeout(700)
+  ok((await page.locator('.toolbar .search').first().inputValue()) === '', 'clearing empties the search')
+  ok((await page.locator('.trainer-table tbody tr').count()) === allRows, '  and brings everybody back')
+  ok(await page.locator('.filter-note').count() === 0, '  and the notice goes with it')
+
+  // It must NOT reach the synced data - what somebody is searching for is not
+  // a fact about the roster and has no business on another device.
+  const leaked = await page.evaluate(() => {
+    const raw = localStorage.getItem('ewl737:data:v1') || ''
+    return raw.includes('Kubiak') && /"q"\s*:/.test(raw)
+  })
+  ok(!leaked, '  and the filter never entered the synced store')
+
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.screenshot({ path: shots + '/uxfixes-board.png' })
   await page.close()

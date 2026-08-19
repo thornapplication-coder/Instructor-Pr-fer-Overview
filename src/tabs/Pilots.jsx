@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import { useSticky, clearSticky } from '../lib/stickyState.js'
+import FilterNote from '../components/FilterNote.jsx'
 import ExportLink from '../components/ExportLink.jsx'
 import { RoleTag } from '../components/tags.jsx'
 import DateInput from '../components/DateInput.jsx'
@@ -18,10 +20,22 @@ import { emptyPilot, emptyRating, normalizeTlc, pilotRole, pilotValidity, rating
 export default function Pilots() {
   const { data, t, lang, upsertPilot, deletePilot, newId, readOnly } = useStore()
   const { otherPilots, bases, pilotTypes } = data
-  const [q, setQ] = useState('')
-  const [fBase, setFBase] = useState('')
-  const [fType, setFType] = useState('')
-  const [fValidity, setFValidity] = useState('')
+  const [q, setQ] = useSticky('pilots.q', '')
+  const [fBase, setFBase] = useSticky('pilots.fBase', '')
+  const [fType, setFType] = useSticky('pilots.fType', '')
+  const [fValidity, setFValidity] = useSticky('pilots.fValidity', '')
+  // One place decides whether anything is narrowing this list, and one
+  // place undoes it. Both are needed because the filters now survive
+  // leaving the tab: a list that silently opens filtered is worse than
+  // one that forgets.
+  const filtersOn = !!(q || fBase || fType || fValidity)
+  const resetFilters = () => {
+    setQ('')
+    setFBase('')
+    setFType('')
+    setFValidity('')
+    clearSticky('pilots.')
+  }
   const [editing, setEditing] = useState(null)
 
   const rows = useMemo(() => {
@@ -60,7 +74,6 @@ export default function Pilots() {
   )
   const { sorted, sortKey, dir, toggle } = useSort(rows, acc, 'name')
   const sp = { sortKey, dir, onSort: toggle }
-  const anyFilter = !!(q.trim() || fBase || fType || fValidity)
 
   const addPilot = () => setEditing({ ...emptyPilot(newId('plt')), _isNew: true })
 
@@ -98,11 +111,7 @@ export default function Pilots() {
           ]}
         />
         <span className="count-pill">{rows.length} / {otherPilots.length} {t('showing')}</span>
-        {anyFilter && (
-          <button className="btn btn-ghost" onClick={() => { setQ(''); setFBase(''); setFType(''); setFValidity('') }}>
-            ↺ {t('resetFilters')}
-          </button>
-        )}
+        <FilterNote active={filtersOn} shown={rows.length} total={otherPilots.length} onClear={resetFilters} />
         <span className="push-right" />
         <ExportLink id="pilots" />
         {!readOnly && <button className="btn btn-primary" onClick={addPilot}>+ {t('addPilot')}</button>}

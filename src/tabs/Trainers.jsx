@@ -1,5 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import { useSticky, clearSticky } from '../lib/stickyState.js'
+import FilterNote from '../components/FilterNote.jsx'
 import ExportLink from '../components/ExportLink.jsx'
 import ConvDetail from '../components/ConvDetail.jsx'
 import { AircraftTag, OreTag, RoleTag } from '../components/tags.jsx'
@@ -55,13 +57,28 @@ export default function Trainers() {
   const { data, t, lang, upsertTrainer, deleteTrainer, newId, setQuals, setConversion, readOnly } = useStore()
   const { trainers, stages, quals } = data
   const qualColor = (id) => (quals.find((qq) => qq.id === id) || {}).color || OVERFLOW
-  const [q, setQ] = useState('')
-  const [fBase, setFBase] = useState('')
-  const [fQual, setFQual] = useState('')
-  const [fOre, setFOre] = useState('')
-  const [fStaff, setFStaff] = useState('')
-  const [fAircraft, setFAircraft] = useState('')
-  const [fRole, setFRole] = useState('')
+  const [q, setQ] = useSticky('trainers.q', '')
+  const [fBase, setFBase] = useSticky('trainers.fBase', '')
+  const [fQual, setFQual] = useSticky('trainers.fQual', '')
+  const [fOre, setFOre] = useSticky('trainers.fOre', '')
+  const [fStaff, setFStaff] = useSticky('trainers.fStaff', '')
+  const [fAircraft, setFAircraft] = useSticky('trainers.fAircraft', '')
+  const [fRole, setFRole] = useSticky('trainers.fRole', '')
+  // One place decides whether anything is narrowing this list, and one
+  // place undoes it. Both are needed because the filters now survive
+  // leaving the tab: a list that silently opens filtered is worse than
+  // one that forgets.
+  const filtersOn = !!(q || fBase || fQual || fOre || fStaff || fAircraft || fRole)
+  const resetFilters = () => {
+    setQ('')
+    setFBase('')
+    setFQual('')
+    setFOre('')
+    setFStaff('')
+    setFAircraft('')
+    setFRole('')
+    clearSticky('trainers.')
+  }
   const [editing, setEditing] = useState(null) // trainer object or null
   // The short conversion editor, opened from the phase badge in the row.
   const [convFor, setConvFor] = useState(null)
@@ -99,17 +116,6 @@ export default function Trainers() {
           : true
       )
   }, [trainers, q, fBase, fQual, fOre, fStaff, fAircraft, fRole, quals, t])
-
-  const filtersOn = !!(q || fBase || fQual || fOre || fStaff || fAircraft || fRole)
-  const clearFilters = () => {
-    setQ('')
-    setFBase('')
-    setFQual('')
-    setFOre('')
-    setFStaff('')
-    setFAircraft('')
-    setFRole('')
-  }
 
   const accessors = useMemo(
     () => ({
@@ -228,6 +234,7 @@ export default function Trainers() {
         <span className="count-pill">
           {rows.length} / {trainers.length} {t('showing')}
         </span>
+        <FilterNote active={filtersOn} shown={rows.length} total={trainers.length} onClear={resetFilters} />
         <span className="push-right" />
         <ExportLink id="trainers" />
         <button className="btn btn-ghost" onClick={() => setManageQuals(true)}>
@@ -358,7 +365,7 @@ export default function Trainers() {
                   {filtersOn ? (
                     <>
                       {t('emptyTrainersFiltered')}{' '}
-                      <button className="btn btn-ghost btn-sm" onClick={clearFilters}>{t('clearFilters')}</button>
+                      <button className="btn btn-ghost btn-sm" onClick={resetFilters}>{t('clearFilters')}</button>
                     </>
                   ) : (
                     t('noTrainers')

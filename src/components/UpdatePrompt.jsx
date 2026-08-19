@@ -1,4 +1,4 @@
-import React, { useEffect } from 'react'
+import React, { useEffect, useRef, useState } from 'react'
 import { useRegisterSW } from 'virtual:pwa-register/react'
 import { useStore } from '../lib/store.jsx'
 
@@ -53,7 +53,22 @@ export default function UpdatePrompt() {
     return () => clearTimeout(id)
   }, [offlineReady, needRefresh, setOfflineReady])
 
-  if (needRefresh) {
+  // "Später" used to mean "never again this session". The hourly r.update()
+  // finds the newest worker already waiting, so no `waiting` event fires and
+  // onNeedRefresh never runs again - on a phone that is resumed rather than
+  // reloaded for weeks, that device then runs old code while syncing every two
+  // minutes. Old code means old merge rules, which is the failure class this
+  // project is most careful about. So "later" is a snooze, not a dismissal.
+  const [snoozed, setSnoozed] = useState(false)
+  const snoozeRef = useRef(null)
+  useEffect(() => () => clearTimeout(snoozeRef.current), [])
+  const snooze = () => {
+    setSnoozed(true)
+    clearTimeout(snoozeRef.current)
+    snoozeRef.current = setTimeout(() => setSnoozed(false), 30 * 60 * 1000)
+  }
+
+  if (needRefresh && !snoozed) {
     return (
       <div className="update-banner" role="alert">
         <span className="update-dot" />
@@ -61,7 +76,7 @@ export default function UpdatePrompt() {
         <button className="btn btn-light" onClick={applyUpdate}>
           {t('updateNow')}
         </button>
-        <button className="btn btn-ghost-light" onClick={() => setNeedRefresh(false)}>
+        <button className="btn btn-ghost-light" onClick={snooze}>
           {t('later')}
         </button>
       </div>

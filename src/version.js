@@ -4,12 +4,35 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.55.0'
+export const APP_VERSION = '1.56.0'
 export const APP_BUILD_DATE = '2026-08-19'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.56.0',
+    date: '2026-08-19',
+    type: 'minor',
+    changes: {
+      de: [
+        'Suche und Filter bleiben beim Reiterwechsel erhalten — und überstehen auch ein Neuladen. Bisher war jeder Blick aufs Dashboard und zurück ein neuer Anfang, auf einer Liste von vierzehn Bildschirmen.',
+        'Dazu gehört ein sichtbarer Hinweis: Ist etwas gefiltert, steht es neben dem Zähler, samt Anzahl der ausgeblendeten Zeilen und einer Schaltfläche zum Zurücksetzen. Ein Filter, der sich merkt und das nicht zeigt, wäre eine Falle statt einer Hilfe.',
+        'Der Filter gilt je Browser-Tab und wird nicht mit anderen Geräten abgeglichen — was du gerade suchst, ist keine Eigenschaft der Mannschaft.',
+        '„Neu registrieren" ist aus dem Cloud-Formular verschwunden. Die Registrierung ist im Projekt abgeschaltet (und genau das schützt die Daten), der Knopf konnte also nur in eine Fehlermeldung führen. Stattdessen steht dort jetzt, wie ein weiteres Gerät hereinkommt und wie ein zusätzlicher Benutzer wirklich angelegt wird.',
+        '„Später" beim Update-Hinweis vertagt jetzt um 30 Minuten, statt den Hinweis für die ganze Sitzung verschwinden zu lassen. Ein Handy, das wochenlang nur fortgesetzt wird, lief sonst dauerhaft auf altem Stand und glich trotzdem alle zwei Minuten ab.',
+        'Zwei iPhone-Reste: die veraltete Vollbild-Angabe ist um die aktuelle ergänzt, und das Zieh-Zeichen in den Listen sagt jetzt, dass die Pfeile daneben der Weg sind.'
+      ],
+      en: [
+        'Search and filters survive leaving a tab - and a reload. Until now every glance at the dashboard and back was a fresh start, on a list fourteen screens long.',
+        'It comes with a visible notice: when something is narrowing the list it says so beside the counter, with the number hidden and a button to clear it. A filter that remembers without saying so would be a trap rather than a help.',
+        'Filters are per browser tab and are never synced to another device - what you are searching for right now is not a fact about the roster.',
+        '"Create account" is gone from the cloud form. Sign-ups are switched off in the project (and that is what protects the data), so the button could only produce an error. In its place is how a further device signs in and how an additional user is really added.',
+        '"Later" on the update banner now postpones for 30 minutes instead of hiding it for the whole session. A phone that is resumed rather than reloaded for weeks otherwise stayed on old code while syncing every two minutes.',
+        'Two iPhone leftovers: the deprecated full-screen meta is joined by the current one, and the drag handle in the list editors now points at the arrows beside it.'
+      ]
+    }
+  },
   {
     version: '1.55.0',
     date: '2026-08-19',

@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import { useSticky, clearSticky } from '../lib/stickyState.js'
+import FilterNote from '../components/FilterNote.jsx'
 import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
@@ -34,11 +36,11 @@ export default function Planning({ view: viewProp, embedded }) {
   const tint = useThemed()
   const { data, t, lang, setAssignmentSteps } = useStore()
   const { trainers, providers, assignmentSteps, quals, courseRuns, aircraftTypes, oreTiers, assignStatus, staffTypes } = data
-  const [q, setQ] = useState('')
-  const [fBase, setFBase] = useState('')
-  const [fStaff, setFStaff] = useState('')
-  const [fOre, setFOre] = useState('')
-  const [fAircraft, setFAircraft] = useState('')
+  const [q, setQ] = useSticky('planning.q', '')
+  const [fBase, setFBase] = useSticky('planning.fBase', '')
+  const [fStaff, setFStaff] = useSticky('planning.fStaff', '')
+  const [fOre, setFOre] = useSticky('planning.fOre', '')
+  const [fAircraft, setFAircraft] = useSticky('planning.fAircraft', '')
   const [editing, setEditing] = useState(null)
   const [manageSteps, setManageSteps] = useState(false)
   const [manageCourses, setManageCourses] = useState(false)
@@ -49,7 +51,12 @@ export default function Planning({ view: viewProp, embedded }) {
 
   const bases = useMemo(() => [...new Set(trainers.map((x) => x.base).filter(Boolean))].sort(), [trainers])
   const anyFilter = !!(q.trim() || fBase || fStaff || fOre || fAircraft)
-  const resetFilters = () => { setQ(''); setFBase(''); setFStaff(''); setFOre(''); setFAircraft('') }
+  // clearSticky as well as the setters: the filters survive leaving the tab
+  // now, so forgetting them has to reach what remembers them.
+  const resetFilters = () => {
+    setQ(''); setFBase(''); setFStaff(''); setFOre(''); setFAircraft('')
+    clearSticky('planning.')
+  }
 
   // The Planung grid always covers EVERY trainer (new ones included); only the
   // explicit filters above can narrow it, and the counter makes that visible.
@@ -124,9 +131,7 @@ export default function Planning({ view: viewProp, embedded }) {
           />
         )}
         <span className="count-pill">{rows.length} / {trainers.length} {t('showing')}</span>
-        {anyFilter && (
-          <button className="btn btn-ghost" onClick={resetFilters}>↺ {t('resetFilters')}</button>
-        )}
+        <FilterNote active={anyFilter} shown={rows.length} total={trainers.length} onClear={resetFilters} />
         <span className="push-right" />
         {!viewProp && (
           <div className="seg-toggle" role="group" aria-label={t('planning_view')}>

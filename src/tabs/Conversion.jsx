@@ -1,5 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import { useSticky, clearSticky } from '../lib/stickyState.js'
+import FilterNote from '../components/FilterNote.jsx'
 import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
 import ConvDetail from '../components/ConvDetail.jsx'
@@ -35,13 +37,28 @@ export default function Conversion({ embedded }) {
   const { data, t, lang, setConversion, setStages, readOnly } = useStore()
   const { trainers, stages, providers, quals, assignmentSteps, courseRuns, aircraftTypes, oreTiers, convStatus } = data
   const fte1 = (v) => formatFte1(v, lang)
-  const [q, setQ] = useState('')
-  const [fBase, setFBase] = useState('')
-  const [fOre, setFOre] = useState('')
-  const [fQual, setFQual] = useState('')
-  const [fStaff, setFStaff] = useState('')
-  const [fAircraft, setFAircraft] = useState('')
-  const [fAlert, setFAlert] = useState('')
+  const [q, setQ] = useSticky('conversion.q', '')
+  const [fBase, setFBase] = useSticky('conversion.fBase', '')
+  const [fOre, setFOre] = useSticky('conversion.fOre', '')
+  const [fQual, setFQual] = useSticky('conversion.fQual', '')
+  const [fStaff, setFStaff] = useSticky('conversion.fStaff', '')
+  const [fAircraft, setFAircraft] = useSticky('conversion.fAircraft', '')
+  const [fAlert, setFAlert] = useSticky('conversion.fAlert', '')
+  // One place decides whether anything is narrowing this list, and one
+  // place undoes it. Both are needed because the filters now survive
+  // leaving the tab: a list that silently opens filtered is worse than
+  // one that forgets.
+  const filtersOn = !!(q || fBase || fOre || fQual || fStaff || fAircraft || fAlert)
+  const resetFilters = () => {
+    setQ('')
+    setFBase('')
+    setFOre('')
+    setFQual('')
+    setFStaff('')
+    setFAircraft('')
+    setFAlert('')
+    clearSticky('conversion.')
+  }
   const [detail, setDetail] = useState(null)
   const [manageStages, setManageStages] = useState(false)
   const [dragId, setDragId] = useState(null)
@@ -161,6 +178,7 @@ export default function Conversion({ embedded }) {
         <span className="fte-pill fte-in">{t('fteInConversionShort')}: <b>{fte1(fteS.inConversion)}</b></span>
         <span className="fte-pill fte-av">{t('fteAvailableShort')}: <b>{fte1(fteS.available)}</b></span>
         <span className="fte-pill fte-total">FTE {t('total')}: <b>{fte1(fteS.total)}</b></span>
+        <FilterNote active={filtersOn} shown={visible.length} total={convPool.length} onClear={resetFilters} />
         <span className="board-hint">{t('boardHint')} · {t('convScopeHint').replace('{q}', CONVERSION_QUALS.join(' · '))}</span>
       </div>
 

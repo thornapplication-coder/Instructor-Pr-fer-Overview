@@ -393,6 +393,12 @@ const DICT = {
   },
   clearFilters: { de: 'Filter zurücksetzen', en: 'Clear filters' },
   export: { de: 'Export', en: 'Export' },
+  filterActive: { de: 'Gefiltert', en: 'Filtered' },
+  sync_signUpClosed: {
+    de: 'Neue Konten lassen sich hier nicht anlegen — die Registrierung ist im Projekt abgeschaltet, und genau das schützt die Daten (der öffentliche Schlüssel steckt in jeder Auslieferung). Weitere Geräte melden sich mit dem bestehenden Konto an. Ein zusätzlicher Benutzer geht nur über das Supabase-Dashboard: Authentication → Users → Add user.',
+    en: 'New accounts cannot be created here - sign-ups are switched off in the project, and that is what protects the data (the public key ships in every deployment). Further devices sign in with the existing account. An additional user can only be added from the Supabase dashboard: Authentication → Users → Add user.'
+  },
+  filterHidden: { de: '{n} ausgeblendet', en: '{n} hidden' },
   editConversion: { de: 'Umschulung ändern', en: 'Edit conversion' },
   exportThis: {
     de: 'Diese Liste exportieren – öffnet die Einstellungen bei der passenden Zeile',

@@ -1696,6 +1696,16 @@ textarea.input { resize: vertical; }
   100% { background: transparent; box-shadow: none; }
 }
 .export-link { flex: none; }
+/* Says the list is narrowed, and undoes it. Amber rather than a neutral chip:
+   it is a state the reader did not choose on this visit and might not
+   remember choosing at all. */
+.filter-note {
+  display: inline-flex; align-items: center; gap: 8px; flex: none;
+  background: #fff3e0; color: var(--amber); border: 1px solid #f0d9ae;
+  border-radius: 999px; padding: 4px 6px 4px 12px; font-size: 12.5px; font-weight: 800;
+}
+.filter-note .btn { padding: 4px 10px; font-size: 12px; }
+:root[data-theme='dark'] .filter-note { background: #2e2413; color: #e8b45a; border-color: #55401c; }
 /* The phase badge in the trainer row is a control. It carries no button
    chrome of its own - the badge already is the affordance - only the cursor
    and a focus ring, so the column keeps exactly the width it had. */

@@ -2,6 +2,8 @@ import { STATUS } from '../lib/palette.js'
 import { useThemed } from '../lib/useThemed.js'
 import React, { useMemo, useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import { useSticky, clearSticky } from '../lib/stickyState.js'
+import FilterNote from '../components/FilterNote.jsx'
 import ExportLink from '../components/ExportLink.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
@@ -20,7 +22,16 @@ export default function Providers() {
     () => providerUtilization(trainers, providers, assignmentSteps, courseRuns),
     [trainers, providers, assignmentSteps, courseRuns]
   )
-  const [q, setQ] = useState('')
+  const [q, setQ] = useSticky('providers.q', '')
+  // One place decides whether anything is narrowing this list, and one
+  // place undoes it. Both are needed because the filters now survive
+  // leaving the tab: a list that silently opens filtered is worse than
+  // one that forgets.
+  const filtersOn = !!(q)
+  const resetFilters = () => {
+    setQ('')
+    clearSticky('providers.')
+  }
   const [editing, setEditing] = useState(null)
 
   const statusLabel = (id) => (providerStatus.find((s) => s.id === id) || {}).label || ''
@@ -84,6 +95,7 @@ export default function Providers() {
             { k: 'courses', label: t('p_courses') }
           ]}
         />
+        <FilterNote active={filtersOn} shown={rows.length} total={providers.length} onClear={resetFilters} />
         <span className="push-right" />
         <ExportLink id="providers" />
         {!readOnly && <button className="btn btn-primary" onClick={() => setEditing(emptyProvider(newId('prov')))}>+ {t('addProvider')}</button>}
@@ -398,7 +410,7 @@ function MultiPick({ value, options, labelOf, placeholder, tagClass, onChange, l
  */
 function ProviderMonthsChart({ providers, steps }) {
   const { t, lang, data } = useStore()
-  const [who, setWho] = useState('')
+  const [who, setWho] = useSticky('providers.who', '')
   const months = useMemo(
     () => capacityRange(data.capacityFrom, data.capacityTo),
     [data.capacityFrom, data.capacityTo]

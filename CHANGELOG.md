@@ -11,6 +11,40 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.56.0] – 2026-08-19
+
+### Geändert
+- **Suche und Filter überleben den Reiterwechsel** (und ein Neuladen).
+  24 Filterzustände über fünf Reiter lagen in reinem Komponenten-Zustand; ein
+  Blick aufs Dashboard und zurück leerte jeden einzelnen. Auf einer Trainer-
+  Liste von 14 Bildschirmen hieß jede Quervergleichung: alles neu tippen.
+  Gehalten in `sessionStorage` (`src/lib/stickyState.js`), **nicht** im Store:
+  der wird synchronisiert, und „wonach ich gerade filtere" ist keine Eigenschaft
+  der Mannschaft und gehört auf kein zweites Gerät. `localStorage` wäre zu
+  langlebig — ein Filter von vor drei Wochen darf am Montag nicht mehr
+  einschränken.
+- **Ein Filter, der sich merkt, muss sich zeigen.** Deshalb gehört
+  `FilterNote` zur selben Änderung: neben dem Zähler steht „Gefiltert · N
+  ausgeblendet" mit einer Schaltfläche, die alles zurücksetzt — auch das, was
+  `sessionStorage` behält. Zwei Reiter hatten dafür schon eigene Knöpfe; die
+  sind durch den einen Hinweis ersetzt.
+- **„Neu registrieren" ist raus.** Die Registrierung ist seit 25.07.2026 im
+  Supabase-Projekt abgeschaltet, und weil der öffentliche Schlüssel in jeder
+  Auslieferung steckt, ist genau das der eigentliche Schutz. Der Umschalter
+  konnte also nur eine Fehlermeldung erzeugen. An seiner Stelle steht der
+  richtige Weg: weitere Geräte melden sich am bestehenden Konto an, ein
+  zusätzlicher Benutzer entsteht im Supabase-Dashboard.
+- **„Später" ist ein Aufschub, keine Abmeldung.** Danach kam der Hinweis in
+  derselben Sitzung nicht wieder: der stündliche `r.update()` findet den neuen
+  Worker bereits wartend, also feuert kein `waiting`-Ereignis mehr. Ein Handy,
+  das wochenlang fortgesetzt statt neu geladen wird, lief damit dauerhaft auf
+  altem Code — und alter Code heißt alte Zusammenführungs-Regeln. Jetzt kommt
+  er nach 30 Minuten wieder.
+- **`mobile-web-app-capable`** ergänzt (die Apple-Variante ist veraltet, bleibt
+  aber, weil iOS nur die eigene liest), und das Zieh-Zeichen in der
+  Listen-Verwaltung trägt jetzt den Hinweis auf die Pfeile daneben — 12×16 px
+  sind kein Tippziel, und die Zieh-Geste gibt es am Handy ohnehin nicht.
+
 ## [1.55.0] – 2026-08-19
 
 ### Neu

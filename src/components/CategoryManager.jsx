@@ -57,7 +57,12 @@ export default function CategoryManager({ items, onChange, hasColor = true, defa
             }}
             onDragEnd={() => setDrag(null)}
           >
-            <span className="drag-handle" aria-hidden="true">⠿</span>
+            {/* Mouse-only affordance: 12x16px is not a touch target, and the
+                gesture behind it (HTML5 drag) does not exist on a phone at
+                all. Reordering there is the ↑ / ↓ buttons on the right, which
+                is why this stays decorative rather than growing into a control
+                that would not work. */}
+            <span className="drag-handle" aria-hidden="true" title={t('dragHint')}>⠿</span>
             {hasColor && (
               <input
                 type="color"

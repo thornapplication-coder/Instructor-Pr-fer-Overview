@@ -13,7 +13,6 @@ export default function SyncCard() {
   const [msg, setMsg] = useState(null)
   // Explicit choice instead of two similar-looking buttons: on a brand-new
   // project "sign in" can only ever fail, which reads as a broken login.
-  const [mode, setMode] = useState('in') // 'in' = sign in, 'up' = create account
 
   if (!sync) return null
 
@@ -46,23 +45,17 @@ export default function SyncCard() {
     return raw || t('sync_signInErr')
   }
 
+  // Sign in only. Creating an account from here is not possible - see the note
+  // in the form - so there is one door and it is the one that works.
   const doAuth = async () => {
     setBusy(true)
     setMsg(null)
     try {
-      if (mode === 'up') {
-        await signUp(email.trim(), pw)
-        setMsg({ ok: true, text: t('sync_signUpOk') })
-      } else {
-        await signIn(email.trim(), pw)
-        setMsg({ ok: true, text: t('sync_signInOk') })
-      }
+      await signIn(email.trim(), pw)
+      setMsg({ ok: true, text: t('sync_signInOk') })
       setPw('')
     } catch (e) {
       setMsg({ ok: false, text: explain(e) })
-      // Wrong door: offer the other one straight away.
-      if (mode === 'in' && /invalid login credentials/i.test(String(e?.message || ''))) setMode('up')
-      if (mode === 'up' && /already registered|already exists/i.test(String(e?.message || ''))) setMode('in')
     } finally {
       setBusy(false)
     }
@@ -105,23 +98,16 @@ export default function SyncCard() {
 
       {!user ? (
         <div className="sync-auth">
-          <div className="seg-toggle" role="group" aria-label={t('sync_mode')}>
-            <button
-              className={'seg-btn' + (mode === 'in' ? ' active' : '')}
-              aria-pressed={mode === 'in'}
-              onClick={() => { setMode('in'); setMsg(null) }}
-            >
-              {t('sync_signIn')}
-            </button>
-            <button
-              className={'seg-btn' + (mode === 'up' ? ' active' : '')}
-              aria-pressed={mode === 'up'}
-              onClick={() => { setMode('up'); setMsg(null) }}
-            >
-              {t('sync_signUp')}
-            </button>
-          </div>
-          <p className="muted small">{mode === 'up' ? t('sync_signUpHint') : t('sync_signInHint')}</p>
+          {/* No "create account" switch any more.
+              Sign-ups are off in the project itself (Supabase → Authentication,
+              since 25.07.2026), and that is deliberate: the anon key ships in
+              the JavaScript of every deployment, so closed registration is what
+              actually keeps strangers out. Offering the button anyway meant the
+              only thing it could do was produce an error - so the form says
+              plainly how a further device gets in, and how a new account is
+              really made. */}
+          <p className="muted small">{t('sync_signInHint')}</p>
+          <p className="muted small">{t('sync_signUpClosed')}</p>
           <div className="form-grid">
             <label className="field">
               <span className="field-label">{t('p_email')}</span>
@@ -147,7 +133,7 @@ export default function SyncCard() {
           </div>
           <div className="btn-row">
             <button className="btn btn-primary" disabled={busy || !email || !pw} onClick={doAuth}>
-              {busy ? '…' : mode === 'up' ? t('sync_createAccount') : t('sync_signIn')}
+              {busy ? '…' : t('sync_signIn')}
             </button>
           </div>
         </div>
