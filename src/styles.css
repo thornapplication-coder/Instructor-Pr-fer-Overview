@@ -307,6 +307,11 @@ button { font-family: inherit; }
 .cal-chip b { display: block; font-weight: 900; letter-spacing: .3px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .cal-chip-step { display: block; opacity: .9; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 
+/* The pale pink/amber the light theme uses would carry the dark theme's
+   lightened --red/--amber as text on an almost-white pill: the same colour
+   twice, unreadable. Dark gets its own surface under each one. */
+:root[data-theme='dark'] .alert-pill.overdue { background: #33161c; color: #ff8a9c; border-color: #5c2530; }
+:root[data-theme='dark'] .alert-pill.risk { background: #2e2413; color: #e8b45a; border-color: #55401c; }
 :root[data-theme='dark'] .cal-month { background: var(--panel); }
 :root[data-theme='dark'] .cal-cell.has-items { background: var(--panel); }
 
@@ -355,6 +360,26 @@ button { font-family: inherit; }
 .fte-av { background: #e6f7ee; color: #1c6b45; }
 .fte-total { background: var(--panel2); color: var(--muted); }
 .fte-summary .board-hint { margin-left: auto; }
+
+/* The flag counters on the conversion board. Not decoration: each one is a
+   filter, so it is a real button with a pressed state, and on a touch screen
+   it grows to the 44px the finger actually needs. */
+.alert-pill {
+  font: inherit; font-size: 13px; font-weight: 800; line-height: 1;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 8px 12px; min-height: 34px; border-radius: 999px;
+  border: 1px solid transparent; cursor: pointer;
+  transition: filter .15s, box-shadow .15s;
+}
+.alert-pill b { font-weight: 900; font-size: 15px; }
+.alert-pill.overdue { background: #fdeaed; color: var(--red); border-color: #f2c4cb; }
+.alert-pill.risk { background: #fff3e0; color: var(--amber); border-color: #f0d9ae; }
+.alert-pill.none { background: var(--panel2); color: var(--muted); font-weight: 700; cursor: default; }
+.alert-pill.overdue:hover, .alert-pill.risk:hover { filter: brightness(.97); }
+.alert-pill.on { box-shadow: 0 0 0 2px currentColor inset; }
+@media (pointer: coarse), (max-width: 760px) {
+  .alert-pill { min-height: 44px; padding: 8px 16px; }
+}
 
 /* ---------- Inputs & buttons ---------- */
 .input {

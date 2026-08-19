@@ -66,13 +66,13 @@ export default function CourseRunManager({ steps, providers, trainers }) {
                       dialog. This one is an editor, so the card is a small
                       stacked form rather than a read-out. */}
                   <td role="cell" className="cr-type" data-label={t('course_type')}>
-                    <select className="input" disabled={readOnly} value={r.stepId} onChange={(e) => set(r, { stepId: e.target.value })}>
+                    <select className="input" aria-label={t('course_type')} disabled={readOnly} value={r.stepId} onChange={(e) => set(r, { stepId: e.target.value })}>
                       <option value="">–</option>
                       {steps.map((s) => <option key={s.id} value={s.id}>{s.label}</option>)}
                     </select>
                   </td>
                   <td role="cell" className="cr-prov" data-label={t('provider')}>
-                    <select className="input" disabled={readOnly} value={r.providerId} onChange={(e) => set(r, { providerId: e.target.value })}>
+                    <select className="input" aria-label={t('provider')} disabled={readOnly} value={r.providerId} onChange={(e) => set(r, { providerId: e.target.value })}>
                       <option value="">{t('noProvider')}</option>
                       {/* Same filter the assign dialog uses: a course of type
                           "Examiner-Prüfung" offering a TR-only provider would
@@ -83,10 +83,10 @@ export default function CourseRunManager({ steps, providers, trainers }) {
                     </select>
                   </td>
                   <td role="cell" className="cr-loc" data-label={t('location')}>
-                    <input className="input" disabled={readOnly} value={r.location || ''} onChange={(e) => set(r, { location: e.target.value })} />
+                    <input className="input" aria-label={t('location')} disabled={readOnly} value={r.location || ''} onChange={(e) => set(r, { location: e.target.value })} />
                   </td>
-                  <td role="cell" className="cr-from" data-label={t('course_from')}><DateInput disabled={readOnly} value={r.from || ''} onChange={(v) => set(r, { from: v })} /></td>
-                  <td role="cell" className="cr-to" data-label={t('course_to')}><DateInput disabled={readOnly} value={r.to || ''} onChange={(v) => set(r, { to: v })} /></td>
+                  <td role="cell" className="cr-from" data-label={t('course_from')}><DateInput aria-label={t('course_from')} disabled={readOnly} value={r.from || ''} onChange={(v) => set(r, { from: v })} /></td>
+                  <td role="cell" className="cr-to" data-label={t('course_to')}><DateInput aria-label={t('course_to')} disabled={readOnly} value={r.to || ''} onChange={(v) => set(r, { to: v })} /></td>
                   <td role="cell" className="cr-days num" data-label={t('course_days')}>
                     {days == null
                       ? <span className={'muted' + (r.from && r.to ? ' warn-text' : '')}>{r.from && r.to ? t('course_badSpan') : '–'}</span>
@@ -109,8 +109,15 @@ export default function CourseRunManager({ steps, providers, trainers }) {
                       {n}
                     </span>
                   </td>
-                  <td role="cell" className="cr-del num">
-                    {!readOnly && <button className="mini-btn danger" onClick={() => remove(r)} title={t('delete')}>✕</button>}
+                  <td role="cell" className="cr-del num" data-label={t('delete')}>
+                    {!readOnly && (
+                      <button
+                        className="mini-btn danger"
+                        onClick={() => remove(r)}
+                        title={t('delete')}
+                        aria-label={t('delete')}
+                      >✕</button>
+                    )}
                   </td>
                 </tr>
               )

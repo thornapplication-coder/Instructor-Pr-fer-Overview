@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef, useCallback } from 'react'
 import { requestPersistence } from './lib/persistence.js'
+import { hashParts, setHash } from './lib/hash.js'
 import { CaptureContext } from './lib/capture.js'
 import TopBar from './components/TopBar.jsx'
 import ReadOnlyBanner from './components/ReadOnlyBanner.jsx'
@@ -33,8 +34,10 @@ const TABS = [
 // to land on the dashboard however deep into the Provider list you were, which
 // on a page that is saved and reloaded all day is a small tax paid constantly.
 // The fragment also makes a tab linkable, and it survives the PWA update reload.
+// A tab may carry a sub-view after a slash (#/conversion/table). Only the first
+// segment names the tab; the rest belongs to whoever renders it.
 function tabFromHash() {
-  const id = String(window.location.hash || '').replace(/^#\/?/, '')
+  const id = hashParts()[0] || ''
   return TABS.some((t) => t.id === id) ? id : 'dashboard'
 }
 
@@ -51,8 +54,9 @@ export default function App() {
 
   // Keep the fragment in step, and follow the back button.
   useEffect(() => {
-    const want = '#/' + active
-    if (window.location.hash !== want) window.history.replaceState(null, '', want)
+    // Only rewrite when the TAB changed. Writing '#/conversion' unconditionally
+    // would wipe the sub-view the hub had just put there on its own.
+    if (hashParts()[0] !== active) setHash([active])
   }, [active])
   useEffect(() => {
     const onHash = () => setActive(tabFromHash())
@@ -116,7 +120,9 @@ export default function App() {
       <div ref={captureRef} className="pdf-capture" aria-hidden="true">
         {CaptureTab && (
           <div className="content pdf-capture-content">
-            <CaptureTab />
+            {/* `capture` says "you are being rasterized off-screen, not looked
+                at" - a tab that writes to the URL must not do so from here. */}
+            <CaptureTab capture />
           </div>
         )}
       </div>

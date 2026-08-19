@@ -11,6 +11,54 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.49.0] – 2026-08-19
+
+### Neu
+- **Zähler für Auffälligkeiten auf dem Umschulungs-Board.** Über den Spalten
+  stehen „N überfällig" und „M gefährdet"; ein Antippen lässt nur diese Karten
+  stehen. Die Rechnung dahinter (`collectAlerts()`) gab es seit Langem, sie war
+  an keine Ansicht angeschlossen — bei fünfzig Karten über sieben Bildschirme
+  und fünf weiteren Spalten seitwärts hieß „ist jemand überfällig?" bisher:
+  alle lesen.
+- **„Keine Trainer gefunden" unterscheidet die beiden Fälle.** Leere Liste oder
+  Filter, der niemanden trifft — im zweiten Fall mit einer Schaltfläche, die
+  Suchfeld und alle sieben Filter zurücksetzt.
+
+### Geändert
+- **Die Ansicht in „Umschulung" bleibt erhalten.** Board / Planung / Kalender
+  standen nur im Zustand der Komponente: ein Blick aufs Dashboard und zurück
+  warf einen zurück auf das Board, obwohl die Buchungsarbeit in der Planung
+  passiert. Die Wahl steht jetzt in der Adresse (`#/conversion/table`) und
+  übersteht damit auch ein Neuladen und einen geteilten Link.
+- **Der Hinweis „App ist offline verfügbar" räumt sich selbst weg** (nach sechs
+  Sekunden). Er hat unten am Bildschirm Karten verdeckt und musste weggetippt
+  werden, obwohl er nichts fragt. Der Update-Hinweis bleibt stehen — der stellt
+  eine Frage.
+- **Sync-Fehler erscheinen übersetzt.** Der rohe JS-Text („TypeError: Failed to
+  fetch") stand wörtlich in einer sonst deutschen Oberfläche; er läuft jetzt
+  durch denselben Übersetzer wie die Meldungen des Anmeldeformulars.
+
+### Behoben
+- **Der Fokus landet nicht mehr auf dem ✕.** Beim Öffnen eines Dialogs bekam
+  die erste Schaltfläche im DOM den Fokus, und das ist das Schließkreuz in der
+  Kopfzeile: das erste Enter schloss den Dialog wieder. Der Fokus geht jetzt in
+  den Inhalt.
+- **Ungespeicherte Änderungen werden nicht mehr stillschweigend verworfen.**
+  Wer einen Dialog über ✕, Escape oder einen Tipp neben den Dialog verlässt und
+  etwas geändert hat, wird gefragt. „Abbrechen" fragt bewusst nicht.
+- **Namenlose Bedienelemente haben Namen bekommen.** Im Anbieter-Dialog trägt
+  die Feldbeschriftung neben dem ⚙ ein `<span>` statt ein `<label>` (damit ein
+  Klick daneben nicht das erste Feld umschaltet) — die Folge war, dass
+  SIM-Version, Status und die Kursart-Liste für eine Vorlesefunktion namenlos
+  waren. Dazu fünf Felder in den Kursterminen, Farbe und Bezeichnung in jeder
+  Listen-Verwaltung und die Chips in der Mehrfachauswahl.
+- **Pfeile und ✕ in der Listen-Verwaltung heißen jetzt „Nach oben", „Nach
+  unten", „Löschen"** statt `up` / `down` / `delete` — sichtbar nur als
+  Sprechblase, aber in einer deutschen Oberfläche trotzdem Englisch.
+- **Das ✕ in der Kurstermin-Karte am Handy hat eine Überschrift.** Es stand ohne
+  eine direkt neben der Zahl unter „BELEGT" und sah aus, als lösche es die
+  Buchungen statt des ganzen Kurstermins.
+
 ## [1.48.0] – 2026-08-19
 
 ### Geändert

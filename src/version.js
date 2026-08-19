@@ -4,12 +4,41 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.48.0'
-export const APP_BUILD_DATE = '2026-07-27'
+export const APP_VERSION = '1.49.0'
+export const APP_BUILD_DATE = '2026-08-19'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.49.0',
+    date: '2026-08-19',
+    type: 'minor',
+    changes: {
+      de: [
+        'Das Umschulungs-Board sagt jetzt selbst, wo es hakt: zwei Zähler über den Spalten — „N überfällig" und „M gefährdet". Antippen lässt nur diese Karten stehen. Die Rechnung dahinter gab es seit Langem, sie war nur an keine Ansicht angeschlossen; bei fünfzig Karten über sieben Bildschirme hieß „ist jemand überfällig?" bisher: alle lesen.',
+        'Die Wahl zwischen Board, Planung und Kalender bleibt erhalten. Ein Blick aufs Dashboard und zurück warf einen vorher auf das Board — und die eigentliche Buchungsarbeit passiert in der Planung. Sie steht jetzt in der Adresse (#/conversion/planung) und übersteht damit auch ein Neuladen.',
+        'Ein Dialog setzt den Cursor nicht mehr auf das ✕ in der Kopfzeile. Das erste Enter nach dem Öffnen hat den Dialog geschlossen, statt etwas zu tun.',
+        'Wer einen Dialog mit ungespeicherten Änderungen über das ✕, Escape oder einen Tipp neben den Dialog verlässt, wird gefragt. „Abbrechen" fragt weiter nicht — das sagt ja, was es tut.',
+        'Bedienelemente, die für eine Vorlesefunktion namenlos waren, haben Namen: SIM-Version, Status und Kursarten im Anbieter-Dialog, fünf Felder in den Kursterminen, Farbe und Bezeichnung in jeder Listen-Verwaltung. Die Pfeile und das ✕ dort heißen jetzt auch auf Deutsch „Nach oben", „Nach unten", „Löschen".',
+        'In der Kurstermin-Karte am Handy stand das ✕ ohne Überschrift direkt neben „BELEGT" — es sah aus, als lösche es die Buchungen. Es hat jetzt seine Überschrift „Löschen".',
+        'Ein Sync-Fehler erscheint auf Deutsch. „TypeError: Failed to fetch" stand bisher wörtlich in den Einstellungen.',
+        '„Keine Trainer gefunden" unterscheidet jetzt zwischen leerer Liste und einem Filter, der niemanden trifft — mit einer Schaltfläche, die die Filter zurücksetzt.',
+        'Der Hinweis „App ist offline verfügbar" verschwindet nach ein paar Sekunden von selbst. Er hat unten Karten verdeckt und musste weggetippt werden, obwohl er nichts fragt.'
+      ],
+      en: [
+        'The conversion board now says where it hurts: two counters above the columns - "N overdue" and "M at risk". Tapping one leaves only those cards standing. The calculation had been there for a long time, wired to no screen at all; with fifty cards over seven screens, "is anybody overdue" meant reading all of them.',
+        'The Board / Planung / Kalender choice is kept. A glance at the dashboard and back used to drop you onto the board - and the booking work lives in Planung. It now sits in the address (#/conversion/planung), so a reload keeps it too.',
+        'A dialog no longer puts the cursor on the ✕ in its header. The first Enter after opening closed the dialog instead of doing anything.',
+        'Leaving a dialog that has unsaved changes - via the ✕, Escape or a tap beside it - now asks first. "Cancel" still does not ask: it says what it does.',
+        'Controls that were nameless to a screen reader have names: SIM version, status and course types in the provider dialog, five fields in the course dates, colour and label in every list editor. The arrows and the ✕ there are now called "Move up", "Move down", "Delete" in the interface language.',
+        'On the phone card for a course date the ✕ sat captionless right beside "BOOKED" - it read as "clear the bookings". It now carries its "Delete" caption.',
+        'A sync failure is shown in the interface language. "TypeError: Failed to fetch" used to appear verbatim in the settings.',
+        '"No trainers found" now tells an empty list from a filter that matches nobody - with a button that clears the filters.',
+        'The "app is available offline" notice takes itself off after a few seconds. It covered cards at the bottom of the screen and had to be tapped away although it asks nothing.'
+      ]
+    }
+  },
   {
     version: '1.48.0',
     date: '2026-08-19',

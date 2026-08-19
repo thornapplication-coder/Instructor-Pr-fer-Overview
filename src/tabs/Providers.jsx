@@ -1,6 +1,6 @@
 import { STATUS } from '../lib/palette.js'
 import { useThemed } from '../lib/useThemed.js'
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
@@ -344,7 +344,10 @@ function IcaoInput({ value, onChange }) {
 
 // Multi-select built from a dropdown (empty entry on top). Picking an option
 // adds it as a removable chip; already-picked options drop out of the list.
-function MultiPick({ value, options, labelOf, placeholder, tagClass, onChange }) {
+// `label` is not drawn - the field caption above already is. It names the
+// control for a screen reader, which the caption cannot do here: with the ⚙
+// button beside it the caption is a <span>, not a <label>.
+function MultiPick({ value, options, labelOf, placeholder, tagClass, onChange, label }) {
   const picked = value || []
   const open = (options || []).filter((o) => !picked.includes(o.id))
   return (
@@ -353,12 +356,19 @@ function MultiPick({ value, options, labelOf, placeholder, tagClass, onChange })
         {[...picked].sort((a, b) => labelOf(a).localeCompare(labelOf(b))).map((id) => (
           <span key={id} className={(tagClass || 'type-tag') + ' removable'}>
             {labelOf(id)}
-            <button type="button" className="chip-x" onClick={() => onChange(picked.filter((x) => x !== id))}>✕</button>
+            <button
+              type="button"
+              className="chip-x"
+              aria-label={labelOf(id)}
+              title={labelOf(id)}
+              onClick={() => onChange(picked.filter((x) => x !== id))}
+            >✕</button>
           </span>
         ))}
       </div>
       <select
         className="input"
+        aria-label={label || placeholder}
         value=""
         onChange={(e) => { if (e.target.value) onChange([...picked, e.target.value]) }}
       >
@@ -569,6 +579,18 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
     locations: provider.locations || [],
     simVersions: provider.simVersions || []
   })
+  // What the dialog opened with – so a stray tap on the backdrop can tell an
+  // untouched record from one that has just been filled in.
+  const opened = useRef(null)
+  if (opened.current === null) {
+    opened.current = JSON.stringify({
+      ...provider,
+      courses: provider.courses || [],
+      locations: provider.locations || [],
+      simVersions: provider.simVersions || []
+    })
+  }
+  const dirty = !readOnly && JSON.stringify(p) !== opened.current
   // Which taxonomy list is being edited in-place ('courses' | 'sim' | 'status').
   const [manage, setManage] = useState(null)
   // From the helper, not re-derived: two copies of one rounding rule drift the
@@ -642,6 +664,7 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
     <Modal
       title={isNew ? t('addProvider') : t('editProvider')}
       onClose={onClose}
+      confirmClose={dirty}
       xwide
       footer={
         <div className="foot-row">
@@ -671,7 +694,7 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
           <input className="input" value={p.name} onChange={(e) => set('name', e.target.value)} />
         </Field>
         <Field label={t('p_courses')} span2 extra={<ManageLink onClick={() => setManage('courses')} title={t('manageCourses')} />}>
-          <div className="checks">
+          <div className="checks" role="group" aria-label={t('p_courses')}>
             {[...providerCourses].sort((a, b) => a.label.localeCompare(b.label)).map((c) => (
               <label key={c.id} className={'check-pill' + ((p.courses || []).includes(c.id) ? ' on' : '')}>
                 <input type="checkbox" checked={(p.courses || []).includes(c.id)} onChange={() => toggleCourse(c.id)} />
@@ -682,6 +705,7 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
         </Field>
         <Field label={t('p_simVersion')} span2 extra={<ManageLink onClick={() => setManage('sim')} title={t('manageSimVersions')} />}>
           <MultiPick
+            label={t('p_simVersion')}
             value={p.simVersions || []}
             options={simVersions}
             labelOf={(id) => simVersionLabel(simVersions, id)}
@@ -694,7 +718,7 @@ function ProviderForm({ provider, providerCourses, providerStatus, simVersions, 
           <IcaoInput value={p.locations || []} onChange={(v) => set('locations', v)} />
         </Field>
         <Field label={t('p_status')} extra={<ManageLink onClick={() => setManage('status')} title={t('manageProviderStatus')} />}>
-          <select className="input" value={p.status} onChange={(e) => set('status', e.target.value)}>
+          <select className="input" aria-label={t('p_status')} value={p.status} onChange={(e) => set('status', e.target.value)}>
             <option value=""></option>
             {[...providerStatus].sort((a, b) => (a.label || '').localeCompare(b.label || '')).map((v) => (
               <option key={v.id} value={v.id}>{v.label}</option>

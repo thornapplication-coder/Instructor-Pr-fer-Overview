@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useMemo, useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import { AircraftTag, OreTag, RoleTag } from '../components/tags.jsx'
 import DateInput from '../components/DateInput.jsx'
@@ -91,6 +91,17 @@ export default function Trainers() {
           : true
       )
   }, [trainers, q, fBase, fQual, fOre, fStaff, fAircraft, fRole, quals, t])
+
+  const filtersOn = !!(q || fBase || fQual || fOre || fStaff || fAircraft || fRole)
+  const clearFilters = () => {
+    setQ('')
+    setFBase('')
+    setFQual('')
+    setFOre('')
+    setFStaff('')
+    setFAircraft('')
+    setFRole('')
+  }
 
   const accessors = useMemo(
     () => ({
@@ -302,9 +313,22 @@ export default function Trainers() {
                 <td role="cell" className="t-note muted" data-label={t('f_note')}><span className="cell-clamp" title={x.note || ''}>{x.note || '–'}</span></td>
               </tr>
             ))}
+            {/* "Keine Trainer gefunden" alone leaves open which of the two it
+                is: an empty list, or a filter that happens to match nobody.
+                With 50 people and seven filters it is nearly always the
+                second, so say so and offer the way out. */}
             {rows.length === 0 && (
               <tr role="row">
-                <td role="cell" colSpan={14} className="empty-row">{t('noTrainers')}</td>
+                <td role="cell" colSpan={14} className="empty-row">
+                  {filtersOn ? (
+                    <>
+                      {t('emptyTrainersFiltered')}{' '}
+                      <button className="btn btn-ghost btn-sm" onClick={clearFilters}>{t('clearFilters')}</button>
+                    </>
+                  ) : (
+                    t('noTrainers')
+                  )}
+                </td>
               </tr>
             )}
           </tbody>
@@ -347,6 +371,11 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
   const { t, lang, readOnly, data } = useStore()
   const extCompanies = data.extCompanies || []
   const [f, setF] = useState({ ...trainer, partTimeInput: ptToInput(trainer.partTime) })
+  // What the dialog opened with, so an accidental close can tell "nothing was
+  // typed" from "a minute of typing". A ref, not state: it must not change.
+  const opened = useRef(null)
+  if (opened.current === null) opened.current = JSON.stringify({ ...trainer, partTimeInput: ptToInput(trainer.partTime) })
+  const dirty = !readOnly && JSON.stringify(f) !== opened.current
   const set = (k, v) => setF((s) => ({ ...s, [k]: v }))
   // Changing part-time pre-fills FTE (still editable afterwards).
   const setPartTime = (v) =>
@@ -374,6 +403,7 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
     <Modal
       title={f._isNew ? t('addTrainer') : t('editTrainer')}
       onClose={onClose}
+      confirmClose={dirty}
       wide
       footer={
         <div className="foot-row">

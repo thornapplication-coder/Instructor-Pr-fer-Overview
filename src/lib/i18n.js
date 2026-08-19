@@ -424,6 +424,27 @@ const DICT = {
     en: 'The timeline distributes {n} seats while the total says {m}. A hint only – nothing is blocked.'
   },
   p_removeMonth: { de: 'Monat entfernen', en: 'Remove month' },
+  remove: { de: 'Entfernen', en: 'Remove' },
+  moveUp: { de: 'Nach oben', en: 'Move up' },
+  moveDown: { de: 'Nach unten', en: 'Move down' },
+  colorOf: { de: 'Farbe', en: 'Colour' },
+  nameOf: { de: 'Bezeichnung', en: 'Label' },
+  alertsOverdue: { de: 'überfällig', en: 'overdue' },
+  alertsRisk: { de: 'gefährdet', en: 'at risk' },
+  alertsNone: { de: 'Keine Auffälligkeiten', en: 'Nothing flagged' },
+  alertsFilterHint: {
+    de: 'Antippen zeigt nur diese Karten.',
+    en: 'Tap to show only these cards.'
+  },
+  emptyTrainersFiltered: {
+    de: 'Kein Trainer passt zu dieser Suche. Suchfeld und Filter zurücksetzen zeigt wieder alle.',
+    en: 'No trainer matches this search. Clearing the search box and the filters shows all of them again.'
+  },
+  clearFilters: { de: 'Filter zurücksetzen', en: 'Clear filters' },
+  discardChanges: {
+    de: 'Es gibt ungespeicherte Änderungen. Dialog schließen und sie verwerfen?',
+    en: 'There are unsaved changes. Close the dialog and discard them?'
+  },
   cap_timelineTitle: { de: 'Provider-Plätze je Monat', en: 'Provider seats per month' },
   cap_timelineHint: {
     de: 'Ein Balken je Monat, aufgeteilt nach Kursart — aus den Zeitleisten der Anbieter. Leere Monate bleiben stehen, damit man die Lücken sieht. Der Zeitraum lässt sich in den Einstellungen ändern.',

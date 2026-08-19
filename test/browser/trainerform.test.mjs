@@ -224,6 +224,11 @@ export default async function run(browser, baseUrl, shots) {
     'they still count as capacity, in their own rows (' + capKeys.join(', ') + ')')
 
   // The external GRADES hide it for the same reason, without a rule of their own.
+  // Back to the Trainer tab first: the checks above ended on Kapazität, and a
+  // row that is not on screen is not a row - the click times out there.
+  await page.locator('.tab', { hasText: 'Trainer' }).first().click()
+  await page.waitForSelector('.trainer-table tbody tr')
+  await page.waitForTimeout(400)
   await page.locator('.trainer-table tbody tr').first().click()
   await page.waitForSelector('.modal')
   await page.waitForTimeout(400)
@@ -236,7 +241,9 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForTimeout(300)
   ok((await page.locator('.modal').innerText()).includes('Zieltermin'),
     '  and a plain TRI still is – so the section is tied to the grade, not removed')
-  await page.keyboard.press('Escape')
+  // Out through the footer, not Escape: the qualification was changed and back,
+  // and a dialog with unsaved changes now asks before Escape throws them away.
+  await page.locator('.modal .modal-foot .btn-ghost').first().click()
   await page.waitForTimeout(300)
 
   // ---- 6. and on a phone card you can SEE that somebody is external ---------

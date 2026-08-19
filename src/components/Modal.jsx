@@ -1,18 +1,35 @@
-import React, { useEffect, useRef } from 'react'
+import React, { useEffect, useId, useRef } from 'react'
+import { useStore } from '../lib/store.jsx'
 
 const FOCUSABLE =
   'a[href],button:not([disabled]),input:not([disabled]),select:not([disabled]),textarea:not([disabled]),[tabindex]:not([tabindex="-1"])'
 
-export default function Modal({ title, onClose, children, footer, wide, xwide }) {
+// `confirmClose` guards the three ways OUT of a dialog that are not a decision:
+// the ✕, Escape, and a tap on the backdrop. On a phone the last one is one
+// clumsy thumb away from a form somebody has just spent a minute filling in,
+// and until now that threw the lot away without a word. The footer's
+// "Abbrechen" is left unguarded on purpose - it says what it does.
+export default function Modal({ title, onClose, children, footer, wide, xwide, confirmClose }) {
+  const { t } = useStore()
   const ref = useRef(null)
+  const bodyRef = useRef(null)
   const backdropRef = useRef(null)
   const lastFocused = useRef(null)
+  const titleId = useId()
   // Callers pass a fresh arrow on every render, so keep the latest handler in a
   // ref instead of in the effect's dep list: re-running the effect per render
   // would move focus back to the first control after every keystroke that
   // writes to the store (planning notes, category labels, …).
   const onCloseRef = useRef(onClose)
   onCloseRef.current = onClose
+  const guardRef = useRef(confirmClose)
+  guardRef.current = confirmClose
+  const askClose = () => {
+    if (guardRef.current && !window.confirm(t('discardChanges'))) return
+    onCloseRef.current()
+  }
+  const askCloseRef = useRef(askClose)
+  askCloseRef.current = askClose
 
   // Keep the dialog inside what is ACTUALLY visible.
   //
@@ -49,13 +66,17 @@ export default function Modal({ title, onClose, children, footer, wide, xwide })
     lastFocused.current = document.activeElement
     const node = ref.current
     const focusables = () => (node ? Array.from(node.querySelectorAll(FOCUSABLE)) : [])
-    // Move focus into the dialog so keyboard users aren't stranded behind it.
-    const first = focusables()[0]
+    // Move focus into the dialog so keyboard users aren't stranded behind it -
+    // but into its BODY, not onto the first focusable overall. That one is the
+    // ✕ in the header, and landing there means the first Enter after opening
+    // a dialog closes it again, discarding whatever was typed.
+    const inBody = bodyRef.current ? Array.from(bodyRef.current.querySelectorAll(FOCUSABLE)) : []
+    const first = inBody[0] || focusables()[0]
     if (first) first.focus()
     else if (node) node.focus()
 
     const onKey = (e) => {
-      if (e.key === 'Escape') { onCloseRef.current(); return }
+      if (e.key === 'Escape') { askCloseRef.current(); return }
       if (e.key !== 'Tab') return
       // Trap Tab within the dialog.
       const list = focusables()
@@ -74,7 +95,7 @@ export default function Modal({ title, onClose, children, footer, wide, xwide })
   }, [])
 
   return (
-    <div className="modal-backdrop" ref={backdropRef} onMouseDown={onClose}>
+    <div className="modal-backdrop" ref={backdropRef} onMouseDown={askClose}>
       <div
         ref={ref}
         tabIndex={-1}
@@ -82,14 +103,15 @@ export default function Modal({ title, onClose, children, footer, wide, xwide })
         onMouseDown={(e) => e.stopPropagation()}
         role="dialog"
         aria-modal="true"
+        aria-labelledby={titleId}
       >
         <div className="modal-head">
-          <h3>{title}</h3>
-          <button className="icon-btn" onClick={onClose} aria-label="close">
+          <h3 id={titleId}>{title}</h3>
+          <button className="icon-btn" onClick={askClose} aria-label={t('close')} title={t('close')}>
             ✕
           </button>
         </div>
-        <div className="modal-body">{children}</div>
+        <div className="modal-body" ref={bodyRef}>{children}</div>
         {footer && <div className="modal-foot">{footer}</div>}
       </div>
     </div>

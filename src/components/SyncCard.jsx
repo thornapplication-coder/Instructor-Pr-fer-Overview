@@ -95,9 +95,12 @@ export default function SyncCard() {
         </p>
       )}
       {/* The engine reports some failures as a translation key rather than a
-          raw API string, because they are expected states, not faults. */}
+          raw API string, because they are expected states, not faults. What is
+          left is a raw JS message ("TypeError: Failed to fetch" on a dead
+          connection), so it goes through the same translator the sign-in form
+          uses instead of printing English into a German screen. */}
       {state === 'error' && error && (
-        <p className="inline-msg err">{/^sync_/.test(error) ? t(error) : error}</p>
+        <p className="inline-msg err">{/^sync_/.test(error) ? t(error) : explain({ message: error })}</p>
       )}
 
       {!user ? (

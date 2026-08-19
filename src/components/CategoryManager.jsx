@@ -57,19 +57,22 @@ export default function CategoryManager({ items, onChange, hasColor = true, defa
             }}
             onDragEnd={() => setDrag(null)}
           >
-            <span className="drag-handle" title="drag">⠿</span>
+            <span className="drag-handle" aria-hidden="true">⠿</span>
             {hasColor && (
               <input
                 type="color"
                 className="color-input"
+                aria-label={t('colorOf') + (it.label ? ' – ' + it.label : '')}
+                title={t('colorOf')}
                 value={it.color || defaultColor}
                 onChange={(e) => update(i, { color: e.target.value })}
               />
             )}
             <input
               className="input catman-label"
+              aria-label={t('nameOf') + (it.label ? ' – ' + it.label : '')}
               value={it.label}
-              placeholder="…"
+              placeholder={t('nameOf')}
               onChange={(e) => update(i, { label: e.target.value })}
             />
             {numField && (
@@ -87,9 +90,9 @@ export default function CategoryManager({ items, onChange, hasColor = true, defa
               </label>
             )}
             <div className="catman-actions">
-              <button className="mini-btn" disabled={i === 0} onClick={() => move(i, i - 1)} title="up">↑</button>
-              <button className="mini-btn" disabled={i === items.length - 1} onClick={() => move(i, i + 1)} title="down">↓</button>
-              {!locked && <button className="mini-btn danger" onClick={() => remove(i)} title="delete">✕</button>}
+              <button className="mini-btn" disabled={i === 0} onClick={() => move(i, i - 1)} title={t('moveUp')} aria-label={t('moveUp')}>↑</button>
+              <button className="mini-btn" disabled={i === items.length - 1} onClick={() => move(i, i + 1)} title={t('moveDown')} aria-label={t('moveDown')}>↓</button>
+              {!locked && <button className="mini-btn danger" onClick={() => remove(i)} title={t('delete')} aria-label={t('delete')}>✕</button>}
             </div>
           </li>
         ))}

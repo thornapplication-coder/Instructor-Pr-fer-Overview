@@ -1,5 +1,6 @@
-import React, { useState } from 'react'
+import React, { useEffect, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import { hashParts, setHash } from '../lib/hash.js'
 import Conversion from './Conversion.jsx'
 import Planning from './Planning.jsx'
 
@@ -19,9 +20,29 @@ const VIEWS = [
   { id: 'calendar', labelKey: 'planning_viewCalendar' }
 ]
 
-export default function ConversionHub() {
+// The chosen view survives leaving the tab and a reload.
+//
+// It used to be plain component state, so a glance at the dashboard and back
+// dropped the planner from "Planung" onto the Kanban board - and the whole
+// booking job lives in Planung. Two places remember it: the fragment
+// (#/conversion/table, so a reload and a shared link keep it too), and this
+// module-level fallback for the moment the tab is re-entered, when the
+// fragment has just been rewritten to the bare tab.
+let lastView = 'board'
+
+function viewFromHash() {
+  const sub = hashParts()[1]
+  return VIEWS.some((v) => v.id === sub) ? sub : lastView
+}
+
+export default function ConversionHub({ capture }) {
   const { t } = useStore()
-  const [view, setView] = useState('board')
+  const [view, setView] = useState(viewFromHash)
+  useEffect(() => {
+    if (capture) return
+    lastView = view
+    setHash(['conversion', view])
+  }, [view, capture])
   return (
     <div className="tab-pane">
       <div className="toolbar no-print hub-bar">

@@ -10,7 +10,7 @@ import { qualLabel, isConversionQual, conversionTrainers, CONVERSION_QUALS } fro
 import { colorOf, idsOf, labelOf } from '../data/lists.js'
 import { conversionFteSummary } from '../lib/stats.js'
 import { finishForecast, findRun, resolveAssignment, spanText } from '../lib/courses.js'
-import { trainerAlerts } from '../lib/alerts.js'
+import { trainerAlerts, collectAlerts } from '../lib/alerts.js'
 import { formatDate, formatFte1 } from '../lib/format.js'
 import { AircraftTag, OreTag, RoleTag } from '../components/tags.jsx'
 
@@ -40,6 +40,7 @@ export default function Conversion({ embedded }) {
   const [fQual, setFQual] = useState('')
   const [fStaff, setFStaff] = useState('')
   const [fAircraft, setFAircraft] = useState('')
+  const [fAlert, setFAlert] = useState('')
   const [detail, setDetail] = useState(null)
   const [manageStages, setManageStages] = useState(false)
   const [dragId, setDragId] = useState(null)
@@ -56,7 +57,7 @@ export default function Conversion({ embedded }) {
   // Sorted by name. Unsorted this rendered in storage order, which is the order
   // the seed happened to have and the order an import happened to produce –
   // finding a person on a fifty-card column then meant reading every card.
-  const visible = convPool.filter(
+  const matched = convPool.filter(
     (x) =>
       (fBase ? x.base === fBase : true) &&
       (fOre ? x.ore === fOre : true) &&
@@ -69,7 +70,22 @@ export default function Conversion({ embedded }) {
             .toLowerCase()
             .includes(needle)
         : true)
-  ).sort((a, b) => (a.name || '').localeCompare(b.name || ''))
+  )
+
+  // Who needs looking at, and how many. The flags were already drawn on every
+  // card as a coloured border - but with fifty cards over seven screens, and
+  // five more columns sideways, "is anybody overdue" meant reading all of them.
+  // So the count is stated, and tapping it leaves only those cards standing.
+  const alertLevel = useMemo(() => {
+    const m = new Map()
+    collectAlerts(matched, null, stages).forEach((a) => m.set(a.trainer.id, a.level))
+    return m
+  }, [matched, stages])
+  const nOverdue = [...alertLevel.values()].filter((l) => l === 'overdue').length
+  const nRisk = [...alertLevel.values()].filter((l) => l === 'risk').length
+
+  const visible = (fAlert ? matched.filter((x) => alertLevel.get(x.id) === fAlert) : matched)
+    .sort((a, b) => (a.name || '').localeCompare(b.name || ''))
 
   // The stage<->status coupling now lives in the store's setConversion, so all
   // editors (board drag, inline editor, detail modal) behave identically.
@@ -118,6 +134,29 @@ export default function Conversion({ embedded }) {
         </button>
       </div>
       <div className="fte-summary">
+        {nOverdue > 0 && (
+          <button
+            type="button"
+            className={'alert-pill overdue' + (fAlert === 'overdue' ? ' on' : '')}
+            aria-pressed={fAlert === 'overdue'}
+            title={t('alertsFilterHint')}
+            onClick={() => setFAlert(fAlert === 'overdue' ? '' : 'overdue')}
+          >
+            <b>{nOverdue}</b> {t('alertsOverdue')}
+          </button>
+        )}
+        {nRisk > 0 && (
+          <button
+            type="button"
+            className={'alert-pill risk' + (fAlert === 'risk' ? ' on' : '')}
+            aria-pressed={fAlert === 'risk'}
+            title={t('alertsFilterHint')}
+            onClick={() => setFAlert(fAlert === 'risk' ? '' : 'risk')}
+          >
+            <b>{nRisk}</b> {t('alertsRisk')}
+          </button>
+        )}
+        {nOverdue === 0 && nRisk === 0 && <span className="alert-pill none">{t('alertsNone')}</span>}
         <span className="fte-pill fte-in">{t('fteInConversionShort')}: <b>{fte1(fteS.inConversion)}</b></span>
         <span className="fte-pill fte-av">{t('fteAvailableShort')}: <b>{fte1(fteS.available)}</b></span>
         <span className="fte-pill fte-total">FTE {t('total')}: <b>{fte1(fteS.total)}</b></span>
