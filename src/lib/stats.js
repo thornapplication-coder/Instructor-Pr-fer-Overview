@@ -1,7 +1,7 @@
 // Live aggregations over the trainer list. Category orders mirror the Excel
 // "Statistik_Daten" tab so the numbers line up 1:1 with the source file.
 import { firstStageId, releasedStageId } from '../data/pipeline.js'
-import { isConversionQual } from '../data/qualifications.js'
+import { isConversionQual, isInternal } from '../data/qualifications.js'
 import { findRun, resolveAssignment } from './courses.js'
 
 // Resolve stage semantics positionally instead of by the literal ids
@@ -202,7 +202,10 @@ function capacityBy(trainers, keyFn, aircraftList, order, stages, seedKeys) {
     // SFI with a leftover stage would inflate this column past the FTE pills,
     // which are computed over the conversion pool.
     const stage = stageOf(t)
-    if (isConversionQual(t.qual) && stage !== firstId && stage !== releasedId) row.inConversion += fte
+    // Same rule as conversionTrainers(): an external trainer is never "in
+    // Umschulung", so their FTE must not appear in that column either - it
+    // would contradict the pills above the table, which count the pool.
+    if (isConversionQual(t.qual) && isInternal(t) && stage !== firstId && stage !== releasedId) row.inConversion += fte
     if (t.aircraft && row.ac[t.aircraft] != null) row.ac[t.aircraft] += fte
   }
   const raw = [...map.values()]

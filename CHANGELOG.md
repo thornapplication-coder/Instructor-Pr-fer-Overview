@@ -11,6 +11,32 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.47.0] – 2026-07-29
+
+### Geändert
+- **Externe Trainer werden nicht umgeschult.** Sie sind Angestellte eines
+  anderen Betriebs und bereits auf dem Muster qualifiziert. Sie stehen deshalb
+  nicht mehr auf dem Umschulungs-Board, zählen in keiner Umschulungs-Kennzahl,
+  belegen keinen Kursplatz und stehen nicht mehr in der Planung.
+  Die Bedingung steht **an einer Stelle** (`isInternal()` in
+  `conversionTrainers()`); Board, Dashboard, Kapazität, Planung und alle drei
+  Umschulungs-PDFs lesen sie von dort, damit sie nicht in einer Ansicht gilt und
+  in der nächsten nicht.
+- Die Kapazitäts-Spalte **„in Umschulung"** rechnet sie ebenfalls heraus. Sie
+  ermittelte ihren Wert bisher direkt aus der Qualifikation und hätte den
+  FTE-Kacheln über der Tabelle widersprochen.
+- Die Texte, die den Kreis beschreiben, sagen die Regel mit: der Hinweis über
+  dem Board, die Bezugsgruppe an den FTE-Kacheln und die FTE-Erklärung.
+
+### Neu
+- **Auf der Karte ist sichtbar, wer extern ist.** Ein Merkzeichen neben dem
+  Namen, mit der Firma dahinter („EXTERN · TUI"). Die Zugehörigkeits-Spalte
+  gehört zu den fünf Feldern, die auf der Karte dem Dialog weichen — genau dort
+  war die Information also nicht zu sehen.
+- Am Rechner bleibt das Merkzeichen aus: dort steht die Spalte ohnehin, und die
+  Tabelle hat nach der Seniorität keine Breite mehr übrig, um es zweimal zu
+  sagen. Der Testlauf prüft beide Seiten.
+
 ## [1.46.0] – 2026-07-29
 
 ### Behoben

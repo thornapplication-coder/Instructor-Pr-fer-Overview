@@ -1585,3 +1585,17 @@ textarea.input { resize: vertical; }
 @media screen and (max-width: 520px) {
   .ro-banner { font-size: 12.5px; padding: 9px 11px; }
 }
+
+/* "extern" on the trainer card. Hidden on a desktop, where the Zugehörigkeit
+   column says it in its own place and the table has no width to spare. */
+.ext-badge { display: none; }
+.ext-co { white-space: nowrap; }
+@media screen and (max-width: 1279px) {
+  .trainer-table .ext-badge {
+    display: inline-flex; align-items: center; margin-left: 8px;
+    padding: 1px 8px; border-radius: 999px;
+    font-size: 10.5px; font-weight: 800; letter-spacing: .3px;
+    text-transform: uppercase; white-space: nowrap;
+    color: #fff; background: var(--ink);
+  }
+}

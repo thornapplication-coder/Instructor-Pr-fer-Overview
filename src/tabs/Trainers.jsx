@@ -265,7 +265,21 @@ export default function Trainers() {
                 <td role="cell" className="t-qual card-chip-end"><span className="qual-tag" style={{ background: qualColor(x.qual) }}>{qualLabel(quals, x.qual)}</span></td>
                 <td role="cell" className="t-base" data-label={t('f_base')}>{x.base}</td>
                 <td role="cell" className="t-tlc mono" data-label={t('f_tlc')}>{x.tlc}</td>
-                <td role="cell" className="t-name card-name strong">{x.name}</td>
+                <td role="cell" className="t-name card-name strong">
+                  {x.name}
+                  {/* On the card the affiliation column is one of the five
+                      fields that step aside for the dialog, so "extern" was
+                      invisible exactly where it matters most. The badge rides
+                      along with the name and is hidden again from 1280px up,
+                      where the real column is back - and where the table has no
+                      width to spare for saying it twice. */}
+                  {x.staffType === 'external' && (
+                    <span className="ext-badge">
+                      {t('staff_external')}
+                      {x.extCompany ? ' · ' + labelOf(data.extCompanies, x.extCompany) : ''}
+                    </span>
+                  )}
+                </td>
                 <td role="cell" className="t-role" data-label={t('f_role')}><RoleTag role={roleOf(x)} /></td>
                 <td role="cell" className="t-sen" data-label={t('f_seniority')}>{x.seniority ? formatDate(x.seniority, lang) : '–'}</td>
                 <td role="cell" className="t-pt num" data-label={t('f_partTime')}>{formatPartTime(x.partTime, lang)}</td>

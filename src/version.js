@@ -4,12 +4,33 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.46.0'
+export const APP_VERSION = '1.47.0'
 export const APP_BUILD_DATE = '2026-07-27'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.47.0',
+    date: '2026-07-29',
+    type: 'minor',
+    changes: {
+      de: [
+        'Externe Trainer werden nicht mehr umgeschult. Sie sind bereits auf dem Muster qualifiziert, also stehen sie nicht mehr auf dem Board, zählen in keiner Umschulungs-Kennzahl, belegen keinen Kursplatz und tauchen in der Planung nicht mehr auf. Die Regel steht an einer Stelle, durch die Board, Dashboard, Kapazität, Planung und alle drei Umschulungs-PDFs gehen.',
+        'Die Kapazitäts-Spalte „in Umschulung" rechnet sie ebenfalls heraus — sonst hätte sie den Kacheln darüber widersprochen.',
+        'Auf der Karte am Handy ist jetzt sichtbar, wer extern ist: ein Merkzeichen neben dem Namen, mit der Firma. Die Zugehörigkeits-Spalte gehört zu den fünf Feldern, die auf der Karte dem Dialog weichen — genau dort war „extern" also unsichtbar.',
+        'Am Rechner bleibt das Merkzeichen aus: dort steht die Spalte ohnehin, und die Tabelle hat keine Breite übrig, um es zweimal zu sagen.',
+        'Die Texte, die den Umschulungs-Kreis beschreiben, sagen die neue Regel mit: auf dem Board, an den FTE-Kacheln und in der FTE-Erklärung.'
+      ],
+      en: [
+        'External trainers are no longer converted. They are already qualified on the type, so they are off the board, out of every conversion figure, take no course seat and are gone from the planning grid. The rule lives in one place, which the board, the dashboard, the capacity figures, planning and all three conversion PDFs read.',
+        'The capacity column "in conversion" leaves them out too - otherwise it would have contradicted the tiles above it.',
+        'On a phone card you can now see who is external: a badge beside the name, with the company. The affiliation column is one of the five fields that step aside for the dialog there, which is exactly where "external" was invisible.',
+        'On a desktop the badge stays hidden: the column is there anyway, and the table has no width to spare for saying it twice.',
+        'The wording that describes the conversion pool now carries the new rule: on the board, on the FTE tiles and in the FTE definition.'
+      ]
+    }
+  },
   {
     version: '1.46.0',
     date: '2026-07-29',

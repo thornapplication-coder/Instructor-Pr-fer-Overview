@@ -66,8 +66,8 @@ const DICT = {
   // Shown wherever an FTE figure appears, because "FTE" alone was ambiguous:
   // two places still use it for two different groups of people.
   fteDefinition: {
-    de: 'FTE = Summe der Personen-FTE (Vollzeit 1,0 · 90 % 0,9 · 80 % 0,8 · 75 % 0,75 …), je Person im Trainer-Dialog überschreibbar. „In Umschulung" zählt nur SEN, TRE, TRI und LTC.',
-    en: 'FTE = the sum of the per-person FTE (full time 1.0 · 90% 0.9 · 80% 0.8 · 75% 0.75 …), overridable per person in the trainer dialog. "In conversion" counts SEN, TRE, TRI and LTC only.'
+    de: 'FTE = Summe der Personen-FTE (Vollzeit 1,0 · 90 % 0,9 · 80 % 0,8 · 75 % 0,75 …), je Person im Trainer-Dialog überschreibbar. „In Umschulung" zählt nur SEN, TRE, TRI und LTC — und keine externen Trainer, die sind bereits auf dem Muster qualifiziert.',
+    en: 'FTE = the sum of the per-person FTE (full time 1.0 · 90% 0.9 · 80% 0.8 · 75% 0.75 …), overridable per person in the trainer dialog. "In conversion" counts SEN, TRE, TRI and LTC only – and no external trainers, who are already qualified on the type.'
   },
   cap_total: { de: 'FTE gesamt', en: 'FTE total' },
   cap_inConv: { de: 'in Umschulung', en: 'in conversion' },
@@ -86,8 +86,8 @@ const DICT = {
   // Named on every conversion tile, so none of them can be read as "of all 50".
   // {n} = size of the pool, {q} = the qualifications it covers.
   convPoolOf: {
-    de: 'von {n} im Umschulungs-Pool ({q})',
-    en: 'of {n} in the conversion pool ({q})'
+    de: 'von {n} im Umschulungs-Pool ({q}, ohne externe)',
+    en: 'of {n} in the conversion pool ({q}, external excluded)'
   },
   fteInConversionShort: { de: 'FTE in Umschulung', en: 'FTE in conversion' },
   fteAvailableShort: { de: 'FTE verfügbar', en: 'FTE available' },
@@ -325,8 +325,8 @@ const DICT = {
     en: 'Tap a card to edit · arrows move the stage'
   },
   convScopeHint: {
-    de: 'Umschulung betrifft nur {q}',
-    en: 'Conversion applies to {q} only'
+    de: 'Umschulung betrifft nur {q} — und keine externen Trainer',
+    en: 'Conversion applies to {q} only – and to no external trainer'
   },
 
   // ---- statistics

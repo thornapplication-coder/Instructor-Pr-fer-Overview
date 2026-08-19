@@ -154,7 +154,7 @@ Bildschirm läuft durch `formatFte1(v, lang)` — roh ausgegeben stand im PDF
 
 **„FTE" ist ohne Bezugsgruppe mehrdeutig.** Noch zwei Kreise: alle Personen
 (`headcount().fte`) und der Umschulungs-Pool (`conversionTrainers()`,
-SEN/TRE/TRI/LTC, `fteConvScope`). Die dritte Gruppe („ohne Rente") ist mit der
+SEN/TRE/TRI/LTC und **nur interne**, `fteConvScope`). Die dritte Gruppe („ohne Rente") ist mit der
 ORE-Stufe entfallen — **kein** `active`/`fteActive` wieder einführen, das wären
 dieselben Zahlen unter zweitem Namen.
 
@@ -162,6 +162,12 @@ dieselben Zahlen unter zweitem Namen.
 danach; wer sie noch trug, hat sie per `_oreNoRente` verloren, ohne dass der
 Datensatz angefasst wurde. Freitext-Bemerkungen wie „Rente 2027" bleiben
 bewusst stehen — das ist selbst geschriebene Information.
+
+**Externe Trainer werden nicht umgeschult.** Sie sind Angestellte eines anderen
+Betriebs und bereits auf dem Muster qualifiziert. Die Regel steht in
+`isInternal()` und geht durch `conversionTrainers()`: Board, Dashboard,
+Kapazitäts-Spalte „in Umschulung", die Planung und alle drei Umschulungs-PDFs
+lesen sie von dort. Eine zweite Kopie der Bedingung irgendwo ist ein Fehler.
 
 **Migrationen sind durch ein Flag abgesichert** (`_provSeeded`, `_courseSeed2`,
 `_provStatus2`, `_qualMerge`, `_roleSeed`, `_palette3`, `_oreNoRente`, `_capNotes`) und

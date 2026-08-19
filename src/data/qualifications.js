@@ -38,9 +38,21 @@ export function isConversionQual(qual) {
   return CONVERSION_QUALS.includes(String(qual || '').trim())
 }
 
-// The trainers the conversion actually applies to.
+// An external trainer is somebody else's employee, already qualified on the
+// type. We do not convert them, so they take no seat, no course date and no
+// place in any conversion figure. Kept as a predicate of its own because two
+// places ask the question and "internal unless it says otherwise" is the rule
+// the whole app reads staffType by.
+export function isInternal(trainer) {
+  return (trainer?.staffType || 'internal') !== 'external'
+}
+
+// The trainers the conversion actually applies to: a converting qualification
+// AND one of ours. The single choke point - the board, the dashboard, the
+// capacity figures and all three conversion PDFs go through here, so the rule
+// cannot be right in one view and wrong in the next.
 export function conversionTrainers(trainers) {
-  return (trainers || []).filter((t) => isConversionQual(t.qual))
+  return (trainers || []).filter((t) => isConversionQual(t.qual) && isInternal(t))
 }
 
 // Index for sorting; unknown values sort last (stable, alphabetical among them).
