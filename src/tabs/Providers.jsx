@@ -2,6 +2,7 @@ import { STATUS } from '../lib/palette.js'
 import { useThemed } from '../lib/useThemed.js'
 import React, { useMemo, useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import ExportLink from '../components/ExportLink.jsx'
 import Modal from '../components/Modal.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { useSort, Th, SortSelect } from '../components/sortable.jsx'
@@ -84,6 +85,7 @@ export default function Providers() {
           ]}
         />
         <span className="push-right" />
+        <ExportLink id="providers" />
         {!readOnly && <button className="btn btn-primary" onClick={() => setEditing(emptyProvider(newId('prov')))}>+ {t('addProvider')}</button>}
       </div>
 

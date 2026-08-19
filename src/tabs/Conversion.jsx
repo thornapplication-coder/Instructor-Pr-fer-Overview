@@ -2,6 +2,7 @@ import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
+import ConvDetail from '../components/ConvDetail.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import HScroll from '../components/HScroll.jsx'
 import { stageIndex, stageLabel, firstStageId } from '../data/pipeline.js'
@@ -295,47 +296,6 @@ export default function Conversion({ embedded }) {
         </Modal>
       )}
     </div>
-  )
-}
-
-function ConvDetail({ trainer, stages, statusList, onClose, onSave }) {
-  const { t, lang, readOnly } = useStore()
-  const [c, setC] = useState({ ...trainer.conv })
-  const set = (k, v) => setC((s) => ({ ...s, [k]: v }))
-  return (
-    <Modal
-      title={trainer.name}
-      onClose={onClose}
-      footer={
-        <div className="foot-row">
-          <div className="push-right">
-            <button className="btn btn-ghost" onClick={onClose}>{t('cancel')}</button>
-            {!readOnly && <button className="btn btn-primary" onClick={() => onSave(c)}>{t('save')}</button>}
-          </div>
-        </div>
-      }
-    >
-      <div className="form-grid">
-        <Field label={t('stage')}>
-          <select className="input" value={c.stage} onChange={(e) => set('stage', e.target.value)}>
-            {stages.map((s) => <option key={s.id} value={s.id}>{stageLabel(s)}</option>)}
-          </select>
-        </Field>
-        <Field label={t('status')}>
-          <select className="input" value={c.status} onChange={(e) => set('status', e.target.value)}>
-            {statusList.map((v) => (
-              <option key={v.id} value={v.id}>{v.label}</option>
-            ))}
-          </select>
-        </Field>
-        <Field label={t('targetDate')} span2>
-          <DateInput value={c.target} onChange={(v) => set('target', v)} />
-        </Field>
-        <Field label={t('note')} span2>
-          <textarea className="input" rows={3} value={c.note} onChange={(e) => set('note', e.target.value)} />
-        </Field>
-      </div>
-    </Modal>
   )
 }
 

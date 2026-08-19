@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import ExportLink from '../components/ExportLink.jsx'
 import { hashParts, setHash } from '../lib/hash.js'
 import Conversion from './Conversion.jsx'
 import Planning from './Planning.jsx'
@@ -48,6 +49,7 @@ export default function ConversionHub({ capture }) {
       <div className="toolbar no-print hub-bar">
         <h2 className="pane-title">{t('tab_conversion')}</h2>
         <span className="push-right" />
+        <ExportLink id="conversion" />
         <div className="seg-toggle" role="group" aria-label={t('planning_view')}>
           {VIEWS.map((v) => (
             <button

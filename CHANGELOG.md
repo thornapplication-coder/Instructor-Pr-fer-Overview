@@ -11,6 +11,45 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.55.0] – 2026-08-19
+
+### Neu
+- **Export-Knopf auf jedem Reiter.** Der einzige Weg zum Export war das
+  Zahnrad — semantisch „Einstellungen", nicht „herunterladen"; auf keiner
+  Liste stand ein Hinweis darauf. Der neue Knopf navigiert in die Einstellungen
+  und **benennt die Zeile** (`#/settings/trainers`), die dort aufgeblendet und
+  ins Bild gescrollt wird. Er dupliziert keine Export-Logik: es bleibt bei
+  genau einem Weg, der exportiert.
+- **Das Phasen-Zeichen in der Trainer-Zeile öffnet den kurzen
+  Umschulungs-Dialog** (Phase, Status, Zieltermin, Notiz). Gemessen: vier
+  Felder, 0 px zu scrollen. Derselbe Vorgang über den vollen Trainer-Dialog
+  liegt 1255 px tief hinter vierzehn Feldern. Der Dialog selbst ist aus dem
+  Board herausgelöst (`src/components/ConvDetail.jsx`) und wird von beiden
+  Seiten benutzt — eine Kopie hätte irgendwann auseinandergelebt. Ein Klick auf
+  die Zeile öffnet weiterhin den ganzen Datensatz (`stopPropagation`).
+
+### Geändert
+- **Seitliche Sicherheitsabstände** (`safe-area-inset-left/right`) auf
+  `.content`. Oben und unten waren gesetzt, links und rechts nie — mit
+  `viewport-fit=cover` und erlaubtem Querformat verdeckt die Kerbe eines
+  iPhones genau die erste und die letzte Tabellenspalte, und diese App besteht
+  aus breiten Tabellen.
+- **`theme-color` folgt dem Dunkelmodus.** Zwei Angaben für die
+  Systemeinstellung, dazu ein Effekt neben `data-theme` für die im Programm
+  gespeicherte Wahl — die kann eine Media-Query nicht sehen.
+- **`background_color` ist die Seitenfarbe, nicht die der Kopfzeile.** Der
+  Startbildschirm der installierten App blitzte vollflächig burgunderrot und
+  wurde dann weiß. `theme_color` bleibt burgunderrot; das ist wirklich die
+  Leiste.
+- **`engines: node >=20`** in `package.json` (CI baut mit 20, diese Sandbox
+  fährt 22 — nichts erzwang bisher eine Übereinstimmung).
+- **`maximumFileSizeToCacheInBytes: 4 MiB`.** Der Standard liegt bei 2 MiB, und
+  was darüber liegt, fällt still aus dem Offline-Speicher: die App installiert
+  sich, sieht gesund aus und scheitert offline an genau diesem Stück.
+- **`.card-only-900`** ergänzt. Der Umschaltpunkt ist dokumentiert und zwei
+  Tabellen benutzen ihn, aber die Regel fehlte — ein `SortSelect at={900}` wäre
+  gerendert und niemals sichtbar gewesen.
+
 ## [1.54.0] – 2026-08-19
 
 ### Neu

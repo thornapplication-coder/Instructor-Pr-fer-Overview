@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import ExportLink from '../components/ExportLink.jsx'
 import { RoleTag } from '../components/tags.jsx'
 import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
@@ -103,6 +104,7 @@ export default function Pilots() {
           </button>
         )}
         <span className="push-right" />
+        <ExportLink id="pilots" />
         {!readOnly && <button className="btn btn-primary" onClick={addPilot}>+ {t('addPilot')}</button>}
       </div>
 

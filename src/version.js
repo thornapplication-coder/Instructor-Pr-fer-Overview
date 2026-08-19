@@ -4,12 +4,35 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.54.0'
+export const APP_VERSION = '1.55.0'
 export const APP_BUILD_DATE = '2026-08-19'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.55.0',
+    date: '2026-08-19',
+    type: 'minor',
+    changes: {
+      de: [
+        'Jeder Reiter hat jetzt einen eigenen Export-Knopf. Bisher gab es Export nur hinter dem Zahnrad — und ein Zahnrad heißt „Einstellungen", nicht „herunterladen". Der Knopf springt in die Einstellungen und genau auf die Zeile der Liste, in der du gerade stehst; sie leuchtet kurz auf. Exportiert wird weiter an genau einer Stelle.',
+        'Das Phasen-Zeichen in der Trainer-Zeile ist jetzt anklickbar und öffnet den kurzen Umschulungs-Dialog: Phase, Status, Zieltermin, Notiz — vier Felder, nichts zu scrollen. Über den vollen Trainer-Dialog lag derselbe Block hinter vierzehn anderen Feldern, knapp zwei Bildschirme tief. Die Zeile selbst öffnet weiterhin den ganzen Datensatz.',
+        'Am iPhone im Querformat werden jetzt auch die seitlichen Sicherheitsabstände beachtet. Oben und unten war das schon so; links und rechts hat die Kerbe die erste und letzte Tabellenspalte verdeckt.',
+        'Die Statusleiste folgt dem Dunkelmodus, statt immer burgunderrot zu bleiben.',
+        'Der burgunderrote Blitz beim Kaltstart der installierten App ist weg — das Startbild hat jetzt die Farbe der Seite statt die der Kopfzeile.',
+        'Vorsorge ohne sichtbare Wirkung: Node-Version festgeschrieben, Obergrenze für den Offline-Speicher gesetzt (darüber fielen Dateien still heraus), fehlende Regel für den 900-px-Umschaltpunkt ergänzt.'
+      ],
+      en: [
+        'Every tab now has an export button of its own. Until now export lived only behind the gear - and a gear means "settings", not "download". The button opens the settings at exactly the row for the list you are on, and that row flashes. There is still only one place that exports.',
+        'The phase badge in a trainer row is now a control: it opens the short conversion editor - phase, status, target date, note - four fields with nothing to scroll. Through the full trainer dialog the same block sat behind fourteen unrelated fields, nearly two screens down. The row itself still opens the whole record.',
+        'On an iPhone in landscape the side safe areas are respected too. Top and bottom already were; left and right let the notch cover the first and last table column.',
+        'The status bar follows dark mode instead of staying burgundy.',
+        'The burgundy flash when the installed app cold-starts is gone - the splash now uses the page colour rather than the top bar\'s.',
+        'Groundwork with no visible effect: the Node version is pinned, the offline cache has a stated ceiling (above it files were dropped silently), and the missing rule for the 900px breakpoint is in.'
+      ]
+    }
+  },
   {
     version: '1.54.0',
     date: '2026-08-19',

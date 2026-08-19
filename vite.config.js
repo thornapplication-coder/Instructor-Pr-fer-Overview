@@ -32,7 +32,11 @@ export default defineConfig({
           'Monitoring & Steuerung der Instruktoren und Prüfer für den 737 MAX Phase-In (Eurowings).',
         lang: 'de',
         theme_color: '#AF1E65',
-        background_color: '#AF1E65',
+        // The splash screen while the installed app boots. Burgundy is the
+        // TOPBAR's colour, not the page's - `body` paints var(--panel), so
+        // every cold start flashed full-screen burgundy and then went white.
+        // theme_color above stays burgundy; that one really is the bar.
+        background_color: '#f8f9fa',
         display: 'standalone',
         orientation: 'any',
         start_url: BASE,
@@ -45,6 +49,11 @@ export default defineConfig({
       },
       workbox: {
         globPatterns: ['**/*.{js,css,html,ico,png,svg,woff2}'],
+        // Anything above the default 2 MiB is dropped from the precache with
+        // nothing but a build-log line: the app installs, looks fine, and then
+        // fails offline on exactly that chunk. The main bundle grows every
+        // release, so the ceiling is stated rather than inherited.
+        maximumFileSizeToCacheInBytes: 4 * 1024 * 1024,
         navigateFallback: BASE + 'index.html',
         cleanupOutdatedCaches: true
       }

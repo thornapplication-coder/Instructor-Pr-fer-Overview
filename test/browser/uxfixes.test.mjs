@@ -383,6 +383,85 @@ export default async function run(browser, baseUrl, shots) {
     'the controls that had room simply grew (view switch ' + grown.seg +
     'px, topbar ' + grown.round + 'px, buttons ' + grown.btn + 'px)')
 
+  // ---- 10. the two ways that were there but unsignposted -----------------
+  //
+  // Export existed only behind the gear - an icon that means "settings", not
+  // "download" - and the short conversion editor existed only on the board.
+  // Both now have a door on the tab that asks the question.
+  await page.locator('.tab', { hasText: 'Trainer' }).first().click()
+  await page.waitForSelector('.trainer-table tbody tr')
+  await page.waitForTimeout(600)
+
+  ok(await page.locator('.export-link').count() === 1, 'the Trainer tab has an export button of its own')
+  await page.locator('.export-link').first().click()
+  await page.waitForTimeout(1500)
+  const landed = await page.evaluate(() => {
+    const row = document.querySelector('.dl-row.is-target')
+    const b = row && row.getBoundingClientRect()
+    return {
+      hash: window.location.hash,
+      which: row && row.getAttribute('data-export'),
+      inView: !!b && b.top > -10 && b.bottom < window.innerHeight + 10
+    }
+  })
+  ok(landed.which === 'trainers', '  and it opens the settings AT the trainer row (' + landed.which + ')')
+  ok(landed.inView, '  scrolled to where it can be read, not merely present in the page')
+  ok(landed.hash === '#/settings/trainers', '  the row is named in the address (' + landed.hash + ')')
+
+  // The phase badge in a trainer row edits the phase.
+  await page.locator('.tab', { hasText: 'Trainer' }).first().click()
+  await page.waitForSelector('.trainer-table tbody tr')
+  await page.waitForTimeout(600)
+  // Read the name from the row that OWNS the first badge, not from the first
+  // row: the checks above turned the top of the list external, and an external
+  // row has no phase badge at all - so the two were different people and the
+  // title never matched.
+  const who = await page.evaluate(() => {
+    const btn = document.querySelector('.stage-btn')
+    const row = btn && btn.closest('tr')
+    return row ? row.querySelector('.t-name').innerText.split('\n')[0].trim() : ''
+  })
+  const stageBefore = await page.evaluate((n) => {
+    const d = JSON.parse(localStorage.getItem('ewl737:data:v1'))
+    return (d.trainers.find((x) => x.name === n) || {}).conv?.stage
+  }, who)
+
+  await page.locator('.stage-btn').first().click()
+  await page.waitForSelector('.modal')
+  await page.waitForTimeout(600)
+  const short = await page.evaluate(() => {
+    const m = document.querySelector('.modal')
+    const body = m.querySelector('.modal-body')
+    return {
+      title: m.querySelector('h3').innerText.trim(),
+      fields: [...m.querySelectorAll('.field-label')].map((e) => e.innerText.trim()),
+      scroll: body.scrollHeight - body.clientHeight
+    }
+  })
+  ok(short.title === who, 'the phase badge opens the short editor, titled with the person (' + short.title + ')')
+  ok(short.fields.length === 4, '  four fields, not fifteen (' + short.fields.join(', ') + ')')
+  ok(short.scroll === 0, '  and nothing to scroll past to reach them (' + short.scroll + 'px)')
+
+  await page.locator('.modal .field', { hasText: 'Phase' }).first().locator('select').selectOption({ index: 3 })
+  await page.locator('.modal .btn-primary').first().click()
+  await page.waitForTimeout(900)
+  const stageAfter = await page.evaluate((n) => {
+    const d = JSON.parse(localStorage.getItem('ewl737:data:v1'))
+    return (d.trainers.find((x) => x.name === n) || {}).conv?.stage
+  }, who)
+  ok(stageAfter && stageAfter !== stageBefore,
+    '  and saving really moves the phase (' + stageBefore + ' -> ' + stageAfter + ')')
+
+  // The row itself must still open the whole record - the badge is an extra
+  // door, not a replacement, and stopPropagation is what keeps both working.
+  await page.locator('.trainer-table tbody tr').first().click()
+  await page.waitForSelector('.modal')
+  await page.waitForTimeout(500)
+  const full = await page.locator('.modal h3').innerText()
+  ok(/bearbeiten/i.test(full), 'tapping the row still opens the full record (' + full + ')')
+  await page.locator('.modal .modal-foot .btn-ghost').first().click()
+  await page.waitForTimeout(300)
+
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.screenshot({ path: shots + '/uxfixes-board.png' })
   await page.close()

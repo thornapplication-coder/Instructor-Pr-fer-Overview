@@ -513,6 +513,20 @@ export function StoreProvider({ children }) {
   const theme = data.theme || 'light'
   useEffect(() => {
     document.documentElement.setAttribute('data-theme', theme)
+    // The iOS status bar reads <meta name="theme-color">, and index.html
+    // carries a light/dark pair keyed on the SYSTEM setting. That pair cannot
+    // see the choice made in this app, so a reader on a light phone who turns
+    // the app dark kept a bright bar above a dark page. Rewrite the plain meta
+    // (the one with no media attribute) to follow the stored choice; the two
+    // media-keyed ones stay as the fallback for a browser that ignores it.
+    const bar = theme === 'dark' ? '#0f1216' : '#AF1E65'
+    let tag = document.querySelector('meta[name="theme-color"]:not([media])')
+    if (!tag) {
+      tag = document.createElement('meta')
+      tag.setAttribute('name', 'theme-color')
+      document.head.appendChild(tag)
+    }
+    tag.setAttribute('content', bar)
   }, [theme])
 
   // Viewer mode: the cloud is configured and nobody is signed in, so this

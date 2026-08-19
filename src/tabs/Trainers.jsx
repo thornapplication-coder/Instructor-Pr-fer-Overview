@@ -1,5 +1,7 @@
 import React, { useMemo, useRef, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import ExportLink from '../components/ExportLink.jsx'
+import ConvDetail from '../components/ConvDetail.jsx'
 import { AircraftTag, OreTag, RoleTag } from '../components/tags.jsx'
 import DateInput from '../components/DateInput.jsx'
 import Modal from '../components/Modal.jsx'
@@ -50,7 +52,7 @@ function StageBadge({ trainer, stages }) {
 
 export default function Trainers() {
   const tint = useThemed()
-  const { data, t, lang, upsertTrainer, deleteTrainer, newId, setQuals, readOnly } = useStore()
+  const { data, t, lang, upsertTrainer, deleteTrainer, newId, setQuals, setConversion, readOnly } = useStore()
   const { trainers, stages, quals } = data
   const qualColor = (id) => (quals.find((qq) => qq.id === id) || {}).color || OVERFLOW
   const [q, setQ] = useState('')
@@ -61,6 +63,8 @@ export default function Trainers() {
   const [fAircraft, setFAircraft] = useState('')
   const [fRole, setFRole] = useState('')
   const [editing, setEditing] = useState(null) // trainer object or null
+  // The short conversion editor, opened from the phase badge in the row.
+  const [convFor, setConvFor] = useState(null)
   const [manageQuals, setManageQuals] = useState(false)
 
   const bases = useMemo(() => [...new Set(trainers.map((x) => x.base))].sort(), [trainers])
@@ -225,6 +229,7 @@ export default function Trainers() {
           {rows.length} / {trainers.length} {t('showing')}
         </span>
         <span className="push-right" />
+        <ExportLink id="trainers" />
         <button className="btn btn-ghost" onClick={() => setManageQuals(true)}>
           ⚙ {t('manageQuals')}
         </button>
@@ -322,7 +327,23 @@ export default function Trainers() {
                   )}
                 </td>
                 <td role="cell" className="t-auth muted small" data-label={t('f_authority')}>{x.authority || '–'}</td>
-                <td role="cell" className={'t-stage' + (isOwnStaff(x) ? '' : ' cell-na')} data-label={t('f_conversion')}>{isOwnStaff(x) ? <StageBadge trainer={x} stages={stages} /> : '–'}</td>
+                <td role="cell" className={'t-stage' + (isOwnStaff(x) ? '' : ' cell-na')} data-label={t('f_conversion')}>{isOwnStaff(x) ? (
+                    /* Opens the four-field conversion editor rather than the
+                       full record. The same edit through the trainer dialog
+                       means scrolling past fourteen unrelated fields; the
+                       board has had the short way all along and nothing on
+                       this tab pointed at it. stopPropagation because the row
+                       itself opens the whole record. */
+                    <button
+                      type="button"
+                      className="stage-btn"
+                      title={t('editConversion')}
+                      aria-label={t('editConversion') + ' – ' + x.name}
+                      onClick={(e) => { e.stopPropagation(); setConvFor({ ...x }) }}
+                    >
+                      <StageBadge trainer={x} stages={stages} />
+                    </button>
+                  ) : '–'}</td>
                 <td role="cell" className="t-remark muted" data-label={t('f_remark')}><span className="cell-clamp" title={x.remark || ''}>{x.remark || '–'}</span></td>
                 <td role="cell" className="t-note muted" data-label={t('f_note')}><span className="cell-clamp" title={x.note || ''}>{x.note || '–'}</span></td>
               </tr>
@@ -367,6 +388,16 @@ export default function Trainers() {
               setEditing(null)
             }
           }}
+        />
+      )}
+
+      {convFor && (
+        <ConvDetail
+          trainer={convFor}
+          stages={stages}
+          statusList={data.convStatus}
+          onClose={() => setConvFor(null)}
+          onSave={(patch) => { setConversion(convFor.id, patch); setConvFor(null) }}
         />
       )}
 

@@ -211,7 +211,17 @@ button { font-family: inherit; }
 .tab.active { color: #fff; border-bottom-color: var(--sky-light); }
 
 /* ---------- Content ---------- */
-.content { flex: 1; padding: 22px; max-width: 1280px; width: 100%; margin: 0 auto; }
+/* The sides of a notched screen.
+   Top and bottom insets were already handled; left and right never were, and
+   with `viewport-fit=cover` plus `orientation: any` a landscape iPhone puts the
+   notch over one edge and the home indicator over the other. This app is full
+   of wide tables, so what got eaten was the first and the last column. `max()`
+   keeps the ordinary 22px everywhere the inset is zero. */
+.content {
+  flex: 1;
+  padding: 22px max(22px, env(safe-area-inset-right)) 22px max(22px, env(safe-area-inset-left));
+  max-width: 1280px; width: 100%; margin: 0 auto;
+}
 .tab-pane { display: flex; flex-direction: column; gap: 18px; }
 .pane-title { font-size: 18px; }
 
@@ -997,6 +1007,10 @@ textarea.input { resize: vertical; }
 .sort-select .input { width: auto; }
 .sort-select-label { font-size: 12px; font-weight: 800; color: var(--muted); white-space: nowrap; }
 .sort-dir { flex: none; }
+/* One line per documented breakpoint. 900 had no rule, so a `SortSelect at={900}`
+   next to one of the two card-at-900 tables would have rendered and never
+   shown - a control that exists and cannot be seen. */
+@media screen and (max-width: 900px) { .sort-select.card-only-900 { display: inline-flex; } }
 @media screen and (max-width: 1000px) { .sort-select.card-only-1000 { display: inline-flex; } }
 @media screen and (max-width: 1279px) { .sort-select.card-only-1280 { display: inline-flex; } }
 
@@ -1673,6 +1687,20 @@ textarea.input { resize: vertical; }
     color: #fff; background: var(--ink);
   }
 }
+
+/* The row a tab's export button asked for. A short flash, not a lasting mark:
+   it answers "did it take me to the right one" and then gets out of the way. */
+.dl-row.is-target { animation: dl-arrive 2.4s ease-out 1; }
+@keyframes dl-arrive {
+  0%, 55% { background: var(--sky-lightest); box-shadow: 0 0 0 2px var(--sky) inset; }
+  100% { background: transparent; box-shadow: none; }
+}
+.export-link { flex: none; }
+/* The phase badge in the trainer row is a control. It carries no button
+   chrome of its own - the badge already is the affordance - only the cursor
+   and a focus ring, so the column keeps exactly the width it had. */
+.stage-btn { border: 0; background: none; padding: 0; margin: 0; font: inherit; cursor: pointer; display: inline-flex; }
+.stage-btn:focus-visible { outline: 2px solid var(--burg); outline-offset: 2px; border-radius: 999px; }
 
 /* ---------- Touch targets ---------- */
 /*

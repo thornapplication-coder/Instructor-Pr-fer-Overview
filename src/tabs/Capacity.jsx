@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
+import ExportLink from '../components/ExportLink.jsx'
 import DateInput from '../components/DateInput.jsx'
 import { capacityByBase, capacityByQual, capacityByAircraft, conversionFteSummary, qualRankIndex } from '../lib/stats.js'
 import { targetsByMonth, monthLabel, stageName } from '../lib/alerts.js'
@@ -226,6 +227,8 @@ export default function Capacity() {
     <div className="tab-pane">
       <div className="toolbar no-print">
         <h2 className="pane-title">{t('capacity_title')}</h2>
+        <span className="push-right" />
+        <ExportLink id="capacity" />
       </div>
       <p className="planning-note">{t('capacity_hint')} {t('fteDefinition')}</p>
 

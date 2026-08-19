@@ -392,6 +392,12 @@ const DICT = {
     en: 'No trainer matches this search. Clearing the search box and the filters shows all of them again.'
   },
   clearFilters: { de: 'Filter zurücksetzen', en: 'Clear filters' },
+  export: { de: 'Export', en: 'Export' },
+  editConversion: { de: 'Umschulung ändern', en: 'Edit conversion' },
+  exportThis: {
+    de: 'Diese Liste exportieren – öffnet die Einstellungen bei der passenden Zeile',
+    en: 'Export this list – opens the settings at the matching row'
+  },
   stat_otherGroups: { de: 'Externe & Nicht-Trainer', en: 'External & non-trainers' },
   otherGroupsHint: {
     de: 'Die vier Gruppen ohne eigene Trainer-Berechtigung: zwei externe Grade und zwei, die gar kein Trainer-Grad sind. Keine davon zählt im Umschulungs-Kreis, alle zählen als Köpfe. Zusammen',

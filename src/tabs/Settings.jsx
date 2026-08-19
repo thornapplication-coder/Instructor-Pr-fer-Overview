@@ -12,6 +12,7 @@ import SyncCard from '../components/SyncCard.jsx'
 import CategoryManager from '../components/CategoryManager.jsx'
 import { EDITABLE_LISTS } from '../data/lists.js'
 import { persistenceStatus } from '../lib/persistence.js'
+import { hashParts } from '../lib/hash.js'
 import { capacityRange } from '../lib/months.js'
 
 // Per-page export choices, in tab-bar order. Planung and the course dates are
@@ -40,6 +41,19 @@ export default function Settings() {
   const { data, t, lang, setLang, exportData, importData, resetData, setTrainers, setPilots, setList, setCapacityRange, saveError, readOnly } = useStore()
   const captureTabImage = useContext(CaptureContext)
   const fileRef = useRef(null)
+  const dlRef = useRef(null)
+  // A tab's own export button lands here naming its row (#/settings/trainers).
+  // Read once on mount: the fragment is where the caller left it, and the
+  // highlight is a one-off arrival cue, not a state to keep in step.
+  const [target] = useState(() => hashParts()[1] || '')
+  useEffect(() => {
+    if (!target || !dlRef.current) return
+    const row = dlRef.current.querySelector('[data-export="' + target + '"]') || dlRef.current
+    // After paint: the downloads card sits far down a long page, and scrolling
+    // to it before the sections above have laid out lands short of it.
+    const id = setTimeout(() => row.scrollIntoView({ block: 'center', behavior: 'smooth' }), 120)
+    return () => clearTimeout(id)
+  }, [target])
   const xlsRef = useRef(null)
   const pilotRef = useRef(null)
   const [msg, setMsg] = useState(null)
@@ -213,12 +227,12 @@ export default function Settings() {
         )}
       </section>}
 
-      <section className="card downloads-card">
+      <section className="card downloads-card" ref={dlRef}>
         <h3 className="card-title">{t('downloads')}</h3>
         <p className="muted small">{t('downloadsHint')}</p>
         <div className="dl-list">
           {EXPORT_PAGES.map((p) => (
-            <div className="dl-row" key={p.id}>
+            <div className={'dl-row' + (target === p.id ? ' is-target' : '')} key={p.id} data-export={p.id}>
               <span className="dl-row-name">{t(p.key)}</span>
               <div className="dl-row-actions">
                 <button className="dl-chip pdf" disabled={!!pdfBusy} onClick={() => doPdf(p.id, 'save')}>
