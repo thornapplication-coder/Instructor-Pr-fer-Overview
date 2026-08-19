@@ -124,19 +124,19 @@ export default async function run(browser, baseUrl, shots) {
   // matters most. Out: an external trainer is somebody else's employee, already
   // qualified on the type - we do not convert them, so they take no seat and
   // appear in no conversion figure.
-  const poolBefore = await page.evaluate(() => {
-    const sub = document.querySelector('.kpi-sub')
-    return sub ? sub.innerText : ''
-  })
-  // Make three of the conversion-qualified people external.
+  // The baseline is the pool as it stands NOW: the checks above already added an
+  // external trainer on a conversion qualification, so counting "everyone with a
+  // conversion qualification" would count somebody who had left the pool before
+  // this block started and expect one too many to disappear.
   const counts = await page.evaluate((K) => {
     const d = JSON.parse(localStorage.getItem(K))
-    const conv = d.trainers.filter((t) => ['SEN', 'TRE', 'TRI', 'LTC'].includes(t.qual))
-    const picked = conv.slice(0, 3).map((t) => t.id)
+    const inPool = d.trainers.filter((t) =>
+      ['SEN', 'TRE', 'TRI', 'LTC'].includes(t.qual) && (t.staffType || 'internal') !== 'external')
+    const picked = inPool.slice(0, 3).map((t) => t.id)
     d.trainers = d.trainers.map((t) =>
       picked.includes(t.id) ? { ...t, staffType: 'external', extCompany: 'TUI' } : t)
     localStorage.setItem(K, JSON.stringify(d))
-    return { conv: conv.length }
+    return { pool: inPool.length }
   }, STORAGE_KEY)
   await page.reload({ waitUntil: 'networkidle' })
   // The app restores the open tab from the address, and we are on Trainer here -
@@ -149,14 +149,14 @@ export default async function run(browser, baseUrl, shots) {
   const scope = (await page.locator('.kpi-sub').first().innerText()).trim()
   ok(/ohne externe/.test(scope), 'the dashboard says the pool leaves external out (' + scope + ')')
   const n = Number((scope.match(/von (\d+)/) || [])[1])
-  ok(n === counts.conv - 3,
-    '  and the figure is three smaller (' + n + ' of ' + counts.conv + ')')
+  ok(n === counts.pool - 3,
+    '  and the figure is three smaller (' + n + ' of ' + counts.pool + ')')
 
   await page.locator('.tab', { hasText: 'Umschulung' }).first().click()
   await page.waitForSelector('.conv-card', { timeout: 8000 })
   await page.waitForTimeout(600)
   const cards = await page.locator('.conv-card').count()
-  ok(cards === counts.conv - 3, 'the board does not put them on it either (' + cards + ')')
+  ok(cards === counts.pool - 3, 'the board does not put them on it either (' + cards + ')')
 
   // Planning is entirely about the conversion courses, so they are not there to
   // be booked - leaving them would count as demand against a provider's seats.
@@ -233,7 +233,12 @@ export default async function run(browser, baseUrl, shots) {
     }
   })
   ok(badge.staffColumnShown === 0, 'the affiliation column is still off the card (that is why the badge exists)')
-  ok(badge.badges === 3, 'every external person carries a badge on the card (' + badge.badges + ')')
+  // Against the record, not against a literal: the checks above created one
+  // external trainer of their own, so "three" was only ever right by accident.
+  const externals = await page.evaluate((K) =>
+    JSON.parse(localStorage.getItem(K)).trainers.filter((t) => t.staffType === 'external').length, STORAGE_KEY)
+  ok(badge.badges === externals,
+    'every external person carries a badge on the card (' + badge.badges + ' of ' + externals + ')')
   ok(/extern/i.test(badge.text) && /TUI/.test(badge.text),
     '  saying extern and which company (' + badge.text + ')')
 
