@@ -5,11 +5,11 @@
 // yields 42.849999999999994 while adding it base by base yields 42.85. Those
 // round to 42.8 and 42.9, and the app did both in different places, so the same
 // 48 people showed two different totals depending on which card you read.
-import { capacityByBase, capacityByAircraft, capacityByQual, conversionFteSummary, headcount, sumFte } from '../src/lib/stats.js'
+import { capacityByBase, capacityByAircraft, capacityByQual, conversionFteSummary, headcount, sumFte, byQualGroup } from '../src/lib/stats.js'
 import { DEFAULT_STAGES } from '../src/data/pipeline.js'
 import { SEED_TRAINERS } from '../src/data/seed.js'
 import { fteFromPartTime } from '../src/lib/format.js'
-import { normalizeQual, conversionTrainers } from '../src/data/qualifications.js'
+import { normalizeQual, conversionTrainers, OTHER_QUALS } from '../src/data/qualifications.js'
 
 const fails = []
 export const results = { fails }
@@ -132,4 +132,40 @@ console.log('\nFTE – the sum does not depend on the order it is added in')
   active.forEach((t, i) => groups[i % 3].push(t))
   const viaGroups = Math.round(groups.reduce((s, g) => s + sumFte(g) * 100, 0)) / 100
   ok(viaGroups === sumFte(active), `summing three arbitrary groups gives the same (${viaGroups})`)
+}
+
+
+console.log('\nThe four groups that are not one of our trainer grades')
+{
+  const people = [
+    { id: 'a', qual: 'TREX', fte: 1 },
+    { id: 'b', qual: 'TREX', fte: 0.5 },
+    { id: 'c', qual: 'TRIX', fte: 0.5 },
+    { id: 'd', qual: 'NOTR', fte: 1 },
+    // Not one of the four, and it must not leak into any of them.
+    { id: 'e', qual: 'TRI', fte: 1 }
+  ]
+  const g = byQualGroup(people, OTHER_QUALS)
+  ok(g.rows.length === 4, 'four groups asked for, four rows back (' + g.rows.length + ')')
+  ok(g.rows.map((r) => r.key).join(',') === OTHER_QUALS.join(','),
+    'in the order they were asked for (' + g.rows.map((r) => r.key).join(', ') + ')')
+  ok(g.rows[0].count === 2 && g.rows[0].fte === 1.5, 'a group counts its people and their FTE (2 / 1.5)')
+  // A group at zero is an answer. Dropping the row would leave the reader
+  // unable to tell "none" from "not asked about".
+  ok(g.rows[3].count === 0 && g.rows[3].fte === 0, 'a group with nobody in it keeps its row at zero')
+  ok(g.totals.count === 4 && g.totals.fte === 3,
+    'the total covers the four and nothing else (' + g.totals.count + ' / ' + g.totals.fte + ')')
+
+  // The grand total comes from the raw people, never from adding up rows that
+  // have already been rounded - the same rule every other FTE figure follows.
+  const thirds = [
+    { id: 'x', qual: 'TREX', fte: 0.05 },
+    { id: 'y', qual: 'TRIX', fte: 0.05 },
+    { id: 'z', qual: 'NOTR', fte: 0.05 }
+  ]
+  const t3 = byQualGroup(thirds, OTHER_QUALS)
+  ok(t3.totals.fte === 0.15, 'three times 0.05 is 0.15, not 0.15000000000000002 (' + t3.totals.fte + ')')
+
+  ok(byQualGroup(null, OTHER_QUALS).totals.count === 0, 'no people at all is zero, not a crash')
+  ok(byQualGroup(people, []).rows.length === 0, 'no groups asked for is no rows')
 }

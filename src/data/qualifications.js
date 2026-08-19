@@ -58,6 +58,13 @@ export function isConversionQual(qual) {
 // also has no business ASKING about a conversion for somebody on one of them.
 export const EXTERNAL_QUALS = ['TREX', 'TRIX']
 
+// The four entries on the roster that are not one of OUR trainer grades: the
+// two external grades, and the two that are not a trainer grade at all. They
+// share one property and it is the interesting one - none of them takes part
+// in the conversion - but they are four different answers to "why not", which
+// is why they get a figure each rather than a single "rest" bucket.
+export const OTHER_QUALS = ['TREX', 'TRIX', 'NOTR', 'EIS']
+
 // Is this person one of ours? Both ways of being external answer no: the
 // affiliation, and a qualification grade that says "extern" in its own name.
 //

@@ -11,6 +11,28 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.51.0] – 2026-08-19
+
+### Neu
+- **Dashboard-Karte „Externe & Nicht-Trainer".** Die vier Gruppen ohne eigene
+  Trainer-Berechtigung — TRE extern, TRI extern, No Trainer, EIS Pilot — je mit
+  Kopfzahl und FTE, dazu die Summe beider.
+- **Als Zahlen, nicht als Balken.** Am Ende des Berechtigungs-Diagramms standen
+  die vier als leere Streifen. Ein Balken hat für Nichts keine Länge, also liest
+  sich ein leerer Streifen nicht als „keiner", sondern als Diagramm, das nicht
+  geladen hat. Eine Zahl sagt „0" eindeutig — und trägt eine zweite daneben,
+  was ein Balken nicht kann.
+- **Zwei Zahlen je Gruppe.** Vier externe Instruktoren in Teilzeit sind vier
+  Köpfe und zwei FTE; geplant wird mit der zweiten. Die FTE laufen wie überall
+  durch `sumFte()`/`formatFte1()`, und die Gesamtsumme kommt aus den Rohwerten,
+  nicht durch Aufaddieren gerundeter Zeilen.
+- **Eine Gruppe bei null bleibt stehen** und tritt nur farblich zurück: welche
+  der vier leer ist, ist selbst die Auskunft.
+- **Im Dashboard-PDF** steht dieselbe Aufstellung als Tabelle mit Summenzeile.
+- Die Karte ist wie jede andere über „⠿ Anordnen" verschiebbar; eine schon
+  gespeicherte Reihenfolge kennt sie nicht und hängt sie hinten an
+  (`ordered()` war dafür bereits vorbereitet).
+
 ## [1.50.0] – 2026-08-19
 
 ### Geändert

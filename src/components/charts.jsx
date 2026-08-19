@@ -116,6 +116,33 @@ export function HBars({ data, colorFn }) {
   )
 }
 
+// ---- Small groups: figures, not bars --------------------------------------
+//
+// Four categories that are usually at or near zero drew four empty tracks, and
+// an empty track does not read as "none" - it reads as a chart that failed to
+// load. That is exactly what a bar cannot say: its whole language is length,
+// and it has no length for nothing.
+//
+// A number says none unambiguously, and it can carry a second one beside it.
+// These four are worth two: how many people, and how much FTE - four external
+// instructors at half time are four people and two FTE, and for a phase-in it
+// is the second figure that plans.
+export function GroupTiles({ data, format, sub }) {
+  const pick = useChartColor()
+  return (
+    <div className="group-tiles">
+      {data.map((d, i) => (
+        <div className={'group-tile' + (d.count ? '' : ' is-empty')} key={d.key}>
+          <span className="group-tile-mark" style={{ background: pick(d.color, i) }} />
+          <div className="group-tile-label" title={d.label || d.key}>{d.label || d.key}</div>
+          <div className="group-tile-value">{d.count}</div>
+          <div className="group-tile-sub">{(format ? format(d.fte) : d.fte) + ' ' + (sub || 'FTE')}</div>
+        </div>
+      ))}
+    </div>
+  )
+}
+
 // ---- Stacked horizontal bars (one bar per row, split into series) ---------
 // data rows: { key, label?, [series.key]: number }. series: [{ key, label, color }].
 export function StackedBars({ data, series }) {

@@ -441,6 +441,11 @@ const DICT = {
     en: 'No trainer matches this search. Clearing the search box and the filters shows all of them again.'
   },
   clearFilters: { de: 'Filter zurücksetzen', en: 'Clear filters' },
+  stat_otherGroups: { de: 'Externe & Nicht-Trainer', en: 'External & non-trainers' },
+  otherGroupsHint: {
+    de: 'Die vier Gruppen ohne eigene Trainer-Berechtigung: zwei externe Grade und zwei, die gar kein Trainer-Grad sind. Keine davon zählt im Umschulungs-Kreis, alle zählen als Köpfe. Zusammen',
+    en: 'The four groups with no trainer grade of ours: two external grades and two that are not a trainer grade at all. None counts in the conversion pool; all count as head-count. Together'
+  },
   discardChanges: {
     de: 'Es gibt ungespeicherte Änderungen. Dialog schließen und sie verwerfen?',
     en: 'There are unsaved changes. Close the dialog and discard them?'

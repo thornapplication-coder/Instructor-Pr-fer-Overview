@@ -381,6 +381,27 @@ button { font-family: inherit; }
   .alert-pill { min-height: 44px; padding: 8px 16px; }
 }
 
+/* Small groups as figures. Two per line on a phone, four from 520px up: four
+   across a 390px screen would put "TRE extern" on three lines each. */
+.group-tiles { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+@media screen and (min-width: 520px) { .group-tiles { grid-template-columns: repeat(4, minmax(0, 1fr)); } }
+.group-tile {
+  position: relative; background: var(--panel2); border-radius: var(--radius-sm);
+  padding: 12px 12px 12px 16px; overflow: hidden;
+}
+/* The category's own colour, as a spine rather than a fill: these four are
+   identities, and two of them share the overflow grey on purpose. */
+.group-tile-mark { position: absolute; left: 0; top: 0; bottom: 0; width: 5px; }
+.group-tile-label {
+  font-size: 12px; font-weight: 700; color: var(--muted); line-height: 1.25;
+  min-height: 2.5em; overflow-wrap: anywhere;
+}
+.group-tile-value { font-size: 26px; font-weight: 900; color: var(--ink); line-height: 1.1; }
+.group-tile-sub { font-size: 11.5px; color: var(--muted); font-weight: 700; }
+/* A group at zero is an answer, not an error - it stays legible and simply
+   steps back. Not hidden: which of the four is empty is the information. */
+.group-tile.is-empty .group-tile-value { color: var(--muted); }
+
 /* ---------- Inputs & buttons ---------- */
 .input {
   border: 1px solid var(--hair); background: #fff; color: var(--text);

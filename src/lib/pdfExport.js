@@ -8,13 +8,14 @@ import { stageLabel, firstStageId } from '../data/pipeline.js'
 import { qualLabel } from '../data/qualifications.js'
 import { courseLabel, simVersionLabel } from '../data/providers.js'
 import { pilotRole, pilotValidity, ratingValid } from '../data/pilots.js'
-import { conversionTrainers, isOwnStaff } from '../data/qualifications.js'
+import { conversionTrainers, isOwnStaff, OTHER_QUALS } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import {
   headcount,
   conversionSummary,
   conversionFteSummary,
   byQual,
+  byQualGroup,
   byBase,
   byOre,
   byAuthority,
@@ -516,6 +517,17 @@ async function exportDashboardPdf(data, t, lang, opts) {
     columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } }
   })
   bd(t('chart_role'), [{ key: t('role_captain'), count: hc.captains }, { key: t('role_fo'), count: hc.firstOfficers }])
+  // The four groups without a trainer grade of ours. Two columns, not one:
+  // four external instructors at half time are four people and two FTE, and
+  // the sheet is read by somebody planning against the second figure.
+  const og = byQualGroup(trainers, OTHER_QUALS)
+  table(ctx, {
+    section: t('stat_otherGroups'),
+    head: [t('category'), t('count'), 'FTE'],
+    body: og.rows.map((r) => [qualLabel(data.quals, r.key), String(r.count), formatFte1(r.fte, lang)]),
+    foot: [[t('total'), String(og.totals.count), formatFte1(og.totals.fte, lang)]],
+    columnStyles: { 1: { halign: 'right', cellWidth: 60 }, 2: { halign: 'right', cellWidth: 60 } }
+  })
   bd(t('stat_base'), byBase(trainers))
   bd(t('stat_aircraft'), AIRCRAFT.map((a) => ({ key: a, count: trainers.filter((x) => x.aircraft === a).length })))
   bd(t('stat_authority'), byAuthority(trainers))

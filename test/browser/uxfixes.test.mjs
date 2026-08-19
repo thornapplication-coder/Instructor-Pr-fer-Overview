@@ -238,6 +238,63 @@ export default async function run(browser, baseUrl, shots) {
   await page.keyboard.press('Escape')
   await page.waitForTimeout(300)
 
+  // ---- 8. the four groups that are not one of our trainer grades ----------
+  //
+  // They used to sit at the tail of the qualification chart as four empty
+  // tracks. A bar has no length for nothing, so an empty track reads as a
+  // chart that failed rather than as an answer of "none" - which is why these
+  // four are figures, and why the check is that they survive being at zero.
+  await page.locator('.tab', { hasText: 'Dashboard' }).first().click()
+  await page.waitForSelector('.kpi-hero')
+  await page.waitForTimeout(700)
+
+  const otherCard = page.locator('.card', { hasText: 'Externe & Nicht-Trainer' }).first()
+  ok(await otherCard.count() === 1, 'the dashboard has a card of its own for the four groups')
+  const zeroText = await otherCard.innerText()
+  ok(['TRE extern', 'TRI extern', 'No Trainer', 'EIS Pilot'].every((g) => zeroText.includes(g)),
+    '  naming all four, with nobody in any of them yet')
+  ok((await otherCard.locator('.group-tile').count()) === 4,
+    '  as four figures rather than four empty bars')
+
+  // Fill them and read the figures back.
+  await page.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    const want = ['TREX', 'TREX', 'TRIX', 'NOTR']
+    let n = 0
+    d.trainers = d.trainers.map((t) => (n < want.length ? { ...t, qual: want[n++], fte: n === 2 ? 0.5 : 1 } : t))
+    localStorage.setItem(K, JSON.stringify(d))
+  }, STORAGE_KEY)
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.waitForSelector('.kpi-hero')
+  await page.waitForTimeout(800)
+
+  const filled = page.locator('.card', { hasText: 'Externe & Nicht-Trainer' }).first()
+  const tiles = await filled.locator('.group-tile').evaluateAll((els) =>
+    els.map((e) => ({
+      label: e.querySelector('.group-tile-label').innerText.trim(),
+      value: e.querySelector('.group-tile-value').innerText.trim(),
+      sub: e.querySelector('.group-tile-sub').innerText.trim(),
+      empty: e.classList.contains('is-empty')
+    })))
+  const trex = tiles.find((x) => x.label === 'TRE extern')
+  ok(trex && trex.value === '2', 'the counts are the real ones (TRE extern = ' + trex?.value + ')')
+  ok(trex && trex.sub === '1,5 FTE',
+    '  and the FTE beside them is formatted like every other FTE on the page (' + trex?.sub + ')')
+  ok(tiles.find((x) => x.label === 'EIS Pilot')?.empty === true,
+    '  a group still at zero stays visible and steps back rather than vanishing')
+  ok((await filled.locator('.card-total').innerText()).includes('4'),
+    '  and the card total is the four groups together, not the whole roster')
+
+  const geom = await page.evaluate(() => {
+    const tilesEls = [...document.querySelectorAll('.group-tile')]
+    return {
+      worst: Math.max(0, ...tilesEls.map((e) => e.scrollWidth - e.clientWidth)),
+      page: document.documentElement.scrollWidth - document.documentElement.clientWidth
+    }
+  })
+  ok(geom.worst === 0 && geom.page === 0,
+    '  and nothing overflows at phone width (' + geom.worst + 'px / ' + geom.page + 'px)')
+
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.screenshot({ path: shots + '/uxfixes-board.png' })
   await page.close()

@@ -53,6 +53,27 @@ function bySize(map) {
 export function byQual(trainers, order) {
   return ordered(tally(trainers, (t) => t.qual), order && order.length ? order : QUAL_ORDER)
 }
+// Head-count AND FTE for a named set of qualifications, every one keeping its
+// row at zero.
+//
+// Two figures rather than one because they answer different questions: four
+// external instructors at 0.5 are four people and two FTE, and for a phase-in
+// the second number is the one that plans. Kept out of `byQual()` because that
+// one is a tally of the whole roster and its total has to add up to it.
+//
+// FTE through cents()/sumFte, and the grand total from the raw list rather
+// than by adding the rows back up - the rounding is made exactly once.
+export function byQualGroup(trainers, ids) {
+  const want = ids && ids.length ? ids : []
+  const list = trainers || []
+  const rows = want.map((id) => {
+    const members = list.filter((t) => String(t.qual || '').trim() === id)
+    return { key: id, count: members.length, fte: sumFte(members) }
+  })
+  const all = list.filter((t) => want.includes(String(t.qual || '').trim()))
+  return { rows, totals: { count: all.length, fte: sumFte(all) } }
+}
+
 export function byBase(trainers) {
   return ordered(tally(trainers, (t) => t.base), BASE_ORDER)
 }

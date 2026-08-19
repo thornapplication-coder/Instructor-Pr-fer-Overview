@@ -4,12 +4,35 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.50.0'
+export const APP_VERSION = '1.51.0'
 export const APP_BUILD_DATE = '2026-08-19'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.51.0',
+    date: '2026-08-19',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neue Karte auf dem Dashboard: „Externe & Nicht-Trainer" — TRE extern, TRI extern, No Trainer und EIS Pilot, jede Gruppe mit Kopfzahl und FTE.',
+        'Als Zahlen, nicht als Balken. Am Ende des Berechtigungs-Diagramms standen die vier als leere Streifen, und ein leerer Streifen sagt nicht „keiner" — er sieht aus wie ein Diagramm, das nicht geladen hat. Ein Balken hat für Nichts keine Länge; eine Zahl schon.',
+        'Zwei Zahlen je Gruppe, weil sie verschiedene Fragen beantworten: vier externe Instruktoren in Teilzeit sind vier Köpfe und zwei FTE — und geplant wird mit der zweiten.',
+        'Eine Gruppe bei null bleibt stehen und tritt nur zurück. Welche der vier leer ist, ist selbst die Auskunft.',
+        'Im Dashboard-PDF steht dieselbe Aufstellung als Tabelle, mit Summenzeile.',
+        'Die Karte lässt sich wie jede andere per „⠿ Anordnen" verschieben.'
+      ],
+      en: [
+        'A new dashboard card: "External & non-trainers" - TRE extern, TRI extern, No Trainer and EIS Pilot, each group with its head count and its FTE.',
+        'As figures, not bars. At the tail of the qualification chart the four drew empty tracks, and an empty track does not say "none" - it looks like a chart that failed to load. A bar has no length for nothing; a number does.',
+        'Two figures per group, because they answer different questions: four external instructors on part time are four people and two FTE - and it is the second one that plans.',
+        'A group at zero stays visible and merely steps back. Which of the four is empty is itself the information.',
+        'The dashboard PDF carries the same breakdown as a table, with a total row.',
+        'The card can be moved like any other under "⠿ Anordnen".'
+      ]
+    }
+  },
   {
     version: '1.50.0',
     date: '2026-08-19',

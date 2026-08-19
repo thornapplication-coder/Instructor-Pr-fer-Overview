@@ -1,13 +1,14 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import KpiTile from '../components/KpiTile.jsx'
-import { Donut, NestedBars, HBars, ProgressRing, StackedBars, colorAt } from '../components/charts.jsx'
+import { Donut, GroupTiles, NestedBars, HBars, ProgressRing, StackedBars, colorAt } from '../components/charts.jsx'
 import { useThemed } from '../lib/useThemed.js'
 import {
   headcount,
   conversionSummary,
   byBase,
   byQual,
+  byQualGroup,
   byOre,
   byAuthority,
   byPartTime,
@@ -19,7 +20,7 @@ import {
   capacityByAircraft
 } from '../lib/stats.js'
 import { conversionProgress, STAFF_TYPE } from '../data/pipeline.js'
-import { qualLabel, conversionTrainers, CONVERSION_QUALS } from '../data/qualifications.js'
+import { qualLabel, conversionTrainers, CONVERSION_QUALS, OTHER_QUALS } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { AC_COLORS, CATEGORICAL, MEASURE_WHOLE, MEASURE_PART, ORE_COLORS, STATUS, BRAND, ROLE_CPT, ROLE_FO } from '../lib/palette.js'
 import { formatFte1 } from '../lib/format.js'
@@ -120,6 +121,21 @@ export default function Dashboard() {
   const fteS = conversionFteSummary(convPool, stages)
   const qualData = byQual(trainers, qualOrder).map((r) => ({ ...r, label: qualLabel(qualDefs, r.key) }))
   const qualAc = qualByAircraft(trainers, qualOrder, AIRCRAFT).map((r) => ({ ...r, label: qualLabel(qualDefs, r.key) }))
+  // The four groups that are not one of our own trainer grades. They sit at
+  // the tail of the qualification chart, where four bars at zero say nothing
+  // and look like a chart that failed - so they get a card of their own, as
+  // figures, with the FTE beside the head count.
+  const otherGroups = useMemo(() => {
+    const g = byQualGroup(trainers, OTHER_QUALS)
+    return {
+      ...g,
+      rows: g.rows.map((r) => ({
+        ...r,
+        label: qualLabel(qualDefs, r.key),
+        color: (qualDefs.find((q) => q.id === r.key) || {}).color
+      }))
+    }
+  }, [trainers, qualDefs])
   const bases = byBase(trainers)
   // ORE is the conversion priority, so it follows the conversion scope.
   const ore = byOre(convPool).map((r) => ({ ...r, color: ORE_COLORS[r.key] }))
@@ -188,6 +204,17 @@ export default function Dashboard() {
             ]}
             centerBottom="CPT / FO"
           />
+        </Card>
+      )
+    },
+    {
+      id: 'otherGroups',
+      node: (
+        <Card title={t('stat_otherGroups')} total={otherGroups.totals.count}>
+          <GroupTiles data={otherGroups.rows} format={fte1} />
+          <p className="stat-hint">
+            {t('otherGroupsHint')} {fte1(otherGroups.totals.fte)} FTE.
+          </p>
         </Card>
       )
     },
