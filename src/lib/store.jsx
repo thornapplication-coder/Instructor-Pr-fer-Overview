@@ -29,7 +29,7 @@ import {
   defaultStaffTypes,
   defaultExtCompanies
 } from '../data/lists.js'
-import { BRAND, migrateColors } from './palette.js'
+import { BRAND, migrateColors, stageRamp } from './palette.js'
 
 const STORAGE_KEY = 'ewl737:data:v1'
 const SCHEMA = 2
@@ -688,7 +688,17 @@ export function StoreProvider({ children }) {
           dashboard: { ...(d.dashboard || { order: {} }), order: { ...((d.dashboard && d.dashboard.order) || {}), [zone]: ids } }
         })),
 
-      setStages: (stages) => patch((d) => ({ ...d, stages })),
+      // A stage's colour is not a free choice, it is its POSITION: the ramp
+      // runs light to dark so the order can be read off the board without
+      // reading the labels. The list is user-editable, so the ramp has to be
+      // re-spread every time its length or order changes - a seventh stage used
+      // to come out plain burgundy and sit anywhere in the sequence, which is
+      // the ordinal reading gone. `stageRamp` was written for exactly this and
+      // was wired to nothing.
+      setStages: (stages) => {
+        const ramp = stageRamp(stages.length)
+        patch((d) => ({ ...d, stages: stages.map((s, i) => ({ ...s, color: ramp[i] })) }))
+      },
       setQuals: (quals) => patch((d) => ({ ...d, quals })),
       setAssignmentSteps: (assignmentSteps) => patch((d) => ({ ...d, assignmentSteps })),
       setConversionAircraft: (from, to) =>

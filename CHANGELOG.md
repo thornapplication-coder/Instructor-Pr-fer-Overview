@@ -11,6 +11,41 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.53.0] – 2026-08-19
+
+### Geändert
+- **Mulish wird von dieser Seite ausgeliefert, nicht mehr von Google.** Zwei
+  Gründe. Offline — die Eigenschaft, mit der diese App wirbt — konnte das
+  Google-Stylesheet nicht laden, die Oberfläche fiel auf `system-ui` zurück,
+  und jede Breite in `styles.css` ist gegen Mulish gemessen; der PDF-Export
+  rendert über html2canvas das lebende DOM, also paginierte dasselbe Dashboard
+  online anders als offline. Und jeder Aufruf schickte die IP-Adresse des
+  Lesers an Google (LG München I, 20.01.2022, 3 O 17493/20). Vier Dateien,
+  118 KB: latin und latin-ext, aufrecht und kursiv, alle im Offline-Speicher.
+- **Tippziele auf 44 px.** Gemessen bei 390 px waren 25 Bedienelemente kleiner
+  — das ✕ im Dialog 27×20, die Listen-Pfeile 30×26, der Name auf einer
+  Board-Karte 94×16. Zwei Verfahren: wo die Umgebung es hergibt, wächst der
+  Knopf selbst; wo die Breite auf den Pixel festgelegt ist, trägt ein
+  unsichtbares `::after` die tastbare Fläche, ohne das Layout anzufassen.
+  Gilt nur für Touch und schmale Fenster.
+- **Phasenfarben kommen aus der Position.** `stageRamp()` war geschrieben und an
+  nichts angeschlossen: eine siebte Phase bekam schlicht Burgunderrot, womit die
+  ordinale Lesbarkeit weg war. `setStages` verteilt die Rampe jetzt bei jeder
+  Änderung neu, und der Farbwähler in der Phasen-Verwaltung ist entfallen — er
+  bot eine Wahl an, die der Speicher sofort überschrieben hat.
+
+### Entfernt
+- **40 Wörterbuch-Einträge** ohne Leser (404 → 364), darunter der ganze
+  `alerts_*`-Block der abgelösten Dashboard-Karte und zwei Reiter-Namen aus
+  Version 1.3.
+- **24 CSS-Regeln** ohne Klasse im Quelltext: die Anbieter-Auslastungsleiste,
+  die alte Alarm-Karte, die gestapelte Pipeline-Leiste, `.mini-table`,
+  `.ore-Rente`. **Nicht** entfernt wurden `.alert-overdue` / `.alert-risk` —
+  die werden zur Laufzeit zusammengesetzt und sehen für eine Textsuche tot aus.
+- **6 Funktionen/Konstanten** ohne Aufrufer: `LANGS`, `VALID_COLOR`,
+  `EXPIRED_COLOR`, `monthOf`, `MEASURE_PART_DARK` — und `stageRamp`, das
+  stattdessen angeschlossen wurde.
+
 ## [1.52.0] – 2026-08-19
 
 Ergebnis eines Audits über Doku, Build/Deploy und Quelltext.

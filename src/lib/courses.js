@@ -32,11 +32,6 @@ export function dayValue(s) {
   return t
 }
 
-export function monthOf(dateStr) {
-  const m = /^(\d{4})-(\d{2})-\d{2}$/.exec(String(dateStr || '').trim())
-  return m ? m[1] + '-' + m[2] : null
-}
-
 // Inclusive length in days: Monday to Friday is five days, not four. That is
 // how a course is sold and how a roster reads it. null when the pair is
 // unusable – a missing half, or an end before its start.

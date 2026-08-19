@@ -1,7 +1,5 @@
 // Lightweight i18n. Two languages: de (default) and en. t('key') falls back to the
 // key itself if missing, so the app never crashes on an untranslated string.
-export const LANGS = ['de', 'en']
-
 const DICT = {
   // ---- generic / chrome
   appTitle: { de: 'Trainer & Prüfer Monitoring', en: 'Trainer & Examiner Monitoring' },
@@ -31,11 +29,9 @@ const DICT = {
   no: { de: 'Nein', en: 'No' },
 
   // ---- tabs
-  tab_overview: { de: 'Übersicht', en: 'Overview' },
   tab_dashboard: { de: 'Dashboard', en: 'Dashboard' },
   tab_trainers: { de: 'Trainer', en: 'Trainers' },
   tab_conversion: { de: 'Umschulung', en: 'Conversion' },
-  tab_statistics: { de: 'Statistik', en: 'Statistics' },
   tab_providers: { de: 'Provider', en: 'Providers' },
   tab_planning: { de: 'Planung', en: 'Planning' },
   tab_capacity: { de: 'Kapazität', en: 'Capacity' },
@@ -91,11 +87,8 @@ const DICT = {
   },
   fteInConversionShort: { de: 'FTE in Umschulung', en: 'FTE in conversion' },
   fteAvailableShort: { de: 'FTE verfügbar', en: 'FTE available' },
-  chart_byQual: { de: 'Nach Qualifikation', en: 'By qualification' },
-  chart_byBase: { de: 'Nach Base', en: 'By base' },
   chart_byOre: { de: 'ORE-Priorität (A–C)', en: 'ORE priority (A–C)' },
   chart_pipeline: { de: 'Umschulungs-Pipeline', en: 'Conversion pipeline' },
-  chart_convProgress: { de: 'Umschulungs-Fortschritt', en: 'Conversion progress' },
   chart_qualByAircraft: { de: 'Qualifikation je Aircraft', en: 'Qualification by aircraft' },
   chart_role: { de: 'Captain / First Officer', en: 'Captain / First Officer' },
   chart_headFteBase: { de: 'Köpfe vs. FTE je Base', en: 'Heads vs. FTE per base' },
@@ -203,19 +196,7 @@ const DICT = {
 
   // ---- other pilots (company line pilots, not trainers)
   pilots_title: { de: 'Other Pilots – Piloten der Firma', en: 'Other pilots – company pilots' },
-  pilots_hint: {
-    de: 'Linienpiloten der Firma (keine Trainer/Prüfer): mit gültigem B737-Rating, mit abgelaufenem Rating oder mit Boeing-Erfahrung ohne aktuelles Rating.',
-    en: 'Company line pilots (not trainers/examiners): holding a valid B737 rating, an expired rating, or Boeing experience without a current rating.'
-  },
-  pilots_empty: {
-    de: 'Noch keine Piloten erfasst. Lege den ersten an oder importiere eine Excel-Datei in den Einstellungen.',
-    en: 'No pilots yet. Add the first one or import an Excel file from Settings.'
-  },
   pilots_none: { de: 'Keine Piloten gefunden.', en: 'No pilots found.' },
-  pilots_overdueHint: {
-    de: 'Als gültig markiert, das Datum liegt aber in der Vergangenheit.',
-    en: 'Marked as valid, but the date is in the past.'
-  },
   addPilot: { de: 'Pilot hinzufügen', en: 'Add pilot' },
   editPilot: { de: 'Pilot bearbeiten', en: 'Edit pilot' },
   deletePilotConfirm: { de: 'Diesen Piloten wirklich löschen?', en: 'Really delete this pilot?' },
@@ -233,10 +214,6 @@ const DICT = {
     de: 'Eine Person kann mehrere Muster mit unterschiedlicher Gültigkeit haben. Gültig und Abgelaufen werden immer gegen das heutige Datum gerechnet, nicht gespeichert.',
     en: 'A person can hold several types with different expiry dates. Valid and Expired are always worked out against today, never stored.'
   },
-  f_b737Status: { de: 'B737-Status', en: 'B737 status' },
-  f_b737Until: { de: 'Gültig bis / abgelaufen am', en: 'Valid until / expired on' },
-  f_b737ValidUntil: { de: 'Gültig bis', en: 'Valid until' },
-  f_b737ExpiredOn: { de: 'Abgelaufen am', en: 'Expired on' },
   pilotsImport_title: { de: 'Other Pilots aus Excel importieren', en: 'Import other pilots from Excel' },
   pilotsImport_hint: {
     de: 'Spalten werden über die Überschriften erkannt: Name, TLC, Base, Position (Captain/FO), Status (gültig / abgelaufen / Erfahrung) und Datum. Bestehende Piloten werden per TLC (sonst Name) aktualisiert, neue ergänzt.',
@@ -252,17 +229,6 @@ const DICT = {
   role_foShort: { de: 'FO', en: 'FO' },
 
   // ---- deadlines / alerts
-  alerts_title: { de: 'Fristen & Warnungen', en: 'Deadlines & alerts' },
-  alerts_none: { de: 'Alles im Plan – keine offenen Warnungen.', en: 'All on track – no open alerts.' },
-  alert_overdue: { de: 'Zieltermin überfällig', en: 'target overdue' },
-  alert_blocked: { de: 'blockiert', en: 'blocked' },
-  alert_at_risk: { de: 'gefährdet', en: 'at risk' },
-  alert_soon: { de: 'Zieltermin bald fällig', en: 'target due soon' },
-  alert_daysLeft: { de: 'Tage', en: 'days' },
-  alert_daysOver: { de: 'Tage über', en: 'days over' },
-  alert_today: { de: 'heute', en: 'today' },
-
-  // ---- trainer fields
   f_qual: { de: 'Qualifikation', en: 'Qualification' },
   f_base: { de: 'Base', en: 'Base' },
   f_tlc: { de: 'TLC', en: 'TLC' },
@@ -272,8 +238,6 @@ const DICT = {
   // the "mit/ohne Funktion" chart – this one feeds nothing.
   f_note: { de: 'Anmerkungen', en: 'Notes' },
   f_partTime: { de: 'Part-Time', en: 'Part-time' },
-  f_sim: { de: 'SIM-Sessions', en: 'SIM sessions' },
-  f_lifus: { de: 'LIFUS-Legs', en: 'LIFUS legs' },
   f_ore: { de: 'ORE A–C', en: 'ORE A–C' },
   f_seniority: { de: 'Seniorität', en: 'Seniority' },
   f_extCompany: { de: 'Firma (extern)', en: 'Company (external)' },
@@ -287,7 +251,6 @@ const DICT = {
   f_tre: { de: 'TRE seit', en: 'TRE since' },
   f_authority: { de: 'Ausstellende Behörde', en: 'Issuing authority' },
   f_trainerSince: { de: 'Trainer seit', en: 'Trainer since' },
-  f_bFrom: { de: 'B ab', en: 'B from' },
   f_conversion: { de: 'Umschulung', en: 'Conversion' },
   f_fte: { de: 'FTE', en: 'FTE' },
   fteAutoHint: {
@@ -306,7 +269,6 @@ const DICT = {
   filterBase: { de: 'Base', en: 'Base' },
   filterQual: { de: 'Qual', en: 'Qual' },
   filterOre: { de: 'ORE', en: 'ORE' },
-  filterStage: { de: 'Phase', en: 'Stage' },
   showing: { de: 'angezeigt', en: 'showing' },
   // Card mode only: the header row that carried the sort is hidden there.
   sortBy: { de: 'Sortieren', en: 'Sort by' },
@@ -318,8 +280,6 @@ const DICT = {
   targetDate: { de: 'Zieltermin', en: 'Target date' },
   clearDate: { de: 'Datum löschen', en: 'Clear date' },
   note: { de: 'Notiz', en: 'Note' },
-  moveNext: { de: 'Nächste Phase', en: 'Next stage' },
-  movePrev: { de: 'Zurück', en: 'Previous' },
   boardHint: {
     de: 'Karte antippen zum Bearbeiten · Pfeile verschieben die Phase',
     en: 'Tap a card to edit · arrows move the stage'
@@ -330,17 +290,11 @@ const DICT = {
   },
 
   // ---- statistics
-  statistics_title: { de: 'Statistik', en: 'Statistics' },
   stat_qual: { de: 'Trainer-Qualifikation', en: 'Trainer qualification' },
   stat_base: { de: 'Base', en: 'Base' },
-  stat_ore: { de: 'ORE A–C (Priorität)', en: 'ORE A–C (priority)' },
   stat_authority: { de: 'Ausstellende Behörde', en: 'Issuing authority' },
   stat_partTime: { de: 'Part-Time', en: 'Part-time' },
   stat_function: { de: 'Funktion', en: 'Function' },
-  stat_hint: {
-    de: 'Live berechnet aus den Trainerdaten (entspricht dem Excel-Tab „Statistik_Daten").',
-    en: 'Computed live from trainer data (matches the Excel tab “Statistik_Daten”).'
-  },
   category: { de: 'Kategorie', en: 'Category' },
   count: { de: 'Anzahl', en: 'Count' },
   month: { de: 'Monat', en: 'Month' },
@@ -362,7 +316,6 @@ const DICT = {
     en: 'This provider is assigned {n}× in planning. Deleting will clear those assignments. Continue?'
   },
   p_name: { de: 'Anbieter', en: 'Provider' },
-  p_types: { de: 'Angebot', en: 'Offering' },
   p_courses: { de: 'Kurse', en: 'Courses' },
   p_simVersion: { de: 'SIM Version', en: 'SIM version' },
   addSimVersion: { de: 'SIM Version wählen …', en: 'Choose SIM version …' },
@@ -370,8 +323,6 @@ const DICT = {
   p_locations: { de: 'Standorte (ICAO)', en: 'Locations (ICAO)' },
   addIcao: { de: 'ICAO eingeben + Enter', en: 'Enter ICAO + Enter' },
   manageCourses: { de: 'Kurse bearbeiten', en: 'Edit courses' },
-  p_location: { de: 'Standort', en: 'Location' },
-  p_authority: { de: 'Zulassung / Behörde', en: 'Approval / authority' },
   p_contact: { de: 'Ansprechpartner', en: 'Contact person' },
   p_email: { de: 'E-Mail', en: 'Email' },
   p_phone: { de: 'Telefon', en: 'Phone' },
@@ -518,10 +469,6 @@ const DICT = {
   provider: { de: 'Provider', en: 'Provider' },
   location: { de: 'Ort (frei)', en: 'Location (free text)' },
   noProvider: { de: '– kein Provider –', en: '– no provider –' },
-  step_tr: { de: 'Type Rating', en: 'Type Rating' },
-  step_tri: { de: 'TRI-Kurs', en: 'TRI Course' },
-  step_lifus: { de: 'LIFUS', en: 'LIFUS' },
-  step_tre: { de: 'Examiner-Prüfung', en: 'Examiner Check' },
   assignmentsFor: { de: 'Zuweisungen für', en: 'Assignments for' },
 
   // ---- settings
@@ -576,10 +523,6 @@ const DICT = {
     en: 'Really discard all changes and load the shipped Excel data?'
   },
   cloudSync: { de: 'Cloud-Sync', en: 'Cloud sync' },
-  cloudNotConfigured: {
-    de: 'Noch nicht aktiv. Sobald ein Supabase-Slot frei ist, wird der Sync freigeschaltet – dann gleiche Daten automatisch auf allen Geräten.',
-    en: 'Not active yet. Once a Supabase slot is free, sync gets enabled – same data on all devices automatically.'
-  },
   versionChangelog: { de: 'Version & Changelog', en: 'Version & changelog' },
   currentVersion: { de: 'Aktuelle Version', en: 'Current version' },
   installHint: { de: 'Als App installieren', en: 'Install as app' },
@@ -615,7 +558,6 @@ const DICT = {
   manage: { de: 'Verwalten', en: 'Manage' },
   manageStages: { de: 'Phasen bearbeiten', en: 'Edit stages' },
   manageQuals: { de: 'Berechtigungen bearbeiten', en: 'Edit qualifications' },
-  manageProviderTypes: { de: 'Angebots-Typen bearbeiten', en: 'Edit offering types' },
   manageProviderStatus: { de: 'Status bearbeiten', en: 'Edit statuses' },
   manageSteps: { de: 'Spalten bearbeiten', en: 'Edit columns' },
   dragHint: { de: 'Ziehen (⠿) oder Pfeile zum Sortieren · Farbe links', en: 'Drag (⠿) or arrows to reorder · colour on the left' },
@@ -697,10 +639,7 @@ const DICT = {
   list_convStatus: { de: 'Umschulungs-Status', en: 'Conversion status' },
   list_assignStatus: { de: 'Zuweisungs-Status', en: 'Assignment status' },
   list_staffTypes: { de: 'Intern / Extern', en: 'Internal / external' },
-  categoriesEditableHint: {
-    de: 'Balken oben, Werte im Diagramm – die Tabelle darunter entfällt. Berechtigungen/Phasen sind editierbar (umbenennen, Farbe).',
-    en: 'Bars above with values in the chart – the duplicate table is gone. Qualifications/stages are editable (rename, colour).'
-  }
+
 }
 
 export function translate(lang, key) {

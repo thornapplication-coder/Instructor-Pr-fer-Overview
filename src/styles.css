@@ -1,3 +1,68 @@
+/* ---------- Mulish, served from this site ---------- */
+/*
+ * It used to come from fonts.googleapis.com. Two things were wrong with that.
+ *
+ * The app's headline property is that it works offline - and offline the
+ * Google stylesheet cannot load, so the whole interface fell back to
+ * system-ui. That is not only a different look: every width in this file was
+ * measured against Mulish, and the PDF export renders the live DOM through
+ * html2canvas, so the same dashboard paginated differently online and offline.
+ * A tested invariant hung on a third-party CDN being reachable.
+ *
+ * And every load sent the reader's IP address to Google, from a tool that
+ * holds colleagues' names (LG München I, 20.01.2022, 3 O 17493/20).
+ *
+ * Four files, 118 KB: latin and latin-ext, roman and italic. Both are variable
+ * fonts covering 300-900, which is why one file per cut is enough for the
+ * whole weight range. Cyrillic and Vietnamese are deliberately not shipped -
+ * nothing here is written in them, and each pair would add another 60 KB to
+ * something that has to be precached for offline use.
+ *
+ * The paths are relative on purpose: Vite rewrites them to hashed, base-
+ * correct URLs, so a repository rename moves them along with everything else.
+ * `swap` keeps text readable during the one request it still takes.
+ */
+@font-face {
+  font-family: 'Mulish';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('./assets/fonts/mulish-latin.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Mulish';
+  font-style: normal;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('./assets/fonts/mulish-latin-ext.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+@font-face {
+  font-family: 'Mulish';
+  font-style: italic;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('./assets/fonts/mulish-latin-italic.woff2') format('woff2');
+  unicode-range: U+0000-00FF, U+0131, U+0152-0153, U+02BB-02BC, U+02C6, U+02DA,
+    U+02DC, U+0304, U+0308, U+0329, U+2000-206F, U+20AC, U+2122, U+2191, U+2193,
+    U+2212, U+2215, U+FEFF, U+FFFD;
+}
+@font-face {
+  font-family: 'Mulish';
+  font-style: italic;
+  font-weight: 300 900;
+  font-display: swap;
+  src: url('./assets/fonts/mulish-latin-ext-italic.woff2') format('woff2');
+  unicode-range: U+0100-02BA, U+02BD-02C5, U+02C7-02CC, U+02CE-02D7, U+02DD-02FF,
+    U+0304, U+0308, U+0329, U+1D00-1DBF, U+1E00-1E9F, U+1EF2-1EFF, U+2020,
+    U+20A0-20AB, U+20AD-20C0, U+2113, U+2C60-2C7F, U+A720-A7FF;
+}
+
 :root {
   /* Eurowings brand */
   --burg: #af1e65;
@@ -235,8 +300,9 @@ button { font-family: inherit; }
 .tab-pane > .dash-section-title:first-of-type { margin-top: 14px; }
 .dash-charts { margin-top: 4px; }
 .dash-item { position: relative; min-width: 0; }
-/* The widget itself fills the cell; the drag badge keeps its intrinsic size. */
-.dash-item > *:not(.dash-drag) { height: 100%; }
+/* The widget fills its cell. (This used to carve out a `.dash-drag` badge that
+   no longer exists, so the exception matched nothing and read as a rule.) */
+.dash-item > * { height: 100%; }
 .dash-editing .dash-item {
   cursor: grab; border-radius: var(--radius);
   outline: 2px dashed transparent; outline-offset: 3px; transition: outline-color .15s ease;
@@ -341,10 +407,6 @@ button { font-family: inherit; }
    stages read "Nominieru…" tells the reader nothing. */
 .pipeline-flex .hbar-row { grid-template-columns: minmax(0, 150px) 1fr 34px; }
 .pipeline-flex .hbar-label { white-space: normal; line-height: 1.2; }
-.pipeline-bar { display: flex; height: 30px; border-radius: 8px; overflow: hidden; background: var(--panel2); }
-.pipeline-seg { display: flex; align-items: center; justify-content: center; color: #fff; font-weight: 800; font-size: 12px; min-width: 22px; }
-.pipeline-empty { flex: 1; }
-.pipeline-bar-wrap { display: flex; flex-direction: column; gap: 12px; }
 
 /* ---------- Toolbar ---------- */
 .toolbar { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; }
@@ -352,7 +414,6 @@ button { font-family: inherit; }
 .count-pill { background: var(--panel2); color: var(--muted); font-weight: 700; font-size: 12.5px; padding: 6px 12px; border-radius: 999px; }
 .board-hint, .stat-hint { font-size: 12px; color: var(--muted); font-style: italic; }
 .conv-target { display: inline-flex; align-items: center; gap: 6px; }
-.input-readonly { background: var(--panel2); color: var(--dark-grey, #575757); font-weight: 800; cursor: default; }
 .fte-summary { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; margin-top: -4px; }
 .fte-pill { font-size: 13px; font-weight: 700; padding: 5px 12px; border-radius: 999px; color: var(--ink); }
 .fte-pill b { font-weight: 900; }
@@ -401,6 +462,7 @@ button { font-family: inherit; }
 /* A group at zero is an answer, not an error - it stays legible and simply
    steps back. Not hidden: which of the four is empty is the information. */
 .group-tile.is-empty .group-tile-value { color: var(--muted); }
+
 
 /* ---------- Inputs & buttons ---------- */
 .input {
@@ -535,16 +597,10 @@ select.input { cursor: pointer; }
 .qual-tag.sm { font-size: 10.5px; padding: 1px 6px; }
 .ore-tag { display: inline-block; min-width: 22px; text-align: center; padding: 2px 7px; border-radius: 6px; font-size: 11.5px; font-weight: 800; }
 .ore-tag[style*='--tag'] { background: var(--tag); color: #fff; border-color: var(--tag); }
-.ore-Rente, .ore-none { background: var(--panel2); color: var(--muted); }
 
 .stage-badge { display: inline-flex; align-items: center; gap: 6px; border: 1.5px solid var(--hair); border-radius: 999px; padding: 2px 9px; font-size: 11.5px; font-weight: 700; white-space: nowrap; }
 .stage-dot { width: 8px; height: 8px; border-radius: 50%; flex: none; }
 
-.mini-table { width: 100%; border-collapse: collapse; margin-top: 12px; font-size: 13px; }
-.mini-table th { text-align: left; color: var(--muted); font-size: 11px; text-transform: uppercase; padding: 6px 8px; border-bottom: 2px solid var(--hair); }
-.mini-table td { padding: 6px 8px; border-bottom: 1px solid var(--panel2); }
-.mini-table .num { text-align: right; font-variant-numeric: tabular-nums; font-weight: 700; }
-.mini-table .total-row td { border-top: 2px solid var(--hair); font-weight: 900; color: var(--burg-dark); }
 
 /* ---------- Horizontal scroll with a synced top scrollbar ---------- */
 .hscroll-top { overflow-x: auto; overflow-y: hidden; }
@@ -676,7 +732,6 @@ select.input { cursor: pointer; }
 .sync-auth { margin-top: 10px; }
 
 /* "valid" rating whose date already passed. */
-.overdue-date { color: var(--red); }
 
 /* Keyboard focus for the clickable table rows (Trainer / Provider). */
 tr.clickable:focus-visible { outline: 2px solid var(--burg); outline-offset: -2px; }
@@ -801,40 +856,10 @@ textarea.input { resize: vertical; }
 .tl-name { display: block; font-weight: 800; font-size: 13px; color: var(--ink); }
 .tl-meta { display: block; font-size: 11.5px; color: var(--muted); margin-top: 2px; }
 
-/* ---------- Provider utilization ---------- */
-.util { display: flex; align-items: center; gap: 8px; min-width: 130px; }
-.util-track { flex: 1; height: 8px; background: var(--chart-track); border-radius: 999px; overflow: hidden; }
-.util-fill { height: 100%; border-radius: 999px; }
-.util-fill.ok { background: var(--green); }
-.util-fill.high { background: var(--amber); }
-.util-fill.over { background: var(--red); }
-.util-pct { font-size: 12px; font-weight: 800; font-variant-numeric: tabular-nums; color: var(--muted); white-space: nowrap; }
-.util-pct.high { color: var(--amber); }
-.util-pct.over { color: var(--red); }
-
-/* ---------- Deadlines & alerts ---------- */
-.alerts-card { border-left: 4px solid var(--amber); }
-.alerts-empty { color: var(--green); font-weight: 800; font-size: 14px; margin: 4px 0 0; }
-.alert-count { background: var(--red); color: #fff; border-radius: 999px; padding: 1px 10px; }
-.alert-list { list-style: none; margin: 4px 0 0; padding: 0; display: flex; flex-direction: column; gap: 8px; }
-.alert-row {
-  display: grid; grid-template-columns: 10px 1.4fr 1fr auto auto; align-items: center; gap: 10px;
-  padding: 9px 12px; border: 1px solid var(--hair); border-radius: var(--radius-sm); background: #fff;
-}
-.alert-row .alert-flag { width: 10px; height: 10px; border-radius: 50%; }
-.alert-row.overdue { border-left: 4px solid var(--red); }
-.alert-row.overdue .alert-flag { background: var(--red); }
-.alert-row.risk { border-left: 4px solid var(--amber); }
-.alert-row.risk .alert-flag { background: var(--amber); }
-.alert-name { font-weight: 800; color: var(--ink); }
-.alert-meta { color: var(--muted); font-size: 12.5px; }
-.alert-reasons { font-size: 12.5px; font-weight: 700; color: var(--burg-dark); }
-.alert-date { font-size: 12.5px; font-weight: 700; color: var(--muted); white-space: nowrap; }
-.alert-row.overdue .alert-date { color: var(--red); }
-@media (max-width: 620px) {
-  .alert-row { grid-template-columns: 10px 1fr; row-gap: 3px; }
-  .alert-row .alert-meta, .alert-row .alert-reasons, .alert-row .alert-date { grid-column: 2; }
-}
+/* The board's own flags. `alert-overdue` / `alert-risk` are composed at
+   runtime from the level ('alert-' + al.level), so they look unused to a grep
+   - they are not. The dashboard card that used to list them is gone; its
+   .alert-row/.alert-list rules went with it. */
 /* board card highlight */
 .conv-card.alert-overdue { border-color: var(--red); box-shadow: 0 0 0 1px var(--red) inset; }
 .conv-card.alert-risk { border-color: var(--amber); }
@@ -1534,7 +1559,6 @@ textarea.input { resize: vertical; }
 :root[data-theme='dark'] .empty-state,
 :root[data-theme='dark'] .cell-assign,
 :root[data-theme='dark'] .dl-row,
-:root[data-theme='dark'] .alert-row,
 :root[data-theme='dark'] .tl-head,
 :root[data-theme='dark'] .tl-chip,
 /* background-COLOR, not the shorthand: `.table-wrap` paints its scroll hint as
@@ -1577,7 +1601,6 @@ textarea.input { resize: vertical; }
   :root[data-theme='dark'] .card-at-1280 tr.clickable:hover { background: #222a31; }
 }
 :root[data-theme='dark'] .hbar-track,
-:root[data-theme='dark'] .pipeline-bar,
 :root[data-theme='dark'] .board-col { background: var(--panel2); }
 :root[data-theme='dark'] .count-pill,
 :root[data-theme='dark'] .chip-sm,
@@ -1649,4 +1672,61 @@ textarea.input { resize: vertical; }
     text-transform: uppercase; white-space: nowrap;
     color: #fff; background: var(--ink);
   }
+}
+
+/* ---------- Touch targets ---------- */
+/*
+ * A finger is not a mouse pointer. Measured at 390px, twenty-five controls in
+ * this app were under 44px tall - the modal's ✕ was 27x20, the list-editor
+ * arrows 30x26, the trainer name on a board card 94x16. Apple's 44x44 is not a
+ * style preference; below it the tap lands next to the thing you meant.
+ *
+ * Two techniques, and which one applies depends on whether the box may grow:
+ *
+ *  - Where the layout can absorb it, the control simply gets bigger. Toolbar
+ *    buttons, the topbar round buttons, the download chips, form fields.
+ *
+ *  - Where it may NOT - anything inside a table whose width is measured to the
+ *    pixel, where 14 more pixels per row would move a documented breakpoint -
+ *    an invisible ::after enlarges the HIT area without touching the layout
+ *    box. The button still draws 30x26; the finger gets 44 high.
+ *
+ * Scoped to touch and to narrow screens: on a desktop with a mouse the small
+ * controls are precise enough, and growing them there would move widths that
+ * the browser suite pins down.
+ */
+@media (pointer: coarse), (max-width: 760px) {
+  .btn,
+  .seg-btn,
+  .dl-chip,
+  .lang-btn { min-height: 44px; }
+  .icon-round { width: 44px; height: 44px; }
+  .color-input { height: 44px; }
+  /* Form fields too: a 36px-tall select is the same miss by another name. */
+  .input { min-height: 44px; }
+  /* The dialog's ✕. Its header has the room, so this one grows for real - it
+     is the control most likely to be aimed at in a hurry. */
+  .modal-head .icon-btn { width: 44px; height: 44px; display: inline-flex; align-items: center; justify-content: center; }
+
+  /* Hit area only, layout untouched. `max()` keeps the wider ones as they are
+     rather than squeezing them to 36. Horizontally these stop short of 44 on
+     purpose: the list-editor arrows sit shoulder to shoulder, and three 44px
+     hit areas over three 30px buttons would overlap and steal each other's
+     taps - which is the same miss the rule is here to prevent. */
+  .mini-btn,
+  .chip-x,
+  .conv-name { position: relative; }
+  .mini-btn::after,
+  .chip-x::after,
+  .conv-name::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    width: max(100%, 36px);
+    height: 44px;
+  }
+  /* The name on a board card can take the full width it already occupies. */
+  .conv-name::after { width: 100%; }
 }

@@ -288,7 +288,10 @@ export default function Conversion({ embedded }) {
         <Modal title={t('manageStages')} onClose={() => setManageStages(false)}
           footer={<div className="foot-row"><p className="muted small">{t('dragHint')}</p>
             <div className="push-right"><button className="btn btn-primary" onClick={() => setManageStages(false)}>{t('close')}</button></div></div>}>
-          <CategoryManager items={stages} onChange={setStages} />
+          {/* No colour picker here: a stage's colour is its position in the
+              ramp (see setStages), so offering one would be offering a choice
+              the store overrules on the next keystroke. */}
+          <CategoryManager items={stages} onChange={setStages} hasColor={false} />
         </Modal>
       )}
     </div>

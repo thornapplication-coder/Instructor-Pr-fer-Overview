@@ -11,12 +11,10 @@
          these icons follow the repository path instead of hard-coding it. -->
     <link rel="apple-touch-icon" href="%BASE_URL%icons/apple-touch-icon.png" />
     <link rel="icon" href="%BASE_URL%favicon.ico" sizes="any" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link
-      href="https://fonts.googleapis.com/css2?family=Mulish:ital,wght@0,300..900;1,300..900&display=swap"
-      rel="stylesheet"
-    />
+    <!-- No font link here on purpose: Mulish is served from this site and is
+         declared in src/styles.css, so it travels with the bundle and gets a
+         hashed, base-correct URL. See the @font-face block there for why it is
+         no longer loaded from Google. -->
     <title>EWL 737 Trainer &amp; Examiner Monitoring</title>
     <!-- Inline on purpose: this styles the fallback below, which is shown
          precisely when the external stylesheet did not load either. -->

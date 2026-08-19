@@ -4,12 +4,31 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.52.0'
+export const APP_VERSION = '1.53.0'
 export const APP_BUILD_DATE = '2026-08-19'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.53.0',
+    date: '2026-08-19',
+    type: 'minor',
+    changes: {
+      de: [
+        'Die Schriftart kommt jetzt von dieser Seite statt von Google. Offline konnte das Google-Stylesheet nicht laden — die Oberfläche fiel auf die Systemschrift zurück, und jede Breite in dieser App ist gegen Mulish gemessen, bis hin zur Seitenzahl des PDF-Exports. Außerdem ging bei jedem Aufruf die IP-Adresse des Lesers an Google, aus einem Werkzeug mit den Namen von Kollegen. Vier Dateien, 118 KB, im Offline-Speicher.',
+        'Tippziele: Von 25 zu kleinen Bedienelementen sind alle auf 44 px gebracht. Wo Platz war, ist der Knopf gewachsen (Kopfzeile, Ansichtsumschalter, Schaltflächen, Formularfelder). Wo die Breite auf den Pixel festgelegt ist, wächst nur die tastbare Fläche — der Knopf zeichnet weiter 30×26, der Finger bekommt 44.',
+        'Phasen bekommen ihre Farbe jetzt aus der Position. Eine siebte Phase kam vorher burgunderrot heraus und stand damit irgendwo in der Reihe; die Hell-nach-Dunkel-Ordnung war dahin. Der Farbwähler in der Phasen-Verwaltung ist weg — er bot eine Wahl an, die der Speicher überschrieben hat.',
+        'Aufgeräumt: 40 unbenutzte Wörterbuch-Einträge, 24 tote CSS-Regeln und 6 Funktionen ohne Leser. Kein Verhalten ändert sich, die nächste Änderung wird leichter.'
+      ],
+      en: [
+        'The typeface now comes from this site instead of Google. Offline the Google stylesheet could not load, the interface fell back to the system font, and every width in this app is measured against Mulish - down to the page count of the PDF export. It also sent the reader\'s IP address to Google on every load of a tool holding colleagues\' names. Four files, 118 KB, in the offline cache.',
+        'Touch targets: all 25 undersized controls now reach 44px. Where there was room the button grew (top bar, view switch, buttons, form fields). Where the width is pinned to the pixel only the hit area grew - the button still draws 30x26, the finger gets 44.',
+        'A conversion phase takes its colour from its position now. A seventh phase used to come out plain burgundy and sat anywhere in the sequence, which is the light-to-dark ordering gone. The colour picker in the phase editor is gone with it - it offered a choice the store overruled.',
+        'Cleared out: 40 unused dictionary entries, 24 dead CSS rules and 6 functions with no reader. Nothing behaves differently; the next change is easier.'
+      ]
+    }
+  },
   {
     version: '1.52.0',
     date: '2026-08-19',

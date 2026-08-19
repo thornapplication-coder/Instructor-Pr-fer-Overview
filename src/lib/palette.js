@@ -95,7 +95,6 @@ export const AC_COLORS = { A320: CATEGORICAL[0], B737: CATEGORICAL[1] }
 export const MEASURE_WHOLE = '#DDA5B8'
 export const MEASURE_WHOLE_DARK = '#9B5A72'
 export const MEASURE_PART = BRAND.burgundy
-export const MEASURE_PART_DARK = CATEGORICAL_DARK[0]
 
 // --------------------------------------------------------------- status ----
 // Reserved meanings, never used for identity. These are the CHIP fills: they

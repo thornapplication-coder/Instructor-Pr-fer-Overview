@@ -1,4 +1,3 @@
-import { STATUS } from '../lib/palette.js'
 
 // "Other pilots": company line pilots who are NOT trainers/examiners, tracked
 // only for their relationship to Boeing types. Deliberately a separate
@@ -91,8 +90,3 @@ export function withPilotDefaults(p) {
   delete out.b737Until
   return out
 }
-
-// Kept for the colour of the two derived columns; they are a status, so they
-// take the reserved status tokens rather than a category colour.
-export const VALID_COLOR = STATUS.good
-export const EXPIRED_COLOR = STATUS.critical

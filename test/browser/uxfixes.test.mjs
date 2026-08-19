@@ -332,6 +332,57 @@ export default async function run(browser, baseUrl, shots) {
   ok(orderBefore !== orderAfter,
     '  and picking another order really reorders the rows (' + orderBefore.trim() + ' -> ' + orderAfter.trim() + ')')
 
+  // ---- 9. a finger is not a mouse pointer --------------------------------
+  //
+  // Measured at this width, twenty-five controls were under 44px tall. Where
+  // the layout could absorb it the box grew; inside the tables whose width is
+  // pinned to the pixel it could not, so an invisible ::after carries the hit
+  // area instead. The box therefore still measures 30x26 there ON PURPOSE -
+  // what has to be 44 is what the finger can reach, so this hit-tests rather
+  // than measures.
+  await page.locator('.tab', { hasText: 'Umschulung' }).first().click()
+  await page.waitForSelector('.conv-card', { timeout: 8000 })
+  await page.waitForTimeout(700)
+
+  const reach = await page.evaluate(() => {
+    const probe = (sel) => {
+      const el = document.querySelector(sel)
+      if (!el) return null
+      el.scrollIntoView({ block: 'center' })
+      const b = el.getBoundingClientRect()
+      const cx = b.x + b.width / 2
+      const cy = b.y + b.height / 2
+      if (cy < 0 || cy > window.innerHeight) return null
+      const hits = (dy) => {
+        const t = document.elementFromPoint(cx, cy + dy)
+        return !!(t && (t === el || el.contains(t)))
+      }
+      let up = 0
+      let down = 0
+      while (up < 40 && hits(-(up + 1))) up++
+      while (down < 40 && hits(down + 1)) down++
+      return { box: Math.round(b.height), reach: up + down + 1 }
+    }
+    return { name: probe('.conv-name'), arrow: probe('.conv-card .mini-btn') }
+  })
+
+  ok(reach.name && reach.name.reach >= 44,
+    'the name on a board card can be hit over 44px, though it draws ' +
+    (reach.name?.box || '?') + 'px (' + (reach.name?.reach || 0) + 'px reachable)')
+  ok(reach.arrow && reach.arrow.reach >= 44,
+    '  and so can the phase arrow beside it (' + (reach.arrow?.reach || 0) + 'px reachable)')
+
+  const grown = await page.evaluate(() => {
+    const h = (sel) => {
+      const el = document.querySelector(sel)
+      return el ? Math.round(el.getBoundingClientRect().height) : 0
+    }
+    return { seg: h('.seg-btn'), round: h('.icon-round'), btn: h('.btn') }
+  })
+  ok(grown.seg >= 44 && grown.round >= 44 && grown.btn >= 44,
+    'the controls that had room simply grew (view switch ' + grown.seg +
+    'px, topbar ' + grown.round + 'px, buttons ' + grown.btn + 'px)')
+
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.screenshot({ path: shots + '/uxfixes-board.png' })
   await page.close()

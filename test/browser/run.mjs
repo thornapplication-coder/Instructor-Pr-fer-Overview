@@ -26,7 +26,8 @@ const SUITES = [
   './pilots.test.mjs',
   './readonly.test.mjs',
   './trainerform.test.mjs',
-  './uxfixes.test.mjs'
+  './uxfixes.test.mjs',
+  './fonts.test.mjs'
 ]
 
 // The list above is ordered on purpose, so it stays written out - but a suite
