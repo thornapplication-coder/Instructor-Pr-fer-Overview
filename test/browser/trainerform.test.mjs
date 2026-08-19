@@ -72,8 +72,12 @@ export default async function run(browser, baseUrl, shots) {
   const opts = (await qual.locator('option').allInnerTexts()).map((x) => x.trim()).filter(Boolean)
   ok(opts.includes('No Trainer') && opts.includes('EIS Pilot'),
     'the roster can say "No Trainer" and "EIS Pilot" (' + opts.join(', ') + ')')
-  ok(opts[opts.length - 2] === 'No Trainer' && opts[opts.length - 1] === 'EIS Pilot',
-    '  and they come last – this list IS the ranking every chart sorts by')
+  ok(opts.includes('TRE extern') && opts.includes('TRI extern'), '  and "TRE extern" / "TRI extern"')
+  // This list IS the ranking: it drives the sort in the table and the row order
+  // of every chart, so the order is asserted, not just the membership.
+  ok(opts.join('|') === 'SEN|TRE|TRI|LTC|SFI|TKI|TRE extern|TRI extern|No Trainer|EIS Pilot',
+    '  in one order: the six grades, the two external ones, then the two that are no grade at all (' +
+    opts.join(', ') + ')')
 
   // ---- 3. an external trainer says which company --------------------------
   const staff = modal.locator('.field', { hasText: 'Zugehörigkeit' }).locator('select')
@@ -162,6 +166,42 @@ export default async function run(browser, baseUrl, shots) {
     const leaked = planNames.filter((x) => extNames.some((e) => x.includes(e.split(',')[0])))
     ok(leaked.length === 0, 'and the planning grid has none of them (' + leaked.join(', ') + ')')
   }
+
+  // ---- 5b. the external GRADES are out of the conversion too ----------------
+  //
+  // Two different ways of being external: the affiliation (staffType) and the
+  // qualification itself. Neither belongs in the conversion, and the second one
+  // needs no rule of its own - it simply is not a conversion qualification.
+  await page.locator('.tab', { hasText: 'Trainer' }).first().click()
+  await page.waitForSelector('.trainer-table')
+  await page.waitForTimeout(400)
+  const before2 = await page.locator('.conv-card').count().catch(() => 0)
+  const moved = await page.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    const conv = d.trainers.filter((t) => ['SEN', 'TRE', 'TRI', 'LTC'].includes(t.qual) &&
+      (t.staffType || 'internal') !== 'external')
+    const ids = conv.slice(0, 2).map((t) => t.id)
+    d.trainers = d.trainers.map((t) =>
+      t.id === ids[0] ? { ...t, qual: 'TREX' } : t.id === ids[1] ? { ...t, qual: 'TRIX' } : t)
+    localStorage.setItem(K, JSON.stringify(d))
+    return conv.length
+  }, STORAGE_KEY)
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.waitForSelector('.kpi-hero')
+  await page.waitForTimeout(700)
+  const scope2 = (await page.locator('.kpi-sub').first().innerText()).trim()
+  const n2 = Number((scope2.match(/von (\d+)/) || [])[1])
+  ok(n2 === moved - 2, 'somebody on an external GRADE leaves the pool as well (' + n2 + ' of ' + moved + ')')
+  await page.locator('.tab', { hasText: 'Umschulung' }).first().click()
+  await page.waitForSelector('.conv-card', { timeout: 8000 })
+  await page.waitForTimeout(600)
+  ok((await page.locator('.conv-card').count()) === n2, '  and is off the board with them')
+  // But they ARE still capacity: the tab that counts heads still lists them.
+  await page.locator('.tab', { hasText: 'Kapazität' }).first().click()
+  await page.waitForTimeout(800)
+  const capKeys = await page.locator('.cap-table tbody .cp-key').allInnerTexts()
+  ok(capKeys.some((x) => x.includes('TRE extern')) && capKeys.some((x) => x.includes('TRI extern')),
+    'they still count as capacity, in their own rows (' + capKeys.join(', ') + ')')
 
   // ---- 6. and on a phone card you can SEE that somebody is external ---------
   await page.setViewportSize({ width: 390, height: 844 })

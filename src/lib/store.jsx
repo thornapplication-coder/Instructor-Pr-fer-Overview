@@ -182,7 +182,7 @@ function freshData(lang = 'de') {
     _pilotSeed: true,
     _pilotSeed2: true,
     _senioritySeed: true,
-    _qualExtra: true,
+    _qualExtra2: true,
     updatedAt: at
   }, at)
 }
@@ -279,7 +279,7 @@ function normalize(obj) {
     _pilotSeed: obj._pilotSeed === true,
     _pilotSeed2: obj._pilotSeed2 === true,
     _senioritySeed: obj._senioritySeed === true,
-    _qualExtra: obj._qualExtra === true,
+    _qualExtra2: obj._qualExtra2 === true,
     updatedAt: obj.updatedAt || nowIso()
   }
   // One-time: merge newly shipped default courses (e.g. "SIM only") into stored
@@ -401,11 +401,12 @@ function normalize(obj) {
   // Appended, never inserted: this list's ORDER is the ranking every chart and
   // every sort uses, and a reordering somebody made by hand has to survive.
   // Matched by id, so a renamed entry is left alone rather than duplicated.
-  if (!result._qualExtra) {
+  if (!result._qualExtra2) {
     const have = new Set(result.quals.map((q) => q.id))
-    const add = DEFAULT_QUALS.filter((q) => (q.id === 'NOTR' || q.id === 'EIS') && !have.has(q.id))
+    const EXTRA = ['TREX', 'TRIX', 'NOTR', 'EIS']
+    const add = DEFAULT_QUALS.filter((q) => EXTRA.includes(q.id) && !have.has(q.id))
     if (add.length) result.quals = [...result.quals, ...add.map((q) => ({ ...q }))]
-    result._qualExtra = true
+    result._qualExtra2 = true
   }
   // One-time: move the stored category colours onto the documented palette.
   // Only entries still carrying their OLD shipped default are touched, so a

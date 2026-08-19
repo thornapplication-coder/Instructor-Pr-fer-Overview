@@ -28,6 +28,21 @@ sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 - Die Texte, die den Kreis beschreiben, sagen die Regel mit: der Hinweis über
   dem Board, die Bezugsgruppe an den FTE-Kacheln und die FTE-Erklärung.
 
+### Neu (Qualifikationen)
+- **„TRE extern" und „TRI extern"** stehen zur Auswahl. Auch sie zählen nicht
+  zur Umschulung — dafür braucht es keine zweite Regel: sie sind schlicht keine
+  Umschulungs-Qualifikation. In der Kapazität behalten sie ihre eigene Zeile,
+  denn Kapazität sind sie sehr wohl.
+- **Reihenfolge:** erst die sechs Trainer-Stufen, dann die beiden externen, dann
+  „No Trainer" und „EIS Pilot". Diese Reihenfolge ist die Rangfolge, nach der
+  die Trainer-Tabelle sortiert und jedes Diagramm seine Zeilen ordnet — der Test
+  prüft sie als Zeichenkette, nicht nur die Mitgliedschaft.
+- **Farben:** Die Palette hört bei acht Kategorien auf (`palette.js`: „eine
+  neunte Kategorie ist nie ein erzeugter Farbton"). Die letzten beiden Plätze
+  gehen an die externen Stufen, weil das Identitäten sind, die man vom Chip
+  abliest. „No Trainer" und „EIS Pilot" teilen sich das Überlauf-Grau — genau
+  das, wofür es dokumentiert ist.
+
 ### Neu
 - **Auf der Karte ist sichtbar, wer extern ist.** Ein Merkzeichen neben dem
   Namen, mit der Firma dahinter („EXTERN · TUI"). Die Zugehörigkeits-Spalte

@@ -20,14 +20,18 @@ export const CHANGELOG = [
         'Die Kapazitäts-Spalte „in Umschulung" rechnet sie ebenfalls heraus — sonst hätte sie den Kacheln darüber widersprochen.',
         'Auf der Karte am Handy ist jetzt sichtbar, wer extern ist: ein Merkzeichen neben dem Namen, mit der Firma. Die Zugehörigkeits-Spalte gehört zu den fünf Feldern, die auf der Karte dem Dialog weichen — genau dort war „extern" also unsichtbar.',
         'Am Rechner bleibt das Merkzeichen aus: dort steht die Spalte ohnehin, und die Tabelle hat keine Breite übrig, um es zweimal zu sagen.',
-        'Die Texte, die den Umschulungs-Kreis beschreiben, sagen die neue Regel mit: auf dem Board, an den FTE-Kacheln und in der FTE-Erklärung.'
+        'Die Texte, die den Umschulungs-Kreis beschreiben, sagen die neue Regel mit: auf dem Board, an den FTE-Kacheln und in der FTE-Erklärung.',
+        'Zwei weitere Qualifikationen: „TRE extern" und „TRI extern". Auch sie zählen nicht zur Umschulung — dafür braucht es keine eigene Regel, sie sind schlicht keine Umschulungs-Qualifikation. In der Kapazität stehen sie weiterhin mit eigener Zeile, denn Kapazität sind sie.',
+        'Reihenfolge der Qualifikationen: erst die sechs Trainer-Stufen, dann die beiden externen, dann „No Trainer" und „EIS Pilot". Diese Reihenfolge ist die Rangfolge, nach der Tabelle und Diagramme sortieren.'
       ],
       en: [
         'External trainers are no longer converted. They are already qualified on the type, so they are off the board, out of every conversion figure, take no course seat and are gone from the planning grid. The rule lives in one place, which the board, the dashboard, the capacity figures, planning and all three conversion PDFs read.',
         'The capacity column "in conversion" leaves them out too - otherwise it would have contradicted the tiles above it.',
         'On a phone card you can now see who is external: a badge beside the name, with the company. The affiliation column is one of the five fields that step aside for the dialog there, which is exactly where "external" was invisible.',
         'On a desktop the badge stays hidden: the column is there anyway, and the table has no width to spare for saying it twice.',
-        'The wording that describes the conversion pool now carries the new rule: on the board, on the FTE tiles and in the FTE definition.'
+        'The wording that describes the conversion pool now carries the new rule: on the board, on the FTE tiles and in the FTE definition.',
+        'Two more qualifications: "TRE extern" and "TRI extern". They are out of the conversion too - which needs no rule of its own, they simply are not a conversion qualification. They keep their own row in the capacity tab, because capacity is what they are.',
+        'The order of the qualifications: the six trainer grades, then the two external ones, then "No Trainer" and "EIS Pilot". That order is the ranking the table and the charts sort by.'
       ]
     }
   },

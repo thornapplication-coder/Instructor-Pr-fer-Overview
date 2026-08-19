@@ -1,4 +1,4 @@
-import { CATEGORICAL } from '../lib/palette.js'
+import { CATEGORICAL, OVERFLOW } from '../lib/palette.js'
 // Trainer qualifications ("Berechtigungen"). User-editable list (rename / recolor
 // / add / delete / reorder). The ORDER of this list defines the sort order used
 // everywhere in the app. Default order per spec: SEN, TRE, TRI, LTC, SFI, TKI.
@@ -10,10 +10,20 @@ export const DEFAULT_QUALS = [
   { id: 'LTC',     label: 'LTC',     color: CATEGORICAL[3] },
   { id: 'SFI',     label: 'SFI',     color: CATEGORICAL[4] },
   { id: 'TKI',     label: 'TKI',     color: CATEGORICAL[5] },
-  // Last on purpose: the order of this list IS the ranking used for sorting and
-  // for every chart's row order, and neither of these two is a trainer grade.
-  { id: 'NOTR',    label: 'No Trainer', color: CATEGORICAL[6] },
-  { id: 'EIS',     label: 'EIS Pilot',  color: CATEGORICAL[7] }
+  // The order of this list IS the ranking: it drives the sort in the trainer
+  // table and the row order of every chart. So the six trainer grades stay
+  // first, the two external grades follow them, and the two entries that are
+  // not a trainer grade at all come last.
+  //
+  // Colours: the palette stops at eight on purpose (see palette.js - a ninth
+  // category is never a generated hue). The last two colours go to the external
+  // grades, because those are real identities somebody reads off a chip. "No
+  // Trainer" and "EIS Pilot" share the overflow grey, which is exactly what it
+  // documents itself as: the honest colour for the long tail.
+  { id: 'TREX',    label: 'TRE extern', color: CATEGORICAL[6] },
+  { id: 'TRIX',    label: 'TRI extern', color: CATEGORICAL[7] },
+  { id: 'NOTR',    label: 'No Trainer', color: OVERFLOW },
+  { id: 'EIS',     label: 'EIS Pilot',  color: OVERFLOW }
 ]
 
 // Map legacy / imported qualification strings onto the canonical ids.
