@@ -2,6 +2,11 @@
 // wherever that status is drawn - that is the entire point of the feature, and
 // it is the half that a per-file constant quietly does not deliver.
 import { reporter, STORAGE_KEY } from './harness.mjs'
+// Read from the registry rather than repeating its size. A literal here is a
+// number somebody has to remember to bump, and when they forget the failure
+// reads as "the settings page broke" rather than "a list was added" - which is
+// exactly what it said the first time a list WAS added.
+import { EDITABLE_LISTS } from '../../src/data/lists.js'
 
 export default async function run(browser, baseUrl, shots) {
   const { ok, fails } = reporter('pick lists – edit once, read everywhere')
@@ -16,11 +21,15 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForTimeout(400)
 
   const blocks = page.locator('.list-block')
-  ok(await blocks.count() === 13, 'every pick list is offered (' + (await blocks.count()) + ')')
+  ok(await blocks.count() === EDITABLE_LISTS.length,
+    'every pick list in the registry is offered (' + (await blocks.count()) + ' of ' + EDITABLE_LISTS.length + ')')
   const names = (await page.locator('.list-name').allInnerTexts()).map((x) => x.trim())
   ok(names.includes('Aircraft') && names.includes('ORE-Stufen') && names.includes('Bases'),
     'including the ones that were hardcoded (' + names.join(', ') + ')')
-  ok(await page.locator('.list-locked').count() === 3, 'three lists are marked name-and-colour only (' + (await page.locator('.list-locked').count()) + ')')
+  const lockedExpected = EDITABLE_LISTS.filter((l) => l.locked).length
+  ok(await page.locator('.list-locked').count() === lockedExpected,
+    'the locked ones are marked name-and-colour only (' + (await page.locator('.list-locked').count()) +
+    ' of ' + lockedExpected + ')')
 
   // ---- a locked list can be renamed but not added to or emptied ------------
   const conv = page.locator('.list-block').filter({ hasText: 'Umschulungs-Status' }).first()
