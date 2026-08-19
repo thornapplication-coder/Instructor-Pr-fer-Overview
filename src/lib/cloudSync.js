@@ -26,6 +26,8 @@ import { mergeBlobs, stable } from './merge.js'
 // more while the page is going away.
 //
 // state: 'off' | 'signedOut' | 'offline' | 'syncing' | 'synced' | 'error'
+//        | 'viewing'  - signed out, but a shared row was found and is being
+//                       read; the store is read-only in this mode.
 
 const PUSH_DEBOUNCE = 2000
 const SYNC_INTERVAL = 120000 // full reconcile every 2 minutes

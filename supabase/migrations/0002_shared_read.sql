@@ -26,7 +26,18 @@ create policy "app_state_select_shared" on public.app_state
 
 -- The anon role needs the table grant as well; RLS narrows a grant, it does not
 -- replace one. `select` only - never insert/update/delete.
-grant select on public.app_state to anon;
+--
+-- And only the two columns the viewer actually reads (see pullPublic() in
+-- src/lib/supabaseSync.js). A bare `grant select on public.app_state` would
+-- also hand out `user_id` - the owner's auth UUID - to anybody who asks, which
+-- the app has no use for and no reason to publish. Narrow the grant to what is
+-- read; the policy decides WHICH rows, the grant decides WHICH columns.
+--
+-- `shared` is in the list because pullPublic() filters on it, and Postgres
+-- needs the privilege on a column to let a WHERE clause reference it - drop it
+-- and the viewer gets "permission denied for column shared" instead of data.
+revoke select on public.app_state from anon;
+grant select (data, updated_at, shared) on public.app_state to anon;
 
 -- Flip the flag for the row that should be visible. Run this separately once
 -- you know which account owns it, e.g.:

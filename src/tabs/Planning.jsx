@@ -10,7 +10,7 @@ import { providersForStep } from '../lib/providerMatch.js'
 import { conflictsFor, findRun, resolveAssignment, runsForStep, spanDays, spanText } from '../lib/courses.js'
 import { formatDate } from '../lib/format.js'
 import { useThemed } from '../lib/useThemed.js'
-import { qualLabel, isInternal } from '../data/qualifications.js'
+import { qualLabel, isOwnStaff } from '../data/qualifications.js'
 import { colorOf, labelOf } from '../data/lists.js'
 
 
@@ -59,7 +59,13 @@ export default function Planning({ view: viewProp, embedded }) {
       // External trainers are already qualified on the type - there is nothing
       // to book them onto, and leaving them here would have them counted as
       // demand against a provider's seats.
-      .filter(isInternal)
+      //
+      // Through isOwnStaff, not isInternal: since 1.47.0 a qualification can
+      // say "extern" in its own name (TRE extern / TRI extern), and this was
+      // the one place still asking only about the affiliation - so somebody on
+      // an external GRADE was still bookable onto a course here while every
+      // other view had already let them go.
+      .filter(isOwnStaff)
       .filter((x) => (fBase ? x.base === fBase : true))
       .filter((x) => (fStaff ? (x.staffType || 'internal') === fStaff : true))
       .filter((x) => (fOre ? x.ore === fOre : true))

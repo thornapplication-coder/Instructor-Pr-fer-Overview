@@ -976,16 +976,16 @@ textarea.input { resize: vertical; }
 @media screen and (max-width: 1279px) { .sort-select.card-only-1280 { display: inline-flex; } }
 
 /* ---------- Table → card ---------- */
-/* Three lists stop fitting a narrow screen, and the answer for all three is
+/* Nine tables stop fitting a narrow screen, and the answer for all of them is
    the same: below a measured width each row becomes a card. What follows is
    that shared scaffolding — the table stops being a table, the header row goes
    away, and every cell draws its own heading from `data-label` instead.
    The per-table grids come after it; only they are genuinely different.
 
-   Two blocks and not one because the three do not stop fitting at the same
-   width, and plain CSS cannot share one rule body across two media queries.
+   Three blocks and not one because they do not all stop fitting at the same
+   width, and plain CSS cannot share one rule body across three media queries.
    Measured: the roster wants 966px, the provider list 724px, the trainer list
-   1234px, and the course-date editor in its dialog 425px. So `card-at-1000`
+   1234px, and the course-date editor in its dialog 818px. So `card-at-1000`
    covers the roster, the provider tables and the planning grid, `card-at-1280`
    the trainer list and `card-at-900` the course dates. The three bodies below
    are identical on purpose and are kept that way by generating them from one

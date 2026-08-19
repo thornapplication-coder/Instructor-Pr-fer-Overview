@@ -30,10 +30,19 @@ export function fteFromPartTime(pt) {
   return Math.max(0, Math.min(2, f))
 }
 
-// Compact FTE display: 1, 0.8, 0.75 (no trailing zeros).
-export function formatFte(fte) {
+// Compact FTE display: 1, 0,8, 0,75 (no trailing zeros), in the reader's
+// notation.
+//
+// Two decimals rather than formatFte1's one, because a person's own FTE is a
+// contract figure: 0.75 is three quarters, and rounding it to "0,8" on the row
+// that names them would be wrong in a way a total never is. The notation is
+// the same rule though - this column sits on the same screen as the dashboard
+// hero, and "0.75" beside "44,7" is the mixed-notation defect the changelog
+// already recorded once.
+export function formatFte(fte, lang) {
   const n = typeof fte === 'number' ? fte : 1
-  return String(Number(n.toFixed(2)))
+  const s = String(Number(n.toFixed(2)))
+  return lang === 'de' ? s.replace('.', ',') : s
 }
 
 // Issuing authority is stored/entered as "EASA - Austria"; only the country is

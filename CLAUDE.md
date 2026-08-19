@@ -18,18 +18,21 @@ Commit-Nachrichten auf Englisch.
 | `src/lib/palette.js` | **Alle** Farben. Nirgends sonst ein Hex-Wert für Daten. |
 | `src/lib/courses.js` | Kurstermine: Zeitraum je Kurs, Auflösung Person↔Kurs (`resolveAssignment`), Plätze, Überschneidungen. |
 | `src/lib/i18n.js` | DE/EN, ein flaches Wörterbuch. |
+| `src/lib/stats.js` | Alle Auswertungen: `sumFte()`/`cents()`/`round1c()`, Kapazität, Verteilungen. |
+| `src/data/qualifications.js` | Berechtigungen **und** die Regel, wer uns gehört (`isOwnStaff` / `conversionTrainers`). |
+| `src/styles.css` | Alles Layout, inklusive der Tabelle-→-Karte-Umschaltpunkte. |
 | `src/data/*.js` | Startdaten und Kategorien (Phasen, Berechtigungen, Provider, Piloten). |
 | `src/tabs/*.jsx` | Je Reiter eine Datei. `ConversionHub.jsx` fasst Board, Planung und Kalender unter einem Reiter zusammen. |
 | `src/components/sortable.jsx` | `useSort`, `Th` (Spaltenkopf) und `SortSelect` (die Sortierung in der Kartenansicht). |
 | `src/version.js` | Version **und** Changelog (wird in den Einstellungen angezeigt). |
-| `test/` | `npm test` – Zusammenführung, Abdeckungs-Wächter, FTE, Verlauf. Reines Node. |
+| `test/` | `npm test` – reines Node. Der Runner liest sein eigenes Verzeichnis: jede `*.test.mjs` läuft, und eine ohne `results.fails` ist ein Fehler, keine stille Auslassung. Heute: Zusammenführung, Sync-Abdeckung, FTE, Exporte, ORE, Kurstermine, Kapazität, Import-Wächter, Piloten, Seniorität. |
 | `test/browser/` | `npm run test:browser` – Playwright gegen den echten Build. |
 
 ## Befehle
 
 ```bash
 npm run dev            # Entwicklung
-npm test               # Logik: Zusammenführung + Abdeckungs-Wächter (Sekunden)
+npm test               # Logik, alle Suiten aus test/ (Sekunden)
 npm run build          # muss vor jedem Commit durchlaufen
 npm run test:browser   # nach dem Build: echter Browser, dauert einige Minuten
 npm run preview -- --port 4329
@@ -49,13 +52,17 @@ Playwright ist **keine** Abhängigkeit des Projekts — fehlt es, meldet der Lau
 das und endet mit Erfolg, statt einen sonst gesunden Checkout rot zu färben. In
 dieser Sandbox liegt es unter `/opt/node22/lib/node_modules/playwright`.
 
-Der Lauf braucht mehrere Minuten (zwei PDF-Exporte, viele Neuladungen) — im
+Die Suiten stehen in `test/browser/run.mjs` in fester Reihenfolge — aber der
+Lauf vergleicht die Liste mit dem Verzeichnis und bricht ab, wenn eine Datei
+fehlt oder eine nicht in der Liste steht.
+
+Der Lauf braucht mehrere Minuten (acht PDF-Exporte, viele Neuladungen) — im
 Zweifel im Hintergrund starten. Aufräumen mit `fuser -k <port>/tcp`; **nie**
 `pkill` in einer verketteten Zeile, das trifft auch den eigenen Prozess.
 
 ## Tabellen werden auf schmalen Schirmen zu Karten
 
-Sieben Tabellen klappen unterhalb einer gemessenen Breite in Karten um: eine
+Neun Tabellen klappen unterhalb einer gemessenen Breite in Karten um: eine
 Zeile wird ein Block, die Kopfzeile verschwindet, und jede Zelle zeichnet ihre
 eigene Überschrift aus `data-label`.
 
@@ -69,7 +76,7 @@ Grenze wählen. Gemessen (mit echten Daten, leere Tabellen messen zu schmal):
 |---|---|---|---|
 | `pilots-table`, `provider-table`, `provider-cap-table`, `planning-table`, `cap-table`, `edit-table` | 966 / 724 / – / 888 / 745 / 664 px | **1000 px** | `card-at-1000` |
 | `trainer-table` | 1234 px | **1280 px** | `card-at-1280` |
-| `course-table` | 818 px (im Dialog) | **900 px** | `card-at-900` |
+| `course-table`, `month-table` | 818 px (im Dialog) | **900 px** | `card-at-900` |
 
 Das Gerüst steht **einmal je Umschaltpunkt** in `styles.css` (Abschnitt
 „Table → card"), die Rasterdefinition je Tabelle darunter. Die drei Gerüste
@@ -135,7 +142,13 @@ danach überschrieben.
 still auf „ganzer Bestand, neuerer gewinnt" zurück. `npm test` fängt das ab.
 
 **Stempel entstehen nur in `patch()`** (`stampChanges` vergleicht vorher/nachher).
-Kein Aufrufer setzt `_at` selbst.
+Kein Aufrufer setzt `_at` selbst — mit genau einer Ausnahme: eine *korrigierende*
+Migration in `normalize()` (`store.jsx`, `_pilotSeed2` / `_senioritySeed`). Die
+läuft aus `loadData` / `importData` / `applyRemote` und kommt also nie an
+`stampChanges` vorbei; ohne frischen Stempel würde die alte Fassung beim
+nächsten `pull` gewinnen. Auch `backfillStamps()` stempelt außerhalb von
+`patch()`. Innerhalb einer `patch()`-Mutation ist ein selbst gesetztes `_at`
+weiterhin ein Fehler.
 
 **`patch()` ist nie „umsonst".** Es setzt `dirtyRef`, hebt `updatedAt` und löst
 einen Cloud-Push aus — auch wenn die Mutation dasselbe zurückgibt. Wer aus
@@ -170,9 +183,12 @@ Kapazitäts-Spalte „in Umschulung", die Planung und alle drei Umschulungs-PDFs
 lesen sie von dort. Eine zweite Kopie der Bedingung irgendwo ist ein Fehler.
 
 **Migrationen sind durch ein Flag abgesichert** (`_provSeeded`, `_courseSeed2`,
-`_provStatus2`, `_qualMerge`, `_roleSeed`, `_palette3`, `_oreNoRente`, `_capNotes`) und
+`_provStatus2`, `_qualMerge`, `_roleSeed`, `_palette3`, `_oreNoRente`,
+`_capNotes`, `_pilotSeed`, `_pilotSeed2`, `_senioritySeed`, `_qualExtra2`) und
 fassen nur an, was noch den alten Standardwert trägt — selbst gewählte Werte
-bleiben.
+bleiben. Zwei Ausnahmen sind Absicht: `_pilotSeed2` und `_senioritySeed`
+**korrigieren** bestehende Datensätze und setzen dabei einen frischen Stempel
+(Begründung im Code), sonst gewönne beim nächsten Abgleich die alte Fassung.
 
 **`vite.config.js` leitet den Basispfad aus `GITHUB_REPOSITORY` ab.** Nicht
 wieder fest verdrahten: eine Umbenennung des Repositories hat die App schon
@@ -186,7 +202,8 @@ ein Zeichen tippen.
 
 GitHub Pages, automatisch bei jedem Push auf
 `claude/737-instructor-monitoring-dashboard-2ox5gd` (das ist auch der
-Standard-Branch). Adresse:
+Standard-Branch) — und **nur** darauf; `workflow_dispatch` erlaubt zusätzlich
+einen Lauf von Hand. Adresse:
 <https://thornapplication-coder.github.io/Instructor-Pr-fer-Overview/>
 
 Der Workflow lässt vor dem Bauen `npm test` laufen — ist der rot, wird nicht
@@ -202,7 +219,16 @@ Browser-Cache. `?v=<version>` an die URL hängen umgeht das.
 ## Cloud-Sync in Kürze
 
 Ein `jsonb`-Datensatz je Benutzer in `app_state`, abgesichert durch Row Level
-Security (`supabase/migrations/0001_app_state.sql`). Projekt und öffentlicher
+Security (`supabase/migrations/0001_app_state.sql`).
+
+**Nur-Lese-Link (`0002_shared_read.sql`, standardmäßig aus).** Er gibt dem
+`anon`-Profil Lesezugriff auf Zeilen mit `shared = true` — darauf laufen
+`pullPublic()`, die Betrachter-Schleife in `cloudSync.js`, der Zustand
+`'viewing'`, das Banner und der `readOnly`-Riegel in `patch()`. Solange keine
+Zeile geflaggt ist, ändert die Migration nichts. Ist eine geflaggt, ist sie für
+**jeden** lesbar, der die Seite erreicht: der anon-Key liegt im Bundle. Der
+Grant ist auf `data, updated_at, shared` eingeschränkt, damit nicht auch noch
+die `user_id` mit herausgeht. Projekt und öffentlicher
 anon-Key stehen fest in `src/lib/cloudConfig.js` — das ist Absicht und sicher,
 siehe Kommentar dort.
 
@@ -221,13 +247,34 @@ Users → Add user*) oder indem die Option kurz wieder eingeschaltet wird.
 ## Umgebung
 
 Aus dieser Sandbox sind `*.supabase.co` und `*.github.io` durch den Proxy
-gesperrt (403). Die laufende Seite lässt sich also nicht selbst abrufen — Zustand
-über die GitHub-API prüfen, nicht per `curl` auf die Seite. `cdn.sheetjs.com` ist
-ebenfalls gesperrt.
+gesperrt (403), `cdn.sheetjs.com` ebenfalls. Die laufende Seite lässt sich also
+nicht selbst abrufen. Die GitHub-API ist in dieser Sitzung **auch** nicht
+erreichbar (403, „GitHub access is not enabled for this session") und `gh` ist
+nicht installiert — ein Deploy lässt sich von hier aus also gar nicht
+nachsehen. Was zählt, ist der lokale Lauf vor dem Push.
 
 ## Offen
 
-Nichts.
+- **Schriftart kommt zur Laufzeit von Google** (`index.html`, Mulish). Das
+  widerspricht „voll offline-fähig" (offline fällt alles auf `system-ui`
+  zurück, was Spaltenbreiten und die Seitenzahl des PDF verschiebt) und schickt
+  bei jedem Aufruf die IP an Google. Selbst ausliefern wäre die Lösung;
+  `woff2` steht in den Precache-Mustern schon bereit.
+- **`stageRamp()` in `palette.js` ist verdrahtet, aber nirgends aufgerufen.**
+  `DEFAULT_STAGES` greift direkt auf `STAGE_RAMP[0…5]` zu — das geht nur auf,
+  solange die Liste sechs Einträge hat. Eine siebte selbst angelegte Phase
+  bekommt keine Rampenfarbe, die *ordinale* Ordnung hört dort auf.
+- **Kein `id` im Manifest.** Die Identität der installierten App hängt damit an
+  `start_url`. Eine Umbenennung des Repositories lässt installierte Geräte auf
+  dem alten Stand zurück. Ein `id` nachzureichen löst das für die Zukunft,
+  entkoppelt aber *jetzt* die bereits installierten Exemplare — deshalb
+  bewusst offen.
+- **Tote Reste:** 40 nie benutzte i18n-Schlüssel, 24 nie benutzte CSS-Klassen
+  (Alerts-Karte, Auslastungs-Balken, alter Pipeline-Balken) und sechs
+  Exporte ohne Abnehmer. Alles harmlos, aber Reibung beim nächsten Zusatz.
+  Vorsicht beim Aufräumen: `.alert-row.overdue` ist tot, `.alert-overdue` lebt.
+- **Registrierung:** Server-seitig zu, die App bietet „Neu registrieren"
+  trotzdem an — wer es versucht, läuft in eine Fehlermeldung.
 
 Bewusst *nicht* umgestellt: das Umschulungs-Board scrollt am Handy seitwärts —
 bei einem Kanban-Board ist das richtig so, die Spalten *sind* die Phasen. Der

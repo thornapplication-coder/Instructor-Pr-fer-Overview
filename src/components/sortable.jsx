@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from 'react'
+import React, { useId, useMemo, useState } from 'react'
 
 // Reusable client-side sorting for tables.
 // `accessors` maps a column key -> function(row) returning a comparable value.
@@ -43,12 +43,17 @@ export function useSort(rows, accessors, initialKey, initialDir = 'asc') {
  * orders you want, not all fourteen.
  */
 export function SortSelect({ options, sortKey, dir, onSort, label, at = 1000 }) {
+  // One id per instance. It used to be `sort-${at}`, and a page can hold more
+  // than one of these at the same breakpoint (the Provider tab has two, the
+  // Capacity tab three) - so the label pointed at the first select and the
+  // other two had no label at all.
+  const id = useId()
   const known = options.some((o) => o.k === sortKey)
   return (
     <div className={'sort-select card-only-' + at}>
-      <label className="sort-select-label" htmlFor={'sort-' + at}>{label}</label>
+      <label className="sort-select-label" htmlFor={id}>{label}</label>
       <select
-        id={'sort-' + at}
+        id={id}
         className="input"
         value={known ? sortKey : ''}
         onChange={(e) => {

@@ -295,6 +295,43 @@ export default async function run(browser, baseUrl, shots) {
   ok(geom.worst === 0 && geom.page === 0,
     '  and nothing overflows at phone width (' + geom.worst + 'px / ' + geom.page + 'px)')
 
+  // ---- 9. one notation for one kind of figure -----------------------------
+  //
+  // The trainer row printed its FTE through a formatter that took no language
+  // at all, so a part-time 0.8 sat with a dot on the same screen as the
+  // dashboard's 44,7 - the mixed-notation defect the changelog already
+  // recorded once and believed fixed.
+  await page.locator('.tab', { hasText: 'Trainer' }).first().click()
+  await page.waitForSelector('.trainer-table tbody tr')
+  await page.waitForTimeout(600)
+  const ftes = await page.locator('.trainer-table td.t-fte').allInnerTexts()
+  const dotted = ftes.filter((x) => /\d\.\d/.test(x))
+  ok(dotted.length === 0, 'no FTE on the trainer list prints with a dot in German (' + (dotted.join(', ') || 'none') + ')')
+  ok(ftes.some((x) => /,/.test(x)), '  and the fractional ones really are there to get wrong (' +
+    [...new Set(ftes)].slice(0, 6).join(' ') + ')')
+
+  // ---- 10. the capacity tables can still be sorted on a phone -------------
+  //
+  // Below 1000px the header row is display:none, so every Th goes with it and
+  // `toggle` becomes unreachable. Each card table carries a SortSelect for
+  // exactly that; Kapazität was the one that never got one.
+  await page.locator('.tab', { hasText: 'Kapazität' }).first().click()
+  await page.waitForSelector('.cap-table')
+  await page.waitForTimeout(700)
+  const pickers = await page.locator('.sort-select:visible').count()
+  ok(pickers >= 3, 'each capacity table offers a sort picker once its header row is gone (' + pickers + ')')
+
+  const ids = await page.locator('.sort-select select').evaluateAll((els) => els.map((e) => e.id))
+  ok(new Set(ids).size === ids.length, '  and each one has an id of its own, so its label points at it (' + ids.length + ' selects, ' + new Set(ids).size + ' ids)')
+
+  const firstPick = page.locator('.sort-select select').first()
+  const orderBefore = await page.locator('.cap-table tbody tr td.cp-key').first().innerText()
+  await firstPick.selectOption({ index: 2 })
+  await page.waitForTimeout(500)
+  const orderAfter = await page.locator('.cap-table tbody tr td.cp-key').first().innerText()
+  ok(orderBefore !== orderAfter,
+    '  and picking another order really reorders the rows (' + orderBefore.trim() + ' -> ' + orderAfter.trim() + ')')
+
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.screenshot({ path: shots + '/uxfixes-board.png' })
   await page.close()

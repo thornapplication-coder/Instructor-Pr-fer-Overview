@@ -4,8 +4,17 @@
 // credential: it ends up in the JavaScript bundle of every deployment anyway,
 // so hiding it buys nothing. What actually protects the data is Row Level
 // Security on `app_state` (see supabase/migrations/0001_app_state.sql), which
-// limits every signed-in user to their own row. The anon key alone cannot read
-// or write anybody's data.
+// limits every signed-in user to their own row. The anon key alone can never
+// WRITE anybody's data: there is no insert/update/delete policy for anon at
+// all.
+//
+// Reading is the exception, and it is deliberate. Migration 0002_shared_read
+// adds an anon SELECT policy for rows carrying `shared = true`, which is what
+// the read-only link runs on (pullPublic() in supabaseSync.js, the viewer loop
+// in cloudSync.js, the banner in ReadOnlyBanner.jsx). So: flagging a row
+// publishes it to ANYONE who can reach the site, not only to people who were
+// handed the link - because this key is in the bundle they already have. A row
+// is private until somebody flips that flag, and public the moment they do.
 //
 // Never put the `service_role` key here – that one bypasses RLS.
 //
@@ -43,6 +52,19 @@ function normalizeUrl(u) {
 const envUrl = String(import.meta.env.VITE_SUPABASE_URL || '').trim()
 const envKey = String(import.meta.env.VITE_SUPABASE_ANON_KEY || '').trim()
 const useEnv = Boolean(envUrl || envKey)
+
+// Say so out loud when only half the pair is set. The behaviour below is
+// deliberate and stays as it is - but silently is the wrong way to do it: the
+// build is green, the site loads, and every device just stops syncing with
+// nothing anywhere to explain why. A console error at least leaves a trace in
+// the one place somebody would look.
+if (useEnv && !(envUrl && envKey)) {
+  console.error(
+    '[cloudConfig] Only one of VITE_SUPABASE_URL / VITE_SUPABASE_ANON_KEY is set. ' +
+    'They are read as a pair, so cloud sync is OFF in this build. ' +
+    'Set both, or neither to keep the built-in project.'
+  )
+}
 
 export const SUPABASE_URL = normalizeUrl(useEnv ? envUrl : DEFAULT_URL)
 export const SUPABASE_ANON_KEY = String(useEnv ? envKey : DEFAULT_ANON_KEY).trim()

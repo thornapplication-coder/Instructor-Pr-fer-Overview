@@ -40,7 +40,7 @@ export function exportTrainersExcel(data, t, lang) {
         value: (x) => (x.staffType === 'external' ? labelOf(data.extCompanies, x.extCompany, '') : '')
       },
       { label: t('f_partTime'), value: (x) => formatPartTime(x.partTime, lang) },
-      { label: t('f_fte'), value: (x) => formatFte(x.fte) },
+      { label: t('f_fte'), value: (x) => formatFte(x.fte, lang) },
       { label: t('f_aircraft'), value: (x) => x.aircraft },
       { label: t('f_ore'), value: (x) => (isOwnStaff(x) ? x.ore : '') },
       { label: t('f_staffType'), value: (x) => t('staff_' + (x.staffType || 'internal')) },

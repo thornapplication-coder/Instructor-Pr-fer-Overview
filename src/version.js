@@ -4,12 +4,35 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.51.0'
+export const APP_VERSION = '1.52.0'
 export const APP_BUILD_DATE = '2026-08-19'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.52.0',
+    date: '2026-08-19',
+    type: 'minor',
+    changes: {
+      de: [
+        'FTE steht in der Trainer-Liste jetzt mit Komma: „0,8" statt „0.8". Auf demselben Bildschirm stand daneben „44,7" — zwei Schreibweisen für dieselbe Art Zahl, genau der Fehler, den der Changelog schon einmal behoben geglaubt hat. Betrifft auch das Trainer-PDF und den Excel-Export.',
+        'Die drei Kapazitäts-Tabellen lassen sich am Handy wieder sortieren. Unterhalb von 1000 px verschwindet die Kopfzeile, und mit ihr war das Sortieren unerreichbar — die Auswahlliste, die jede andere Karten-Tabelle dafür hat, fehlte hier.',
+        'Wer eine Berechtigung trägt, die selbst „extern" heißt (TRE extern / TRI extern), steht nicht mehr in der Planung. Das war die letzte Ansicht, die nur nach der Zugehörigkeit gefragt hat.',
+        '„Jetzt aktualisieren" landet zuverlässig auf der neuen Fassung. Nach einem harten Neuladen hat die Schaltfläche die neue Version zwar aktiviert, die Seite aber nicht neu geladen — und genau zu einem harten Neuladen rät die Seite, wenn sie alt aussieht.',
+        'Der Nur-Lese-Link gibt die Benutzer-Kennung nicht mehr mit heraus: der Lesezugriff ist auf die Felder eingeschränkt, die die App tatsächlich liest.',
+        'README und Arbeitsnotizen stimmen wieder. Die Reiter-Tabelle beschrieb eine App von vor 48 Versionen, der Cloud-Sync-Abschnitt versprach eine Rückfrage bei Konflikten, die es seit 1.16.0 nicht mehr gibt, und der geteilte Lese-Zugang kam in keiner Datei vor.'
+      ],
+      en: [
+        'FTE on the trainer list now uses the reader\'s notation - "0,8" in German, not "0.8". The dashboard next to it already said "44,7": two notations for one kind of figure, the very defect the changelog once recorded as fixed. The trainer PDF and the Excel export follow.',
+        'The three capacity tables can be sorted on a phone again. Below 1000px the header row goes and sorting went with it - the picker every other card table has was missing here.',
+        'Somebody on a grade that says "extern" in its own name (TRE extern / TRI extern) is out of the planning grid. It was the last view still asking only about the affiliation.',
+        '"Update now" reliably lands on the new build. After a hard reload the button activated the new version but did not reload the page - and a hard reload is exactly what the page suggests when it looks stale.',
+        'The read-only link no longer hands out the user id: anonymous read is restricted to the fields the app actually reads.',
+        'The README and the working notes are true again. The tab table described the app of 48 versions ago, the cloud-sync section promised a conflict prompt that has not existed since 1.16.0, and the shared read-only access appeared in no file at all.'
+      ]
+    }
+  },
   {
     version: '1.51.0',
     date: '2026-08-19',
@@ -63,7 +86,7 @@ export const CHANGELOG = [
     changes: {
       de: [
         'Das Umschulungs-Board sagt jetzt selbst, wo es hakt: zwei Zähler über den Spalten — „N überfällig" und „M gefährdet". Antippen lässt nur diese Karten stehen. Die Rechnung dahinter gab es seit Langem, sie war nur an keine Ansicht angeschlossen; bei fünfzig Karten über sieben Bildschirme hieß „ist jemand überfällig?" bisher: alle lesen.',
-        'Die Wahl zwischen Board, Planung und Kalender bleibt erhalten. Ein Blick aufs Dashboard und zurück warf einen vorher auf das Board — und die eigentliche Buchungsarbeit passiert in der Planung. Sie steht jetzt in der Adresse (#/conversion/planung) und übersteht damit auch ein Neuladen.',
+        'Die Wahl zwischen Board, Planung und Kalender bleibt erhalten. Ein Blick aufs Dashboard und zurück warf einen vorher auf das Board — und die eigentliche Buchungsarbeit passiert in der Planung. Sie steht jetzt in der Adresse (#/conversion/table) und übersteht damit auch ein Neuladen.',
         'Ein Dialog setzt den Cursor nicht mehr auf das ✕ in der Kopfzeile. Das erste Enter nach dem Öffnen hat den Dialog geschlossen, statt etwas zu tun.',
         'Wer einen Dialog mit ungespeicherten Änderungen über das ✕, Escape oder einen Tipp neben den Dialog verlässt, wird gefragt. „Abbrechen" fragt weiter nicht — das sagt ja, was es tut.',
         'Bedienelemente, die für eine Vorlesefunktion namenlos waren, haben Namen: SIM-Version, Status und Kursarten im Anbieter-Dialog, fünf Felder in den Kursterminen, Farbe und Bezeichnung in jeder Listen-Verwaltung. Die Pfeile und das ✕ dort heißen jetzt auch auf Deutsch „Nach oben", „Nach unten", „Löschen".',
@@ -74,7 +97,7 @@ export const CHANGELOG = [
       ],
       en: [
         'The conversion board now says where it hurts: two counters above the columns - "N overdue" and "M at risk". Tapping one leaves only those cards standing. The calculation had been there for a long time, wired to no screen at all; with fifty cards over seven screens, "is anybody overdue" meant reading all of them.',
-        'The Board / Planung / Kalender choice is kept. A glance at the dashboard and back used to drop you onto the board - and the booking work lives in Planung. It now sits in the address (#/conversion/planung), so a reload keeps it too.',
+        'The Board / Planung / Kalender choice is kept. A glance at the dashboard and back used to drop you onto the board - and the booking work lives in Planung. It now sits in the address (#/conversion/table), so a reload keeps it too.',
         'A dialog no longer puts the cursor on the ✕ in its header. The first Enter after opening closed the dialog instead of doing anything.',
         'Leaving a dialog that has unsaved changes - via the ✕, Escape or a tap beside it - now asks first. "Cancel" still does not ask: it says what it does.',
         'Controls that were nameless to a screen reader have names: SIM version, status and course types in the provider dialog, five fields in the course dates, colour and label in every list editor. The arrows and the ✕ there are now called "Move up", "Move down", "Delete" in the interface language.',

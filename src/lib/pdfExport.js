@@ -221,7 +221,7 @@ async function exportTrainersPdf(data, t, lang, opts) {
       // screen leaves them blank for an external trainer. An export that
       // printed a leftover value would contradict the table it exports.
       isOwnStaff(x) && x.seniority ? formatDate(x.seniority, lang) : '',
-      formatPartTime(x.partTime, lang), formatFte(x.fte), x.aircraft || '',
+      formatPartTime(x.partTime, lang), formatFte(x.fte, lang), x.aircraft || '',
       isOwnStaff(x) ? x.ore || '' : '',
       t('staff_' + (x.staffType || 'internal')),
       x.staffType === 'external' ? labelOf(data.extCompanies, x.extCompany, '') : '',

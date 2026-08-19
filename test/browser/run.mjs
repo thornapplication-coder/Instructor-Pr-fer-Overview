@@ -3,6 +3,9 @@
 //
 // Playwright is not a dependency here – if the machine does not have it, this
 // says so and exits 0 rather than failing a checkout that is otherwise fine.
+import { readdirSync } from 'node:fs'
+import { dirname } from 'node:path'
+import { fileURLToPath } from 'node:url'
 import { loadChromium, startPreview, shotDir, hasBuild } from './harness.mjs'
 
 const SUITES = [
@@ -25,6 +28,23 @@ const SUITES = [
   './trainerform.test.mjs',
   './uxfixes.test.mjs'
 ]
+
+// The list above is ordered on purpose, so it stays written out - but a suite
+// that exists on disk and is not in it would run nowhere and say nothing. The
+// logic runner reads its directory for the same reason; here the directory
+// only has to AGREE with the list.
+{
+  const here = dirname(fileURLToPath(import.meta.url))
+  const onDisk = readdirSync(here).filter((f) => f.endsWith('.test.mjs')).sort()
+  const listed = SUITES.map((p) => p.replace('./', '')).sort()
+  const missing = onDisk.filter((f) => !listed.includes(f))
+  const ghosts = listed.filter((f) => !onDisk.includes(f))
+  if (missing.length || ghosts.length) {
+    if (missing.length) console.error('Suite file(s) not in SUITES – they would never run: ' + missing.join(', '))
+    if (ghosts.length) console.error('SUITES names a file that does not exist: ' + ghosts.join(', '))
+    process.exit(1)
+  }
+}
 
 const chromium = await loadChromium()
 if (!chromium) {

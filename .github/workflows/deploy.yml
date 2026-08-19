@@ -2,11 +2,14 @@ name: Deploy PWA to GitHub Pages
 
 # Every push builds and deploys a new version.
 # One-time setup by the repo owner: Settings → Pages → Source: "GitHub Actions".
+# One branch only. `main` was listed here and does not exist; if it were ever
+# created (a default-branch rename, a merge, a fork) a push to it would publish
+# over the real branch's build with nothing to say two sources exist - and the
+# 10-minute Pages HTML cache makes that slow to notice.
 on:
   push:
     branches:
       - claude/737-instructor-monitoring-dashboard-2ox5gd
-      - main
   workflow_dispatch:
 
 permissions:
@@ -22,6 +25,9 @@ concurrency:
 jobs:
   build:
     runs-on: ubuntu-latest
+    # A hung npm ci or npm test would otherwise hold the `pages` concurrency
+    # group for the runner's six-hour default and block every later deploy.
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -47,6 +53,7 @@ jobs:
   deploy:
     needs: build
     runs-on: ubuntu-latest
+    timeout-minutes: 10
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}

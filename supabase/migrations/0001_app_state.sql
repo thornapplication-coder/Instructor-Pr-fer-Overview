@@ -28,7 +28,13 @@ create policy "app_state_delete_own" on public.app_state
 -- Keep updated_at server-authoritative: the client cannot backdate a write and
 -- silently win a conflict.
 create or replace function public.app_state_touch()
-returns trigger language plpgsql as $$
+returns trigger language plpgsql
+-- Pinned: a function without it resolves unqualified names through the
+-- caller's search_path. Nothing here is exploitable today (it only calls
+-- now() and runs as the invoker), but it is the one thing Supabase's own
+-- advisor flags on this schema, and it is a single line.
+set search_path = ''
+as $$
 begin
   new.updated_at = now();
   return new;

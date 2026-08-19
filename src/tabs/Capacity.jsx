@@ -3,7 +3,7 @@ import { useStore } from '../lib/store.jsx'
 import DateInput from '../components/DateInput.jsx'
 import { capacityByBase, capacityByQual, capacityByAircraft, conversionFteSummary, qualRankIndex } from '../lib/stats.js'
 import { targetsByMonth, monthLabel, stageName } from '../lib/alerts.js'
-import { useSort, Th } from '../components/sortable.jsx'
+import { useSort, Th, SortSelect } from '../components/sortable.jsx'
 import { CONV_STATUS, stageLabel, firstStageId, releasedStageId } from '../data/pipeline.js'
 import { qualLabel, conversionTrainers } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
@@ -31,6 +31,25 @@ function CapTable({ title, firstCol, cap, keyKind, labelFor }) {
   return (
     <section className="card">
       <h3 className="card-title">{title}</h3>
+      {/* Below 1000px the header row is gone, and with it every `Th` - so
+          `toggle` becomes unreachable and the table freezes in its default
+          order with nothing on screen to say so. This table exists to answer
+          "where is the bottleneck", which is a question about ORDER, so it
+          needs the same fallback the other card tables already have. */}
+      <SortSelect
+        label={t('sortBy')}
+        at={1000}
+        sortKey={sortKey}
+        dir={dir}
+        onSort={toggle}
+        options={[
+          { k: 'key', label: firstCol },
+          { k: 'headcount', label: t('cap_head') },
+          { k: 'total', label: t('cap_total') },
+          { k: 'inConversion', label: t('cap_inConv') },
+          { k: 'available', label: t('cap_avail') }
+        ]}
+      />
       <div className="table-wrap">
         <table className="data-table card-at-1000 cap-table" role="table">
           <thead role="rowgroup">

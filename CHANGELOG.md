@@ -11,6 +11,71 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.52.0] – 2026-08-19
+
+Ergebnis eines Audits über Doku, Build/Deploy und Quelltext.
+
+### Behoben
+- **FTE mit Komma in der Trainer-Liste.** `formatFte()` kannte gar keine
+  Sprache und lieferte immer einen Punkt, also stand „0.8" auf demselben
+  Bildschirm wie „44,7" aus der Kachel darüber — zwei Schreibweisen für
+  dieselbe Art Zahl. Zwei Nachkommastellen bleiben (0,75 ist drei Viertel und
+  darf nicht auf 0,8 gerundet werden); betrifft auch Trainer-PDF und Excel.
+- **Sortieren in den Kapazitäts-Tabellen unter 1000 px.** Dort ist die
+  Kopfzeile `display: none`, also gibt es kein `Th` und `toggle` ist
+  unerreichbar. Alle anderen Karten-Tabellen haben dafür ein `<SortSelect>`;
+  die drei Kapazitäts-Tabellen waren die einzigen ohne.
+- **Doppelte `id` in `<SortSelect>`.** Die id war `sort-<breakpoint>`, und eine
+  Seite kann mehrere bei derselben Breite haben (Provider zwei, Kapazität
+  drei) — die Beschriftung zeigte auf die erste, die übrigen hatten keine.
+- **Externe Grade in der Planung.** `Planning.jsx` filterte noch mit
+  `isInternal` statt `isOwnStaff`; wer „TRE extern"/„TRI extern" trägt, war
+  dort weiter auf einen Kurs buchbar, während jede andere Ansicht ihn seit
+  1.47.0 herausrechnet.
+- **„Jetzt aktualisieren" ohne Neuladen.** `updateServiceWorker(true)`
+  ignoriert sein Argument; das Neuladen kommt aus einem `controlling`-Zuhörer,
+  der nur greift, wenn die Seite einen Controller *hatte*. Nach einem harten
+  Neuladen hat sie keinen — und genau dazu rät `index.html`. Der Knopf lädt
+  jetzt selbst neu, nachdem der neue Worker übernommen hat.
+
+### Geändert
+- **`npm test` findet seine Suiten selbst.** Der Runner nannte jede Datei
+  zweimal von Hand; eine vergessene Zeile hieß „Test läuft nicht" oder „Test
+  läuft, meldet FAIL, Exit-Code 0" — bei grünem CI, und `npm test` ist das
+  einzige zwischen einem Commit und der Seite. Der Browser-Lauf behält seine
+  feste Reihenfolge, vergleicht sie aber mit dem Verzeichnis.
+- **Deploy nur noch vom Entwicklungs-Branch.** `main` stand in `deploy.yml`,
+  existiert nicht, und hätte — einmal angelegt — kommentarlos über den Stand
+  des echten Branches veröffentlicht. Dazu `timeout-minutes` auf beiden Jobs.
+- **Nur-Lese-Zugriff auf Spalten eingeschränkt.** `0002_shared_read.sql` gab
+  dem `anon`-Profil die ganze Zeile, also auch die `user_id`. Jetzt nur
+  `data, updated_at, shared` — das, was `pullPublic()` liest.
+- **`search_path` der Trigger-Funktion festgezurrt** (`0001_app_state.sql`) —
+  der eine Punkt, den Supabases eigener Prüfer an diesem Schema anmerkt.
+- **Warnung bei halb gesetztem Supabase-Paar.** Nur eine der beiden Variablen
+  zu setzen schaltet den Sync ab — richtig so, aber bisher lautlos: grüner
+  Build, ladende Seite, kein Sync mehr, nirgends ein Hinweis.
+- `src/assets/ew-logo.png` (74 KB) entfernt — von nichts referenziert.
+
+### Doku
+- **README:** Reiter-Tabelle auf die sieben echten Reiter gebracht („Statistik"
+  gibt es seit 1.4.0 nicht, „Kapazität" und „Other Pilots" fehlten ganz); der
+  Satz „fragt die App nach" beim Sync-Konflikt gestrichen — zusammengeführt
+  wird je Datensatz ohne Rückfrage, seit 1.16.0; `0002_shared_read.sql` samt
+  seiner Tragweite ergänzt; der Hinweis, die Registrierung *solle* abgeschaltet
+  werden, sagt jetzt, dass sie es ist; Versionspflege an vier statt zwei
+  Stellen.
+- **CLAUDE.md:** zwölf statt acht Migrations-Flags; die Ausnahme von „Stempel
+  nur in `patch()`" (korrigierende Migrationen) benannt; `isOwnStaff` als die
+  seit 1.50.0 maßgebliche Regel; neun statt sieben Karten-Tabellen inklusive
+  `month-table`; `stats.js`, `qualifications.js` und `styles.css` in die
+  Dateitabelle; „Offen" ist nicht mehr „Nichts".
+- **`src/version.js`:** der Eintrag zu 1.49.0 nannte `#/conversion/planung` —
+  die Route heißt `#/conversion/table`, `CHANGELOG.md` hatte es richtig.
+- **`styles.css`:** „425 px" für den Kurstermin-Editor korrigiert (818 px, wie
+  an zwei anderen Stellen derselben Datei); „drei Listen" → neun Tabellen,
+  „zwei Blöcke" → drei.
+
 ## [1.51.0] – 2026-08-19
 
 ### Neu

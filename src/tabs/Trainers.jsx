@@ -308,7 +308,7 @@ export default function Trainers() {
                     the row, and every other row still needs it. */}
                 <td role="cell" className={'t-sen' + (isOwnStaff(x) ? '' : ' cell-na')} data-label={t('f_seniority')}>{isOwnStaff(x) && x.seniority ? formatDate(x.seniority, lang) : '–'}</td>
                 <td role="cell" className="t-pt num" data-label={t('f_partTime')}>{formatPartTime(x.partTime, lang)}</td>
-                <td role="cell" className="t-fte num" data-label={t('f_fte')}>{formatFte(x.fte)}</td>
+                <td role="cell" className="t-fte num" data-label={t('f_fte')}>{formatFte(x.fte, lang)}</td>
                 <td role="cell" className="t-ac" data-label={t('f_aircraft')}><AircraftTag value={x.aircraft} /></td>
                 <td role="cell" className={'t-ore' + (isOwnStaff(x) ? '' : ' cell-na')} data-label={t('f_ore')}>
                   {isOwnStaff(x) ? <OreTag value={x.ore} /> : '–'}

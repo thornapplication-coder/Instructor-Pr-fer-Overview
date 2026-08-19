@@ -241,10 +241,27 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForTimeout(300)
   ok((await page.locator('.modal').innerText()).includes('Zieltermin'),
     '  and a plain TRI still is – so the section is tied to the grade, not removed')
-  // Out through the footer, not Escape: the qualification was changed and back,
-  // and a dialog with unsaved changes now asks before Escape throws them away.
+  // The planning grid asked only about the affiliation, so somebody on an
+  // external GRADE was still bookable onto a course there while every other
+  // view had already let them go.
   await page.locator('.modal .modal-foot .btn-ghost').first().click()
   await page.waitForTimeout(300)
+  await page.locator('.tab', { hasText: 'Umschulung' }).first().click()
+  await page.waitForTimeout(400)
+  await page.locator('.hub-bar .seg-btn', { hasText: 'Planung' }).first().click()
+  await page.waitForSelector('.planning-table')
+  await page.waitForTimeout(700)
+  const gradeRows = await page.locator('.planning-table td.pl-name').allInnerTexts()
+  const extGrades = await page.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    return d.trainers.filter((t) => ['TREX', 'TRIX'].includes(t.qual)).map((t) => t.name)
+  }, STORAGE_KEY)
+  const gradeLeak = extGrades.filter((n) => gradeRows.some((p) => p.includes(n)))
+  ok(extGrades.length >= 2 && gradeLeak.length === 0,
+    'nobody on an external GRADE is bookable in the planning grid either (' +
+    extGrades.length + ' on one, ' + (gradeLeak.join(', ') || 'none in the grid') + ')')
+  await page.locator('.hub-bar .seg-btn', { hasText: 'Board' }).first().click()
+  await page.waitForTimeout(400)
 
   // ---- 5c. and three fields an external trainer cannot have are gone -------
   //
@@ -261,6 +278,11 @@ export default async function run(browser, baseUrl, shots) {
     localStorage.setItem(K, JSON.stringify(d))
   }, STORAGE_KEY)
   await page.reload({ waitUntil: 'networkidle' })
+  // The address still says #/conversion after the checks above, and the app
+  // restores the open tab from it - so go to Trainer rather than waiting for a
+  // table that is not on screen.
+  await page.waitForSelector('.topbar')
+  await page.locator('.tab', { hasText: 'Trainer' }).first().click()
   await page.waitForSelector('.trainer-table tbody tr')
   await page.waitForTimeout(700)
 
