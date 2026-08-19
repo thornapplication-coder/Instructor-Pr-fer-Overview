@@ -98,13 +98,33 @@ export default async function run(browser, baseUrl, shots) {
   }))
   ok(wide.display === 'table' && wide.heads === 15, 'a desktop keeps the real table with all fifteen columns (' + wide.heads + ')')
   ok(wide.hidden === 0, '  and it fits (' + wide.hidden + 'px hidden)')
-  // It only fits because the idle sort marks are gone. Fifteen of them cost
-  // 83px - measured by putting them back at runtime, which is the whole reason
-  // this assertion is here rather than a bare "it fits".
+  // Hiding the idle sort marks is still what makes it fit - but only just, and
+  // the margin depends on the typeface.
+  //
+  // This assertion used to demand 60px+ of overflow, and it got 83px. That
+  // figure was measured in system-ui, because until 1.53.0 Mulish came from
+  // fonts.googleapis.com and never loaded in this headless run: the suite was
+  // quietly checking the table in the FALLBACK font the whole time. Now the
+  // font ships with the app, the same forced marks cost 2px instead of 83.
+  //
+  // Both numbers are real and both matter: Mulish is what a reader sees, and
+  // system-ui is what they saw offline before. So the check is that the marks
+  // still push the table past its container at all - a lower bound of 60 would
+  // now be asserting a property of the wrong font.
   await page.addStyleTag({ content: ".data-table th[aria-sort='none'] .sort-arrow { display: inline !important }" })
   await page.waitForTimeout(300)
   const withArrows = await page.evaluate(() => { const w = document.querySelector('.table-wrap'); return w.scrollWidth - w.clientWidth })
-  ok(withArrows > 60, '  and it would not with a mark on every idle column (' + withArrows + 'px hidden)')
+  ok(withArrows > 0, '  and it would not with a mark on every idle column (' + withArrows + 'px hidden, in Mulish)')
+
+  // And the fit is not a lucky property of Mulish being narrow: force the old
+  // fallback and the table must still fit without the marks.
+  await page.addStyleTag({
+    content: ".data-table, .data-table * { font-family: system-ui, -apple-system, 'Segoe UI', Roboto, Arial, sans-serif !important }" +
+      " .data-table th[aria-sort='none'] .sort-arrow { display: none !important }"
+  })
+  await page.waitForTimeout(400)
+  const fallbackFit = await page.evaluate(() => { const w = document.querySelector('.table-wrap'); return w.scrollWidth - w.clientWidth })
+  ok(fallbackFit === 0, '  and it still fits if the typeface ever falls back to the system one (' + fallbackFit + 'px hidden)')
   await page.reload({ waitUntil: 'networkidle' })
   await page.locator('.tab', { hasText: 'Trainer' }).first().click()
   await page.waitForSelector('.trainer-table')
