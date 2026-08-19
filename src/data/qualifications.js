@@ -58,11 +58,22 @@ export function isConversionQual(qual) {
 // also has no business ASKING about a conversion for somebody on one of them.
 export const EXTERNAL_QUALS = ['TREX', 'TRIX']
 
-// Is a conversion a question for this person at all? Both ways of being
-// external answer no: the affiliation and the qualification itself.
-export function convertsAtAll(trainer) {
+// Is this person one of ours? Both ways of being external answer no: the
+// affiliation, and a qualification grade that says "extern" in its own name.
+//
+// This is the predicate behind every field that only a Eurowings employee can
+// have. A conversion is one of them - so is an ORE tier and a seniority date:
+// they are positions in OUR pipeline and OUR list, and somebody else's employee
+// simply does not have one. Printing "–" there is not missing data, it is the
+// correct answer, and asking for it in the dialog invites a wrong one.
+export function isOwnStaff(trainer) {
   return isInternal(trainer) && !EXTERNAL_QUALS.includes(String(trainer?.qual || '').trim())
 }
+
+// Named for the question the conversion asks. Same rule - deliberately the same
+// function - because "do we convert them" and "are they ours" are one question
+// asked twice, and two copies of it would drift.
+export const convertsAtAll = isOwnStaff
 
 export function isInternal(trainer) {
   return (trainer?.staffType || 'internal') !== 'external'

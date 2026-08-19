@@ -11,6 +11,37 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.50.0] – 2026-08-19
+
+### Geändert
+- **Bei „extern" gibt es kein ORE, keine Seniorität und keine Umschulung.**
+  Alle drei sind Plätze in unseren eigenen Listen — der ORE-Priorität, der
+  Firmen-Seniorität, der Umschulungs-Kette. Ein Angestellter eines anderen
+  Betriebs hat dort keinen Platz; „fehlender Wert" ist es also nicht, sondern
+  die richtige Antwort.
+- **Auf der Karte am Handy verschwinden die drei Zeilen ganz.** Dort gibt es
+  keine Spalte, nur Überschrift und Wert — und eine Überschrift über einem
+  Strich ist eine Frage, die niemand gestellt hat. Gemessen: die Karte eines
+  Externen ist damit 191 px statt 226 px hoch, ohne übrig gebliebene Lücke.
+- **In der Tabelle am Rechner bleiben die Spalten stehen** und zeigen einen
+  Strich. Eine Spalte gehört zur Liste, nicht zur Zeile, und jede andere Zeile
+  braucht sie weiter.
+- **Der Dialog fragt nicht mehr danach.** Der Umschulungs-Block war seit 1.48.0
+  weg; ORE und Seniorität folgen jetzt derselben Regel.
+- **Sortierung und ORE-Filter gehen durch dieselbe Regel.** Ein Wert, der nicht
+  angezeigt wird, darf die Zeile auch nicht einsortieren oder in einen Filter
+  hineinziehen — sonst erscheint unter „ORE: A" eine Zeile, die einen Strich
+  zeigt.
+- **PDF und Excel lassen die drei Felder bei Externen ebenfalls leer.** Ein
+  Export, der etwas anderes sagt als der Bildschirm, ist am Ende der, dem
+  geglaubt wird.
+- Die Regel steht an **einer** Stelle (`isOwnStaff()` in
+  `src/data/qualifications.js`) und ist bewusst dieselbe Funktion, durch die
+  seit 1.48.0 auch die Umschulung geht: „gehören sie uns" und „schulen wir sie
+  um" sind eine Frage, zweimal gestellt.
+- Gelöscht wird nichts: Wer zurück auf „intern" stellt, sieht alle drei Werte
+  wieder.
+
 ## [1.49.0] – 2026-08-19
 
 ### Neu

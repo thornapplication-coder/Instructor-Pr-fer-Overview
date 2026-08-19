@@ -188,6 +188,56 @@ export default async function run(browser, baseUrl, shots) {
   await page.waitForTimeout(600)
   ok(await page.locator('.trainer-table tbody tr').count() > 1, '  which brings everybody back')
 
+  // ---- 7. what an external trainer cannot have is off the card entirely ----
+  //
+  // Not "empty": absent. On a card there is no column header - a caption over a
+  // dash reads as a field somebody forgot to fill in, which is the opposite of
+  // what it means. The dialog stops asking for the same two, as it already did
+  // for the conversion block.
+  await page.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    d.trainers = d.trainers.map((t, i) => i === 0
+      ? { ...t, name: 'AAA Extern Karte', staffType: 'external', ore: 'A',
+          seniority: '2016-04-15', conv: { stage: 'simulator', status: 'on_track' } }
+      : t)
+    localStorage.setItem(K, JSON.stringify(d))
+  }, STORAGE_KEY)
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.waitForSelector('.trainer-table tbody tr')
+  await page.waitForTimeout(700)
+
+  const cards = await page.evaluate(() => {
+    const rows = [...document.querySelectorAll('.trainer-table tbody tr')]
+    const shown = (r) => [...r.querySelectorAll('td')]
+      .filter((td) => getComputedStyle(td).display !== 'none')
+      .map((td) => td.getAttribute('data-label') || '')
+    const ext = rows.find((r) => /Extern Karte/.test(r.innerText))
+    const own = rows.find((r) => !r.querySelector('.ext-badge'))
+    return {
+      ext: shown(ext), own: shown(own),
+      extH: Math.round(ext.getBoundingClientRect().height),
+      ownH: Math.round(own.getBoundingClientRect().height)
+    }
+  })
+  const gone = ['ORE A–C', 'Seniorität', 'Umschulung']
+  const stillThere = gone.filter((g) => cards.ext.some((l) => l && l.includes(g.split(' ')[0])))
+  ok(stillThere.length === 0,
+    'ORE, Seniorität and Umschulung are off the external card (' + (stillThere.join(', ') || 'all three gone') + ')')
+  const ownHas = gone.filter((g) => cards.own.some((l) => l && l.includes(g.split(' ')[0])))
+  ok(ownHas.length === 3, '  and all three are still on the card of one of our own (' + ownHas.length + ' of 3)')
+  ok(cards.extH < cards.ownH,
+    '  the external card is shorter for it, with no line left standing empty (' +
+    cards.extH + 'px vs ' + cards.ownH + 'px)')
+
+  await page.locator('.trainer-table tbody tr').filter({ hasText: 'Extern Karte' }).first().click()
+  await page.waitForSelector('.modal')
+  await page.waitForTimeout(500)
+  const dlg = await page.locator('.modal').innerText()
+  ok(!dlg.includes('Seniorität') && !dlg.includes('ORE'),
+    '  and the dialog does not ask for either of them')
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(300)
+
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.screenshot({ path: shots + '/uxfixes-board.png' })
   await page.close()

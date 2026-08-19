@@ -4,12 +4,35 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.49.0'
+export const APP_VERSION = '1.50.0'
 export const APP_BUILD_DATE = '2026-08-19'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.50.0',
+    date: '2026-08-19',
+    type: 'minor',
+    changes: {
+      de: [
+        'Bei „extern" stehen ORE, Seniorität und Umschulung nicht mehr auf der Karte. Alle drei sind Plätze in unseren eigenen Listen — der ORE-Priorität, der Firmen-Seniorität, der Umschulungs-Kette. Ein Angestellter eines anderen Betriebs hat dort keinen, und drei Überschriften über drei Strichen sind drei Fragen, die niemand gestellt hat.',
+        'Der Dialog fragt auch nicht mehr danach. Der Umschulungs-Block war seit 1.48.0 schon weg, ORE und Seniorität folgen jetzt.',
+        'In der Tabelle am Rechner bleiben die drei Spalten stehen und zeigen einen Strich — eine Spalte gehört zur Liste, nicht zur Zeile, und alle anderen Zeilen brauchen sie.',
+        'Sortieren und der ORE-Filter gehen durch dieselbe Regel: Wer den Wert nicht angezeigt bekommt, wird auch nicht danach einsortiert oder gefiltert.',
+        'PDF und Excel lassen die drei Felder bei Externen ebenfalls leer. Ein Export, der etwas anderes sagt als der Bildschirm, ist der, dem geglaubt wird.',
+        'Gelöscht wird wie immer nichts: Wer zurück auf „intern" stellt, sieht alle drei Werte wieder.'
+      ],
+      en: [
+        'For an external trainer, ORE, seniority and the conversion phase are gone from the card. All three are places in lists of our own - the ORE priority, the company seniority, the conversion pipeline. Somebody else\'s employee holds none of them, and three headings over three dashes are three questions nobody asked.',
+        'The dialog stops asking for them too. The conversion block went in 1.48.0; ORE and seniority follow now.',
+        'In the desktop table the three columns stay and print a dash - a column belongs to the list, not to the row, and every other row still needs it.',
+        'Sorting and the ORE filter go through the same rule: a value that is not shown does not order or filter the row either.',
+        'The PDF and the Excel export leave the three fields blank for external trainers as well. An export that disagrees with the screen is the one people believe.',
+        'Nothing is cleared, as ever: switching back to internal brings all three values back.'
+      ]
+    }
+  },
   {
     version: '1.49.0',
     date: '2026-08-19',

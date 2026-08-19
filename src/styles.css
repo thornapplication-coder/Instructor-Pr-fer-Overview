@@ -1191,6 +1191,11 @@ textarea.input { resize: vertical; }
      rather than taking one of its own - a date and a badge fit side by side,
      and a fifth line on fifty cards is fifty times the scroll. */
   .trainer-table td.t-sen { grid-area: se; }
+  /* A field this person cannot have. In the table it prints a dash, because a
+     column belongs to the list and every other row still needs it. On the card
+     there is no column - only a heading and a value - so a heading over a dash
+     is a question nobody asked, and the whole line goes. */
+  .trainer-table td.cell-na { display: none; }
   /* Read in the dialog instead. `display: none` and not a smaller font: half a
      free-text note is worse than none, because it reads as the whole note. */
   .trainer-table td.t-pt,

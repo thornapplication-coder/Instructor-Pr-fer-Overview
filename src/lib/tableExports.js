@@ -5,7 +5,7 @@ import { downloadExcel } from './exports.js'
 import { formatPartTime, formatFte } from './format.js'
 import { stageLabel } from '../data/pipeline.js'
 import { labelOf } from '../data/lists.js'
-import { qualLabel } from '../data/qualifications.js'
+import { qualLabel, isOwnStaff } from '../data/qualifications.js'
 import { courseLabel, simVersionLabel } from '../data/providers.js'
 import { pilotRole, pilotValidity, ratingValid } from '../data/pilots.js'
 import { formatDate } from './format.js'
@@ -28,7 +28,11 @@ export function exportTrainersExcel(data, t, lang) {
       { label: t('f_tlc'), value: (x) => x.tlc },
       { label: t('f_name'), value: (x) => x.name },
       { label: t('f_role'), value: (x) => t(x.role === 'fo' ? 'role_fo' : 'role_captain') },
-      { label: t('f_seniority'), value: (x) => (x.seniority ? formatDate(x.seniority, lang) : '') },
+      // Only where it exists. Seniority, ORE and the conversion phase are
+      // places in our own list, scheme and pipeline; the screen leaves all
+      // three blank for an external trainer, and a spreadsheet that disagreed
+      // with the screen would be the one people trust.
+      { label: t('f_seniority'), value: (x) => (isOwnStaff(x) && x.seniority ? formatDate(x.seniority, lang) : '') },
       {
         label: t('f_extCompany'),
         // Only where it means something: a company on an internal trainer would
@@ -38,13 +42,13 @@ export function exportTrainersExcel(data, t, lang) {
       { label: t('f_partTime'), value: (x) => formatPartTime(x.partTime, lang) },
       { label: t('f_fte'), value: (x) => formatFte(x.fte) },
       { label: t('f_aircraft'), value: (x) => x.aircraft },
-      { label: t('f_ore'), value: (x) => x.ore },
+      { label: t('f_ore'), value: (x) => (isOwnStaff(x) ? x.ore : '') },
       { label: t('f_staffType'), value: (x) => t('staff_' + (x.staffType || 'internal')) },
       { label: t('f_authority'), value: (x) => x.authority },
       { label: t('f_ltc'), value: (x) => x.ltcDate },
       { label: t('f_tri'), value: (x) => x.triDate },
       { label: t('f_tre'), value: (x) => x.treDate },
-      { label: t('f_conversion'), value: (x) => stageLabel(stages.find((s) => s.id === x.conv?.stage)) },
+      { label: t('f_conversion'), value: (x) => (isOwnStaff(x) ? stageLabel(stages.find((s) => s.id === x.conv?.stage)) : '') },
       // Free text last, matching the screen and the PDF.
       { label: t('f_remark'), value: (x) => x.remark },
       { label: t('f_note'), value: (x) => x.note || '' }

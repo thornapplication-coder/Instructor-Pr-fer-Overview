@@ -8,7 +8,7 @@ import { stageLabel, firstStageId } from '../data/pipeline.js'
 import { qualLabel } from '../data/qualifications.js'
 import { courseLabel, simVersionLabel } from '../data/providers.js'
 import { pilotRole, pilotValidity, ratingValid } from '../data/pilots.js'
-import { conversionTrainers } from '../data/qualifications.js'
+import { conversionTrainers, isOwnStaff } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import {
   headcount,
@@ -215,12 +215,17 @@ async function exportTrainersPdf(data, t, lang, opts) {
     body: rows.map((x) => [
       qualLabel(data.quals, x.qual), x.base || '', x.tlc || '', x.name || '',
       t(x.role === 'fo' ? 'role_foShort' : 'role_captainShort'),
-      x.seniority ? formatDate(x.seniority, lang) : '',
-      formatPartTime(x.partTime, lang), formatFte(x.fte), x.aircraft || '', x.ore || '',
+      // Seniority, ORE and the conversion phase only where they exist: they
+      // are places in OUR list, OUR priority scheme and OUR pipeline, and the
+      // screen leaves them blank for an external trainer. An export that
+      // printed a leftover value would contradict the table it exports.
+      isOwnStaff(x) && x.seniority ? formatDate(x.seniority, lang) : '',
+      formatPartTime(x.partTime, lang), formatFte(x.fte), x.aircraft || '',
+      isOwnStaff(x) ? x.ore || '' : '',
       t('staff_' + (x.staffType || 'internal')),
       x.staffType === 'external' ? labelOf(data.extCompanies, x.extCompany, '') : '',
       x.authority || '',
-      stageLabel(data.stages.find((s) => s.id === x.conv?.stage)),
+      isOwnStaff(x) ? stageLabel(data.stages.find((s) => s.id === x.conv?.stage)) : '',
       x.remark || '', x.note || ''
     ]),
     columnStyles: { 3: { cellWidth: 110 }, 14: { cellWidth: 80 }, 15: { cellWidth: 80 } }

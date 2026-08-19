@@ -246,6 +246,40 @@ export default async function run(browser, baseUrl, shots) {
   await page.locator('.modal .modal-foot .btn-ghost').first().click()
   await page.waitForTimeout(300)
 
+  // ---- 5c. and three fields an external trainer cannot have are gone -------
+  //
+  // ORE, seniority and the conversion phase are places in OUR priority scheme,
+  // OUR company list and OUR pipeline. On the card they go entirely; in the
+  // table the column stays and prints a dash, because a column belongs to the
+  // list and every other row still needs it.
+  await page.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    d.trainers = d.trainers.map((t, i) => i === 0
+      ? { ...t, name: 'AAA Extern Probe', staffType: 'external', ore: 'A',
+          seniority: '2016-04-15', conv: { stage: 'simulator', status: 'on_track' } }
+      : t)
+    localStorage.setItem(K, JSON.stringify(d))
+  }, STORAGE_KEY)
+  await page.reload({ waitUntil: 'networkidle' })
+  await page.waitForSelector('.trainer-table tbody tr')
+  await page.waitForTimeout(700)
+
+  const deskCells = await page.evaluate(() => {
+    const row = [...document.querySelectorAll('.trainer-table tbody tr')]
+      .find((r) => /Extern Probe/.test(r.innerText))
+    if (!row) return null
+    const read = (c) => {
+      const td = row.querySelector('.' + c)
+      return td ? { text: td.innerText.trim(), shown: getComputedStyle(td).display !== 'none' } : null
+    }
+    return { sen: read('t-sen'), ore: read('t-ore'), stage: read('t-stage') }
+  })
+  ok(deskCells && deskCells.sen.shown && deskCells.ore.shown && deskCells.stage.shown,
+    'at desk width the three columns are still there for the external row')
+  ok(deskCells && deskCells.sen.text === '–' && deskCells.ore.text === '–' && deskCells.stage.text === '–',
+    '  and each prints a dash rather than a leftover value (' +
+    [deskCells?.sen.text, deskCells?.ore.text, deskCells?.stage.text].join(' / ') + ')')
+
   // ---- 6. and on a phone card you can SEE that somebody is external ---------
   await page.setViewportSize({ width: 390, height: 844 })
   await page.locator('.tab', { hasText: 'Trainer' }).first().click()

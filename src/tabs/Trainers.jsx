@@ -9,7 +9,7 @@ import { formatPartTime, formatDate, classNames, fteFromPartTime, formatFte } fr
 import { CONV_STATUS, STAFF_TYPE, stageLabel, stageIndex } from '../data/pipeline.js'
 import { OVERFLOW } from '../lib/palette.js'
 import { useThemed } from '../lib/useThemed.js'
-import { qualIndex, qualLabel, convertsAtAll } from '../data/qualifications.js'
+import { qualIndex, qualLabel, convertsAtAll, isOwnStaff } from '../data/qualifications.js'
 import { labelOf } from '../data/lists.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 
@@ -74,7 +74,11 @@ export default function Trainers() {
     return trainers
       .filter((x) => (fBase ? x.base === fBase : true))
       .filter((x) => (fQual ? x.qual === fQual : true))
-      .filter((x) => (fOre ? x.ore === fOre : true))
+      // Through the same predicate the cell uses: a leftover tier on somebody
+      // who is now external is not shown, so it must not answer the filter
+      // either - a row that appears under "ORE: A" and then prints a dash is
+      // the list contradicting itself.
+      .filter((x) => (fOre ? isOwnStaff(x) && x.ore === fOre : true))
       .filter((x) => (fStaff ? (x.staffType || 'internal') === fStaff : true))
       .filter((x) => (fAircraft ? x.aircraft === fAircraft : true))
       .filter((x) => (fRole ? roleOf(x) === fRole : true))
@@ -113,15 +117,18 @@ export default function Trainers() {
       // Earliest date = most senior, so plain ascending is the useful order.
       // A blank sorts LAST rather than to the top: three people are not in the
       // company list at all, and an empty field is not "most senior".
-      seniority: (x) => x.seniority || '9999-12-31',
+      // External trainers sort last too, and for the same reason: the cell
+      // shows a dash, and sorting a row by a figure it does not display is how
+      // a list stops being readable.
+      seniority: (x) => (isOwnStaff(x) && x.seniority) || '9999-12-31',
       remark: (x) => x.remark || '',
       note: (x) => x.note || '',
       fte: (x) => (typeof x.fte === 'number' ? x.fte : 1),
       aircraft: (x) => x.aircraft || '',
-      ore: (x) => (x.ore in ORE_RANK ? ORE_RANK[x.ore] : 9),
+      ore: (x) => (isOwnStaff(x) && x.ore in ORE_RANK ? ORE_RANK[x.ore] : 9),
       staff: (x) => x.staffType || 'internal',
       authority: (x) => x.authority || '',
-      stage: (x) => stageIndex(stages, x.conv?.stage)
+      stage: (x) => (isOwnStaff(x) ? stageIndex(stages, x.conv?.stage) : 99)
     }),
     [quals, stages]
   )
@@ -292,12 +299,19 @@ export default function Trainers() {
                   )}
                 </td>
                 <td role="cell" className="t-role" data-label={t('f_role')}><RoleTag role={roleOf(x)} /></td>
-                <td role="cell" className="t-sen" data-label={t('f_seniority')}>{x.seniority ? formatDate(x.seniority, lang) : '–'}</td>
+                {/* Seniority, ORE and the conversion phase are positions in
+                    OUR list, OUR priority scheme and OUR pipeline. Somebody
+                    else's employee has none of the three, so the card drops
+                    the line altogether (`cell-na`) rather than printing three
+                    dashes under three headings that do not apply. The column
+                    stays in the table: a column belongs to the list, not to
+                    the row, and every other row still needs it. */}
+                <td role="cell" className={'t-sen' + (isOwnStaff(x) ? '' : ' cell-na')} data-label={t('f_seniority')}>{isOwnStaff(x) && x.seniority ? formatDate(x.seniority, lang) : '–'}</td>
                 <td role="cell" className="t-pt num" data-label={t('f_partTime')}>{formatPartTime(x.partTime, lang)}</td>
                 <td role="cell" className="t-fte num" data-label={t('f_fte')}>{formatFte(x.fte)}</td>
                 <td role="cell" className="t-ac" data-label={t('f_aircraft')}><AircraftTag value={x.aircraft} /></td>
-                <td role="cell" className="t-ore" data-label={t('f_ore')}>
-                  <OreTag value={x.ore} />
+                <td role="cell" className={'t-ore' + (isOwnStaff(x) ? '' : ' cell-na')} data-label={t('f_ore')}>
+                  {isOwnStaff(x) ? <OreTag value={x.ore} /> : '–'}
                 </td>
                 <td role="cell" className="t-staff" data-label={t('f_staffType')}>
                   <span className="staff-tag" style={{ '--tag': tint((STAFF_TYPE[x.staffType || 'internal']).color) }}>
@@ -308,7 +322,7 @@ export default function Trainers() {
                   )}
                 </td>
                 <td role="cell" className="t-auth muted small" data-label={t('f_authority')}>{x.authority || '–'}</td>
-                <td role="cell" className="t-stage" data-label={t('f_conversion')}><StageBadge trainer={x} stages={stages} /></td>
+                <td role="cell" className={'t-stage' + (isOwnStaff(x) ? '' : ' cell-na')} data-label={t('f_conversion')}>{isOwnStaff(x) ? <StageBadge trainer={x} stages={stages} /> : '–'}</td>
                 <td role="cell" className="t-remark muted" data-label={t('f_remark')}><span className="cell-clamp" title={x.remark || ''}>{x.remark || '–'}</span></td>
                 <td role="cell" className="t-note muted" data-label={t('f_note')}><span className="cell-clamp" title={x.note || ''}>{x.note || '–'}</span></td>
               </tr>
@@ -475,12 +489,18 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
             {AIRCRAFT.map((a) => <option key={a} value={a}>{a}</option>)}
           </select>
         </Field>
-        <Field label={t('f_ore')}>
-          <select className="input" value={f.ore} onChange={(e) => set('ore', e.target.value)}>
-            <option value=""></option>
-            {['A', 'B', 'C'].map((o) => <option key={o} value={o}>{o}</option>)}
-          </select>
-        </Field>
+        {/* Same rule as the conversion block below: an ORE tier is a rank in
+            our own priority scheme, so it is not a question for somebody
+            else's employee. Nothing is cleared - switching back to internal
+            brings the value back. */}
+        {isOwnStaff(f) && (
+          <Field label={t('f_ore')}>
+            <select className="input" value={f.ore} onChange={(e) => set('ore', e.target.value)}>
+              <option value=""></option>
+              {['A', 'B', 'C'].map((o) => <option key={o} value={o}>{o}</option>)}
+            </select>
+          </Field>
+        )}
         <Field label={t('f_staffType')}>
           <select className="input" value={f.staffType || 'internal'} onChange={(e) => set('staffType', e.target.value)}>
             <option value=""></option>
@@ -505,10 +525,14 @@ function TrainerForm({ trainer, stages, quals, authorities, bases, onClose, onSa
         </Field>
 
         {/* Company seniority, not a trainer qualification - hence its own line
-            above the "trainer since" block rather than a fourth date in it. */}
-        <Field label={t('f_seniority')}>
-          <DateInput value={f.seniority || ''} onChange={(v) => set('seniority', v)} />
-        </Field>
+            above the "trainer since" block rather than a fourth date in it.
+            It is a position in the Eurowings list, so an external trainer does
+            not have one and is not asked for it. */}
+        {isOwnStaff(f) && (
+          <Field label={t('f_seniority')}>
+            <DateInput value={f.seniority || ''} onChange={(v) => set('seniority', v)} />
+          </Field>
+        )}
 
         <div className="form-sep span2">{t('f_trainerSince')}</div>
         <Field label={t('f_ltc')}>
