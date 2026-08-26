@@ -230,6 +230,47 @@ export default async function run(browser, baseUrl, shots) {
   await page.setViewportSize({ width: 1400, height: 1000 })
   await page.waitForTimeout(300)
 
+  // ---- how full a course is, said where the booking happens --------------
+  //
+  // The occupancy lived in the course-date editor - a different dialog - and
+  // only as a `title` tooltip, which a tablet cannot show at all. Booking the
+  // seventh person onto a five-seat course produced no signal here. Nothing is
+  // blocked; it is simply said before the choice rather than discovered after.
+  await page.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    const step = d.assignmentSteps[0].id
+    d.courseRuns = [{ id: 'seatcheck', stepId: step, providerId: d.providers[0]?.id || '', location: 'VIE', from: '2027-03-15', to: '2027-03-19', seats: 2 }]
+    const ids = d.trainers.slice(0, 3).map((t) => t.id)
+    d.trainers = d.trainers.map((t) => (ids.includes(t.id)
+      ? { ...t, assignments: { ...(t.assignments || {}), [step]: { courseId: 'seatcheck', status: 'booked' } } }
+      : t))
+    localStorage.setItem(K, JSON.stringify(d))
+  }, STORAGE_KEY)
+  await page.reload({ waitUntil: 'networkidle' })
+  // Wait for something that exists on EVERY tab: the app restores the open tab
+  // from the address, and this suite is not on the dashboard - waiting for the
+  // hero here is waiting for a tab we are not on.
+  await page.waitForSelector('.topbar')
+  await page.waitForTimeout(700)
+  await page.locator('.tab', { hasText: 'Umschulung' }).first().click()
+  await page.waitForTimeout(700)
+  await page.locator('.hub-bar .seg-btn', { hasText: 'Planung' }).first().click()
+  await page.waitForSelector('.planning-table')
+  await page.waitForTimeout(800)
+
+  // Somebody NOT on that course: from where they stand the question is whether
+  // there is room for them at all.
+  await page.locator('.planning-table tbody tr').nth(10).locator('.cell-assign, button').first().click()
+  await page.waitForSelector('.modal', { timeout: 8000 })
+  await page.waitForTimeout(700)
+  const choices = await page.locator('.modal select').first().locator('option').allInnerTexts()
+  const line = (choices.map((c) => c.trim()).find((c) => c.includes('15.03.2027')) || '')
+  ok(!!line, 'the course date is offered in the booking dialog (' + (line || 'not offered') + ')')
+  ok(/3\/2/.test(line), '  saying how many of how many seats are taken (' + line + ')')
+  ok(/voll/i.test(line), '  and naming it full, before the choice rather than after')
+  await page.keyboard.press('Escape')
+  await page.waitForTimeout(400)
+
   ok(errs.length === 0, 'no page errors at all' + (errs.length ? ': ' + errs[0] : ''))
 
   await page.close()

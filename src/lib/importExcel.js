@@ -27,7 +27,18 @@ const FIELD_ALIASES = {
   authority: ['ausstellende behörde', 'ausstellende behoerde', 'behörde', 'behoerde', 'issuing authority', 'authority'],
   ltcDate: ['ltc seit', 'ltc since', 'ltc'],
   triDate: ['tri seit', 'tri since', 'tri'],
-  treDate: ['tre seit', 'tre since', 'tre']
+  treDate: ['tre seit', 'tre since', 'tre'],
+  // Five columns the export writes that nothing read back.
+  //
+  // For an existing person that was merely lossy - the merge leaves untouched
+  // fields alone. For a NEW row it invented a record: "extern" came back as
+  // internal (the default), which since 1.50.0 pulls the person into every
+  // conversion figure and every course seat they should not occupy.
+  seniority: ['seniorität', 'senioritaet', 'seniority', 'seniority date'],
+  aircraft: ['aircraft', 'muster', 'flugzeug', 'typ'],
+  staffType: ['zugehörigkeit', 'zugehoerigkeit', 'intern/extern', 'intern / extern', 'staff', 'staff type', 'affiliation'],
+  extCompany: ['firma (extern)', 'firma extern', 'firma', 'company', 'external company'],
+  convStage: ['umschulung', 'phase', 'conversion', 'stage']
 }
 
 function fieldForHeader(header, aliasMap = FIELD_ALIASES) {
@@ -127,6 +138,16 @@ function pickFields(rec) {
   if (tri) out.triDate = tri
   const tre = toISO(rec.treDate)
   if (tre) out.treDate = tre
+  const sen = toISO(rec.seniority)
+  if (sen) out.seniority = sen
+  // These three are stored as IDS and exported as LABELS, so they cannot be
+  // resolved here - the lists they resolve against live in the store. They are
+  // carried through as raw text and mapped in the caller, the same way `qual`
+  // has always gone through resolveQualId.
+  if (str(rec.aircraft)) out.aircraft = str(rec.aircraft)
+  if (str(rec.staffType)) out.staffType = str(rec.staffType)
+  if (str(rec.extCompany)) out.extCompany = str(rec.extCompany)
+  if (str(rec.convStage)) out.convStage = str(rec.convStage)
   return out
 }
 
@@ -353,4 +374,76 @@ export function mergeTrainerRecords(existing, records) {
     }
   }
   return { trainers: result, updated, added }
+}
+
+// ---------------------------------------------------------------------------
+// Label -> id, for the columns whose lists live in the store.
+//
+// `pickFields` carries these through as the raw text the sheet held, because
+// resolving them needs the user's own lists. This is where they land, called
+// once from the import screen - the same shape `resolveQualId` has always had.
+
+// "intern" / "extern" in either language, and the stored ids themselves.
+export function resolveStaffType(value) {
+  const s = norm(value)
+  if (!s) return ''
+  if (/^(extern|external)$/.test(s)) return 'external'
+  if (/^(intern|internal)$/.test(s)) return 'internal'
+  return ''
+}
+
+// A generic list resolver: match a stored id first, then a label, then a label
+// in any case. Used for the aircraft types, the external companies and the
+// conversion stages, all of which are user-editable lists of { id, label }.
+export function resolveListId(list, value) {
+  const raw = String(value == null ? '' : value).trim()
+  if (!raw) return ''
+  const items = list || []
+  const byId = items.find((x) => String(x?.id) === raw)
+  if (byId) return byId.id
+  const lower = raw.toLowerCase()
+  const byLabel = items.find((x) => String(x?.label || '').trim().toLowerCase() === lower)
+  if (byLabel) return byLabel.id
+  const byIdCase = items.find((x) => String(x?.id || '').toLowerCase() === lower)
+  return byIdCase ? byIdCase.id : ''
+}
+
+/**
+ * Turn the label columns of a parsed record into stored ids.
+ *
+ * Anything that does not resolve is DROPPED rather than stored raw: a stage id
+ * that no stage carries would leave the person in a phase no view can show,
+ * and an unknown affiliation silently reading as "internal" is exactly the
+ * failure this whole change is about. Not stated beats wrongly stated.
+ */
+export function resolveRecordIds(rec, lists) {
+  const out = { ...rec }
+  const { aircraftTypes, extCompanies, stages } = lists || {}
+
+  if ('aircraft' in out) {
+    // Aircraft types are plain codes ("A320"), so an exact match against the
+    // list is enough and an unknown code is not invented.
+    const id = resolveListId(aircraftTypes, out.aircraft)
+    if (id) out.aircraft = id
+    else delete out.aircraft
+  }
+  if ('staffType' in out) {
+    const st = resolveStaffType(out.staffType)
+    if (st) out.staffType = st
+    else delete out.staffType
+  }
+  if ('extCompany' in out) {
+    const id = resolveListId(extCompanies, out.extCompany)
+    if (id) out.extCompany = id
+    else delete out.extCompany
+  }
+  if ('convStage' in out) {
+    const id = resolveListId(stages, out.convStage)
+    delete out.convStage
+    // Only the phase, and only onto a record that has one: status, target and
+    // note are not in the sheet, and inventing them would be worse than
+    // leaving the phase where it is.
+    if (id) out.conv = { ...(rec.conv || {}), stage: id }
+  }
+  return out
 }

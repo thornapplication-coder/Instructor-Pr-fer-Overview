@@ -14,7 +14,7 @@
 // So the check builds the real export bytes with the real writer and feeds them
 // to the real reader. Anything less would have passed while both were broken.
 import { parsePilotsFromArrayBuffer, mergePilotRecords } from '../src/lib/importPilots.js'
-import { parseTrainersFromArrayBuffer, mergeTrainerRecords } from '../src/lib/importExcel.js'
+import { parseTrainersFromArrayBuffer, mergeTrainerRecords, resolveRecordIds } from '../src/lib/importExcel.js'
 
 const fails = []
 export const results = { fails }
@@ -67,9 +67,13 @@ console.log('\nPilots – the export reads back, ratings and all')
   ok(max && max.base === 'VIE' && max.remark === 'mag Nachtflug',
     '  the fields only the first line carries came along too')
 
+  // A sheet that lists no rating for somebody says NOTHING about their
+  // ratings - it does not say they have none. So the record carries no
+  // `ratings` key at all and the stored ones stand. Same rule as every other
+  // column: an empty cell is "not stated", not "make it empty".
   const other = recs.find((r) => r.tlc === 'XYZ')
-  ok(other && other.ratings.length === 0 && other.boeingExp === true,
-    'somebody with no rating reads as Boeing experience without one')
+  ok(other && !('ratings' in other), 'a row with no rating leaves the stored ratings alone')
+  ok(other && !('base' in other) === false, '  while the fields it does carry are there (base ' + other?.base + ')')
 
   // And through the merge, against a roster that already holds them.
   const existing = [{ id: 'p1', name: 'Muster, Max', tlc: 'ABC', base: 'VIE', role: 'captain', ratings: [], boeingExp: true, remark: '' }]
@@ -78,6 +82,29 @@ console.log('\nPilots – the export reads back, ratings and all')
   ok(kept && kept.id === 'p1', 'a matched pilot keeps their id (' + kept?.id + ')')
   ok(kept && kept.ratings.length === 3, '  and gains the three ratings the sheet carried')
   ok(merged.pilots.length === 2, 'the unknown person is added, not merged into somebody (' + merged.pilots.length + ')')
+}
+
+console.log('\nPilots – an empty cell does not blank a stored value')
+{
+  // The two importers used to disagree: the trainer one left a stored value
+  // alone when the column was missing, the pilot one overwrote it with ''. A
+  // two-column sheet of names and codes therefore wiped base, role, remark and
+  // every rating off everybody it matched - behind the same confirmation text.
+  const headers = ['Name', 'TLC']
+  const recs = await parsePilotsFromArrayBuffer(xlsBytes('Other Pilots', headers, [['Muster, Max', 'ABC']]))
+  ok(recs.length === 1, 'the two-column sheet is read (' + recs.length + ')')
+  ok(!('base' in recs[0]) && !('role' in recs[0]) && !('remark' in recs[0]) && !('ratings' in recs[0]),
+    '  and carries only what it states - no empty stand-ins for the rest')
+
+  const before = {
+    id: 'p1', name: 'Muster, Max', tlc: 'ABC', base: 'VIE', role: 'fo',
+    ratings: [{ id: 'r1', type: '737', until: '2027-06-01' }], boeingExp: false, remark: 'mag Nachtflug'
+  }
+  const after = mergePilotRecords([before], recs).pilots[0]
+  ok(after.base === 'VIE', 'base survives a sheet that does not mention it (' + after.base + ')')
+  ok(after.role === 'fo', '  and so does the role (' + after.role + ')')
+  ok(after.remark === 'mag Nachtflug', '  and the remark (' + after.remark + ')')
+  ok(after.ratings.length === 1, '  and the ratings, which is the one that used to cost most (' + after.ratings.length + ')')
 }
 
 console.log('\nTrainers – the same file format reads back')
@@ -114,4 +141,39 @@ console.log('\nCSV – the delimiter is sniffed past the banner line')
   const recs = await parseTrainersFromArrayBuffer(enc.encode(csv).buffer)
   ok(recs.length === 1, 'a semicolon CSV under a banner line is read (' + recs.length + ')')
   ok(recs[0] && recs[0].tlc === 'ABC', '  and the columns land in the right fields (' + recs[0]?.tlc + ')')
+}
+
+
+console.log('\nTrainers – the five label columns come back as ids')
+{
+  // The export writes Seniorität, Aircraft, Zugehörigkeit, Firma and Umschulung.
+  // None was read back. For an existing person that was lossy; for a NEW row it
+  // invented one - "extern" arriving as the internal default, which since
+  // 1.50.0 drags the person into every conversion figure and every course seat
+  // they should not occupy.
+  const headers = ['Qualifikation', 'Base', 'TLC', 'Name', 'Seniorität', 'Aircraft', 'Zugehörigkeit', 'Firma (extern)', 'Umschulung']
+  const rows = [['TRI', 'VIE', 'NEU', 'Neu, Person', '15.04.2016', 'B737', 'extern', 'SunExpress', 'SIM / Type Rating']]
+  const parsed = await parseTrainersFromArrayBuffer(xlsBytes('Trainer', headers, rows))
+  ok(parsed.length === 1, 'the row is read (' + parsed.length + ')')
+  ok(parsed[0].seniority === '2016-04-15', 'the seniority date arrives as ISO (' + parsed[0].seniority + ')')
+
+  const lists = {
+    aircraftTypes: [{ id: 'A320', label: 'A320' }, { id: 'B737', label: 'B737' }],
+    extCompanies: [{ id: 'c-tui', label: 'TUI' }, { id: 'c-sun', label: 'SunExpress' }],
+    stages: [{ id: 'nominated', label: 'Nominierung' }, { id: 'simulator', label: 'SIM / Type Rating' }]
+  }
+  const r = resolveRecordIds(parsed[0], lists)
+  ok(r.staffType === 'external', '"extern" resolves to the stored id, not to the internal default (' + r.staffType + ')')
+  ok(r.extCompany === 'c-sun', 'the company label resolves to its id (' + r.extCompany + ')')
+  ok(r.aircraft === 'B737', 'the aircraft comes back (' + r.aircraft + ')')
+  ok(r.conv && r.conv.stage === 'simulator', 'and the conversion phase, by label (' + r.conv?.stage + ')')
+  ok(!('convStage' in r), '  with the raw text dropped rather than stored beside it')
+
+  // Anything that does not resolve is left out, never guessed: a stage id no
+  // stage carries would put somebody in a phase no view can draw, and an
+  // unknown affiliation quietly reading as "internal" is the bug itself.
+  const junk = resolveRecordIds(
+    { staffType: 'Aushilfe', aircraft: 'B787', extCompany: 'Wer auch immer', convStage: 'Gibt es nicht' }, lists)
+  ok(!('staffType' in junk) && !('aircraft' in junk) && !('extCompany' in junk) && !('conv' in junk),
+    'an unresolvable label is dropped, not invented (' + JSON.stringify(junk) + ')')
 }

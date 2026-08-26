@@ -72,14 +72,24 @@ export async function parsePilotsFromArrayBuffer(buf, today) {
   for (const row of rows) {
     const isNewPerson = !!(row.name || row.tlc)
     if (isNewPerson || !current) {
-      current = {
-        name: row.name,
-        tlc: row.tlc,
-        base: row.base,
-        role: row.role || 'captain',
-        ratings: [],
-        remark: row.remark
-      }
+      // ONLY the fields the sheet actually carries.
+      //
+      // This used to build every key unconditionally, so a missing column
+      // arrived as '' and the merge below - a plain overwrite - wrote that
+      // emptiness over the stored value. A two-column sheet of names and codes
+      // wiped base, role, remark and ratings off everybody it matched.
+      //
+      // The trainer importer has always done it the other way (pickFields), so
+      // the two sat side by side behind the same confirmation with opposite
+      // rules. This is the trainer rule: an empty cell means "not stated", and
+      // what is not stated is not changed. Clearing a field stays the dialog's
+      // job, where it is deliberate.
+      current = { _ratings: [] }
+      if (row.name) current.name = row.name
+      if (row.tlc) current.tlc = row.tlc
+      if (row.base) current.base = row.base
+      if (row.role) current.role = row.role
+      if (row.remark) current.remark = row.remark
       people.push(current)
     } else {
       // A continuation line may still carry a field the first line left empty.
@@ -88,12 +98,16 @@ export async function parsePilotsFromArrayBuffer(buf, today) {
     }
     // Only a rating with a real date is one; a bare type with no expiry is
     // what the export writes for somebody who holds none.
-    if (row.rating && row.rating.until) current.ratings.push(row.rating)
+    if (row.rating && row.rating.until) current._ratings.push(row.rating)
   }
 
-  // No rating and no date means Boeing experience without a current type -
-  // the same reading the single-row form had.
-  return people.map((p) => ({ ...p, boeingExp: p.ratings.length === 0 }))
+  return people.map((p) => {
+    const { _ratings, ...rest } = p
+    // Same rule for the ratings: a sheet that lists none says nothing about
+    // them, so the stored ones stand. Only a sheet that DOES carry ratings
+    // replaces what is there - and then boeingExp follows from it.
+    return _ratings.length ? { ...rest, ratings: _ratings, boeingExp: false } : rest
+  })
 }
 
 // Merge imported records into the existing list. Matched by TLC, else by name;

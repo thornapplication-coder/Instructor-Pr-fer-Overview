@@ -9,7 +9,7 @@ import { useSort, Th, SortSelect } from '../components/sortable.jsx'
 import CourseCalendar from '../components/CourseCalendar.jsx'
 import CourseRunManager from '../components/CourseRunManager.jsx'
 import { providersForStep } from '../lib/providerMatch.js'
-import { conflictsFor, findRun, resolveAssignment, runsForStep, spanDays, spanText } from '../lib/courses.js'
+import { conflictsFor, findRun, resolveAssignment, runsForStep, seatUsage, spanDays, spanText } from '../lib/courses.js'
 import { formatDate } from '../lib/format.js'
 import { useThemed } from '../lib/useThemed.js'
 import { qualLabel, isOwnStaff } from '../data/qualifications.js'
@@ -279,11 +279,25 @@ export default function Planning({ view: viewProp, embedded }) {
 }
 
 // One line in the course-date dropdown: period first, because that is what is
-// being chosen; the provider only tells the periods apart.
-function runOption(run, providers, lang) {
+// being chosen; the provider only tells the periods apart; then how full it is.
+//
+// The occupancy was the missing piece. Booking the seventh person onto a
+// five-seat course produced no signal at all here - the red figure lives in the
+// course-date editor, a different dialog, and only as a `title` tooltip, which
+// a tablet cannot show. Nothing is blocked (a provider really can find one more
+// seat, and that decision is the planner's), but it is said before the choice
+// rather than discovered afterwards.
+function runOption(run, providers, lang, used, t, mine) {
   const where = targetLabel(providers, { providerId: run.providerId, location: run.location })
   const span = spanText(run.from, run.to, lang)
-  return [span || '(?)', where].filter(Boolean).join(' · ')
+  const seats = Number(run.seats) || 0
+  // The person's own booking is already counted in `used`; from where they are
+  // standing the question is "is there room for me", so it is not counted twice.
+  const taken = (used.get(run.id) || 0) - (mine ? 1 : 0)
+  let fill = ''
+  if (seats > 0) fill = taken + '/' + seats + (taken >= seats ? ' · ' + t('course_full') : '')
+  else if (taken > 0) fill = String(taken)
+  return [span || '(?)', where, fill].filter(Boolean).join(' · ')
 }
 
 function PlanningModal({ trainer, providers, steps, runs, statusList, onClose }) {
@@ -294,6 +308,9 @@ function PlanningModal({ trainer, providers, steps, runs, statusList, onClose })
   const { data, t, lang, setAssignment, upsertTrainer, readOnly } = useStore()
   const setStep = (stepId, changes) => setAssignment(trainer.id, stepId, changes)
   const clashes = conflictsFor(trainer, steps, runs)
+  // Across the WHOLE roster, not just this person: how full each course is, is
+  // a fact about the course.
+  const used = useMemo(() => seatUsage(data.trainers, steps), [data.trainers, steps])
   const setStaff = (v) => upsertTrainer({ ...trainer, staffType: v })
   const courseDefs = data.providerCourses
 
@@ -367,7 +384,9 @@ function PlanningModal({ trainer, providers, steps, runs, statusList, onClose })
                   >
                     <option value="">{t('course_own')}</option>
                     {stepRuns.map((r) => (
-                      <option key={r.id} value={r.id}>{runOption(r, providers, lang)}</option>
+                      <option key={r.id} value={r.id}>
+                        {runOption(r, providers, lang, used, t, a.courseId === r.id)}
+                      </option>
                     ))}
                   </select>
                 </label>

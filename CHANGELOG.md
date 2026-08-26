@@ -11,6 +11,36 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.58.0] – 2026-08-19
+
+### Behoben
+- **Leere Zellen löschten beim Piloten-Import den gespeicherten Wert.**
+  `parsePilotsFromArrayBuffer` baute jedes Feld unbedingt, eine fehlende Spalte
+  kam also als `''` an, und `mergePilotRecords` überschreibt voll. Eine Tabelle
+  aus Name und Kürzel löschte damit Base, Rolle, Bemerkung und alle
+  Berechtigungen. Der Trainer-Import macht seit jeher das Gegenteil
+  (`pickFields` gibt nur gefüllte Felder aus) — zwei Importe mit
+  entgegengesetzter Regel hinter derselben Rückfrage. Jetzt gilt die
+  Trainer-Regel für beide: leer heißt „nicht angegeben", und was nicht
+  angegeben ist, wird nicht geändert.
+- **Fünf Spalten des Trainer-Exports wurden nicht zurückgelesen**
+  (Seniorität, Aircraft, Zugehörigkeit, Firma, Umschulung). Bei bestehenden
+  Personen nur verlustig; bei **neuen** Zeilen erfand der Import einen
+  Datensatz: „extern" fiel auf den Standard „intern" zurück, und seit 1.50.0
+  entscheidet genau das darüber, ob jemand in Umschulungs-Kennzahlen und
+  Kursplatz-Rechnungen auftaucht.
+  Drei davon sind Ids hinter Beschriftungen, deren Listen im Speicher liegen —
+  sie werden deshalb wie `qual` als Rohtext durchgereicht und im Import-Bildschirm
+  aufgelöst (`resolveRecordIds`). Was sich nicht auflösen lässt, wird
+  **weggelassen**: eine Phase, die keine Phase trägt, wäre ein Zustand, den
+  keine Ansicht zeichnen kann.
+- **Überbuchung war beim Buchen unsichtbar.** Der Zuweisungs-Dialog nannte
+  weder Plätze noch Belegung; die rote Zahl steht im Kurstermin-Dialog und nur
+  als `title`-Sprechblase, die ein Tablet nicht anzeigt. Die Auswahlzeile trägt
+  jetzt „· 3/2 · voll". Blockiert wird nichts — ein Anbieter findet auch mal
+  einen Platz mehr, und das ist die Entscheidung des Planers; sie fällt nur
+  nicht mehr blind. Die eigene Buchung zählt dabei nicht doppelt.
+
 ## [1.57.0] – 2026-08-19
 
 ### Behoben

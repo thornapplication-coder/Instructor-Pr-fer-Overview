@@ -4,12 +4,31 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.57.0'
+export const APP_VERSION = '1.58.0'
 export const APP_BUILD_DATE = '2026-08-19'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.58.0',
+    date: '2026-08-19',
+    type: 'minor',
+    changes: {
+      de: [
+        'Beim Piloten-Import löscht eine leere Zelle nichts mehr. Bisher galt beim Trainer-Import „leer heißt nicht angegeben" und beim Piloten-Import „leer heißt lösche das" — zwei Importe, gegensätzliche Regel, dieselbe Rückfrage. Eine Tabelle mit nur Name und Kürzel hat damit Base, Rolle, Bemerkung und Berechtigungen gelöscht. Jetzt gilt überall dieselbe Regel; Leeren bleibt Sache des Dialogs, wo es Absicht ist.',
+        'Fünf Spalten kommen aus dem Trainer-Export zurück: Seniorität, Aircraft, Zugehörigkeit, Firma und Umschulungs-Phase. Bei bestehenden Personen waren sie nur verloren; bei neuen Zeilen entstand ein erfundener Datensatz — „extern" kam als „intern" an, und damit lief die Person in alle Umschulungs-Zahlen und Kursplätze ein, die sie nichts angehen.',
+        'Was sich nicht auflösen lässt, wird weggelassen statt geraten. Eine unbekannte Phase würde jemanden in einen Zustand setzen, den keine Ansicht zeichnen kann.',
+        'Der Buchungs-Dialog sagt jetzt, wie voll ein Kurs ist: „15.03.2027 – 19.03.2027 · BAA · 3/2 · voll". Die Zahl stand bisher nur im Kurstermin-Dialog und nur als Maus-Sprechblase — am Tablet also gar nicht. Gebucht werden kann weiterhin: ein Anbieter findet auch mal einen Platz mehr, das ist deine Entscheidung. Sie wird nur nicht mehr erst hinterher sichtbar.'
+      ],
+      en: [
+        'An empty cell in a pilots import no longer deletes anything. The trainer import read an empty cell as "not stated", the pilots import as "make it empty" - two importers, opposite rules, the same confirmation. A sheet of names and codes wiped base, role, remark and ratings off everybody it matched. One rule now; clearing stays the dialog\'s job, where it is deliberate.',
+        'Five columns come back from the trainer export: seniority, aircraft, affiliation, company and conversion phase. For an existing person they were merely lost; for a new row they invented a record - "extern" arriving as internal, which pulls the person into every conversion figure and every course seat that is none of their business.',
+        'Anything that cannot be resolved is left out rather than guessed. An unknown phase would put somebody in a state no view can draw.',
+        'The booking dialog now says how full a course is: "15.03.2027 – 19.03.2027 · BAA · 3/2 · full". The figure lived only in the course-date dialog and only as a mouse tooltip - so on a tablet, nowhere. Booking is still allowed: a provider really can find one more seat and that call is yours. It is simply no longer discovered afterwards.'
+      ]
+    }
+  },
   {
     version: '1.57.0',
     date: '2026-08-19',

@@ -4,7 +4,7 @@ import { CaptureContext } from '../lib/capture.js'
 import { downloadJson } from '../lib/format.js'
 import { exportTrainersExcel, exportPlanningExcel, exportProvidersExcel, exportPilotsExcel, exportCourseDatesExcel } from '../lib/tableExports.js'
 import { exportPagePdf } from '../lib/pdfExport.js'
-import { parseTrainersFromArrayBuffer, mergeTrainerRecords } from '../lib/importExcel.js'
+import { parseTrainersFromArrayBuffer, mergeTrainerRecords, resolveRecordIds } from '../lib/importExcel.js'
 import { parsePilotsFromArrayBuffer, mergePilotRecords } from '../lib/importPilots.js'
 import { resolveQualId } from '../data/qualifications.js'
 import { APP_VERSION, APP_BUILD_DATE, CHANGELOG } from '../version.js'
@@ -133,11 +133,19 @@ export default function Settings() {
     try {
       const buf = await file.arrayBuffer()
       const parsed = await parseTrainersFromArrayBuffer(buf)
-      // Exports write qualification LABELS, so map them back to stored ids –
-      // otherwise re-importing our own export detaches trainers from their qual.
-      const records = parsed.map((r) =>
-        r.qual ? { ...r, qual: resolveQualId(data.quals, r.qual) } : r
-      )
+      // Exports write LABELS, so map them back to stored ids – otherwise
+      // re-importing our own export detaches trainers from their qualification,
+      // their aircraft, their affiliation, their company and their conversion
+      // phase. The lists live here, which is why the parser hands the raw text
+      // over instead of guessing.
+      const records = parsed.map((r) => {
+        const withIds = resolveRecordIds(r, {
+          aircraftTypes: data.aircraftTypes,
+          extCompanies: data.extCompanies,
+          stages: data.stages
+        })
+        return withIds.qual ? { ...withIds, qual: resolveQualId(data.quals, withIds.qual) } : withIds
+      })
       if (!records.length) {
         setXlsMsg({ ok: false, text: t('xlsImport_none') })
         return
