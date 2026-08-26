@@ -87,8 +87,27 @@ function withConvDefaults(trainer, firstStage) {
 }
 
 // Older stage shape was { id, de, en, color }; new shape is { id, label, color }.
+//
+// SPREAD, do not whitelist. This returned only the three keys it names, so it
+// dropped `_at` - and `stages` is in MERGE_LISTS, where `_at` is the whole
+// basis of the record-level merge. What followed was worse than a missing
+// field: `backfillStamps` refills a list wholesale as soon as ANY member lacks
+// a stamp, so every phase came out stamped with the blob's `updatedAt`, i.e.
+// "when this device last changed anything at all".
+//
+// The effect was that `stages` merged as whole-list, last-device-to-touch-
+// anything-wins: rename a phase on the laptop, then merely OPEN the app on the
+// iPad, and the iPad's untouched list outranks the rename and erases it. A
+// deleted phase came back the same way. Every other record normalizer here
+// spreads; this one was the exception, and the coverage test could not see it
+// because the list IS registered - its stamps were destroyed upstream.
+//
+// `de` / `en` are pulled out on purpose: they are the old shape's label and
+// have become `label`, so carrying them on would keep dead keys in the blob
+// for ever.
 function migrateStage(s) {
-  return { id: s.id, label: s.label ?? s.de ?? s.en ?? s.id, color: s.color || BRAND.burgundy }
+  const { de, en, ...rest } = s || {}
+  return { ...rest, id: s.id, label: s.label ?? de ?? en ?? s.id, color: s.color || BRAND.burgundy }
 }
 
 // Provider forward-compat: single `location` -> `locations[]`; ensure `courses[]`.

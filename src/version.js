@@ -4,12 +4,31 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.59.0'
+export const APP_VERSION = '1.60.0'
 export const APP_BUILD_DATE = '2026-08-19'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.60.0',
+    date: '2026-08-19',
+    type: 'minor',
+    changes: {
+      de: [
+        'Umschulungs-Phasen verlieren ihren Zeitstempel nicht mehr. Die Umstellung der alten Phasenform hat beim Laden nur drei Felder übernommen — der Stempel war keins davon. Damit bekam beim nächsten Speichern jede Phase den Zeitstempel des ganzen Datenbestands, also „wann hat dieses Gerät zuletzt irgendetwas geändert".',
+        'Die Folge war ein stiller Datenverlust zwischen zwei Geräten: eine Phase am Rechner umbenennen, danach die App am iPad nur ÖFFNEN — und die unveränderte Liste des iPads schlug die Umbenennung. Eine gelöschte Phase kam auf demselben Weg zurück. Es brauchte weder Offline-Zeit noch gleichzeitiges Arbeiten, nur ein Neuladen.',
+        'Alle anderen Datensätze waren nie betroffen — Trainer, Anbieter, Kurstermine, Piloten und jede Auswahlliste behalten ihren Stempel seit jeher. Die Phasen waren die einzige Ausnahme.',
+        'Geprüft mit Gegenprobe: mit dem alten Code trägt die Phase nach dem Neuladen nachweislich den Zeitstempel des Bestands statt ihres eigenen.'
+      ],
+      en: [
+        'Conversion phases no longer lose their timestamp. The migration of the old phase shape copied three fields on load, and the stamp was not one of them - so on the next save every phase carried the timestamp of the whole dataset instead: "when did this device last change anything at all".',
+        'The result was silent data loss between two devices: rename a phase on the laptop, then merely OPEN the app on the iPad, and the iPad\'s untouched list beat the rename. A deleted phase came back the same way. It needed no offline period and no simultaneous editing - only a reload.',
+        'No other record was ever affected: trainers, providers, course dates, pilots and every pick list have always kept their stamps. The phases were the single exception.',
+        'Verified by counter-check: with the old code the phase demonstrably comes back carrying the dataset timestamp rather than its own.'
+      ]
+    }
+  },
   {
     version: '1.59.0',
     date: '2026-08-19',

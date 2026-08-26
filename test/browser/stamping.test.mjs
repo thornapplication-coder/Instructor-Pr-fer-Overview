@@ -100,6 +100,48 @@ export default async function run(browser, baseUrl, shots) {
     ok(t?._at === '2026-01-01T00:00:00.000Z', 'unstamped record inherits the blob timestamp, not "now" (' + t?._at + ')')
   }
 
+  // ---- a phase keeps its OWN stamp across a reload ------------------------
+  //
+  // `migrateStage` used to be a whitelist and dropped `_at`. `stages` is in
+  // MERGE_LISTS, where `_at` is the entire basis of the record merge - and
+  // `backfillStamps` refills a list wholesale as soon as one member lacks a
+  // stamp, so every phase came out carrying the blob's `updatedAt` instead of
+  // its own. That turned `stages` into whole-list, last-device-to-touch-
+  // anything-wins: rename a phase on one device, merely OPEN the app on
+  // another, and the untouched list outranks the rename.
+  //
+  // So the check is the real pipeline - write a stamp, reload, read it back -
+  // because `normalize()` runs on every load and that is where it was lost.
+  {
+    // Written out in full rather than mapped over whatever is in storage: the
+    // checks above leave a deliberately minimal blob behind, and mapping an
+    // empty list would have made this pass by testing nothing.
+    await page.evaluate((k) => {
+      const d = JSON.parse(localStorage.getItem(k) || '{}')
+      d.updatedAt = '2030-01-01T00:00:00.000Z' // deliberately far newer than the stage
+      d.stages = [
+        { id: 'nominated', label: 'Umbenannt', color: '#FD95BC', _at: '2020-05-05T00:00:00.000Z' },
+        { id: 'released', label: '737 freigegeben', color: '#970054', _at: '2020-05-05T00:00:00.000Z' }
+      ]
+      localStorage.setItem(k, JSON.stringify(d))
+    }, KEY)
+    await page.reload({ waitUntil: 'networkidle' })
+    await page.waitForSelector('.topbar')
+    await page.waitForTimeout(700)
+
+    const after = await store()
+    const first = (after.stages || [])[0]
+    ok(first?._at === '2020-05-05T00:00:00.000Z',
+      'a phase keeps its own stamp through a reload (' + first?._at + ')')
+    ok(first?.label === 'Umbenannt', '  and its label with it (' + first?.label + ')')
+    // The blob timestamp must NOT have leaked onto it - that was the bug.
+    ok(first?._at !== after.updatedAt,
+      '  and did not inherit the blob timestamp, which is what erased renames')
+    ok((after.stages || []).every((st) => st && st._at), 'every phase carries a stamp at all')
+    ok(!('de' in (first || {})) && !('en' in (first || {})),
+      '  while the dead keys of the old shape are not carried on')
+  }
+
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.close()
   return fails

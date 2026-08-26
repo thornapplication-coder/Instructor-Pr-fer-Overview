@@ -11,6 +11,32 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.60.0] – 2026-08-19
+
+### Behoben
+- **`migrateStage` war eine Positivliste und hat `_at` weggeworfen.**
+  `stages` steht in `MERGE_LISTS`, wo der Stempel je Datensatz die **gesamte**
+  Grundlage der Zusammenführung ist. Und weil `backfillStamps` eine Liste
+  komplett nachstempelt, sobald **ein** Eintrag keinen Stempel trägt, kam jede
+  Phase mit dem `updatedAt` des Blobs heraus — also mit „wann hat dieses Gerät
+  zuletzt irgendetwas geändert".
+- Damit wurden die Phasen in der Praxis **als ganze Liste** zusammengeführt,
+  nach dem Muster „das Gerät, das zuletzt irgendetwas angefasst hat, gewinnt":
+  eine Phase am Rechner umbenennen, danach die App am iPad nur öffnen — und die
+  unveränderte iPad-Liste schlägt die Umbenennung. Eine gelöschte Phase kehrte
+  auf demselben Weg zurück. Kein Offline-Zeitraum, kein gleichzeitiges
+  Bearbeiten nötig; ein Neuladen genügt, und eine PWA lädt ständig neu.
+- Der Wächter `test/sync-coverage.test.mjs` konnte das nicht sehen: die Liste
+  **ist** registriert, ihre Stempel wurden nur vorher zerstört.
+- Alle anderen Datensatz-Normalisierer spreizen (`normalizeProvider`,
+  `withConvDefaults`, `normalizeCourseRun`, `withPilotDefaults`,
+  `migrateColors`) — `migrateStage` war die einzige Ausnahme. Jetzt spreizt sie
+  auch; `de`/`en` der alten Form werden weiterhin entfernt, damit keine toten
+  Schlüssel im Bestand mitwandern.
+- **Gegengeprüft** (Projektregel): mit dem alten Code liest die Phase nach dem
+  Neuladen `2030-01-01` — den Blob-Zeitstempel — statt ihres eigenen
+  `2020-05-05`. Die Prüfung unterscheidet also wirklich.
+
 ## [1.59.0] – 2026-08-19
 
 ### Neu
