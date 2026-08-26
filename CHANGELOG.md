@@ -11,6 +11,40 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.59.0] – 2026-08-19
+
+### Neu
+- **Dashboard-Karte „Wann ist der Letzte durch?"** Die Kacheln beantworteten
+  bisher nur „wo steht wer GERADE"; wohin das führt, stand nirgends.
+- **Es wird keine Rate geschätzt, und das steht auch so auf der Karte.** Ein
+  Datensatz trägt einen einzigen `_at`-Stempel — die letzte Änderung —, keine
+  Historie, wann jemand welche Phase betreten hat. Eine daraus geratene
+  Geschwindigkeit ergäbe eine Kurve, die überzeugend aussieht und auf nichts
+  steht. Gelesen wird deshalb in dieser Reihenfolge: Ende des letzten
+  **gebuchten** Kurses (`finishForecast`), sonst der gesetzte **Zieltermin**,
+  sonst nichts.
+- **Und „sonst nichts" wird gezählt und genannt.** Wer weder Kurs noch Termin
+  hat, steht in keiner Zahl der Kurve; die Karte schreibt die Anzahl unter die
+  Grafik. Ohne das wäre der Monat oben eine Behauptung. Ebenso gilt ein halb
+  gebuchter Plan **nicht** als Fertig-Datum: ein Schritt von zwei endet auf dem
+  Papier früher, und das ist genau die geschönte Antwort.
+- **Dashboard-Karte „Bedarf gegen Plätze je Monat".** Balken = Zieltermine des
+  Monats, Strich = zugesagte Plätze. Zwei Größen, die es beide längst gab und
+  die nie auf einer Achse standen. Der Strich ist bewusst kein zweiter Balken:
+  er ist keine weitere Kategorie, sondern die Grenze, unter der die erste
+  bleiben muss — und ein Monat darüber ist ein **Zustand**, weshalb er die
+  reservierte Warnfarbe tragen darf, die einer Serienfarbe verwehrt ist.
+- Zieltermine außerhalb des eingestellten Zeitraums werden gezählt und
+  ausgewiesen, statt still aus der Grafik zu fallen.
+
+### Behoben
+- **Der Import-Wächter hielt einen JSX-Prop für eine freie Variable.** Sein
+  eigener Kommentar behauptete, Attributnamen auszunehmen — die Bedingung tat
+  es nicht, also schlug `labelOf={…}` an, weil `data/lists.js` ein `labelOf`
+  exportiert. Ausgenommen ist jetzt nur die JSX-Form `={` / `="`; eine echte
+  freie Zuweisung `name = x` wird weiterhin gemeldet. Gegengeprüft: freier
+  Aufruf **und** freie Zuweisung schlagen an, der echte Prop nicht.
+
 ## [1.58.0] – 2026-08-19
 
 ### Behoben

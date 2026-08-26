@@ -143,6 +143,49 @@ export function GroupTiles({ data, format, sub }) {
   )
 }
 
+// ---- Two series over months, one of them a ceiling ------------------------
+//
+// Demand against seats: bars for what is needed, a line for what exists. Not
+// two bar series - the second is not another category, it is the limit the
+// first has to stay under, and a reader compares a bar to a line far faster
+// than two bars of different colours.
+//
+// A month where the bar clears the line is the bottleneck, and it is marked in
+// the reserved warning colour precisely because it IS a status, not a series.
+export function LimitBars({ data, format, labelOf, limitLabel, seriesLabel }) {
+  const pick = useChartColor()
+  const max = Math.max(1, ...data.map((d) => Math.max(d.value || 0, d.limit || 0)))
+  const fmt = format || ((v) => String(v))
+  return (
+    <div className="limit-bars">
+      <ul className="legend legend-wrap">
+        <li><span className="dot" style={{ background: pick(BRAND.burgundy, 0) }} /><span className="legend-key">{seriesLabel}</span></li>
+        <li><span className="dot dot-line" /><span className="legend-key">{limitLabel}</span></li>
+      </ul>
+      <div className="limit-rows">
+        {data.map((d) => {
+          const over = (d.value || 0) > (d.limit || 0)
+          return (
+            <div className={'limit-row' + (over ? ' is-over' : '')} key={d.key}>
+              <div className="limit-label">{labelOf ? labelOf(d.key) : d.key}</div>
+              <div className="limit-track">
+                <div
+                  className="limit-fill"
+                  style={{ width: ((d.value || 0) / max) * 100 + '%', background: pick(BRAND.burgundy, 0) }}
+                />
+                {/* The ceiling, drawn where it actually falls - including at
+                    zero, which is the month that matters most. */}
+                <span className="limit-mark" style={{ left: ((d.limit || 0) / max) * 100 + '%' }} />
+              </div>
+              <div className="limit-val">{fmt(d.value || 0)}<span className="limit-of"> / {fmt(d.limit || 0)}</span></div>
+            </div>
+          )
+        })}
+      </div>
+    </div>
+  )
+}
+
 // ---- Stacked horizontal bars (one bar per row, split into series) ---------
 // data rows: { key, label?, [series.key]: number }. series: [{ key, label, color }].
 export function StackedBars({ data, series }) {

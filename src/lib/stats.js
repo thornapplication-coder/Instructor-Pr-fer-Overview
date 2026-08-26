@@ -2,7 +2,7 @@
 // "Statistik_Daten" tab so the numbers line up 1:1 with the source file.
 import { firstStageId, releasedStageId } from '../data/pipeline.js'
 import { isConversionQual, isInternal } from '../data/qualifications.js'
-import { findRun, resolveAssignment } from './courses.js'
+import { finishForecast, findRun, resolveAssignment } from './courses.js'
 
 // Resolve stage semantics positionally instead of by the literal ids
 // 'nominated'/'released' (stages are user-editable): first = not started, last =
@@ -516,4 +516,124 @@ export function qualByAircraft(trainers, order, aircraftList) {
     return i < 0 ? 999 : i
   }
   return [...map.values()].sort((a, b) => rank(a.key) - rank(b.key) || b.count - a.count)
+}
+
+// ---------------------------------------------------------------- outlook ---
+
+/**
+ * When is the last one through?
+ *
+ * The tiles say where everybody stands RIGHT NOW; nothing said where that
+ * leads. This is the one question a phase-in exists to answer.
+ *
+ * What it does NOT do is invent a rate. The records carry a single `_at`
+ * stamp - the last change - not a history of when each person entered each
+ * phase, so "they have been moving at N per month" cannot be derived from what
+ * is stored. Guessing one would produce a confident curve resting on nothing.
+ *
+ * So it reads the dates that actually exist, in this order of trust:
+ *   1. the end of the last course the person is booked onto (a real date
+ *      somebody agreed with a provider),
+ *   2. failing that, the target date the planner set,
+ *   3. failing that, nothing - and that is counted and shown, because a curve
+ *      that quietly drops the people with no date is the flattering kind.
+ *
+ * `finishForecast` already answers (1) per person and, since 1.57.0, refuses a
+ * period typed backwards.
+ */
+export function conversionOutlook(trainers, steps, runs, stages, today) {
+  const { firstId, releasedId, stageOf } = stageResolver(stages)
+  const now = today || new Date()
+  const rows = new Map()
+  let released = 0
+  let unknown = 0
+  let planned = 0
+
+  for (const t of trainers || []) {
+    if (stageOf(t) === releasedId) { released += 1; continue }
+    const f = finishForecast(t, steps, runs)
+    // Only a COMPLETE forecast is a finish date: half a plan finishes early on
+    // paper, which is exactly the flattering answer to avoid.
+    const iso = (f.complete && f.to) || t?.conv?.target || ''
+    const d = parseISODay(iso)
+    if (!d) { unknown += 1; continue }
+    planned += 1
+    const key = iso.slice(0, 7)
+    rows.set(key, (rows.get(key) || 0) + 1)
+  }
+
+  const months = [...rows.keys()].sort()
+  let run = 0
+  const series = months.map((month) => {
+    run += rows.get(month)
+    return { month, done: rows.get(month), cumulative: run, released: released + run }
+  })
+  const total = released + planned + unknown
+  const nowKey = monthKeyOf(now)
+  return {
+    series,
+    released,
+    planned,
+    unknown,
+    total,
+    last: months.length ? months[months.length - 1] : '',
+    // A finish date already in the past for somebody who is not released is
+    // not an outlook, it is an overdue - named separately so the curve is not
+    // read as progress.
+    overdue: series.filter((r) => r.month < nowKey).reduce((n, r) => n + r.done, 0),
+    firstId
+  }
+}
+
+/**
+ * Demand against seats, month by month.
+ *
+ * Both halves already existed and never shared an axis: the target dates say
+ * when people need to be through (demand), the providers' monthly plan says
+ * how many seats exist (supply). Where demand runs above supply is the
+ * bottleneck, and it has a month and a number.
+ */
+export function demandVsCapacity(trainers, providers, steps, stages, months) {
+  const { releasedId, stageOf } = stageResolver(stages)
+  const demand = new Map()
+  for (const t of trainers || []) {
+    if (stageOf(t) === releasedId) continue
+    const iso = t?.conv?.target || ''
+    if (!parseISODay(iso)) continue
+    const key = iso.slice(0, 7)
+    demand.set(key, (demand.get(key) || 0) + 1)
+  }
+  const cap = capacityByMonth(providers, steps, months)
+  const rows = (months || []).map((month, i) => {
+    const need = demand.get(month) || 0
+    const seats = cap.rows[i] ? cap.rows[i].total : 0
+    return { month, demand: need, seats, gap: seats - need, short: need > seats }
+  })
+  return {
+    rows,
+    totals: {
+      demand: rows.reduce((n, r) => n + r.demand, 0),
+      seats: rows.reduce((n, r) => n + r.seats, 0)
+    },
+    // Targets outside the displayed window are not silently dropped: a plan
+    // whose demand sits in a month nobody is looking at is still demand.
+    outside: [...demand.entries()]
+      .filter(([m]) => !(months || []).includes(m))
+      .reduce((n, [, v]) => n + v, 0),
+    shortMonths: rows.filter((r) => r.short).length
+  }
+}
+
+// A day-precision ISO date, or null. Local helper so neither function above
+// depends on the alerts module (which imports from the pipeline, which would
+// make this file's import graph circular).
+function parseISODay(v) {
+  const m = /^(\d{4})-(\d{2})-(\d{2})$/.exec(String(v || '').trim())
+  if (!m) return null
+  const d = new Date(Number(m[1]), Number(m[2]) - 1, Number(m[3]))
+  return isNaN(d) ? null : d
+}
+
+function monthKeyOf(d) {
+  return d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0')
 }

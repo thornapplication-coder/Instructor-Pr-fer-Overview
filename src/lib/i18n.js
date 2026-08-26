@@ -395,6 +395,31 @@ const DICT = {
   export: { de: 'Export', en: 'Export' },
   filterActive: { de: 'Gefiltert', en: 'Filtered' },
   course_full: { de: 'voll', en: 'full' },
+  chart_outlook: { de: 'Wann ist der Letzte durch?', en: 'When is the last one through?' },
+  outlookHint: {
+    de: 'Gelesen aus den Terminen, die es gibt: zuerst das Ende des letzten gebuchten Kurses, sonst der gesetzte Zieltermin. Es wird keine Rate geschätzt — die Datensätze führen keine Phasen-Historie, aus der sich eine ableiten ließe.',
+    en: 'Read from the dates that exist: the end of the last booked course first, otherwise the target date that was set. No rate is estimated - the records keep no phase history one could be derived from.'
+  },
+  outlookLast: { de: 'Letzter voraussichtlich', en: 'Last one expected' },
+  outlookNoDate: { de: 'ohne jeden Termin', en: 'with no date at all' },
+  outlookNoDateHint: {
+    de: 'Diese Personen stehen in keiner Zahl der Kurve. Solange sie keinen Termin haben, ist das Ende offen — nicht der Monat oben.',
+    en: 'These people are in no figure of the curve. While they carry no date the end is open - not the month above.'
+  },
+  outlookDone: { de: 'durch', en: 'through' },
+  chart_demandSeats: { de: 'Bedarf gegen Plätze je Monat', en: 'Demand against seats per month' },
+  demandSeatsHint: {
+    de: 'Der Balken sind die Zieltermine dieses Monats, der Strich die Plätze, die die Anbieter für den Monat zugesagt haben. Steht der Balken über dem Strich, ist der Monat der Engpass.',
+    en: 'The bar is this month\'s target dates, the mark is the seats the providers committed for that month. A bar past the mark is the bottleneck.'
+  },
+  demandLabel: { de: 'Zieltermine', en: 'Targets' },
+  seatsLabel: { de: 'Plätze', en: 'Seats' },
+  demandOutside: {
+    de: '{n} Zieltermine liegen außerhalb des eingestellten Zeitraums und stehen in keiner Zeile.',
+    en: '{n} target dates fall outside the configured range and are in no row.'
+  },
+  demandShort: { de: '{n} Monate ohne genug Plätze', en: '{n} months short of seats' },
+  demandEnough: { de: 'Kein Monat ohne genug Plätze', en: 'No month short of seats' },
   sync_signUpClosed: {
     de: 'Neue Konten lassen sich hier nicht anlegen — die Registrierung ist im Projekt abgeschaltet, und genau das schützt die Daten (der öffentliche Schlüssel steckt in jeder Auslieferung). Weitere Geräte melden sich mit dem bestehenden Konto an. Ein zusätzlicher Benutzer geht nur über das Supabase-Dashboard: Authentication → Users → Add user.',
     en: 'New accounts cannot be created here - sign-ups are switched off in the project, and that is what protects the data (the public key ships in every deployment). Further devices sign in with the existing account. An additional user can only be added from the Supabase dashboard: Authentication → Users → Add user.'

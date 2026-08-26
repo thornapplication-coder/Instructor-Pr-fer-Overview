@@ -1,7 +1,7 @@
 import React, { useMemo, useState } from 'react'
 import { useStore } from '../lib/store.jsx'
 import KpiTile from '../components/KpiTile.jsx'
-import { Donut, GroupTiles, NestedBars, HBars, ProgressRing, StackedBars, colorAt } from '../components/charts.jsx'
+import { Donut, GroupTiles, LimitBars, NestedBars, HBars, ProgressRing, StackedBars, colorAt } from '../components/charts.jsx'
 import { useThemed } from '../lib/useThemed.js'
 import {
   headcount,
@@ -17,9 +17,13 @@ import {
   pipelineDistribution,
   conversionFteSummary,
   capacityByBase,
-  capacityByAircraft
+  capacityByAircraft,
+  conversionOutlook,
+  demandVsCapacity
 } from '../lib/stats.js'
 import { conversionProgress, STAFF_TYPE } from '../data/pipeline.js'
+import { capacityRange } from '../lib/months.js'
+import { monthLabel } from '../lib/alerts.js'
 import { qualLabel, conversionTrainers, CONVERSION_QUALS, OTHER_QUALS } from '../data/qualifications.js'
 import { AIRCRAFT } from '../data/aircraft.js'
 import { AC_COLORS, CATEGORICAL, MEASURE_WHOLE, MEASURE_PART, ORE_COLORS, STATUS, BRAND, ROLE_CPT, ROLE_FO } from '../lib/palette.js'
@@ -167,6 +171,21 @@ export default function Dashboard() {
     [trainers, stages]
   )
   const fte1 = (v) => formatFte1(v, lang)
+
+  // Where the phase-in is HEADING, not only where it stands. Both read dates
+  // that already exist rather than estimating a rate - see conversionOutlook.
+  const outlook = useMemo(
+    () => conversionOutlook(convPool, data.assignmentSteps, data.courseRuns, stages),
+    [convPool, data.assignmentSteps, data.courseRuns, stages]
+  )
+  const capMonths = useMemo(
+    () => capacityRange(data.capacityFrom, data.capacityTo),
+    [data.capacityFrom, data.capacityTo]
+  )
+  const dvc = useMemo(
+    () => demandVsCapacity(convPool, data.providers, data.assignmentSteps, stages, capMonths),
+    [convPool, data.providers, data.assignmentSteps, stages, capMonths]
+  )
 
   const pipe = pipelineDistribution(convPool, stages)
   const overall =
@@ -328,6 +347,60 @@ export default function Dashboard() {
             </div>
           </div>
         </section>
+      )
+    },
+    {
+      id: 'outlook',
+      node: (
+        <Card title={t('chart_outlook')} total={outlook.total}>
+          {outlook.series.length ? (
+            <>
+              <div className="kpi-inline">
+                <span className="kpi-inline-value">{monthLabel(outlook.last, lang)}</span>
+                <span className="kpi-inline-label">{t('outlookLast')}</span>
+              </div>
+              <HBars
+                data={outlook.series.map((r) => ({
+                  key: r.month,
+                  label: monthLabel(r.month, lang),
+                  count: r.released
+                }))}
+              />
+              <p className="stat-hint">{t('outlookHint')}</p>
+            </>
+          ) : (
+            <p className="stat-hint">{t('outlookHint')}</p>
+          )}
+          {/* Stated, never folded into the curve: while these carry no date the
+              end is open, whatever the last month above says. */}
+          {outlook.unknown > 0 && (
+            <p className="warn-text small">
+              <b>{outlook.unknown}</b> {t('outlookNoDate')} — {t('outlookNoDateHint')}
+            </p>
+          )}
+        </Card>
+      )
+    },
+    {
+      id: 'demandSeats',
+      node: (
+        <Card title={t('chart_demandSeats')} total={dvc.totals.demand}>
+          <LimitBars
+            data={dvc.rows.map((r) => ({ key: r.month, value: r.demand, limit: r.seats }))}
+            labelOf={(m) => monthLabel(m, lang)}
+            seriesLabel={t('demandLabel')}
+            limitLabel={t('seatsLabel')}
+          />
+          <p className={dvc.shortMonths ? 'warn-text small' : 'stat-hint'}>
+            {dvc.shortMonths
+              ? t('demandShort').replace('{n}', String(dvc.shortMonths))
+              : t('demandEnough')}
+          </p>
+          {dvc.outside > 0 && (
+            <p className="warn-text small">{t('demandOutside').replace('{n}', String(dvc.outside))}</p>
+          )}
+          <p className="stat-hint">{t('demandSeatsHint')}</p>
+        </Card>
       )
     },
     {

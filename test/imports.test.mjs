@@ -93,8 +93,19 @@ console.log('\nImports – nothing used that is not in scope')
     for (const name of exportedNames) {
       if (scope.has(name)) continue
       // A bare identifier: not a property access, not an object key, not part
-      // of a longer word, and not inside a string or a JSX attribute name.
-      if (new RegExp('(?<![\\w.$\'"])' + name + '(?![\\w:$\'"])').test(body)) {
+      // of a longer word, not inside a string, and not a JSX attribute NAME.
+      //
+      // That last one was claimed in this comment and not actually done: the
+      // lookahead excluded `name:` (an object key) but not `name={...}`, so a
+      // JSX prop whose name happens to match some module's export read as a
+      // free variable. `<LimitBars labelOf={...} />` tripped it, because
+      // data/lists.js exports a `labelOf`.
+      //
+      // Excluded here is only the JSX shape `={` / `="`. A plain `name = x`
+      // assignment is still reported: assigning to a name nothing declares is
+      // a genuine fault, and swallowing every `=` to fix a prop would have
+      // traded one blind spot for a worse one.
+      if (new RegExp('(?<![\\w.$\'"])' + name + '(?![\\w:$\'"]|=[{"])').test(body)) {
         missing.push(name + ' in ' + p)
       }
     }

@@ -4,12 +4,33 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.58.0'
+export const APP_VERSION = '1.59.0'
 export const APP_BUILD_DATE = '2026-08-19'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.59.0',
+    date: '2026-08-19',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neue Karte „Wann ist der Letzte durch?" — die eine Frage, für die es diese Umschulung gibt. Die Kacheln sagten bisher nur, wo alle GERADE stehen.',
+        'Gelesen wird aus Terminen, die es wirklich gibt: zuerst das Ende des letzten gebuchten Kurses, sonst der gesetzte Zieltermin. Es wird ausdrücklich KEINE Rate geschätzt — die Datensätze führen keine Phasen-Historie, aus der sich eine ableiten ließe, und eine geratene Kurve sähe sicher aus und stünde auf nichts.',
+        'Die Karte sagt selbst, wen sie nicht zählt: Wer weder Kurs noch Zieltermin hat, steht in keiner Zahl der Kurve — und solange das so ist, ist das Ende offen, nicht der Monat oben. Ein halb gebuchter Plan gilt ebenfalls nicht als Fertig-Datum, sonst wäre die Antwort geschönt.',
+        'Neue Karte „Bedarf gegen Plätze je Monat": Balken sind die Zieltermine des Monats, der Strich die Plätze, die die Anbieter zugesagt haben. Steht der Balken über dem Strich, ist der Monat der Engpass — mit Monat und Zahl. Beide Zahlen gab es längst, sie standen nur nie auf einer Achse.',
+        'Zieltermine außerhalb des eingestellten Zeitraums werden mitgezählt und genannt, statt still aus der Grafik zu fallen.'
+      ],
+      en: [
+        'A new card, "When is the last one through?" - the one question this conversion exists to answer. The tiles only ever said where everybody stands right now.',
+        'It reads dates that actually exist: the end of the last booked course first, otherwise the target date that was set. No rate is estimated, deliberately - the records keep no phase history one could be derived from, and a guessed curve would look authoritative and rest on nothing.',
+        'The card states who it does not count: somebody with neither a course nor a target is in no figure of the curve - and while that holds, the end is open, not the month above. Half a booked plan is not a finish date either, or the answer would flatter.',
+        'A new card, "Demand against seats per month": the bar is the month\'s target dates, the mark is the seats the providers committed. A bar past the mark is the bottleneck, with a month and a number. Both figures existed already; they had never shared an axis.',
+        'Targets outside the configured range are counted and named rather than dropping silently out of the chart.'
+      ]
+    }
+  },
   {
     version: '1.58.0',
     date: '2026-08-19',

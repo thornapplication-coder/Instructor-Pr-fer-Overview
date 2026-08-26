@@ -1,4 +1,4 @@
-import { reporter } from './harness.mjs'
+import { reporter, STORAGE_KEY } from './harness.mjs'
 
 export default async function run(browser, baseUrl, shots) {
   const { ok, fails } = reporter('dashboard – cards, table width, heads vs FTE')
@@ -275,6 +275,63 @@ export default async function run(browser, baseUrl, shots) {
   }
   await page.setViewportSize({ width: 1440, height: 1000 })
   await page.waitForTimeout(400)
+
+  // ---- where the phase-in is heading, and what the answer may not hide ----
+  //
+  // A curve that quietly drops the people with no date would put a confident
+  // month on screen while the real answer is "open". The count of those people
+  // is therefore part of the card, and part of this check.
+  await page.evaluate((K) => {
+    const d = JSON.parse(localStorage.getItem(K))
+    const conv = d.trainers.filter((t) => ['SEN', 'TRE', 'TRI', 'LTC'].includes(t.qual) &&
+      (t.staffType || 'internal') !== 'external')
+    const months = ['2026-11', '2026-12', '2027-01', '2027-03']
+    const touched = conv.slice(0, 12).map((t, i) => t.id)
+    d.trainers = d.trainers.map((t) => {
+      const i = touched.indexOf(t.id)
+      return i < 0 ? t : { ...t, conv: { ...(t.conv || {}), stage: 'simulator', target: months[i % 4] + '-15' } }
+    })
+    d.providers = d.providers.map((p, i) => (i === 0
+      ? { ...p, slotsByMonth: { '2026-11': { tr: 4 }, '2026-12': { tr: 1 }, '2027-01': { tr: 3 } } }
+      : p))
+    d.capacityFrom = '2026-11'
+    d.capacityTo = '2027-03'
+    localStorage.setItem(K, JSON.stringify(d))
+  }, STORAGE_KEY)
+  await page.reload({ waitUntil: 'networkidle' })
+  // Wait for the SHELL, then go to the dashboard on purpose. The app restores
+  // the open tab from the address, so after a reload this suite is wherever it
+  // last navigated - waiting for `.kpi-hero` straight away is waiting for a tab
+  // we are not on, which is a timeout, not a failure anybody can read.
+  await page.waitForSelector('.topbar')
+  await page.waitForTimeout(400)
+  await page.locator('.tab', { hasText: 'Dashboard' }).first().click()
+  await page.waitForSelector('.kpi-hero')
+  await page.waitForTimeout(900)
+
+  const outlook = page.locator('.card', { hasText: 'Wann ist der Letzte durch?' }).first()
+  ok(await outlook.count() === 1, 'the dashboard says where the phase-in is heading')
+  const outText = await outlook.innerText()
+  ok(/2027/.test(outText), '  naming the month the last one is expected (' + (outText.split('\n')[1] || '') + ')')
+  ok(/ohne jeden Termin/.test(outText),
+    '  and stating how many people are in NO figure of that curve')
+  ok(/keine Rate/.test(outText),
+    '  saying plainly that no rate is estimated – the records carry no phase history')
+
+  const demand = page.locator('.card', { hasText: 'Bedarf gegen Plätze je Monat' }).first()
+  ok(await demand.count() === 1, 'and puts demand and seats on one axis')
+  const rows = await demand.locator('.limit-row').count()
+  ok(rows === 5, '  one row per month of the configured range (' + rows + ')')
+  const over = await demand.locator('.limit-row.is-over').count()
+  ok(over === 2, '  marking the months whose demand clears the seats (' + over + ')')
+  const firstVal = await demand.locator('.limit-row').first().locator('.limit-val').innerText()
+  ok(/\d+\s*\/\s*\d+/.test(firstVal), '  with both figures readable, not only the bar (' + firstVal.replace(/\n/g, ' ') + ')')
+
+  const flat = await page.evaluate(() => ({
+    page: document.documentElement.scrollWidth - document.documentElement.clientWidth,
+    row: Math.max(0, ...[...document.querySelectorAll('.limit-row')].map((e) => e.scrollWidth - e.clientWidth))
+  }))
+  ok(flat.page === 0 && flat.row === 0, '  and nothing overflows (' + flat.page + 'px / ' + flat.row + 'px)')
 
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.close()
