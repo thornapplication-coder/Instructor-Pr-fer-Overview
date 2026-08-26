@@ -4,12 +4,31 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.60.0'
+export const APP_VERSION = '1.61.0'
 export const APP_BUILD_DATE = '2026-08-19'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.61.0',
+    date: '2026-08-19',
+    type: 'minor',
+    changes: {
+      de: [
+        'Eine Sicherung wiederherzustellen stellt jetzt wirklich wieder her. Bisher schrieb der Import die Zeitstempel aus der Datei unverändert in den Bestand — und rund zwei Sekunden später hat der Cloud-Abgleich fast alles zurückgedreht: Was seit der Sicherung geändert wurde, gewann vom Server; seither Gelöschtes blieb gelöscht; Einstellungen kehrten zurück. Auf dem Bildschirm stand da längst „Daten erfolgreich importiert".',
+        'Der Import läuft jetzt durch dieselbe Stempelung wie jede andere Änderung. Nur was sich wirklich unterscheidet, bekommt einen neuen Stempel — eine Datei, die dem aktuellen Stand entspricht, löst also gar nichts aus. Und jeder Datensatz, den die Datei weglässt, hinterlässt eine Löschmarkierung, damit die Entfernung auch auf deinen anderen Geräten ankommt statt von dort zurückzukommen.',
+        'Die Rückfrage sagt jetzt vorher, was passiert: wie viele Trainer, Piloten und Anbieter in der Datei stehen, wie viele es gerade gibt, wie viele Datensätze entfernt werden — und dass der neue Stand auf deine anderen Geräte übertragen wird.',
+        'Genau dafür ist eine Sicherung da: Man greift danach, wenn schon etwas schiefgegangen ist. Sie darf dann nicht still scheitern.'
+      ],
+      en: [
+        'Restoring a backup now really restores. The import used to write the file\'s own timestamps into the store unchanged - and about two seconds later the cloud sync undid most of it: anything edited since the backup won from the server, anything deleted since stayed deleted, and the settings came back. The screen had long since said "Data imported successfully".',
+        'The import now goes through the same stamping as any other change. Only what genuinely differs is re-stamped, so a file matching the current state starts nothing at all. And every record the file leaves out now writes a tombstone, so the removal reaches your other devices instead of coming back from them.',
+        'The confirmation states beforehand what will happen: how many trainers, pilots and providers are in the file, how many there are now, how many records will be removed - and that the new state is carried to your other devices.',
+        'That is what a backup is for: it is reached for when something has already gone wrong. It must not fail quietly then.'
+      ]
+    }
+  },
   {
     version: '1.60.0',
     date: '2026-08-19',

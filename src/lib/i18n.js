@@ -530,6 +530,17 @@ const DICT = {
     de: 'Import ersetzt alle aktuellen Daten. Fortfahren?',
     en: 'Import replaces all current data. Continue?'
   },
+  // Said BEFORE the click, with real numbers: this is the one action people
+  // reach for when something has already gone wrong, and "ersetzt alles" alone
+  // does not convey that records will disappear and that other devices follow.
+  importPreview: {
+    de: 'Import ersetzt den gesamten Datenbestand.\n\nDatei: {fileT} Trainer, {fileP} Piloten, {fileV} Anbieter.\nJetzt: {nowT} Trainer, {nowP} Piloten, {nowV} Anbieter.\n\n{gone}Der neue Stand wird anschließend auch auf deine anderen Geräte übertragen.\n\nFortfahren?',
+    en: 'Import replaces the entire dataset.\n\nFile: {fileT} trainers, {fileP} pilots, {fileV} providers.\nNow: {nowT} trainers, {nowP} pilots, {nowV} providers.\n\n{gone}The new state is then carried to your other devices as well.\n\nContinue?'
+  },
+  importGone: {
+    de: '{n} Datensätze, die es jetzt gibt, stehen nicht in der Datei und werden entfernt.\n\n',
+    en: '{n} records that exist now are not in the file and will be removed.\n\n'
+  },
   importOk: { de: 'Daten erfolgreich importiert.', en: 'Data imported successfully.' },
   importErr: { de: 'Import fehlgeschlagen: ungültige Datei.', en: 'Import failed: invalid file.' },
   saveErr: {

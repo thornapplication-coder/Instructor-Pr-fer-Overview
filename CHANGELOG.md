@@ -11,6 +11,38 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.61.0] – 2026-08-19
+
+### Behoben
+- **Eine wiederhergestellte Sicherung wurde still vom Server überschrieben.**
+  `importData` umgeht `patch()` — das ist Absicht, denn alte Datensätze mit
+  „jetzt" zu stempeln ließe ein bloß geöffnetes Gerät jede Zusammenführung
+  gewinnen. Nur schrieb es dadurch die Zeitstempel **aus der Datei**
+  unverändert in den Bestand: der Blob behielt sein altes `updatedAt`, jeder
+  Datensatz sein altes `_at`, und was die Datei **wegließ**, hinterließ keine
+  Löschmarkierung.
+- Etwa zwei Sekunden später lief der Abgleich (die Entprellung hängt an
+  `data.updatedAt`, das sich ja geändert hatte) — und gegen eine Cloud-Zeile,
+  die seit der Sicherung weitergelaufen ist, gewann der Server fast jeden
+  Vergleich: seither Geändertes kam zurück, seither Gelöschtes blieb gelöscht,
+  seither Hinzugefügtes blieb stehen, die Einstellungen ebenso. Es war keine
+  Wiederherstellung, sondern eine Vereinigung, in der die Datei fast immer
+  verlor — quittiert mit „Daten erfolgreich importiert".
+- Der Import läuft jetzt durch `stampChanges` gegen den **aktuellen** Stand,
+  mit `updatedAt: now`. Das ist genau das richtige Werkzeug: es stempelt nur,
+  was sich wirklich unterscheidet (eine Datei, die dem Ist-Stand entspricht,
+  löst also nichts aus), und es verwandelt jeden weggelassenen Datensatz in
+  eine Löschmarkierung — wodurch die Entfernung erst zu den anderen Geräten
+  wandert, statt von dort zurückzukommen. Das ist, was die Rückfrage seit jeher
+  verspricht: „Import ersetzt alle aktuellen Daten."
+- **Die Rückfrage sagt es jetzt auch.** Sie nennt vor dem Klick die Zahlen aus
+  der Datei und die aktuellen, wie viele Datensätze entfernt werden, und dass
+  der neue Stand auf die anderen Geräte übertragen wird.
+- Geprüft über den echten Weg (Dateiauswahl in den Einstellungen, echte
+  Rückfrage): eine bewusst auf 2019 datierte Sicherung kommt mit heutigem
+  Stempel im Bestand an, das `updatedAt` ebenfalls, und jeder weggelassene
+  Datensatz trägt eine Löschmarkierung.
+
 ## [1.60.0] – 2026-08-19
 
 ### Behoben

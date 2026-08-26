@@ -775,7 +775,32 @@ export function StoreProvider({ children }) {
         if (readOnlyRef.current) return false
         if (!obj || typeof obj !== 'object' || !Array.isArray(obj.trainers)) return false
         dirtyRef.current = true
-        setData(seedMissingProviders(normalize(obj)))
+        // Stamp it like any other change, and tombstone what the file drops.
+        //
+        // This used to write the file's own timestamps straight into the store,
+        // which made a restore not a restore. The blob kept the backup's old
+        // `updatedAt`, every record kept the `_at` it had when the backup was
+        // written, and nothing that the file REMOVED left a tombstone. Two
+        // seconds later the cloud sync merged - and against a row that had
+        // moved on since, the server won nearly every contest: records edited
+        // since the backup reverted to the server, deletions made since stayed
+        // deleted, records added since stayed, and the settings came back.
+        // The screen had already said "Daten erfolgreich importiert."
+        //
+        // stampChanges against the CURRENT data is exactly the right tool: it
+        // stamps only what actually differs (so restoring a file identical to
+        // the present state stamps nothing and starts no fight), and it turns
+        // every record the file leaves out into a tombstone - which is what
+        // makes a removal travel to the other devices instead of being undone
+        // by them. `updatedAt: now` does the same for the blob-level settings.
+        //
+        // This is what the confirmation has always promised: "Import ersetzt
+        // alle aktuellen Daten."
+        const now = nowIso()
+        setData((d) => ({
+          ...stampChanges(d, seedMissingProviders(normalize(obj)), now),
+          updatedAt: now
+        }))
         return true
       },
 

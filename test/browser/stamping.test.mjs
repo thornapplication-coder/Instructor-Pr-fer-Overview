@@ -142,6 +142,79 @@ export default async function run(browser, baseUrl, shots) {
       '  while the dead keys of the old shape are not carried on')
   }
 
+  // ---- a restore is a restore, not a suggestion ---------------------------
+  //
+  // `importData` wrote the file's own timestamps straight into the store: the
+  // blob kept the backup's old `updatedAt`, every record kept the `_at` it had
+  // when the backup was written, and nothing the file REMOVED left a tombstone.
+  // Two seconds later the cloud merge ran, and against a row that had moved on
+  // the server won nearly every contest - while the screen had already said
+  // "Daten erfolgreich importiert."
+  //
+  // Checked here through the real store, because that is where it was lost:
+  // import a deliberately OLD file and read back what the store now holds.
+  {
+    const oldFile = {
+      schema: 2,
+      updatedAt: '2019-01-01T00:00:00.000Z',
+      lang: 'de',
+      trainers: [
+        { id: 'keep-1', name: 'Aus dem Backup', tlc: 'BAK', _at: '2019-01-01T00:00:00.000Z' }
+      ],
+      providers: [],
+      otherPilots: []
+    }
+    // The import lives in the settings, and the file input only exists while
+    // that tab is rendered - so go there first rather than hunting for it on
+    // whatever tab the checks above left behind.
+    await page.locator('.topbar-right button[aria-label="Einstellungen"]').first().click()
+    await page.waitForTimeout(900)
+    // The confirmation now states what will happen; say yes to it.
+    const onConfirm = (d) => d.accept()
+    page.on('dialog', onConfirm)
+
+    const res = await page.evaluate(async (payload) => {
+      const { file, k } = payload
+      const before = JSON.parse(localStorage.getItem(k) || '{}')
+      const hadIds = (before.trainers || []).map((t) => t.id)
+      // Drive the real path: the file input's onload handler is what the app
+      // runs, so hand the store the same object through the same door.
+      const input = document.querySelector('input[type="file"]')
+      if (!input) return { err: 'no file input' }
+      const blob = new Blob([JSON.stringify(file)], { type: 'application/json' })
+      const dt = new DataTransfer()
+      dt.items.add(new File([blob], 'backup.json', { type: 'application/json' }))
+      input.files = dt.files
+      input.dispatchEvent(new Event('change', { bubbles: true }))
+      await new Promise((r) => setTimeout(r, 900))
+      const after = JSON.parse(localStorage.getItem(k) || '{}')
+      return { hadIds, after }
+    }, { file: oldFile, k: KEY })
+    page.off('dialog', onConfirm)
+
+    if (res.err) {
+      ok(false, 'the settings page offers a JSON import (' + res.err + ')')
+    } else {
+      const after = res.after
+      const restored = (after.trainers || []).find((t) => t.id === 'keep-1')
+      ok(!!restored, 'the record from the backup is in the store (' + (restored?.name || 'missing') + ')')
+      // The whole point: it must NOT still carry 2019, or the next pull beats it.
+      ok(restored && restored._at > '2020-01-01T00:00:00.000Z',
+        '  stamped with now, not with the backup\'s own date (' + restored?._at + ')')
+      ok(after.updatedAt > '2020-01-01T00:00:00.000Z',
+        '  and so is the dataset itself, so the settings do not revert either (' + after.updatedAt + ')')
+
+      // Everything the file left out has to leave a tombstone, or the other
+      // devices simply put it back.
+      const tombs = (after._tomb && after._tomb.trainers) || {}
+      const dropped = res.hadIds.filter((id) => id !== 'keep-1')
+      const tombed = dropped.filter((id) => tombs[id])
+      ok(dropped.length > 0, 'the backup really did drop records (' + dropped.length + ')')
+      ok(tombed.length === dropped.length,
+        '  and every one of them left a tombstone (' + tombed.length + ' of ' + dropped.length + ')')
+    }
+  }
+
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.close()
   return fails

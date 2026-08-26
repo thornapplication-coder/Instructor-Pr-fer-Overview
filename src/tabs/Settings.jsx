@@ -120,7 +120,26 @@ export default function Settings() {
         setMsg({ ok: false, text: t('importErr') })
         return
       }
-      if (!window.confirm(t('importConfirm'))) return
+      // Count what is about to happen, and say it before the click rather than
+      // after. A backup is reached for when something has already gone wrong,
+      // and "ersetzt alles" does not convey that records disappear and that the
+      // result travels to the other devices.
+      const count = (v) => (Array.isArray(v) ? v.length : 0)
+      const idsOf = (v) => new Set((Array.isArray(v) ? v : []).map((x) => x && x.id).filter(Boolean))
+      let gone = 0
+      for (const key of ['trainers', 'otherPilots', 'providers', 'courseRuns']) {
+        const inFile = idsOf(obj[key])
+        idsOf(data[key]).forEach((id) => { if (!inFile.has(id)) gone += 1 })
+      }
+      const question = t('importPreview')
+        .replace('{fileT}', count(obj.trainers))
+        .replace('{fileP}', count(obj.otherPilots))
+        .replace('{fileV}', count(obj.providers))
+        .replace('{nowT}', count(data.trainers))
+        .replace('{nowP}', count(data.otherPilots))
+        .replace('{nowV}', count(data.providers))
+        .replace('{gone}', gone ? t('importGone').replace('{n}', String(gone)) : '')
+      if (!window.confirm(question)) return
       // importData validates the shape now and reports whether it was accepted,
       // so a random JSON file no longer silently wipes the roster with the seed.
       const ok = importData(obj)
