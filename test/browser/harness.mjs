@@ -109,3 +109,32 @@ export function contrast(a, b) {
 
 export const STORAGE_KEY = 'ewl737:data:v1'
 export const hasBuild = () => existsSync(join(ROOT, 'dist', 'index.html'))
+
+/**
+ * Take the update banner out of the way before clicking something.
+ *
+ * "Neue Version verfügbar" is a fixed bar at the bottom of the screen, above
+ * the page, and it legitimately STAYS until answered - that is the point of it
+ * (see UpdatePrompt: "Später" is a snooze, not a dismissal). A run that happens
+ * to have it up therefore has clicks intercepted near the bottom, which shows
+ * as a timeout on an unrelated assertion and sends the reader hunting for a
+ * layout bug that is not there.
+ *
+ * In this sandbox it appears when the build is replaced while a run is in
+ * flight; on a real device it appears after a deploy. Either way a check about
+ * filters or buttons should not be measuring the banner, so it is answered
+ * first and deliberately.
+ */
+export async function dismissUpdateBanner(page) {
+  const banner = page.locator('.update-banner')
+  if (!(await banner.count())) return false
+  // The ghost button is "Später" / "Schließen" - never "Jetzt aktualisieren",
+  // which would reload the page out from under the test.
+  const later = banner.locator('.btn-ghost-light').first()
+  if (await later.count()) {
+    await later.click()
+    await page.waitForTimeout(250)
+    return true
+  }
+  return false
+}

@@ -5,7 +5,7 @@
 // Enter closes it, a filter that has no counter, a view that forgets itself
 // when you glance at the dashboard - none of that is a wrong number, it is a
 // wrong screen, and only a browser has screens.
-import { reporter, STORAGE_KEY } from './harness.mjs'
+import { reporter, STORAGE_KEY, dismissUpdateBanner } from './harness.mjs'
 
 export default async function run(browser, baseUrl, shots) {
   const { ok, fails } = reporter('the iPhone walkthrough – focus, flags, memory')
@@ -184,6 +184,9 @@ export default async function run(browser, baseUrl, shots) {
   ok(/filter/i.test(emptyText), 'an empty result blames the filter, not the roster ("' + emptyText.split('\n')[0] + '")')
   const reset = page.locator('.trainer-table .empty-row button')
   ok(await reset.count() === 1, '  and offers the way out')
+  // The update banner sits over the bottom of the page and stays until it is
+  // answered; with it up this click times out and reads as a layout fault.
+  await dismissUpdateBanner(page)
   await reset.click()
   await page.waitForTimeout(600)
   ok(await page.locator('.trainer-table tbody tr').count() > 1, '  which brings everybody back')

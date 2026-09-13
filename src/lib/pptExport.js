@@ -32,7 +32,7 @@ function stamp(lang) {
  * Returns the number of slides written, or 0 if there was nothing to write -
  * the caller says so rather than downloading an empty file.
  */
-export async function exportDashboardPptx(cards, t, lang) {
+export async function exportDashboardPptx(cards, t, lang, asOf) {
   const list = (cards || []).filter((c) => c && c.canvas)
   if (!list.length) return 0
 
@@ -44,6 +44,16 @@ export async function exportDashboardPptx(cards, t, lang) {
   pptx.subject = t('appTitle')
 
   const dateStr = stamp(lang)
+  // When the FIGURES are from, which is not when the deck was made. Three days
+  // offline still builds a deck dated today, and in a meeting that difference
+  // is the whole question.
+  let asOfStr = ''
+  if (asOf !== undefined) {
+    const d = asOf ? new Date(asOf) : null
+    asOfStr = d && !isNaN(d)
+      ? t('exportAsOf') + ': ' + d.toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB')
+      : t('exportAsOfLocal')
+  }
 
   for (const card of list) {
     const slide = pptx.addSlide()
@@ -82,10 +92,10 @@ export async function exportDashboardPptx(cards, t, lang) {
       h
     })
 
-    slide.addText(`${t('appTitle')} · ${dateStr} · v${APP_VERSION}`, {
-      x: MARGIN, y: H - 0.42, w: availW, h: 0.3,
-      fontSize: 9, color: '8A9199', align: 'right'
-    })
+    slide.addText(
+      `${t('appTitle')} · ${dateStr} · v${APP_VERSION}` + (asOfStr ? ` · ${asOfStr}` : ''),
+      { x: MARGIN, y: H - 0.42, w: availW, h: 0.3, fontSize: 9, color: '8A9199', align: 'right' }
+    )
   }
 
   await pptx.writeFile({ fileName: `dashboard-${new Date().toISOString().slice(0, 10)}.pptx` })

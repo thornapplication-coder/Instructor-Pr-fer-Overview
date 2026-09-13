@@ -11,6 +11,36 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.64.0] – 2026-09-13
+
+### Geändert
+- **Jeder Export gleicht vorher mit der Cloud ab.** Eine Datei trug bisher das,
+  was dieses Gerät gerade hielt: App am iPad öffnen, sofort exportieren — und
+  die Zahlen sind von vor der letzten Änderung am Rechner, weil der Abgleich
+  alle zwei Minuten läuft und noch nicht dran war. Der Export wartet jetzt auf
+  einen `syncNow()`.
+- **PDF und Excel lasen den Datenstand aus dem Klick-Moment.** Ein `await` davor
+  hätte sie nie erreicht — der Abschluss hält `data` aus dem Render, in dem
+  geklickt wurde. Deshalb gibt der Store jetzt `getData()` aus dem Ref heraus,
+  und die Exporte lesen darüber.
+- **Die Datei sagt, von wann ihre Zahlen sind.** Das Druckdatum ist nicht das
+  Datenalter: drei Tage offline ergaben eine Datei mit dem heutigen Datum, und
+  ein Leser konnte das nicht erkennen. Im Kopf jedes PDF und unter jeder Folie
+  steht jetzt „Datenstand: …" — oder „Datenstand: nur dieses Gerät", wenn kein
+  Abgleich möglich war (offline, nicht angemeldet, kein Cloud-Konto).
+- **Blockiert wird nichts.** Offline wird trotzdem exportiert; eine etwas
+  ältere Auswertung ist besser als gar keine vor einer Besprechung. Neu ist
+  nur, dass sie nicht mehr schweigt.
+
+### Behoben
+- **Der Browser-Lauf konnte am Update-Banner hängen bleiben.** „Neue Version
+  verfügbar" liegt fest am unteren Rand und bleibt absichtlich stehen, bis es
+  beantwortet ist — ein Klick in der Nähe wird dann abgefangen, und das meldet
+  sich als Zeitüberschreitung an einer völlig anderen Zusicherung. Der Lauf
+  beantwortet es jetzt bewusst (`dismissUpdateBanner`), statt daran zu raten.
+  In dieser Sandbox tritt es auf, wenn während eines laufenden Tests neu gebaut
+  wird; auf einem echten Gerät nach einem Deploy.
+
 ## [1.63.0] – 2026-09-13
 
 ### Neu

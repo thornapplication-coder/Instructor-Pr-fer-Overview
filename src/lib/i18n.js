@@ -394,6 +394,16 @@ const DICT = {
   clearFilters: { de: 'Filter zurücksetzen', en: 'Clear filters' },
   export: { de: 'Export', en: 'Export' },
   filterActive: { de: 'Gefiltert', en: 'Filtered' },
+  exportRefreshing: {
+    de: 'Daten werden abgeglichen, damit der Export den aktuellen Stand trägt …',
+    en: 'Reconciling the data so the export carries the current state …'
+  },
+  exportFreshHint: {
+    de: 'Jeder Export gleicht vorher mit der Cloud ab. Geht das gerade nicht (offline, nicht angemeldet), wird trotzdem exportiert — die Datei sagt dann, von wann die Zahlen sind.',
+    en: 'Every export reconciles with the cloud first. When that is not possible (offline, signed out) it exports anyway - and the file then states how current the figures are.'
+  },
+  exportAsOf: { de: 'Datenstand', en: 'Data as of' },
+  exportAsOfLocal: { de: 'Datenstand: nur dieses Gerät', en: 'Data as of: this device only' },
   pptxHint: {
     de: 'Das Dashboard als Foliensatz — eine Folie je Karte, in deiner Anordnung.',
     en: 'The dashboard as a slide deck - one slide per card, in your arrangement.'

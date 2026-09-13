@@ -806,6 +806,14 @@ export function StoreProvider({ children }) {
 
       exportData: () => data,
 
+      // The latest data, read through the ref rather than the closure.
+      //
+      // Every export used to take `data` from the render it was clicked in. On
+      // its own that is right - but not after an `await`: an export that syncs
+      // with the cloud first would still build from the figures it saw BEFORE
+      // the sync, which is exactly the staleness the sync was for.
+      getData: () => dataRef.current,
+
       readOnly,
       resetData: () => {
         if (readOnlyRef.current) return

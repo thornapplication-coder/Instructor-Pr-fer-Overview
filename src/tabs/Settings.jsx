@@ -39,7 +39,7 @@ function fmtBytes(n) {
 }
 
 export default function Settings() {
-  const { data, t, lang, setLang, exportData, importData, resetData, setTrainers, setPilots, setList, setCapacityRange, saveError, readOnly } = useStore()
+  const { data, t, lang, setLang, exportData, getData, importData, resetData, setTrainers, setPilots, setList, setCapacityRange, saveError, readOnly, sync } = useStore()
   const capture = useContext(CaptureContext)
   const fileRef = useRef(null)
   const dlRef = useRef(null)
@@ -61,8 +61,43 @@ export default function Settings() {
   const [xlsMsg, setXlsMsg] = useState(null)
   const [pilotMsg, setPilotMsg] = useState(null)
   const [pdfBusy, setPdfBusy] = useState(null) // `${pageId}:${output}` of the running export
+  const [syncing, setSyncing] = useState(false)
   const [pdfMsg, setPdfMsg] = useState(null)
   const [persist, setPersist] = useState(null)
+
+  // Every export starts by bringing the data up to date.
+  //
+  // Without this an export carries whatever this device happened to hold. Open
+  // the app on the iPad, export straight away, and the figures are from before
+  // the laptop's last edit - the two-minute sync had not run yet. A sheet that
+  // goes into a meeting has to be the current state, not this device's copy of
+  // it, so the pull happens first and the export waits for it.
+  //
+  // It never blocks the export: offline, signed out or a failed sync all fall
+  // through to the local figures, because a slightly old report beats no report
+  // in front of a room. What changes is that it is no longer silent - the
+  // export itself says how current it is (see `dataAsOf`).
+  const refresh = async () => {
+    if (!sync?.cloudConfigured || !sync?.user || !sync?.syncNow) return
+    setPdfMsg(null)
+    setSyncing(true)
+    try {
+      await sync.syncNow()
+      // Let React commit what the sync applied before anything reads it.
+      await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+    } catch (e) {
+      /* stale beats nothing; the stamp on the export says which it is */
+    } finally {
+      setSyncing(false)
+    }
+  }
+
+  // When the figures are from. NOT the export date: three days offline still
+  // produces a file dated today, and that is the misreading this prevents.
+  const dataAsOf = () => {
+    if (!sync?.cloudConfigured || !sync?.user) return null
+    return sync.lastSyncedAt || null
+  }
 
   const doPdf = async (pageId, output) => {
     setPdfMsg(null)
@@ -74,12 +109,16 @@ export default function Settings() {
       try { win = window.open('', '_blank') } catch (e) { win = null }
     }
     try {
+      await refresh()
+      // Through getData(), not the closure: `data` here is from the render this
+      // click started in, i.e. from before the refresh above.
+      const fresh = getData ? getData() : data
       // The dashboard PDF mirrors the on-screen layout: rasterize it first.
       let canvas = null
       if (pageId === 'dashboard' && capture?.tabImage) {
         canvas = await capture.tabImage('dashboard')
       }
-      const result = await exportPagePdf(pageId, data, t, lang, { output, win, canvas })
+      const result = await exportPagePdf(pageId, fresh, t, lang, { output, win, canvas, asOf: dataAsOf() })
       if (output === 'print' && result === 'saved') setPdfMsg({ ok: true, text: t('pdfPrintFellBack') })
     } catch (e) {
       if (win) { try { win.close() } catch (_) { /* ignore */ } }
@@ -95,8 +134,9 @@ export default function Settings() {
     setPdfMsg(null)
     setPdfBusy('dashboard:pptx')
     try {
+      await refresh()
       const cards = capture?.tabCards ? await capture.tabCards('dashboard') : []
-      const n = await exportDashboardPptx(cards, t, lang)
+      const n = await exportDashboardPptx(cards, t, lang, dataAsOf())
       if (!n) setPdfMsg({ ok: false, text: t('pptxEmpty') })
     } catch (e) {
       setPdfMsg({ ok: false, text: t('pdfErr') })
@@ -105,12 +145,16 @@ export default function Settings() {
     }
   }
 
-  const doExcel = (fn) => {
+  const doExcel = async (fn) => {
     setPdfMsg(null)
+    setPdfBusy('xls')
     try {
-      fn(data, t, lang)
+      await refresh()
+      fn(getData ? getData() : data, t, lang)
     } catch (e) {
       setPdfMsg({ ok: false, text: t('pdfErr') })
+    } finally {
+      setPdfBusy(null)
     }
   }
 
@@ -275,6 +319,10 @@ export default function Settings() {
       <section className="card downloads-card" ref={dlRef}>
         <h3 className="card-title">{t('downloads')}</h3>
         <p className="muted small">{t('downloadsHint')}</p>
+        {/* The wait is short but it is not nothing, and an export that seems to
+            hang is an export somebody clicks twice. */}
+        {syncing && <p className="inline-msg">{t('exportRefreshing')}</p>}
+        <p className="muted small">{t('exportFreshHint')}</p>
         <div className="dl-list">
           {EXPORT_PAGES.map((p) => (
             <div className={'dl-row' + (target === p.id ? ' is-target' : '')} key={p.id} data-export={p.id}>

@@ -55,7 +55,22 @@ const PAGE_MARGIN = 24
 // Branded header, drawn on every page via autotable's didDrawPage. No footer:
 // neither the version nor the page number earns the strip of paper it costs,
 // and without it the table may run to the bottom edge.
-function decorate(doc, title, lang, dateStr) {
+// The date a sheet was PRINTED is not the date its figures are from.
+//
+// Three days offline still produces a file stamped today, and a reader has no
+// way to tell. So when the app knows when the data was last reconciled with the
+// cloud, the header says that too - and when it cannot know (offline, signed
+// out, no cloud at all), it says THAT rather than leaving the print date to be
+// mistaken for it.
+function asOfLine(asOf, t, lang) {
+  if (asOf === undefined) return '' // caller did not ask for the distinction
+  if (!asOf) return t('exportAsOfLocal')
+  const d = new Date(asOf)
+  if (isNaN(d)) return t('exportAsOfLocal')
+  return t('exportAsOf') + ': ' + d.toLocaleString(lang === 'de' ? 'de-DE' : 'en-GB')
+}
+
+function decorate(doc, title, lang, dateStr, asOfStr) {
   const W = doc.internal.pageSize.getWidth()
   doc.setFillColor(...BURG)
   doc.rect(0, 0, W, 50, 'F')
@@ -68,10 +83,22 @@ function decorate(doc, title, lang, dateStr) {
   doc.text(title, PAGE_MARGIN, 40)
   doc.setFontSize(9)
   doc.text(dateStr, W - PAGE_MARGIN, 23, { align: 'right' })
+  if (asOfStr) {
+    doc.setFontSize(7.5)
+    doc.text(asOfStr, W - PAGE_MARGIN, 40, { align: 'right' })
+  }
 }
 
-function makeCtx(doc, autoTable, title, lang) {
-  const ctx = { doc, autoTable, title, lang, dateStr: reportDate(lang), y: 66 }
+function makeCtx(doc, autoTable, title, lang, opts = {}) {
+  const ctx = {
+    doc,
+    autoTable,
+    title,
+    lang,
+    dateStr: reportDate(lang),
+    asOfStr: opts.asOfStr || '',
+    y: 66
+  }
   return ctx
 }
 
@@ -98,7 +125,7 @@ function table(ctx, { section, head, body, foot, columnStyles }) {
     footStyles: { fillColor: [241, 243, 245], textColor: BURG_DARK, fontStyle: 'bold' },
     alternateRowStyles: { fillColor: [247, 248, 249] },
     columnStyles: columnStyles || {},
-    didDrawPage: () => decorate(ctx.doc, ctx.title, ctx.lang, ctx.dateStr)
+    didDrawPage: () => decorate(ctx.doc, ctx.title, ctx.lang, ctx.dateStr, ctx.asOfStr)
   })
   ctx.y = doc.lastAutoTable.finalY + 16
   return ctx.y
@@ -209,7 +236,7 @@ function finalize(doc, page, opts) {
 async function exportTrainersPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
-  const ctx = makeCtx(doc, autoTable, t('trainers_title'), lang)
+  const ctx = makeCtx(doc, autoTable, t('trainers_title'), lang, { asOfStr: asOfLine(opts.asOf, t, lang) })
   const rows = [...data.trainers].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
   table(ctx, {
     // Same column order as the on-screen table: the two free-text columns last.
@@ -312,7 +339,7 @@ function planningTables(ctx, data, t, lang) {
 async function exportPlanningPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
-  const ctx = makeCtx(doc, autoTable, t('planning_title'), lang)
+  const ctx = makeCtx(doc, autoTable, t('planning_title'), lang, { asOfStr: asOfLine(opts.asOf, t, lang) })
   planningTables(ctx, data, t, lang)
   return finalize(doc, 'planung', opts)
 }
@@ -344,7 +371,7 @@ function courseDatesTable(ctx, data, t, lang) {
 async function exportCourseDatesPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
-  const ctx = makeCtx(doc, autoTable, t('manageCourseDates'), lang)
+  const ctx = makeCtx(doc, autoTable, t('manageCourseDates'), lang, { asOfStr: asOfLine(opts.asOf, t, lang) })
   courseDatesTable(ctx, data, t, lang)
   // Who is on each course – the attendee list is the other half of the record.
   const runs = [...(data.courseRuns || [])].sort((a, b) => String(a.from).localeCompare(String(b.from)))
@@ -374,7 +401,7 @@ async function exportCourseDatesPdf(data, t, lang, opts) {
 async function exportProvidersPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
-  const ctx = makeCtx(doc, autoTable, t('providers_title'), lang)
+  const ctx = makeCtx(doc, autoTable, t('providers_title'), lang, { asOfStr: asOfLine(opts.asOf, t, lang) })
   const providers = [...data.providers].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
   const statusLabel = (id) => (data.providerStatus.find((s) => s.id === id) || {}).label || ''
   table(ctx, {
@@ -451,7 +478,7 @@ function capFoot(cap, lang, totalLabel) {
 async function exportCapacityPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
-  const ctx = makeCtx(doc, autoTable, t('capacity_title'), lang)
+  const ctx = makeCtx(doc, autoTable, t('capacity_title'), lang, { asOfStr: asOfLine(opts.asOf, t, lang) })
   const capQ = capacityByQual(data.trainers, AIRCRAFT, data.stages)
   const capA = capacityByAircraft(data.trainers, AIRCRAFT, data.stages)
   const capB = capacityByBase(data.trainers, AIRCRAFT, data.stages)
@@ -485,7 +512,7 @@ async function exportDashboardPdf(data, t, lang, opts) {
     // fall through to the table-based dashboard rather than saving a blank page
   }
   const doc = new jsPDF({ orientation: 'portrait', unit: 'pt', format: 'a4' })
-  const ctx = makeCtx(doc, autoTable, 'Dashboard', lang)
+  const ctx = makeCtx(doc, autoTable, 'Dashboard', lang, { asOfStr: asOfLine(opts.asOf, t, lang) })
   const trainers = data.trainers
   const hc = headcount(trainers)
   // Conversion figures cover SEN / TRE / TRI / LTC only (no SFI / TKI).
@@ -585,7 +612,7 @@ async function exportConversionPdf(data, t, lang, opts) {
   // Landscape: the tab's three views go in one file and the planning grid has
   // a column per course type, which portrait cannot hold.
   const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
-  const ctx = makeCtx(doc, autoTable, t('conversion_title'), lang)
+  const ctx = makeCtx(doc, autoTable, t('conversion_title'), lang, { asOfStr: asOfLine(opts.asOf, t, lang) })
   const stages = data.stages
   const stageIds = new Set(stages.map((s) => s.id))
   const firstId = firstStageId(stages)
@@ -629,7 +656,7 @@ async function exportConversionPdf(data, t, lang, opts) {
 async function exportPilotsPdf(data, t, lang, opts) {
   const { jsPDF, autoTable } = await loadPdf()
   const doc = new jsPDF({ orientation: 'landscape', unit: 'pt', format: 'a4' })
-  const ctx = makeCtx(doc, autoTable, t('pilots_title'), lang)
+  const ctx = makeCtx(doc, autoTable, t('pilots_title'), lang, { asOfStr: asOfLine(opts.asOf, t, lang) })
   const pilots = [...data.otherPilots].sort((a, b) => (a.name || '').localeCompare(b.name || ''))
   // One row per rating, exactly like the roster it replaces; the continuation
   // row repeats nothing, so a person with two types reads as one block.

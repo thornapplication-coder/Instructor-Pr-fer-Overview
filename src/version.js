@@ -4,12 +4,31 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.63.0'
+export const APP_VERSION = '1.64.0'
 export const APP_BUILD_DATE = '2026-09-13'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.64.0',
+    date: '2026-09-13',
+    type: 'minor',
+    changes: {
+      de: [
+        'Jeder Export gleicht vorher mit der Cloud ab. Bisher trug eine Datei das, was zufällig auf diesem Gerät lag: App am iPad öffnen, sofort exportieren — und die Zahlen waren von vor der letzten Änderung am Rechner, weil der Abgleich alle zwei Minuten läuft und noch nicht dran war.',
+        'Das galt auch technisch für PDF und Excel: sie lasen den Datenstand aus dem Moment des Klicks. Ein Abgleich davor hätte sie gar nicht erreicht. Sie lesen jetzt über den Speicher statt über den Klick-Moment.',
+        'Jede Datei sagt jetzt, von wann ihre Zahlen sind — nicht nur, wann sie erzeugt wurde. Drei Tage offline ergaben bisher eine Datei mit dem heutigen Datum, und niemand konnte das sehen. Im Kopf jedes PDF und unter jeder Folie steht jetzt „Datenstand: …", und wenn kein Abgleich möglich war: „Datenstand: nur dieses Gerät".',
+        'Blockiert wird nichts: offline oder nicht angemeldet wird trotzdem exportiert — eine etwas ältere Auswertung ist besser als gar keine vor einer Besprechung. Sie sagt dann nur, was sie ist.'
+      ],
+      en: [
+        'Every export reconciles with the cloud first. Until now a file carried whatever this device happened to hold: open the app on the iPad, export straight away, and the figures predate the laptop\'s last edit, because the two-minute sync had not run yet.',
+        'That was true technically for the PDF and Excel exports too: they read the data from the moment of the click, so a sync before them would never have reached them. They now read through the store instead of through the click.',
+        'Every file now states when its figures are from, not just when it was made. Three days offline used to produce a file dated today with no way to tell. The header of every PDF and the footer of every slide now says "Datenstand: …", or "Datenstand: nur dieses Gerät" when no reconciliation was possible.',
+        'Nothing is blocked: offline or signed out it still exports - a slightly old report beats no report in front of a room. It simply says which it is.'
+      ]
+    }
+  },
   {
     version: '1.63.0',
     date: '2026-09-13',
