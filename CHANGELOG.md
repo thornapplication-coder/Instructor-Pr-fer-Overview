@@ -11,6 +11,29 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.63.0] – 2026-09-13
+
+### Neu
+- **Das Dashboard als PowerPoint.** Neuer Knopf in *Einstellungen → Downloads
+  & Export*, neben PDF und Excel, nur in der Dashboard-Zeile: die anderen
+  Seiten sind Tabellen, und eine Tabelle ist ein Handout, keine Folie.
+- **Eine Folie je Karte, 16:9, in der Anordnung des Nutzers.**
+  `captureTabCards()` rendert den Reiter wie gehabt außerhalb des Bildes in
+  Desktop-Breite und rastert ihn **je Einheit** statt als Ganzes — Hero-Band,
+  Kachelreihe und jede Karte einzeln, in DOM-Reihenfolge. Das ist genau die
+  Reihenfolge, die „⠿ Anordnen" speichert.
+- **Abbild statt Nachbau.** Die Diagramme werden nicht als PowerPoint-Formen
+  nachgezeichnet. Das wäre eine zweite Umsetzung derselben Zahlen, die dem
+  Bildschirm widersprechen kann — die FTE-Notizen in `CLAUDE.md` sind das
+  Protokoll davon, was das kostet.
+- Jede Folie: Titelband im Burgund, rechts der **Bereich** (Übersicht oder
+  Umschulung), darunter die Karte vollständig eingepasst (nie beschnitten, nie
+  verzerrt), unten Stand und Version.
+- `pptxgenjs` wird **dynamisch** geladen (373 KB eigener Chunk) — der Start der
+  App bleibt unverändert.
+- Geprüft am echten Erzeugnis: 19 Folien, 20 Bilder, gültiges Office-Paket
+  (PK-Signatur), 1,4 MB, in 7 Sekunden gebaut.
+
 ## [1.62.0] – 2026-09-13
 
 ### Neu

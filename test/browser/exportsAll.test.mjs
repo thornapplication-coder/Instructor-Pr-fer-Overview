@@ -128,6 +128,39 @@ export default async function run(browser, baseUrl, shots) {
     }
   }
 
+  // ---- the dashboard as a slide deck --------------------------------------
+  //
+  // Photographed card by card rather than rebuilt: a second implementation of
+  // the charts would be a second set of numbers that can disagree with the
+  // screen, and this project has paid for that once already. So the checks are
+  // about the DECK being sound - one slide per card, every slide carrying its
+  // picture - not about the figures, which are the dashboard's own.
+  {
+    const [deck] = await Promise.all([
+      page2.waitForEvent('download', { timeout: 180000 }),
+      page2.locator('.dl-chip.ppt').first().click()
+    ])
+    const { readFileSync } = await import('node:fs')
+    const bytes = readFileSync(await deck.path())
+    ok(/\.pptx$/.test(deck.suggestedFilename()), 'the deck downloads as a .pptx (' + deck.suggestedFilename() + ')')
+    // A .pptx is a zip; PK is the local file header. jsPDF-style truncation
+    // would still "download", so check the container before the content.
+    ok(bytes[0] === 0x50 && bytes[1] === 0x4b, '  and is a real Office package, not a truncated file')
+    ok(bytes.length > 100000, '  with the card images actually in it (' + Math.round(bytes.length / 1024) + ' KB)')
+
+    // Read the slide list out of the package.
+    const text = bytes.toString('latin1')
+    const slides = new Set((text.match(/ppt\/slides\/slide\d+\.xml/g) || []))
+    // pptxgenjs names them image-<slide>-<n>.png, not imageN.png - the first
+    // cut of this check assumed the latter and reported zero pictures for a
+    // deck that had twenty.
+    const media = new Set((text.match(/ppt\/media\/image[\w-]+\.\w+/g) || []))
+    ok(slides.size >= 10, 'the whole dashboard is in there, not just the first card (' + slides.size + ' slides)')
+    // One picture per slide: a slide whose image failed to rasterize would
+    // still be written, with a heading over nothing.
+    ok(media.size >= slides.size, '  and every slide brought its picture (' + media.size + ' images / ' + slides.size + ' slides)')
+  }
+
   ok(errs.length === 0, 'no page errors at all' + (errs.length ? ': ' + errs[0] : ''))
   await page2.close()
   return fails

@@ -811,6 +811,11 @@ textarea.input { resize: vertical; }
 }
 .dl-chip.pdf { background: var(--burg); color: #fff; border-color: var(--burg); }
 .dl-chip.xls { background: var(--green); color: #fff; border-color: var(--green); }
+/* The sky accent, not PowerPoint's own orange: every colour in this app comes
+   from palette.js, and the three chips only have to be told apart from each
+   other. Status colours stay reserved - the green on the Excel chip is the one
+   older exception and is not a precedent to extend. */
+.dl-chip.ppt { background: var(--sky-dark); color: #fff; border-color: var(--sky-dark); }
 .dl-chip.print { background: #fff; color: var(--burg-dark); border-color: var(--hair); }
 .dl-chip:hover { filter: brightness(1.05); }
 .dl-chip.print:hover { background: var(--panel2); }

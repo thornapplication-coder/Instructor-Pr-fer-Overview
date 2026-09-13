@@ -4,12 +4,33 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.62.0'
+export const APP_VERSION = '1.63.0'
 export const APP_BUILD_DATE = '2026-09-13'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.63.0',
+    date: '2026-09-13',
+    type: 'minor',
+    changes: {
+      de: [
+        'Das Dashboard lässt sich als PowerPoint herunterladen — neuer Knopf neben PDF und Excel in den Einstellungen. Eine Folie je Karte, 16:9, in deiner Anordnung: die Reihenfolge ist die, die du über „⠿ Anordnen" festgelegt hast.',
+        'Die Folien sind Abbilder der echten Karten, nicht nachgebaute Diagramme. Ein zweiter Nachbau hieße ein zweiter Satz Zahlen, der dem Bildschirm widersprechen kann — genau das hat dieses Projekt schon einmal Mühe gekostet. Was auf der Folie steht, ist das, was die App zeigt.',
+        'Jede Folie trägt oben ihren Titel im Eurowings-Burgund und rechts den Bereich, zu dem die Zahl gehört („Instruktoren & Prüfer Overview" oder „B737 Umschulung"). Ohne das sähen 50 und 47 auf zwei Folien wie ein Widerspruch aus statt wie zwei verschiedene Kreise.',
+        'Unten steht klein Stand und Version — damit in einer Besprechung nie unklar ist, von wann die Zahlen sind.',
+        'Die Bibliothek dafür (373 KB) wird erst beim Klick geladen. Die App startet dadurch nicht langsamer.'
+      ],
+      en: [
+        'The dashboard downloads as a PowerPoint - a new button beside PDF and Excel in the settings. One slide per card, 16:9, in your arrangement: the order is the one you set with "⠿ Anordnen".',
+        'The slides are pictures of the real cards, not rebuilt charts. A rebuild would mean a second set of numbers that can disagree with the screen - something this project has paid for once already. What is on the slide is what the app shows.',
+        'Each slide carries its title in Eurowings burgundy and, on the right, the section the figure belongs to ("Instruktoren & Prüfer Overview" or "B737 Umschulung"). Without it, 50 on one slide and 47 on the next would look like a contradiction rather than two different populations.',
+        'A small line at the bottom gives the date and the version, so a meeting is never unclear about how current the figures are.',
+        'The library for it (373 KB) loads only on the click, so the app does not start any slower.'
+      ]
+    }
+  },
   {
     version: '1.62.0',
     date: '2026-09-13',

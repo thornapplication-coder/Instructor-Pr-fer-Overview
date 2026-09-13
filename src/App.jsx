@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useCallback } from 'react'
+import React, { useState, useEffect, useMemo, useRef, useCallback } from 'react'
 import { requestPersistence } from './lib/persistence.js'
 import { hashParts, setHash } from './lib/hash.js'
 import { CaptureContext } from './lib/capture.js'
@@ -100,10 +100,71 @@ export default function App() {
     return canvas
   }, [])
 
+  // One canvas per card instead of one for the whole tab.
+  //
+  // A slide deck is not a long page cut into strips: each card has to land on
+  // its own slide, whole. So the same off-screen render is walked in DOM order
+  // - which is the user's own arrangement, because that is what "⠿ Anordnen"
+  // writes - and each unit is rasterized separately.
+  //
+  // The units are the things that are one thought: the hero band, the KPI row,
+  // and every card. Section headings are not slides; they label the ones that
+  // follow, so a reader knows whether a figure is about the whole roster or
+  // about the conversion pool.
+  const captureTabCards = useCallback(async (tabId) => {
+    setCaptureTab(tabId)
+    await new Promise((r) => requestAnimationFrame(() => requestAnimationFrame(r)))
+    await new Promise((r) => setTimeout(r, 300))
+    const out = []
+    try {
+      const html2canvas = (await import('html2canvas')).default
+      const pane = captureRef.current?.querySelector('.tab-pane')
+      if (pane) {
+        const units = []
+        let section = ''
+        for (const el of Array.from(pane.children)) {
+          if (el.classList.contains('dash-section-title')) { section = el.textContent.trim(); continue }
+          if (el.classList.contains('toolbar')) continue
+          if (el.classList.contains('kpi-hero') || el.classList.contains('kpi-grid')) {
+            units.push({ node: el, section, title: section })
+            continue
+          }
+          if (el.classList.contains('dash-charts')) {
+            for (const card of Array.from(el.children)) {
+              const t2 = card.querySelector('.card-title')
+              units.push({ node: card, section, title: t2 ? t2.textContent.trim() : '' })
+            }
+          }
+        }
+        for (const u of units) {
+          // eslint-disable-next-line no-await-in-loop
+          const canvas = await html2canvas(u.node, {
+            scale: 2,
+            backgroundColor: '#ffffff',
+            logging: false,
+            windowWidth: 1200,
+            scrollX: 0,
+            scrollY: 0
+          })
+          if (canvas && canvas.width && canvas.height) out.push({ ...u, node: undefined, canvas })
+        }
+      }
+    } catch (e) {
+      /* a failed capture yields whatever was collected, never a broken deck */
+    }
+    setCaptureTab(null)
+    return out
+  }, [])
+
+  const capture = useMemo(
+    () => ({ tabImage: captureTabImage, tabCards: captureTabCards }),
+    [captureTabImage, captureTabCards]
+  )
+
   const CaptureTab = captureTab ? TABS.find((t) => t.id === captureTab)?.Comp : null
 
   return (
-    <CaptureContext.Provider value={captureTabImage}>
+    <CaptureContext.Provider value={capture}>
       <div className="app">
         <TopBar tabs={TABS} active={active} onSelect={openTab} />
         <main className="content">

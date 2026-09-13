@@ -394,6 +394,14 @@ const DICT = {
   clearFilters: { de: 'Filter zurücksetzen', en: 'Clear filters' },
   export: { de: 'Export', en: 'Export' },
   filterActive: { de: 'Gefiltert', en: 'Filtered' },
+  pptxHint: {
+    de: 'Das Dashboard als Foliensatz — eine Folie je Karte, in deiner Anordnung.',
+    en: 'The dashboard as a slide deck - one slide per card, in your arrangement.'
+  },
+  pptxEmpty: {
+    de: 'Der Foliensatz konnte nicht erstellt werden: keine Karte gefunden.',
+    en: 'Could not build the deck: no card was captured.'
+  },
   chart_qualByAircraftBase: { de: 'Qualifikation je Aircraft je Base', en: 'Qualification per aircraft per base' },
   chart_qualByAircraftBaseHint: {
     de: 'Jede Base zeigt dieselben Zeilen, damit sie sich vergleichen lassen: eine Berechtigung, die an einer Base fehlt, steht dort als Null. Zeilen, die überall null sind, entfallen.',

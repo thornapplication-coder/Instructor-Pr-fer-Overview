@@ -4,6 +4,7 @@ import { CaptureContext } from '../lib/capture.js'
 import { downloadJson } from '../lib/format.js'
 import { exportTrainersExcel, exportPlanningExcel, exportProvidersExcel, exportPilotsExcel, exportCourseDatesExcel } from '../lib/tableExports.js'
 import { exportPagePdf } from '../lib/pdfExport.js'
+import { exportDashboardPptx } from '../lib/pptExport.js'
 import { parseTrainersFromArrayBuffer, mergeTrainerRecords, resolveRecordIds } from '../lib/importExcel.js'
 import { parsePilotsFromArrayBuffer, mergePilotRecords } from '../lib/importPilots.js'
 import { resolveQualId } from '../data/qualifications.js'
@@ -39,7 +40,7 @@ function fmtBytes(n) {
 
 export default function Settings() {
   const { data, t, lang, setLang, exportData, importData, resetData, setTrainers, setPilots, setList, setCapacityRange, saveError, readOnly } = useStore()
-  const captureTabImage = useContext(CaptureContext)
+  const capture = useContext(CaptureContext)
   const fileRef = useRef(null)
   const dlRef = useRef(null)
   // A tab's own export button lands here naming its row (#/settings/trainers).
@@ -75,8 +76,8 @@ export default function Settings() {
     try {
       // The dashboard PDF mirrors the on-screen layout: rasterize it first.
       let canvas = null
-      if (pageId === 'dashboard' && captureTabImage) {
-        canvas = await captureTabImage('dashboard')
+      if (pageId === 'dashboard' && capture?.tabImage) {
+        canvas = await capture.tabImage('dashboard')
       }
       const result = await exportPagePdf(pageId, data, t, lang, { output, win, canvas })
       if (output === 'print' && result === 'saved') setPdfMsg({ ok: true, text: t('pdfPrintFellBack') })
@@ -87,6 +88,23 @@ export default function Settings() {
       setPdfBusy(null)
     }
   }
+  // The dashboard as slides. Photographed card by card rather than rebuilt, so
+  // what is presented is exactly what the app shows - and in the order the
+  // dashboard is arranged in, because that is the order the cards are captured.
+  const doPptx = async () => {
+    setPdfMsg(null)
+    setPdfBusy('dashboard:pptx')
+    try {
+      const cards = capture?.tabCards ? await capture.tabCards('dashboard') : []
+      const n = await exportDashboardPptx(cards, t, lang)
+      if (!n) setPdfMsg({ ok: false, text: t('pptxEmpty') })
+    } catch (e) {
+      setPdfMsg({ ok: false, text: t('pdfErr') })
+    } finally {
+      setPdfBusy(null)
+    }
+  }
+
   const doExcel = (fn) => {
     setPdfMsg(null)
     try {
@@ -267,6 +285,13 @@ export default function Settings() {
                 </button>
                 {p.excel && (
                   <button className="dl-chip xls" disabled={!!pdfBusy} onClick={() => doExcel(p.excel)}>Excel</button>
+                )}
+                {/* Only the dashboard: the other pages are tables, and a table
+                    is a handout, not a slide. */}
+                {p.id === 'dashboard' && (
+                  <button className="dl-chip ppt" disabled={!!pdfBusy} onClick={doPptx} title={t('pptxHint')}>
+                    PowerPoint
+                  </button>
                 )}
                 <button className="dl-chip print" disabled={!!pdfBusy} onClick={() => doPdf(p.id, 'print')}>
                   {pdfBusy === p.id + ':print' ? '…' : t('print')}
