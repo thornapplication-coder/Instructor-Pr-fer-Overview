@@ -4,12 +4,27 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.64.0'
+export const APP_VERSION = '1.64.1'
 export const APP_BUILD_DATE = '2026-09-13'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.64.1',
+    date: '2026-09-13',
+    type: 'patch',
+    changes: {
+      de: [
+        'Die Versionsnummer steht an sechs Stellen und wird jetzt geprüft. In package-lock.json steht sie zweimal; das Skript für 1.63.0 und 1.64.0 hat nur die erste ersetzt, also lief die Datei zwei Versionen hinterher. Sichtbar war das nirgends — die App liest die Zahl aus src/version.js.',
+        'Ein neuer Test vergleicht alle sechs Stellen bei jedem Lauf und prüft dazu beide Changelogs: gleiche Anzahl Einträge, kein Eintrag nur an einer Stelle, keine Version doppelt, Reihenfolge lückenlos von neu nach alt.'
+      ],
+      en: [
+        'The version number stands in six places and is now checked. package-lock.json carries it twice; the script for 1.63.0 and 1.64.0 replaced only the first, so that file ran two versions behind. Nothing showed it — the app reads the number from src/version.js.',
+        'A new test compares all six places on every run and checks both changelogs alongside: same number of entries, no entry in only one of them, no version twice, order unbroken from newest to oldest.'
+      ]
+    }
+  },
   {
     version: '1.64.0',
     date: '2026-09-13',

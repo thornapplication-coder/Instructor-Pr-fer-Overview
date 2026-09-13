@@ -1,7 +1,7 @@
 {
   "name": "ewl-737-trainer-monitoring",
   "private": true,
-  "version": "1.64.0",
+  "version": "1.64.1",
   "engines": {
     "node": ">=20"
   },

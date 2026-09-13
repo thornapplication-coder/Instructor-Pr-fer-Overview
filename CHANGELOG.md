@@ -11,6 +11,23 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.64.1] – 2026-09-13
+
+### Behoben
+- **Die Versionsnummer stand in `package-lock.json` zwei Versionen zurück.**
+  Sie steht dort zweimal (Wurzel und `packages[""]`); das Bump-Skript für
+  1.63.0 und 1.64.0 hat mit `replace(…, 1)` nur das erste Vorkommen ersetzt.
+  Sichtbar war das nirgends — die App liest die Zahl aus `src/version.js` —,
+  und der nächste `npm install` hat die Datei stillschweigend korrigiert.
+
+### Hinzugefügt
+- **`test/version.test.mjs`** vergleicht bei jedem Lauf alle sechs Stellen
+  (`package.json`, beide in `package-lock.json`, `APP_VERSION`, der oberste
+  Changelog-Eintrag in der App und in `CHANGELOG.md`) und prüft zusätzlich,
+  dass beide Changelogs dieselben Einträge in derselben Reihenfolge tragen:
+  gleiche Anzahl, kein Eintrag nur an einer Stelle, keine Version doppelt,
+  keine Lücke in der Ordnung.
+
 ## [1.64.0] – 2026-09-13
 
 ### Geändert
