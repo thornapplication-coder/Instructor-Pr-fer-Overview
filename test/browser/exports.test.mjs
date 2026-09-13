@@ -42,7 +42,17 @@ export default async function run(browser, baseUrl, shots) {
 
   const a = await pdfPages()
   console.log('     dashboard PDF: ' + a.n + ' page(s), ' + Math.round(a.bytes / 1024) + ' KB')
-  ok(a.n >= 1 && a.n <= 2, 'the dashboard PDF renders 1-2 pages, not an endless shrink (' + a.n + ')')
+  // The guarantee this suite exists for is the one two checks below: a taller
+  // dashboard SPILLS onto more pages instead of being scaled down to nothing.
+  // This bound is only a sanity rail, and it tracks the height of the dashboard
+  // - every card added makes the rasterised capture taller. It was 1-2 when the
+  // dashboard had thirteen cards; the fifteenth ("Externe & Nicht-Trainer",
+  // "Qualifikation je Aircraft je Base") pushed it to three. Raise it with the
+  // card count rather than trimming the page to fit the number.
+  //
+  // A shrink would not read as MORE pages - it reads as one page with a much
+  // smaller image, which is why the byte floor below is part of the same guard.
+  ok(a.n >= 1 && a.n <= 4, 'the dashboard PDF stays within a few pages, not shrunk to one (' + a.n + ')')
   ok(a.bytes > 20000, 'the PDF has real content in it')
   // The reports get handed on, so no personal byline may ride along. Checked on
   // the produced bytes, not on the helper that builds the string.

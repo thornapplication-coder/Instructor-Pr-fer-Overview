@@ -9,6 +9,7 @@ import {
   byBase,
   byQual,
   byQualGroup,
+  qualByAircraftByBase,
   byOre,
   byAuthority,
   byPartTime,
@@ -125,6 +126,18 @@ export default function Dashboard() {
   const fteS = conversionFteSummary(convPool, stages)
   const qualData = byQual(trainers, qualOrder).map((r) => ({ ...r, label: qualLabel(qualDefs, r.key) }))
   const qualAc = qualByAircraft(trainers, qualOrder, AIRCRAFT).map((r) => ({ ...r, label: qualLabel(qualDefs, r.key) }))
+  // The same cut once per base. Memoised because it walks the roster per base
+  // and the dashboard re-renders on every theme, language and reorder tick.
+  const qualAcBase = useMemo(() => {
+    const g = qualByAircraftByBase(trainers, qualOrder, AIRCRAFT)
+    return {
+      ...g,
+      bases: g.bases.map((bs) => ({
+        ...bs,
+        rows: bs.rows.map((r) => ({ ...r, label: qualLabel(qualDefs, r.key) }))
+      }))
+    }
+  }, [trainers, qualOrder, qualDefs])
   // The four groups that are not one of our own trainer grades. They sit at
   // the tail of the qualification chart, where four bars at zero say nothing
   // and look like a chart that failed - so they get a card of their own, as
@@ -212,6 +225,28 @@ export default function Dashboard() {
   const ovChart = [
     { id: 'qual', node: <Card title={t('stat_qual')} total={total}><HBars data={qualData} /></Card> },
     { id: 'qualAc', node: <Card title={t('chart_qualByAircraft')} total={total}><StackedBars data={qualAc} series={acSeries} /></Card> },
+    {
+      id: 'qualAcBase',
+      node: (
+        <Card title={t('chart_qualByAircraftBase')} total={qualAcBase.total}>
+          {/* One block per base, the SAME rows in each, so they can be read
+              against one another: a qualification missing at a base shows as a
+              zero there instead of disappearing, and that gap is the reason
+              this chart exists. */}
+          {qualAcBase.bases.map((bs) => (
+            <div className="base-block" key={bs.key}>
+              <div className="base-block-head">
+                <span className="base-block-name">{bs.key}</span>
+                <span className="base-block-count">{bs.total}</span>
+              </div>
+              <StackedBars data={bs.rows} series={acSeries} />
+            </div>
+          ))}
+          {qualAcBase.bases.length === 0 && <p className="muted small">{t('none')}</p>}
+          <p className="stat-hint">{t('chart_qualByAircraftBaseHint')}</p>
+        </Card>
+      )
+    },
     {
       id: 'role',
       node: (

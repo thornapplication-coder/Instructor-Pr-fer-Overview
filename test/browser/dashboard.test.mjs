@@ -333,6 +333,59 @@ export default async function run(browser, baseUrl, shots) {
   }))
   ok(flat.page === 0 && flat.row === 0, '  and nothing overflows (' + flat.page + 'px / ' + flat.row + 'px)')
 
+  // ---- qualification per aircraft PER BASE --------------------------------
+  //
+  // Two flat charts cannot answer this one. "We have 20 TRE" and "VIE has 14
+  // people" are both true while VIE holds no TRE at all - the gap only shows
+  // where the cuts meet, and a phase-in is planned per base because that is
+  // where the people sit.
+  //
+  // The check that matters is the SAME ROWS in every block: a qualification
+  // missing at a base has to read as a zero there, not vanish, or the blocks
+  // cannot be compared and the gap is invisible again.
+  {
+    await page.locator('.tab', { hasText: 'Dashboard' }).first().click()
+    await page.waitForSelector('.kpi-hero')
+    await page.waitForTimeout(800)
+
+    const card = await page.evaluate(() => {
+      const c = [...document.querySelectorAll('.card')]
+        .find((x) => /je Aircraft je Base/.test(x.querySelector('.card-title')?.textContent || ''))
+      if (!c) return null
+      const blocks = [...c.querySelectorAll('.base-block')].map((b2) => ({
+        base: b2.querySelector('.base-block-name').textContent.trim(),
+        labels: [...b2.querySelectorAll('.hbar-label')].map((e) => e.textContent.trim()),
+        values: [...b2.querySelectorAll('.hbar-val')].map((e) => e.textContent.trim())
+      }))
+      return {
+        total: c.querySelector('.card-total')?.textContent || '',
+        blocks,
+        overflow: c.scrollWidth - c.clientWidth
+      }
+    })
+
+    ok(!!card, 'the dashboard has a per-base breakdown of qualification by aircraft')
+    ok(card && card.blocks.length >= 2, '  with one block per base (' + (card?.blocks.length) + ')')
+    const rowSets = (card?.blocks || []).map((b2) => b2.labels.join('|'))
+    ok(rowSets.length > 1 && rowSets.every((r) => r === rowSets[0]),
+      '  every base showing the SAME rows, so the blocks can be compared (' + (rowSets[0] || '') + ')')
+    // A base that is missing one of those rows must say zero rather than omit it.
+    const zeros = (card?.blocks || []).some((b2) => b2.values.includes('0'))
+    ok(zeros, '  and a qualification a base does not have reads as a zero there')
+    ok(card && card.overflow === 0, '  nothing overflows the card (' + (card?.overflow) + 'px)')
+
+    // The blocks must add up to the card total, or the reader is being shown a
+    // subset under a full-roster heading.
+    const sum = await page.evaluate(() => {
+      const c = [...document.querySelectorAll('.card')]
+        .find((x) => /je Aircraft je Base/.test(x.querySelector('.card-title')?.textContent || ''))
+      return [...c.querySelectorAll('.base-block-count')]
+        .reduce((n, e) => n + (Number(e.textContent.replace(/\D+/g, '')) || 0), 0)
+    })
+    const stated = Number((card?.total || '').replace(/\D+/g, '')) || 0
+    ok(sum === stated, '  and the blocks add up to the stated total (' + sum + ' vs ' + stated + ')')
+  }
+
   ok(errs.length === 0, 'no page errors' + (errs.length ? ': ' + errs[0] : ''))
   await page.close()
   return fails

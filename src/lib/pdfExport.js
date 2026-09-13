@@ -16,6 +16,7 @@ import {
   conversionFteSummary,
   byQual,
   byQualGroup,
+  qualByAircraftByBase,
   byBase,
   byOre,
   byAuthority,
@@ -516,6 +517,31 @@ async function exportDashboardPdf(data, t, lang, opts) {
     ]),
     columnStyles: { 1: { halign: 'right' }, 2: { halign: 'right' }, 3: { halign: 'right' } }
   })
+  // The same cut once per base. One table rather than one per base: on paper a
+  // block per base would scatter over page breaks, and the base column keeps
+  // the comparison the screen makes with its repeated rows.
+  {
+    const g = qualByAircraftByBase(trainers, data.quals.map((q) => q.id), AIRCRAFT)
+    const body = []
+    for (const bs of g.bases) {
+      bs.rows.forEach((r, i) => body.push([
+        i === 0 ? bs.key : '',
+        qualLabel(data.quals, r.key),
+        String(r[AIRCRAFT[0]] || 0),
+        String(r[AIRCRAFT[1]] || 0),
+        String(r.count)
+      ]))
+      body.push([{ content: bs.key + ' ' + t('total'), colSpan: 4, styles: { fontStyle: 'bold' } }, String(bs.total)])
+    }
+    if (body.length) {
+      table(ctx, {
+        section: t('chart_qualByAircraftBase'),
+        head: [t('f_base'), t('f_qual'), AIRCRAFT[0], AIRCRAFT[1], t('total')],
+        body,
+        columnStyles: { 2: { halign: 'right' }, 3: { halign: 'right' }, 4: { halign: 'right' } }
+      })
+    }
+  }
   bd(t('chart_role'), [{ key: t('role_captain'), count: hc.captains }, { key: t('role_fo'), count: hc.firstOfficers }])
   // The four groups without a trainer grade of ours. Two columns, not one:
   // four external instructors at half time are four people and two FTE, and

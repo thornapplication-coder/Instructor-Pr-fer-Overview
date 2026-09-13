@@ -74,6 +74,74 @@ export function byQualGroup(trainers, ids) {
   return { rows, totals: { count: all.length, fte: sumFte(all) } }
 }
 
+// The same breakdown as qualByAircraft(), but once per base.
+//
+// Two flat charts cannot answer the question this one does. "Wir haben 20 TRE"
+// and "VIE hat 18 Leute" are both true while VIE has no TRE at all - the gap
+// only appears where the two cuts meet, and a phase-in is planned per base
+// because that is where the people actually sit.
+//
+// EVERY base gets the SAME rows, so the blocks can be read against each other:
+// a qualification missing at one base shows as a zero there rather than
+// vanishing, which is precisely the reading somebody is here for. Rows that are
+// zero EVERYWHERE are dropped, because "nobody anywhere is an SFI" is the flat
+// chart's business, not this one's.
+export function qualByAircraftByBase(trainers, order, aircraftList, baseOrder) {
+  const list = trainers || []
+  const ord = order && order.length ? order : QUAL_RANK
+  const acs = aircraftList && aircraftList.length ? aircraftList : ['A320', 'B737']
+  const bOrd = baseOrder && baseOrder.length ? baseOrder : BASE_ORDER
+
+  // The rows: every qualification that occurs at all, in the canonical order.
+  const used = new Set()
+  for (const t of list) {
+    const q = t && t.qual
+    if (q !== undefined && q !== null && q !== '') used.add(q)
+  }
+  const rank = (k) => {
+    const i = ord.indexOf(k)
+    return i < 0 ? 999 : i
+  }
+  const quals = [...used].sort((a, b) => rank(a) - rank(b) || String(a).localeCompare(String(b)))
+
+  // The blocks: the known bases in their documented order, then anything else
+  // alphabetically, and finally the people with no base at all under a dash -
+  // they are on the roster and hiding them would make the blocks add up short.
+  const NONE = '—'
+  const byBaseKey = new Map()
+  for (const t of list) {
+    const q = t && t.qual
+    if (q === undefined || q === null || q === '') continue
+    const key = String(t.base || '').trim() || NONE
+    if (!byBaseKey.has(key)) byBaseKey.set(key, [])
+    byBaseKey.get(key).push(t)
+  }
+  const known = bOrd.filter((k) => byBaseKey.has(k))
+  const rest = [...byBaseKey.keys()]
+    .filter((k) => !bOrd.includes(k) && k !== NONE)
+    .sort((a, b) => a.localeCompare(b))
+  const keys = [...known, ...rest, ...(byBaseKey.has(NONE) ? [NONE] : [])]
+
+  const bases = keys.map((key) => {
+    const people = byBaseKey.get(key) || []
+    const rows = quals.map((q) => {
+      const row = { key: q, count: 0 }
+      for (const a of acs) row[a] = 0
+      return row
+    })
+    const byQual = new Map(rows.map((r) => [r.key, r]))
+    for (const t of people) {
+      const row = byQual.get(t.qual)
+      if (!row) continue
+      row.count += 1
+      if (t.aircraft && row[t.aircraft] != null) row[t.aircraft] += 1
+    }
+    return { key, total: people.length, rows }
+  })
+
+  return { quals, bases, total: bases.reduce((n, b2) => n + b2.total, 0) }
+}
+
 export function byBase(trainers) {
   return ordered(tally(trainers, (t) => t.base), BASE_ORDER)
 }

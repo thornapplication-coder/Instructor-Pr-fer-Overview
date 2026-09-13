@@ -11,6 +11,43 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.62.0] – 2026-09-13
+
+### Neu
+- **Dashboard-Karte „Qualifikation je Aircraft je Base".** Dieselbe Aufteilung
+  wie die Karte darüber, aber einmal je Base — ein Block je Base, darin je
+  Berechtigung ein Balken, gestapelt nach A320 / B737.
+- Der Grund: zwei flache Schnitte können die Frage nicht beantworten. „Wir
+  haben 20 TRE" und „VIE hat 14 Leute" stimmen beide, während VIE keinen
+  einzigen TRE hat. Die Lücke entsteht erst dort, wo sich die Schnitte kreuzen
+  — und der Phase-In wird je Base geplant, weil dort die Leute sitzen.
+- **Jede Base zeigt dieselben Zeilen.** Eine Berechtigung, die an einer Base
+  fehlt, steht dort als Null, statt zu verschwinden; sonst wäre genau die
+  Lücke wieder unsichtbar, wegen der die Karte existiert. Zeilen, die
+  **überall** null sind, entfallen — „niemand ist SFI" ist die Aussage der
+  flachen Karte darüber, nicht dieser.
+- **Personen ohne Base** stehen unter „—" am Ende. Sie wegzulassen hieße, dass
+  die Blöcke nicht mehr auf die Gesamtzahl der Karte kommen.
+- Reihenfolge der Blöcke: die bekannten Bases in ihrer dokumentierten Ordnung
+  (`BASE_ORDER`), danach unbekannte alphabetisch, „—" zuletzt.
+- **Im Dashboard-PDF** steht dieselbe Aufstellung als Tabelle mit einer
+  Summenzeile je Base — eine Tabelle statt eines Blocks je Base, weil Blöcke
+  auf Papier über die Seitenumbrüche zerfallen würden.
+- Geprüft im Browser: fünf Blöcke, identische Zeilenmenge in jedem, sichtbare
+  Nullen, 0 px Überlauf, und die Blöcke summieren sich auf die genannte
+  Gesamtzahl (50 von 50).
+
+### Geändert
+- **Das Dashboard-PDF hat jetzt drei Seiten statt zwei.** Es ist ein Abbild der
+  Dashboard-Seite, und die ist um eine Karte gewachsen — es läuft also sauber
+  über, statt kleiner gerechnet zu werden. Der Browser-Lauf hat das gefangen
+  und den Push verhindert; nachgemessen **mit und ohne** die neue PDF-Tabelle
+  (beide Male 3 Seiten, 1302 KB), also liegt es an der Karte auf dem Schirm und
+  nicht an der Tabelle im Export. Die Schranke im Test war auf dreizehn Karten
+  geeicht und wandert jetzt mit der Kartenzahl mit; die eigentliche Zusicherung
+  („eine höhere Seite belegt mindestens so viele Seiten") bleibt unverändert
+  und greift weiter (3 → 5 beim erzwungen hohen Dashboard).
+
 ## [1.61.0] – 2026-08-19
 
 ### Behoben

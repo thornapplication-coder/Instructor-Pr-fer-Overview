@@ -1696,6 +1696,13 @@ textarea.input { resize: vertical; }
   100% { background: transparent; box-shadow: none; }
 }
 .export-link { flex: none; }
+/* One base, one block. The rule above each block and the head count are what
+   keep four or five stacks from reading as one long chart. */
+.base-block + .base-block { margin-top: 14px; padding-top: 12px; border-top: 1px solid var(--hair); }
+.base-block-head { display: flex; align-items: baseline; gap: 8px; margin-bottom: 8px; }
+.base-block-name { font-size: 13px; font-weight: 900; color: var(--ink); letter-spacing: .3px; }
+.base-block-count { font-size: 12px; font-weight: 800; color: var(--muted); }
+.base-block-count::before { content: '· '; }
 /* Says the list is narrowed, and undoes it. Amber rather than a neutral chip:
    it is a state the reader did not choose on this visit and might not
    remember choosing at all. */

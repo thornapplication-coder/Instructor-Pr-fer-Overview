@@ -4,12 +4,35 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.61.0'
-export const APP_BUILD_DATE = '2026-08-19'
+export const APP_VERSION = '1.62.0'
+export const APP_BUILD_DATE = '2026-09-13'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.62.0',
+    date: '2026-09-13',
+    type: 'minor',
+    changes: {
+      de: [
+        'Neue Dashboard-Karte „Qualifikation je Aircraft je Base": dieselbe Aufteilung wie die Karte darüber, aber einmal je Base.',
+        'Das Dashboard-PDF ist dadurch drei Seiten statt zwei — es bildet die Seite ab, und die ist um eine Karte gewachsen. Es wird nicht kleiner gerechnet, sondern läuft sauber über.',
+        'Zwei flache Diagramme können diese Frage nicht beantworten. „Wir haben 20 TRE" und „VIE hat 14 Leute" stimmen beide, während VIE keinen einzigen TRE hat — die Lücke zeigt sich erst dort, wo sich die Schnitte kreuzen. Und geplant wird je Base, weil dort die Leute sitzen.',
+        'Jede Base zeigt dieselben Zeilen. Eine Berechtigung, die an einer Base fehlt, steht dort als Null statt zu verschwinden — sonst wäre genau die Lücke wieder unsichtbar, wegen der die Karte existiert. Zeilen, die überall null sind, entfallen; das ist die Sache der flachen Karte darüber.',
+        'Personen ohne Base stehen unter „—" am Ende, statt weggelassen zu werden: sie stehen auf der Liste, und ohne sie würden die Blöcke nicht mehr auf die Gesamtzahl kommen.',
+        'Im Dashboard-PDF steht dieselbe Aufstellung als Tabelle mit einer Summenzeile je Base.'
+      ],
+      en: [
+        'A new dashboard card, "Qualification per aircraft per base": the same breakdown as the card above it, but once per base.',
+        'The dashboard PDF is three pages instead of two as a result - it is a picture of the page, and the page grew by a card. It spills properly rather than being scaled down.',
+        'Two flat charts cannot answer this question. "We have 20 TRE" and "VIE has 14 people" are both true while VIE holds no TRE at all - the gap only appears where the cuts meet. And planning happens per base, because that is where the people sit.',
+        'Every base shows the same rows. A qualification missing at one base reads as a zero there instead of disappearing - otherwise exactly the gap the card exists for would be invisible again. Rows that are zero everywhere are left out; those belong to the flat card above.',
+        'People with no base appear under "—" at the end rather than being dropped: they are on the roster, and without them the blocks would no longer add up to the total.',
+        'The dashboard PDF carries the same breakdown as a table, with a total row per base.'
+      ]
+    }
+  },
   {
     version: '1.61.0',
     date: '2026-08-19',

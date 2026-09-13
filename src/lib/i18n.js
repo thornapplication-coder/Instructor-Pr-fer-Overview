@@ -394,6 +394,11 @@ const DICT = {
   clearFilters: { de: 'Filter zurücksetzen', en: 'Clear filters' },
   export: { de: 'Export', en: 'Export' },
   filterActive: { de: 'Gefiltert', en: 'Filtered' },
+  chart_qualByAircraftBase: { de: 'Qualifikation je Aircraft je Base', en: 'Qualification per aircraft per base' },
+  chart_qualByAircraftBaseHint: {
+    de: 'Jede Base zeigt dieselben Zeilen, damit sie sich vergleichen lassen: eine Berechtigung, die an einer Base fehlt, steht dort als Null. Zeilen, die überall null sind, entfallen.',
+    en: 'Every base shows the same rows so they can be compared: a qualification missing at one base reads as a zero there. Rows that are zero everywhere are left out.'
+  },
   course_full: { de: 'voll', en: 'full' },
   chart_outlook: { de: 'Wann ist der Letzte durch?', en: 'When is the last one through?' },
   outlookHint: {
