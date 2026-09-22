@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.64.1'
-export const APP_BUILD_DATE = '2026-09-13'
+export const APP_VERSION = '1.65.0'
+export const APP_BUILD_DATE = '2026-09-22'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.65.0',
+    date: '2026-09-22',
+    type: 'minor',
+    changes: {
+      de: [
+        'Ein Gerät, dessen Speicher geleert wurde, überschreibt beim nächsten Anmelden nicht mehr die echten Daten. iOS räumt den Speicher einer Seite nach rund einer Woche ohne Besuch weg — auch bei einer auf dem Homescreen installierten App. Das Gerät startet dann mit dem Ursprungsbestand, und der war bisher mit dem heutigen Datum gestempelt: beim Abgleich galt er als die neuere Fassung und ersetzte ORE-Stufe, Umschulungsphase und Bemerkungen durch die Werksvorgabe. Gelöschte Personen kamen zurück. Auf dem Bildschirm stand dabei nichts als ein grüner Punkt.',
+        'Der Ursprungsbestand trägt jetzt ein festes Datum weit in der Vergangenheit und ist als solcher markiert. Er verliert damit gegen alles, was jemand tatsächlich geändert hat — auch bei Sprache, Design, Kapazitätszeitraum und Dashboard-Reihenfolge. Eine Änderung, die auf dem Gerät vor dem Anmelden gemacht wurde, gewinnt weiterhin: die ist echte Arbeit. Und ein Gerät, das als erstes überhaupt hochlädt, lädt seinen Bestand wie bisher hoch.',
+        'Ein abgemeldetes Gerät sagt wieder „Nicht angemeldet" statt „Sync-Fehler". Es fragte beim Start nach der geteilten Zeile über eine Datenbankspalte, die es nur nach der Freigabe-Migration gibt — die fehlende Spalte kam als Fehler zurück und verdeckte die eigentliche Auskunft. Fehlende Freigabe ist eine Einstellung, kein Fehler. Ein echter Ausfall (kein Netz, abgelaufene Anmeldung) meldet sich weiterhin als Fehler.'
+      ],
+      en: [
+        'A device whose storage was cleared no longer overwrites the real data when it next signs in. iOS drops a site\'s storage after roughly a week without a visit, home-screen apps included. The device then starts from the seed, and the seed used to be stamped with today\'s date: on merge it counted as the newer version and replaced ORE tier, conversion stage and remarks with the factory value. Deleted people came back. Nothing on screen said so but a green dot.',
+        'The seed now carries a fixed date far in the past and is marked as seed. It therefore loses against anything a person actually changed - language, theme, capacity window and dashboard order included. An edit made on that device before signing in still wins: that is real work. And a device that is the first to upload still uploads its own state as before.',
+        'A signed-out device says "Not signed in" again instead of "Sync error". It was asking for the shared row through a database column that only exists after the sharing migration; the missing column came back as an error and hid the one thing the screen had to say. Sharing being off is a setting, not a fault. A real failure (no network, expired session) still reports as an error.'
+      ]
+    }
+  },
   {
     version: '1.64.1',
     date: '2026-09-13',

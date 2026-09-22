@@ -51,3 +51,32 @@ ok(stale.length === 0, stale.length ? 'MERGE_LISTS names lists that no longer ex
 // they need no list of their own – assert that this is still how it is stored.
 ok(/conv:\s*\{/.test(src), 'conversion state lives inside the trainer record')
 ok(/assignments:\s*mergeAssignments/.test(src), 'planning assignments live inside the trainer record')
+
+// ---------------------------------------------------------------------------
+// The factory marker has to be complete on both ends.
+//
+// merge.test.mjs proves what mergeBlobs DOES with a seed blob. That is only
+// worth anything if the store actually produces one - and if every local write
+// path takes the marker off again, because a blob still flagged `_seed` after
+// somebody edited it would lose their work instead of protecting it.
+console.log('\nsync – the seed is marked as the seed')
+{
+  const fresh = src.slice(src.indexOf('function freshData('), src.indexOf('\n}', src.indexOf('function freshData(')))
+  ok(/_seed:\s*true/.test(fresh), 'freshData() marks its blob as seed')
+  ok(/\}, SEED_AT\)/.test(fresh), 'and stamps its records with SEED_AT, not with now')
+  ok(/backfillStamps.*SEED_AT/s.test(fresh) && !/\}, at\)/.test(fresh),
+    '  no "now" stamp is left on the seed')
+  ok(/SEED_AT\s*\}?\s*from '\.\/merge\.js'/.test(src) || /SEED_AT/.test(src.slice(0, src.indexOf('function'))),
+    'SEED_AT comes from merge.js, not a second copy')
+
+  // Both local write paths. patch() is the choke point for edits; importData
+  // is the only other way data enters the store from this device.
+  const touched = (src.match(/touched\(/g) || []).length
+  ok(/function touched\(/.test(src), 'a single helper clears the marker')
+  ok(touched >= 3, 'and both write paths use it (patch and importData) – ' + touched + ' uses')
+  ok(/delete d\._seed/.test(src), 'it deletes the key rather than setting it undefined')
+
+  // normalize() names every key it keeps, so without this line the marker
+  // would survive exactly one session - the session before the damage.
+  ok(/obj\._seed === true/.test(src), 'normalize() carries the marker through a reload')
+}

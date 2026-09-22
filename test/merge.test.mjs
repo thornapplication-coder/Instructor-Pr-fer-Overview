@@ -3,7 +3,8 @@
 // This is the piece that decides which device's edit survives, so it is the
 // piece worth pinning down. Pure functions, no browser, no dependencies:
 //   npm test
-import { mergeBlobs, stampChanges, stable, backfillStamps, MERGE_LISTS } from '../src/lib/merge.js'
+import { mergeBlobs, stampChanges, stable, backfillStamps, MERGE_LISTS, SEED_AT } from '../src/lib/merge.js'
+import { sharingNotSetUp } from '../src/lib/syncErrors.js'
 
 const fails = []
 export const results = { fails }
@@ -130,3 +131,88 @@ console.log('\nmerge – ordering, scalars, robustness')
 }
 
 ok(MERGE_LISTS.length > 0, 'MERGE_LISTS is populated (' + MERGE_LISTS.length + ' lists)')
+
+// ---------------------------------------------------------------------------
+// A factory-fresh install must never beat real data.
+//
+// iOS drops a site's localStorage after roughly a week without a visit, and a
+// home-screen PWA is not exempt. The device comes back holding the seed. If
+// that seed is stamped "now" - as it was - then on the next sign-in every seed
+// record is newer than the real one on the server and replaces it, and anybody
+// deleted since walks back in, because the tombstone predates the new stamp.
+// Nothing on screen says so: the sync dot goes green.
+console.log('\nmerge – a fresh install loses against real data')
+{
+  // The fresh install is NEWER than the server by the clock - that is the
+  // whole trap. T() is July, so these two need their own dates: with July
+  // stamps the server would win on `updatedAt` alone and the test would pass
+  // without the fix being there at all.
+  const REAL = '2026-09-01T08:00:00.000Z'
+  const TODAY = '2026-09-22T07:00:00.000Z'
+  const fresh = {
+    _seed: true,
+    updatedAt: TODAY,                   // a fresh install saves itself at once
+    theme: 'light',
+    capacityTo: '2028-12',
+    trainers: [
+      { id: 'HMF', name: 'Hammerer', ore: '', convStage: 'st1', _at: SEED_AT },
+      { id: 'GONE', name: 'Seed Person', _at: SEED_AT }
+    ],
+    _tomb: {}
+  }
+  const server = {
+    updatedAt: REAL,
+    theme: 'dark',
+    capacityTo: '2027-06',
+    trainers: [
+      { id: 'HMF', name: 'Hammerer', ore: 'ORE-2', convStage: 'st4', _at: REAL },
+      { id: 'NEU', name: 'Von Hand angelegt', _at: REAL }
+    ],
+    _tomb: { trainers: { GONE: REAL } }
+  }
+
+  const m = mergeBlobs(fresh, server)
+  const by = (id) => m.trainers.find((t) => t.id === id)
+  ok(by('HMF').convStage === 'st4', 'the server’s conversion stage survives (st4)')
+  ok(by('HMF').ore === 'ORE-2', 'and so does the ORE tier (ORE-2)')
+  ok(!by('GONE'), 'somebody deleted on the server stays deleted')
+  ok(!!by('NEU'), 'and a record only the server has is kept')
+  ok(m.theme === 'dark', 'settings outside the lists come from the real side too')
+  ok(m.capacityTo === '2027-06', '  including the capacity window')
+  ok(m._seed === undefined, 'the merged result is no longer marked as seed')
+
+  // Same both ways round: sync() passes (local, remote), the retry passes the
+  // carried merge. Neither order may change who wins.
+  const rev = mergeBlobs(server, fresh)
+  eq(rev.trainers.find((t) => t.id === 'HMF'), by('HMF'), 'argument order does not decide it')
+
+  // The protection must not swallow a real edit made on the fresh device
+  // before it signed in - that IS somebody's work.
+  const edited = {
+    ...fresh,
+    _seed: undefined,
+    trainers: [{ ...fresh.trainers[0], ore: 'ORE-1', _at: TODAY }, fresh.trainers[1]]
+  }
+  delete edited._seed
+  ok(mergeBlobs(edited, server).trainers.find((t) => t.id === 'HMF').ore === 'ORE-1',
+    'an edit made on that device before signing in still wins')
+
+  // And with no remote row at all there is nothing to lose against: the seed
+  // is what gets uploaded, exactly as before.
+  ok(mergeBlobs(fresh, null) === fresh, 'a first device still uploads its seed')
+}
+
+console.log('\nsync – "sharing is off" is not a fault')
+{
+  ok(sharingNotSetUp({ code: '42703', message: 'column app_state.shared does not exist' }),
+    'a missing `shared` column reads as "not set up"')
+  ok(sharingNotSetUp({ code: '42501', message: 'permission denied for table app_state' }),
+    'and so does a missing anon grant')
+  ok(sharingNotSetUp({ message: 'column "shared" does not exist' }),
+    'even with no code, the message is enough')
+  ok(!sharingNotSetUp({ message: 'TypeError: Failed to fetch' }),
+    'a dead connection stays a fault')
+  ok(!sharingNotSetUp({ code: 'PGRST301', message: 'JWT expired' }),
+    'and so does an expired token')
+  ok(!sharingNotSetUp(null), 'no error at all is not "not set up"')
+}

@@ -41,6 +41,23 @@ export const MERGE_LISTS = [
   'extCompanies'
 ]
 
+// The stamp every record of a FACTORY-FRESH install carries.
+//
+// It used to be `now`, on the reasoning that an unstamped record loses every
+// merge. True - but that is the RIGHT outcome here, and stamping the seed with
+// "now" turned it into the wrong one: a device whose storage was cleared (iOS
+// drops a site's localStorage after about a week untouched) comes back holding
+// the seed, stamped today. Sign in, and every one of those records is newer
+// than the real one on the server and replaces it - ORE, conversion stage and
+// remarks back to the factory value, and anybody deleted since walks back in,
+// because the tombstone is older than the seed's stamp.
+//
+// A fixed date in the past says what the seed actually is: content nobody has
+// touched, which must lose against anything anybody did touch. On a genuinely
+// first device there is no remote row to lose against, so the seed is simply
+// uploaded as it always was.
+export const SEED_AT = '2000-01-01T00:00:00.000Z'
+
 // A tombstone older than this is dropped. It has to outlive any plausible
 // offline stretch – pruning too early lets a device that was away resurrect
 // what someone else deleted.
@@ -167,9 +184,19 @@ export function mergeBlobs(local, remote) {
   if (!remote || typeof remote !== 'object' || !Array.isArray(remote.trainers)) return local
   if (!local || typeof local !== 'object' || !Array.isArray(local.trainers)) return remote
 
-  const localNewer = iso(local.updatedAt) >= iso(remote.updatedAt)
+  // `_seed` marks a blob nobody has edited yet (see SEED_AT). Everything
+  // outside the merged lists - language, theme, the capacity window, the
+  // dashboard order - follows the base blob wholesale, and a fresh install's
+  // `updatedAt` is today's, so without this it would win those too and reset
+  // them. Record stamps alone do not cover it: those settings carry none.
+  const lSeed = local._seed === true
+  const rSeed = remote._seed === true
+  const localNewer =
+    lSeed !== rSeed ? rSeed : iso(local.updatedAt) >= iso(remote.updatedAt)
   const base = localNewer ? local : remote
   const out = { ...base }
+  // Merged with real content, the result is no longer untouched seed.
+  if (lSeed !== rSeed) delete out._seed
   const tomb = {}
 
   for (const key of MERGE_LISTS) {

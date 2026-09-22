@@ -7,6 +7,10 @@
 // note there on why baking them in is safe). The matching schema is in
 // supabase/migrations/0001_app_state.sql.
 import { SUPABASE_URL, SUPABASE_ANON_KEY } from './cloudConfig.js'
+// Lives in its own module so `npm test` can reach it: this one pulls in
+// cloudConfig.js, which reads import.meta.env and only exists under Vite.
+import { sharingNotSetUp } from './syncErrors.js'
+export { sharingNotSetUp }
 
 // NB: do not alias these to `URL` – that shadows the global URL constructor
 // for the whole module.
@@ -116,7 +120,10 @@ export async function pullPublic() {
     .order('updated_at', { ascending: false })
     .limit(1)
     .maybeSingle()
-  if (error) throw error
+  if (error) {
+    if (sharingNotSetUp(error)) return null
+    throw error
+  }
   if (!data) return null
   return { blob: data.data, remoteAt: data.updated_at }
 }

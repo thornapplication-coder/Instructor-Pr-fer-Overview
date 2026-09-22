@@ -11,6 +11,40 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.65.0] – 2026-09-22
+
+### Behoben
+- **Ein Gerät mit geleertem Speicher überschrieb beim Anmelden die echten
+  Daten.** iOS räumt den lokalen Speicher einer Seite nach rund einer Woche
+  ohne Besuch weg, auch bei einer installierten PWA. Das Gerät startet dann mit
+  dem Ursprungsbestand — und der war mit `nowIso()` gestempelt, also mit dem
+  heutigen Datum. Beim Abgleich gewann damit jeder Werks-Datensatz gegen den
+  echten auf dem Server: ORE-Stufe, Umschulungsphase und Bemerkungen fielen auf
+  die Vorgabe zurück, und wer gelöscht worden war, kam zurück, weil der
+  Grabstein älter war als der neue Stempel. Sichtbar war davon nichts.
+- **Der Ursprungsbestand trägt jetzt `SEED_AT`**, ein festes Datum in der
+  Vergangenheit, und der Datenbestand ist zusätzlich mit `_seed` markiert.
+  Die Markierung deckt ab, was keine Stempel hat und deshalb dem Bestand als
+  Ganzem folgt: Sprache, Design, Kapazitätszeitraum, Dashboard-Reihenfolge.
+  `patch()` und `importData` nehmen die Markierung bei der ersten echten
+  Änderung wieder ab, `normalize()` trägt sie über einen Neustart hinweg —
+  ohne das hätte der Schutz genau eine Sitzung gehalten.
+- **Ein abgemeldetes Gerät meldete „Sync-Fehler" statt „Nicht angemeldet".**
+  `pullPublic()` filtert auf die Spalte `shared`, die es erst nach
+  `0002_shared_read.sql` gibt. Ohne die Migration antwortet PostgREST mit
+  einem Fehler statt mit einer leeren Menge, und der Betrachter-Lauf machte
+  daraus den Zustand `error`. Fehlende Freigabe ist eine Einstellung, kein
+  Fehler; `sharingNotSetUp()` in `src/lib/syncErrors.js` trennt die beiden.
+  Netzwerkausfall, falscher Schlüssel und abgelaufene Anmeldung melden sich
+  weiterhin als Fehler.
+
+### Hinzugefügt
+- **Tests für beides**, gegengeprüft: mit zurückgedrehter Behebung fallen
+  sechs Zusicherungen in `merge.test.mjs` und zwei in `sync-coverage.test.mjs`
+  um. Geprüft wird auch die Gegenrichtung — eine Änderung, die vor dem
+  Anmelden gemacht wurde, muss weiterhin gewinnen, und ein erstes Gerät muss
+  seinen Bestand weiterhin hochladen dürfen.
+
 ## [1.64.1] – 2026-09-13
 
 ### Behoben

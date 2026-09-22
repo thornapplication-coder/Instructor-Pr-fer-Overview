@@ -16,7 +16,7 @@ import { SENIORITY_BY_TLC } from '../data/senioritySeed.js'
 import { fteFromPartTime, normalizeAuthority } from './format.js'
 import { translate } from './i18n.js'
 import { useCloudSync } from './cloudSync.js'
-import { backfillStamps, stampChanges } from './merge.js'
+import { backfillStamps, stampChanges, SEED_AT } from './merge.js'
 import { normalizeCourseRun } from './courses.js'
 import { isMonth, DEFAULT_CAPACITY_TO } from './months.js'
 import {
@@ -144,11 +144,21 @@ function seatMap(obj) {
 }
 
 function freshData(lang = 'de') {
-  const at = nowIso()
   // Stamp the seed as well: loadData() returns this directly on a fresh
-  // install, without going through normalize(), and unstamped records lose
-  // every merge against a device that has stamps.
+  // install, without going through normalize(), and an unstamped record is
+  // undefined in a comparison rather than simply old.
+  //
+  // With SEED_AT, not with `now`. The seed has to LOSE against anything a
+  // person actually changed - see the note on SEED_AT in merge.js for what
+  // stamping it "now" did to a device whose storage iOS had cleared.
+  //
+  // `updatedAt` stays `now`: it is the local "last saved" shown in the header
+  // and in Settings, and backdating it would put a wrong date on the screen.
+  // The merge is told about the seed by `_seed` instead, which patch() and
+  // importData drop on the first real change.
+  const at = nowIso()
   return backfillStamps({
+    _seed: true,
     schema: SCHEMA,
     lang,
     theme: 'light',
@@ -203,7 +213,16 @@ function freshData(lang = 'de') {
     _senioritySeed: true,
     _qualExtra2: true,
     updatedAt: at
-  }, at)
+  }, SEED_AT)
+}
+
+// Strip the factory marker: this blob now carries something somebody did.
+// Deleted rather than set to undefined - `stable()` serializes a present
+// `undefined` as null, so an undefined key and an absent one would compare
+// unequal and every sync would see a difference that is not there.
+function touched(d) {
+  if (d && d._seed !== undefined) delete d._seed
+  return d
 }
 
 // One-time: ensure the standard providers exist (add missing ones by name).
@@ -439,6 +458,12 @@ function normalize(obj) {
   }
   // Records from before the record-level merge, or from an Excel/JSON import,
   // carry no stamp – give them the blob's own timestamp.
+  // Carry the factory marker through a reload. normalize() names every key it
+  // keeps, so without this a cleared device would be marked as seed for its
+  // first session only and lose the protection the moment it is opened again.
+  // Present-or-absent, never `false`: an added `false` key would make the
+  // stored blob differ from the one in memory and start a sync over nothing.
+  if (obj._seed === true) result._seed = true
   return backfillStamps(result, result.updatedAt)
 }
 
@@ -574,7 +599,7 @@ export function StoreProvider({ children }) {
         const now = nowIso()
         // Single choke point for the per-record stamps and the delete
         // tombstones the cloud merge runs on – no mutation has to remember it.
-        return { ...stampChanges(d, next, now), updatedAt: now }
+        return touched({ ...stampChanges(d, next, now), updatedAt: now })
       })
     }
 
@@ -797,7 +822,7 @@ export function StoreProvider({ children }) {
         // This is what the confirmation has always promised: "Import ersetzt
         // alle aktuellen Daten."
         const now = nowIso()
-        setData((d) => ({
+        setData((d) => touched({
           ...stampChanges(d, seedMissingProviders(normalize(obj)), now),
           updatedAt: now
         }))
