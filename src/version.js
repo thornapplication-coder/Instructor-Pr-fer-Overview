@@ -4,12 +4,29 @@
 //   - MINOR (1.x.0): new features / tabs
 //   - PATCH (1.0.x): fixes, small tweaks, data updates
 // Keep this in sync with package.json "version".
-export const APP_VERSION = '1.65.0'
+export const APP_VERSION = '1.65.1'
 export const APP_BUILD_DATE = '2026-09-22'
 export const COPYRIGHT = '© Copyright by Patrick Thorn'
 
 // Newest entry first. Shown in Settings → "Version & Changelog".
 export const CHANGELOG = [
+  {
+    version: '1.65.1',
+    date: '2026-09-22',
+    type: 'patch',
+    changes: {
+      de: [
+        'Wenn der Abgleich fehlschlägt, obwohl das Gerät online ist, sagt die App das jetzt auch so. Bisher stand dort „Internetverbindung prüfen" — auf einem Gerät, das die App gerade über genau diese Verbindung geladen hatte. Das schickte zum Nachsehen an die einzige Stelle, die nachweislich in Ordnung war, während die tatsächliche Ursache ungenannt blieb.',
+        'Die neue Meldung nennt den wahrscheinlichsten Grund: ein pausiertes Supabase-Projekt. Kostenlose Projekte schlafen nach etwa einer Woche ohne Zugriff ein und antworten dann auf gar nichts mehr — auf allen Geräten gleichzeitig, angemeldet oder nicht. Dazu steht jetzt, wo man nachsieht und welcher Knopf es wieder weckt.',
+        'Der alte Text bleibt für den Fall, für den er gedacht war: wirklich kein Netz. Unterschieden wird an dem, was der Browser ohnehin weiß, nicht geraten.'
+      ],
+      en: [
+        'When a sync fails while the device is online, the app now says so. It used to read "check your internet connection" - on a device that had just loaded the app over that very connection. That sent the reader to inspect the one thing demonstrably working, while the real cause went unnamed.',
+        'The new message names the likeliest reason: a paused Supabase project. Free projects fall asleep after about a week without access and then answer nothing at all - on every device at once, signed in or not. It now also says where to look and which button wakes it.',
+        'The old text stays for the case it was written for: genuinely no network. The two are told apart by what the browser already knows, not by guesswork.'
+      ]
+    }
+  },
   {
     version: '1.65.0',
     date: '2026-09-22',

@@ -11,6 +11,22 @@ beginnend bei `1.0.0`.
 Die Version ist zusätzlich in der App unter **Einstellungen → Version & Changelog**
 sichtbar. Bei einem neuen Deploy erscheint automatisch ein **Update-Popup**.
 
+## [1.65.1] – 2026-09-22
+
+### Behoben
+- **„Internetverbindung prüfen" auf einem Gerät, das online ist.** Jeder
+  gescheiterte `fetch` lief in `sync_errNetwork`, also in einen Text, der zum
+  Nachsehen an der Verbindung auffordert — auf einem Gerät, das die App
+  soeben über diese Verbindung geladen hat. `sync()` steigt bei fehlendem
+  Netz ohnehin vorher mit dem Zustand `offline` aus, dieser Fehler entsteht
+  also praktisch immer im Online-Fall.
+- **Neuer Text `sync_errUnreachable`**, gewählt anhand von `sync.online`:
+  benennt das pausierte Supabase-Projekt als wahrscheinlichste Ursache
+  (kostenlose Projekte pausieren nach rund einer Woche ohne Zugriff und
+  antworten dann auf allen Geräten gleichzeitig nicht mehr) und sagt, wo man
+  nachsieht. Der alte Text bleibt für das Anmeldeformular, das auch bei
+  abgerissener Verbindung benutzt werden kann.
+
 ## [1.65.0] – 2026-09-22
 
 ### Behoben

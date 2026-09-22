@@ -41,7 +41,18 @@ export default function SyncCard() {
     if (/already registered|already exists/i.test(raw)) return t('sync_errExists')
     if (/password/i.test(raw) && /6|short|least/i.test(raw)) return t('sync_errPassword')
     if (/unable to validate email|invalid format/i.test(raw)) return t('sync_errEmail')
-    if (/failed to fetch|networkerror|load failed/i.test(raw)) return t('sync_errNetwork')
+    // A fetch that never landed. Which of the two it is, the browser already
+    // knows: if this device is online the connection is not the problem, and
+    // telling somebody to check it sends them to look at the one thing that
+    // is demonstrably working - the app loaded over it.
+    //
+    // In practice the engine only ever produces this while online: sync()
+    // returns 'offline' before it reaches the network. The offline wording is
+    // kept for the sign-in form, which can be used the moment a connection
+    // drops.
+    if (/failed to fetch|networkerror|load failed/i.test(raw)) {
+      return t(sync.online ? 'sync_errUnreachable' : 'sync_errNetwork')
+    }
     return raw || t('sync_signInErr')
   }
 

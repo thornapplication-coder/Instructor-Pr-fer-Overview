@@ -80,3 +80,27 @@ console.log('\nsync – the seed is marked as the seed')
   // would survive exactly one session - the session before the damage.
   ok(/obj\._seed === true/.test(src), 'normalize() carries the marker through a reload')
 }
+
+// ---------------------------------------------------------------------------
+// "Keine Verbindung zur Cloud. Internetverbindung prüfen" was shown on a
+// device that was demonstrably online - it had just loaded the app over that
+// connection. It sent the reader to check the one thing that was fine while
+// the real cause (a paused project) went unnamed.
+console.log('\nsync – an unreachable cloud is not a broken connection')
+{
+  const i18n = readFileSync(join(here, '..', 'src', 'lib', 'i18n.js'), 'utf8')
+  const card = readFileSync(join(here, '..', 'src', 'components', 'SyncCard.jsx'), 'utf8')
+
+  const entry = i18n.slice(i18n.indexOf('sync_errUnreachable:'), i18n.indexOf('sync_errUnreachable:') + 900)
+  ok(i18n.includes('sync_errUnreachable:'), 'the separate wording exists')
+  ok(/de:\s*'/.test(entry) && /en:\s*'/.test(entry), '  in both languages')
+  ok(/Supabase/.test(entry), '  and it names where to look')
+
+  ok(/sync\.online \? 'sync_errUnreachable' : 'sync_errNetwork'/.test(card),
+    'the card picks by whether the device is online, not by guesswork')
+  // The offline wording must not simply have been replaced: the sign-in form
+  // can be used the moment a connection drops, and there the old text is the
+  // right one.
+  ok(/sync_errNetwork:\s*\{/.test(i18n), '  the offline wording still exists')
+  ok(card.includes("'sync_errNetwork'"), '  and the card can still reach it')
+}

@@ -179,6 +179,13 @@ const DICT = {
     de: 'Keine Verbindung zur Cloud. Internetverbindung prüfen und erneut versuchen.',
     en: 'Could not reach the cloud. Check your connection and try again.'
   },
+  // Online, and the cloud still did not answer. Saying "check your internet"
+  // here sends somebody to look at the one thing that is demonstrably fine -
+  // the app itself loaded over that connection.
+  sync_errUnreachable: {
+    de: 'Die Cloud hat nicht geantwortet. Dieses Gerät ist online, es liegt also nicht an deiner Verbindung. Am wahrscheinlichsten schläft das Supabase-Projekt: kostenlose Projekte pausieren nach etwa einer Woche ohne Zugriff und antworten dann auf gar nichts mehr. Im Supabase-Dashboard nachsehen – steht dort „Paused", auf „Restore" drücken.',
+    en: 'The cloud did not answer. This device is online, so it is not your connection. Most likely the Supabase project is asleep: free projects pause after about a week without access and then answer nothing at all. Check the Supabase dashboard - if it says "Paused", press "Restore".'
+  },
   sync_signInHint: {
     de: 'Mit E-Mail und Passwort anmelden, um die Daten geräteübergreifend zu synchronisieren.',
     en: 'Sign in with email and password to sync your data across devices.'
